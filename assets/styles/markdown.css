@@ -317,6 +317,83 @@
     display: none;
 }
 
+.mn-tiptap-format-toolbar {
+    position: fixed;
+    z-index: 160;
+    display: flex;
+    align-items: center;
+    padding: 4px;
+    border: var(--mn-border-default);
+    border-radius: var(--mn-radius-md);
+    background: var(--mn-surface-raised);
+    color: var(--mn-ink);
+    box-shadow: var(--mn-shadow-md);
+    font-family: var(--mn-font-ui);
+    user-select: none;
+}
+
+.mn-tiptap-format-toolbar.hidden {
+    display: none;
+}
+
+.mn-tiptap-format-toolbar-list {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.mn-tiptap-format-toolbar-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    min-width: 30px;
+    height: 30px;
+    border: 0;
+    border-radius: var(--mn-radius-sm);
+    background: transparent;
+    color: var(--mn-ink-2);
+    padding: 0 8px;
+    font-family: var(--mn-font-ui);
+    font-size: var(--mn-type-control);
+    font-weight: var(--mn-weight-semibold);
+    line-height: var(--mn-line-tight);
+    transition: var(--mn-transition-theme);
+}
+
+.mn-tiptap-format-toolbar-button:hover,
+.mn-tiptap-format-toolbar-button.active {
+    background: var(--mn-accent-wash);
+    color: var(--mn-ink);
+}
+
+.mn-tiptap-format-toolbar-button:focus-visible {
+    outline: 0;
+    box-shadow: var(--mn-focus-ring-sm);
+}
+
+.mn-tiptap-format-toolbar-icon {
+    display: none;
+}
+
+.mn-tiptap-format-toolbar-label {
+    display: block;
+    min-width: 0;
+}
+
+.mn-tiptap-format-toolbar-button[data-command-id="italic"] .mn-tiptap-format-toolbar-label {
+    font-style: italic;
+}
+
+.mn-tiptap-format-toolbar-button[data-command-id="strike"] .mn-tiptap-format-toolbar-label {
+    text-decoration: line-through;
+}
+
+.mn-tiptap-format-toolbar-button[data-command-id="code"] {
+    font-family: var(--mn-markdown-mono-font);
+    font-size: var(--mn-type-small);
+}
+
 .mn-codemirror-host.initializing {
     position: absolute;
     inset: 0;

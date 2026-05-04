@@ -3,6 +3,8 @@ import { Markdown } from "@tiptap/markdown";
 
 import { createTiptapRuntimeAdapter } from "./editor-runtime.js";
 import { createMarkdownSyncController } from "./markdown-sync-controller.js";
+import { createTiptapFormatCommandController } from "./tiptap-format-commands.js";
+import { createTiptapFormatToolbarController } from "./tiptap-format-toolbar.js";
 import { createTiptapModeController } from "./tiptap-mode-controller.js";
 import { createTiptapSlashCommandController } from "./tiptap-slash-commands.js";
 import { createTiptapSlashMenuController } from "./tiptap-slash-menu.js";
@@ -55,6 +57,8 @@ function createEntry({
   instanceId,
   modeController,
   markdownSync,
+  formatCommands,
+  formatToolbar,
   slashCommands,
   slashMenu,
 }) {
@@ -67,6 +71,8 @@ function createEntry({
     viewMode: modeController.mode,
     modeController,
     markdownSync,
+    formatCommands,
+    formatToolbar,
     slashCommands,
     slashMenu,
   };
@@ -80,6 +86,8 @@ export function createTiptapEditorRuntime({
   markdownManagerFactory = createPapyroMarkdownManager,
   markdownSyncFactory = createMarkdownSyncController,
   modeControllerFactory = createTiptapModeController,
+  formatCommandControllerFactory = createTiptapFormatCommandController,
+  formatToolbarControllerFactory = createTiptapFormatToolbarController,
   slashCommandControllerFactory = createTiptapSlashCommandController,
   slashMenuControllerFactory = createTiptapSlashMenuController,
   navigation,
@@ -97,6 +105,14 @@ export function createTiptapEditorRuntime({
   const createModeController = requireFunction(
     modeControllerFactory,
     "modeControllerFactory",
+  );
+  const createFormatCommandController = requireFunction(
+    formatCommandControllerFactory,
+    "formatCommandControllerFactory",
+  );
+  const createFormatToolbarController = requireFunction(
+    formatToolbarControllerFactory,
+    "formatToolbarControllerFactory",
   );
   const createSlashCommandController = requireFunction(
     slashCommandControllerFactory,
@@ -139,6 +155,7 @@ export function createTiptapEditorRuntime({
       existing.dom.dataset.tabId = tabId;
       existing.instanceId = instanceId;
       existing.modeController.apply(existing, viewMode ?? existing.viewMode);
+      existing.formatToolbar.refresh(existing.editor);
       return existing.editor;
     }
 
@@ -155,6 +172,13 @@ export function createTiptapEditorRuntime({
       manager: markdownManager,
     });
     const modeController = createModeController(viewMode);
+    const formatCommands = createFormatCommandController();
+    const formatToolbar = createFormatToolbarController({
+      commandController: formatCommands,
+      dom: {
+        document: documentRef,
+      },
+    });
     const slashCommands = createSlashCommandController();
     const slashMenu = createSlashMenuController({
       commandController: slashCommands,
@@ -183,14 +207,18 @@ export function createTiptapEditorRuntime({
           content: markdown,
         });
         entry.slashMenu.refresh(targetEditor);
+        entry.formatToolbar.refresh(targetEditor);
       });
       editor.on("selectionUpdate", ({ editor: updatedEditor } = {}) => {
         const targetEditor = updatedEditor ?? editor;
         const entry = runtimeRegistry.get(tabId);
         entry?.slashMenu?.refresh(targetEditor);
+        entry?.formatToolbar?.refresh(targetEditor);
       });
       editor.on("blur", () => {
-        runtimeRegistry.get(tabId)?.slashMenu?.close();
+        const entry = runtimeRegistry.get(tabId);
+        entry?.slashMenu?.close();
+        entry?.formatToolbar?.close();
       });
     }
     editor.mount?.(root);
@@ -201,10 +229,13 @@ export function createTiptapEditorRuntime({
       instanceId,
       modeController,
       markdownSync,
+      formatCommands,
+      formatToolbar,
       slashCommands,
       slashMenu,
     });
     modeController.apply(entry, modeController.mode);
+    formatToolbar.attach({ editor, root, entry });
     slashMenu.attach({ editor, root, entry });
     runtimeRegistry.set(tabId, entry);
 
@@ -228,6 +259,7 @@ export function createTiptapEditorRuntime({
 
       if (message.type === "set_view_mode") {
         entry.modeController.apply(entry, message.mode);
+        entry.formatToolbar.refresh(entry.editor);
         syncOutline(tabId, entry.viewMode);
       } else if (message.type === "set_content") {
         const result = entry.markdownSync.setMarkdown(message.content ?? "");
@@ -265,6 +297,20 @@ export function createTiptapEditorRuntime({
             message: result.error,
           });
         }
+      } else if (message.type === "run_format_command") {
+        const result = entry.formatCommands.run(message.command_id ?? message.commandId, {
+          editor: entry.editor,
+          entry,
+          message,
+          tabId,
+        });
+        if (!result.ok) {
+          entry.dioxus?.send?.({
+            type: "runtime_error",
+            tab_id: tabId,
+            message: result.error,
+          });
+        }
       } else if (message.type === "focus") {
         entry.editor.commands?.focus?.();
       } else if (message.type === "destroy") {
@@ -275,6 +321,7 @@ export function createTiptapEditorRuntime({
           released = runtimeRegistry.get(tabId);
           runtimeRegistry.delete(tabId);
         }
+        released?.formatToolbar?.destroy?.();
         released?.slashMenu?.destroy?.();
         released?.editor?.destroy?.();
       }

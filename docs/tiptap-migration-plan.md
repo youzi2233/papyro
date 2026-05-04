@@ -156,7 +156,7 @@ flowchart TD
 - [x] Add a Tiptap mode controller that normalizes Source, Hybrid, and Preview and keeps non-Hybrid modes non-editable in the rich-text editor.
 - [x] Add a reusable Tiptap slash command controller for headings, lists, quotes, code, dividers, tables, math, and Mermaid.
 - [x] Add a Papyro slash command menu controller with keyboard navigation and token-based styling for common Markdown block insertion.
-- [ ] Add a Papyro floating formatting toolbar for selected text.
+- [x] Add a Papyro floating formatting toolbar controller for selected text and common inline marks.
 - [ ] Add reusable UI primitives for Tiptap dropdowns, popovers, toolbars, and block action menus before wiring advanced blocks.
 - [ ] Source uses a source editor pane synchronized through `MarkdownSyncController`.
 - [x] Add `MarkdownSyncController` as the canonical Markdown state boundary for Tiptap runtime updates.
