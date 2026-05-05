@@ -48,6 +48,10 @@ function createEditor(text, cursor = text.length) {
         calls.push(["insertTable", attrs.rows, attrs.cols, attrs.withHeaderRow]);
         return true;
       },
+      setCalloutBlock: (attrs) => {
+        calls.push(["setCalloutBlock", attrs.kind, attrs.text]);
+        return true;
+      },
       setParagraph: () => {
         calls.push(["setParagraph"]);
         return true;
@@ -232,6 +236,21 @@ test("Tiptap slash menu forwards table picker dimensions to the command", () => 
   assert.deepEqual(calls, [
     ["deleteRange", 0, 6],
     ["insertTable", 5, 4, true],
+    ["focus"],
+  ]);
+});
+
+test("Tiptap slash menu forwards callout kind choices to the command", () => {
+  const { calls, editor } = createEditor("/callout");
+  const view = createViewSpy();
+  const controller = createTiptapSlashMenuController({ view });
+  controller.attach({ editor, root: {} });
+
+  assert.equal(controller.choose("callout", { calloutKind: "warning" }), true);
+
+  assert.deepEqual(calls, [
+    ["deleteRange", 0, 8],
+    ["setCalloutBlock", "WARNING", "Callout text"],
     ["focus"],
   ]);
 });

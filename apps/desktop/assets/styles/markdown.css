@@ -749,6 +749,85 @@
     background: var(--mn-accent-wash);
 }
 
+.mn-tiptap-callout-kind-picker {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    margin-top: 6px;
+    padding: 8px;
+    border-top: var(--mn-border-default);
+}
+
+.mn-tiptap-callout-kind-picker.hidden {
+    display: none;
+}
+
+.mn-tiptap-callout-kind-option {
+    display: grid;
+    grid-template-columns: 10px minmax(0, 1fr);
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    border: var(--mn-border-subtle);
+    border-radius: var(--mn-radius-sm);
+    background: var(--mn-surface);
+    color: var(--mn-ink-2);
+    padding: 7px 8px;
+    text-align: left;
+    font: inherit;
+}
+
+.mn-tiptap-callout-kind-option:hover,
+.mn-tiptap-callout-kind-option:focus-visible {
+    border-color: color-mix(in srgb, var(--mn-accent) 36%, var(--mn-border));
+    background: var(--mn-accent-wash);
+    color: var(--mn-ink);
+}
+
+.mn-tiptap-callout-kind-tone {
+    width: 8px;
+    height: 24px;
+    border-radius: var(--mn-radius-round);
+    background: var(--mn-accent);
+}
+
+.mn-tiptap-callout-kind-option[data-callout-kind="TIP"] .mn-tiptap-callout-kind-tone {
+    background: var(--mn-success);
+}
+
+.mn-tiptap-callout-kind-option[data-callout-kind="WARNING"] .mn-tiptap-callout-kind-tone {
+    background: var(--mn-warning);
+}
+
+.mn-tiptap-callout-kind-option[data-callout-kind="DANGER"] .mn-tiptap-callout-kind-tone {
+    background: var(--mn-danger);
+}
+
+.mn-tiptap-callout-kind-copy {
+    display: grid;
+    min-width: 0;
+    gap: 1px;
+}
+
+.mn-tiptap-callout-kind-title,
+.mn-tiptap-callout-kind-description {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.mn-tiptap-callout-kind-title {
+    font-size: var(--mn-type-small);
+    font-weight: var(--mn-weight-semibold);
+    line-height: var(--mn-line-control);
+}
+
+.mn-tiptap-callout-kind-description {
+    color: var(--mn-ink-3);
+    font-size: var(--mn-type-caption);
+    line-height: var(--mn-line-caption);
+}
+
 .mn-tiptap-format-toolbar {
     position: fixed;
     z-index: 160;

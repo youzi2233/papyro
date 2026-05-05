@@ -1,6 +1,29 @@
 const DEFAULT_CALLOUT_KIND = "NOTE";
 const DEFAULT_CALLOUT_TEXT = "Callout text";
 
+export const PAPYRO_CALLOUT_KIND_OPTIONS = Object.freeze([
+  Object.freeze({
+    kind: "NOTE",
+    title: "Note",
+    description: "Neutral context",
+  }),
+  Object.freeze({
+    kind: "TIP",
+    title: "Tip",
+    description: "Helpful suggestion",
+  }),
+  Object.freeze({
+    kind: "WARNING",
+    title: "Warning",
+    description: "Risk or caution",
+  }),
+  Object.freeze({
+    kind: "DANGER",
+    title: "Danger",
+    description: "Critical issue",
+  }),
+]);
+
 export function normalizeCalloutKind(kind = DEFAULT_CALLOUT_KIND) {
   const normalized = String(kind ?? DEFAULT_CALLOUT_KIND)
     .trim()

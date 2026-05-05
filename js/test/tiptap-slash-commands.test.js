@@ -185,6 +185,21 @@ test("Tiptap slash commands create rich callout blocks when available", () => {
   ]);
 });
 
+test("Tiptap slash commands create requested callout kinds", () => {
+  const { calls, editor } = createFakeEditor();
+  const controller = createTiptapSlashCommandController();
+
+  assert.deepEqual(controller.run("callout", { editor, calloutKind: "warning" }), {
+    ok: true,
+    commandId: "callout",
+    error: null,
+  });
+  assert.deepEqual(calls, [
+    ["setCalloutBlock", "WARNING", "Callout text"],
+    ["focus"],
+  ]);
+});
+
 test("Tiptap slash commands create rich Mermaid blocks when the Mermaid extension is available", () => {
   const { calls, editor } = createFakeEditor();
   const controller = createTiptapSlashCommandController();
@@ -301,14 +316,14 @@ test("Tiptap slash commands fall back to Markdown for callouts", () => {
   };
   const controller = createTiptapSlashCommandController();
 
-  assert.deepEqual(controller.run("callout", { editor }), {
+  assert.deepEqual(controller.run("callout", { editor, calloutKind: "tip" }), {
     ok: true,
     commandId: "callout",
     error: null,
   });
   assert.equal(createMarkdownCallout(), "\n> [!NOTE]\n> Callout text\n");
   assert.deepEqual(calls, [
-    ["insertContent", "\n> [!NOTE]\n> Callout text\n", "markdown"],
+    ["insertContent", "\n> [!TIP]\n> Callout text\n", "markdown"],
     ["focus"],
   ]);
 });

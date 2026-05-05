@@ -1,6 +1,7 @@
 import {
   createMarkdownCallout,
   createMarkdownTable,
+  normalizeCalloutKind,
 } from "./tiptap-markdown-snippets.js";
 
 const DEFAULT_LIMIT = 8;
@@ -193,13 +194,15 @@ export const PAPYRO_TIPTAP_SLASH_COMMANDS = Object.freeze([
     aliases: ["note", "alert", "admonition"],
     keywords: ["callout", "notice", "tip", "warning"],
     priority: 41,
-    run: ({ editor }) =>
-      runEditorCommand(
+    run: ({ editor, calloutKind = "NOTE" }) => {
+      const kind = normalizeCalloutKind(calloutKind);
+      return runEditorCommand(
         editor,
         "setCalloutBlock",
-        [{ kind: "NOTE", text: "Callout text" }],
-        createMarkdownCallout(),
-      ),
+        [{ kind, text: "Callout text" }],
+        createMarkdownCallout(kind),
+      );
+    },
   }),
   createCommand({
     id: "code-block",

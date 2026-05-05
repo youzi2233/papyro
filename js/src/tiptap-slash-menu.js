@@ -1,4 +1,5 @@
 import { createTiptapSlashCommandController } from "./tiptap-slash-commands.js";
+import { PAPYRO_CALLOUT_KIND_OPTIONS } from "./tiptap-markdown-snippets.js";
 import {
   clamp,
   commandElementId,
@@ -12,13 +13,17 @@ import {
   viewportSize,
 } from "./tiptap-ui-primitives.js";
 
-const DEFAULT_MAX_ITEMS = 8;
+const DEFAULT_MAX_ITEMS = 12;
 const DEFAULT_MAX_QUERY_LENGTH = 48;
 const TABLE_GRID_ROWS = 6;
 const TABLE_GRID_COLS = 6;
 
 function chooseTableSize(tablePicker, rows, cols) {
   tablePicker?._choose?.(rows, cols);
+}
+
+function chooseCalloutKind(calloutPicker, kind) {
+  calloutPicker?._choose?.(kind);
 }
 
 function isTriggerBoundary(character) {
@@ -107,6 +112,7 @@ class TiptapSlashMenuView {
   #empty = null;
   #tablePicker = null;
   #tablePickerLabel = null;
+  #calloutPicker = null;
 
   constructor({ document = defaultDocument(), ownerId = "mn-tiptap-slash-menu" } = {}) {
     this.#document = document;
@@ -122,7 +128,8 @@ class TiptapSlashMenuView {
     const tablePicker = createElement(this.#document, "div", "mn-tiptap-table-size-picker hidden");
     const tablePickerLabel = createElement(this.#document, "div", "mn-tiptap-table-size-picker-label");
     const tablePickerGrid = createElement(this.#document, "div", "mn-tiptap-table-size-picker-grid");
-    if (!root || !list || !empty || !tablePicker || !tablePickerLabel || !tablePickerGrid) return;
+    const calloutPicker = createElement(this.#document, "div", "mn-tiptap-callout-kind-picker hidden");
+    if (!root || !list || !empty || !tablePicker || !tablePickerLabel || !tablePickerGrid || !calloutPicker) return;
 
     root.id = this.#ownerId;
     root.role = "listbox";
@@ -152,7 +159,36 @@ class TiptapSlashMenuView {
       }
     }
     tablePicker.append(tablePickerLabel, tablePickerGrid);
-    root.append(list, empty, tablePicker);
+    PAPYRO_CALLOUT_KIND_OPTIONS.forEach((option) => {
+      const item = createElement(this.#document, "button", "mn-tiptap-callout-kind-option");
+      const tone = createElement(this.#document, "span", "mn-tiptap-callout-kind-tone");
+      const copy = createElement(this.#document, "span", "mn-tiptap-callout-kind-copy");
+      const title = createElement(this.#document, "span", "mn-tiptap-callout-kind-title");
+      const description = createElement(
+        this.#document,
+        "span",
+        "mn-tiptap-callout-kind-description",
+      );
+      if (!item || !tone || !copy || !title || !description) return;
+
+      item.type = "button";
+      item.dataset.calloutKind = option.kind;
+      item.setAttribute("aria-label", `Insert ${option.title} callout`);
+      title.textContent = option.title;
+      description.textContent = option.description;
+      copy.append(title, description);
+      item.append(tone, copy);
+      item.addEventListener("pointerdown", (event) => {
+        event.preventDefault();
+        event.stopPropagation?.();
+        chooseCalloutKind(calloutPicker, option.kind);
+      });
+      item.addEventListener("mousedown", (event) => {
+        event.preventDefault();
+      });
+      calloutPicker.appendChild(item);
+    });
+    root.append(list, empty, tablePicker, calloutPicker);
     mountFloatingRoot(root, container, this.#document);
 
     this.#root = root;
@@ -160,6 +196,7 @@ class TiptapSlashMenuView {
     this.#empty = empty;
     this.#tablePicker = tablePicker;
     this.#tablePickerLabel = tablePickerLabel;
+    this.#calloutPicker = calloutPicker;
     setHidden(root, true);
   }
 
@@ -223,18 +260,26 @@ class TiptapSlashMenuView {
     this.#empty = null;
     this.#tablePicker = null;
     this.#tablePickerLabel = null;
+    this.#calloutPicker = null;
   }
 
   #updateTablePicker(state) {
     if (!this.#tablePicker) return;
     const selectedCommand = state.commands[state.selectedIndex];
     const showPicker = selectedCommand?.id === "table";
+    const showCalloutPicker = selectedCommand?.id === "callout";
     setHidden(this.#tablePicker, !showPicker);
+    setHidden(this.#calloutPicker, !showCalloutPicker);
     if (showPicker) {
       this.#tablePicker._choose = (rows, cols) => state.choose("table", { tableSize: { rows, cols } });
       this.#updateTablePickerSize(3, 2);
     } else {
       this.#tablePicker._choose = null;
+    }
+    if (this.#calloutPicker) {
+      this.#calloutPicker._choose = showCalloutPicker
+        ? (kind) => state.choose("callout", { calloutKind: kind })
+        : null;
     }
   }
 
