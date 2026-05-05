@@ -729,6 +729,7 @@ export class TiptapBlockHandleController {
     };
     this.#root?.classList?.add?.(DRAGGING_CLASS);
     this.#bindDragListeners();
+    this.#openActions({ anchorRect: pointerAnchorRect(event, this.#view.actionRect?.()) });
     this.#updateView();
     return true;
   }
@@ -776,7 +777,9 @@ export class TiptapBlockHandleController {
 
     if (!moved) {
       event?.preventDefault?.();
-      this.#openActions({ anchorRect: drag.anchorRect });
+      if (this.#menu?.state?.open !== true) {
+        this.#openActions({ anchorRect: drag.anchorRect });
+      }
       return true;
     }
 

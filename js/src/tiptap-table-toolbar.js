@@ -504,6 +504,17 @@ function tableSelectionRect(grid, selection, tableRect) {
   return null;
 }
 
+function tableMenuAnchorRect(state) {
+  if (state?.mode === "keyboard") return state?.rect ?? null;
+
+  const selectionKind = state?.selection?.kind ?? "cell";
+  if (selectionKind === "cell" || selectionKind === "cells") {
+    return state?.cellRect ?? state?.selectionRect ?? state?.rect ?? null;
+  }
+
+  return state?.selectionRect ?? state?.cellRect ?? state?.rect ?? null;
+}
+
 function activeCellFromEditor(editor, grid = []) {
   const selection = editor?.state?.selection;
   const selectedHeadCell = cellByPosition(grid, selection?.$headCell?.pos);
@@ -882,9 +893,7 @@ class TiptapTableToolbarView {
     this.#updateTableHandle(state);
     this.#updateCellMenuTrigger(state);
     this.#updateAxisHandles(state);
-    const anchorRect = state.mode === "keyboard"
-      ? state.rect
-      : state.selectionRect ?? state.cellRect ?? state.rect;
+    const anchorRect = tableMenuAnchorRect(state);
     positionFloatingElement(this.#root, anchorRect, {
       viewport: viewportSize(state.table, this.#window),
       size: {
@@ -956,17 +965,18 @@ class TiptapTableToolbarView {
   }
 
   #updateCellMenuTrigger(state) {
-    const rect = state.selectionRect ?? state.cellRect ?? state.rect;
+    const rect = tableMenuAnchorRect(state);
     if (!this.#cellMenuButton) return;
     if (!rect) {
       setHidden(this.#cellMenuButton, true);
       return;
     }
 
-    const triggerLeft = state.selection?.kind === "cell"
+    const selectionKind = state.selection?.kind ?? "cell";
+    const triggerLeft = selectionKind === "cell" || selectionKind === "cells"
       ? rect.left + Math.max(0, rect.width - 22) / 2
       : rect.right - 11;
-    const triggerTop = state.selection?.kind === "column"
+    const triggerTop = selectionKind === "column"
       ? rect.bottom - 11
       : rect.top + Math.max(0, rect.height - 22) / 2;
     this.#cellMenuButton.style.left = `${triggerLeft}px`;

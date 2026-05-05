@@ -475,7 +475,7 @@ test("Tiptap block handle click fallback opens actions without pointer capture",
   ]);
 });
 
-test("Tiptap block handle waits for click release before opening actions", () => {
+test("Tiptap block handle opens actions as soon as a click gesture starts", () => {
   const { block, editor } = createEditor();
   const menu = createMenuSpy();
   const view = createViewSpy();
@@ -485,9 +485,10 @@ test("Tiptap block handle waits for click release before opening actions", () =>
 
   assert.equal(view.startDrag({ clientX: 10, clientY: 10, preventDefault() {} }), true);
 
-  assert.equal(menu.state.open, false);
+  assert.equal(menu.state.open, true);
   assert.deepEqual(menu.calls, [
     ["attach", "DIV"],
+    ["open", "paragraph", 7, [10, 10]],
   ]);
 });
 

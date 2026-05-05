@@ -947,6 +947,42 @@ test("Tiptap table toolbar positions the cell menu trigger inside the selected c
   assert.equal(trigger.textContent ?? "", "");
 });
 
+test("Tiptap table toolbar anchors multi-cell actions to the head cell", () => {
+  const { created, documentRef } = createDocument();
+  const { editor } = createTableHarness();
+  editor.commands.mergeCells = () => true;
+  editor.commands.setCellAttribute = () => true;
+  editor.state.selection = {
+    from: 4,
+    $anchorCell: { pos: 10 },
+    $headCell: { pos: 11 },
+    forEachCell(callback) {
+      [10, 11].forEach((pos) => callback({}, pos));
+    },
+  };
+  const controller = createTiptapTableToolbarController({
+    dom: { document: documentRef },
+  });
+
+  controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
+
+  const trigger = created.find((element) =>
+    String(element.className).includes("mn-tiptap-table-cell-menu-trigger"),
+  );
+  const root = created.find((element) =>
+    String(element.className).includes("mn-tiptap-table-toolbar"),
+  );
+  assert.equal(controller.state.selection.kind, "cells");
+  assert.equal(trigger.style.left, "229px");
+  assert.equal(trigger.style.top, "96px");
+
+  trigger.onpointerdown({ preventDefault() {}, stopPropagation() {} });
+
+  assert.equal(root.hidden, false);
+  assert.equal(root.style.left, "125px");
+  assert.equal(root.style.top, "132px");
+});
+
 test("Tiptap table toolbar scopes context commands to row and column selections", () => {
   const { created, documentRef } = createDocument();
   const { editor } = createTableHarness({
