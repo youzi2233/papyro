@@ -107,6 +107,8 @@ function createViewSpy() {
       this.openActions = state.openActions;
       this.openInsert = state.openInsert;
       this.startDrag = state.startDrag;
+      this.releaseAction = state.releaseAction;
+      this.clickAction = state.clickAction;
       actionCount += typeof state.openActions === "function" ? 1 : 0;
       insertCount += typeof state.openInsert === "function" ? 1 : 0;
     },
@@ -435,6 +437,41 @@ test("Tiptap block handle treats a non-moving pointer gesture as an action click
     ["attach", "DIV"],
     ["open", "paragraph", 7, [10, 10]],
     ["open", "paragraph", 7, null],
+  ]);
+});
+
+test("Tiptap block handle opens actions from a release callback", () => {
+  const { block, editor } = createEditor();
+  const menu = createMenuSpy();
+  const view = createViewSpy();
+  const controller = createTiptapBlockHandleController({ menu, view });
+  controller.attach({ editor, root: editor.view.dom, entry: { viewMode: "hybrid" } });
+  controller.handlePointerMove({ target: block });
+
+  assert.equal(view.startDrag({ clientX: 24, clientY: 36, preventDefault() {} }), true);
+  assert.equal(view.releaseAction({ clientX: 24, clientY: 36, preventDefault() {} }), true);
+
+  assert.equal(menu.state.open, true);
+  assert.deepEqual(menu.calls, [
+    ["attach", "DIV"],
+    ["open", "paragraph", 7, [24, 36]],
+  ]);
+});
+
+test("Tiptap block handle click fallback opens actions without pointer capture", () => {
+  const { block, editor } = createEditor();
+  const menu = createMenuSpy();
+  const view = createViewSpy();
+  const controller = createTiptapBlockHandleController({ menu, view });
+  controller.attach({ editor, root: editor.view.dom, entry: { viewMode: "hybrid" } });
+  controller.handlePointerMove({ target: block });
+
+  assert.equal(view.clickAction({ clientX: 30, clientY: 48, preventDefault() {} }), true);
+
+  assert.equal(menu.state.open, true);
+  assert.deepEqual(menu.calls, [
+    ["attach", "DIV"],
+    ["open", "paragraph", 7, [30, 48]],
   ]);
 });
 

@@ -261,8 +261,12 @@ class TiptapBlockHandleView {
   #dropIndicator = null;
   #onAction = null;
   #onContextAction = null;
+  #onActionRelease = null;
+  #onActionClick = null;
   #onInsert = null;
   #onDragStart = null;
+  #insertPointerHandled = false;
+  #actionPointerStarted = false;
 
   constructor({ document = defaultDocument(), window = defaultWindow(document) } = {}) {
     this.#document = document;
@@ -301,13 +305,23 @@ class TiptapBlockHandleView {
       if (event.button && event.button !== 0) {
         event.preventDefault();
         event.stopPropagation?.();
+        this.#insertPointerHandled = false;
         return;
       }
       event.preventDefault();
       event.stopPropagation?.();
-      this.#onInsert?.(event);
+      const handled = this.#onInsert?.(event);
+      this.#insertPointerHandled = typeof this.#onInsert === "function" && handled !== false;
     });
     insertButton.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation?.();
+      if (!this.#insertPointerHandled) {
+        this.#onInsert?.(event);
+      }
+      this.#insertPointerHandled = false;
+    });
+    insertButton.addEventListener("auxclick", (event) => {
       event.preventDefault();
       event.stopPropagation?.();
     });
@@ -331,9 +345,36 @@ class TiptapBlockHandleView {
       }
       event.preventDefault();
       event.stopPropagation?.();
-      this.#onDragStart?.(event);
+      const started = this.#onDragStart?.(event);
+      this.#actionPointerStarted =
+        typeof this.#onDragStart === "function" && started !== false;
+    });
+    actionButton.addEventListener("pointerup", (event) => {
+      if (event.button && event.button !== 0) {
+        event.preventDefault();
+        event.stopPropagation?.();
+        this.#actionPointerStarted = false;
+        return;
+      }
+      event.preventDefault();
+      event.stopPropagation?.();
+      const released =
+        this.#actionPointerStarted && this.#onActionRelease?.(event) !== false;
+      this.#actionPointerStarted = false;
+      if (!released) {
+        this.#onActionClick?.(event);
+      }
     });
     actionButton.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation?.();
+      if (this.#actionPointerStarted) {
+        this.#actionPointerStarted = false;
+        return;
+      }
+      this.#onActionClick?.(event);
+    });
+    actionButton.addEventListener("auxclick", (event) => {
       event.preventDefault();
       event.stopPropagation?.();
     });
@@ -366,6 +407,8 @@ class TiptapBlockHandleView {
 
     this.#onAction = state.openActions ?? null;
     this.#onContextAction = state.openActions ?? null;
+    this.#onActionRelease = state.releaseAction ?? null;
+    this.#onActionClick = state.clickAction ?? null;
     this.#onInsert = state.openInsert ?? null;
     this.#onDragStart = state.startDrag ?? null;
     const rect = state.target.block.getBoundingClientRect?.();
@@ -607,8 +650,10 @@ export class TiptapBlockHandleController {
     return this.state;
   }
 
-  openActions() {
-    return this.#openActions();
+  openActions(event = null) {
+    return this.#openActions({
+      anchorRect: pointerAnchorRect(event, this.#view.actionRect?.()),
+    });
   }
 
   #openActions({ anchorRect = null } = {}) {
@@ -633,6 +678,19 @@ export class TiptapBlockHandleController {
     return this.#insertMenu?.openAtBlock?.(this.#state.target, {
       anchorRect: this.#view.insertRect?.(),
     }) !== false;
+  }
+
+  clickAction(event = null) {
+    if (this.#menu?.state?.open === true) return true;
+    if (this.#drag) return this.finishDrag(event);
+    return this.#openActions({
+      anchorRect: pointerAnchorRect(event, this.#view.actionRect?.()),
+    });
+  }
+
+  releaseAction(event = null) {
+    if (this.#drag) return this.finishDrag(event);
+    return this.clickAction(event);
   }
 
   startDrag(event) {
@@ -806,6 +864,8 @@ export class TiptapBlockHandleController {
         openActions: () => this.openActions(),
         openInsert: () => this.openInsert(),
         startDrag: (event) => this.startDrag(event),
+        releaseAction: (event) => this.releaseAction(event),
+        clickAction: (event) => this.clickAction(event),
       },
       this.#editor,
     );
