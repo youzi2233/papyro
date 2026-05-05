@@ -27,6 +27,7 @@ export const TABLE_COMMANDS = Object.freeze([
     title: "Insert column left",
     label: "Left",
     command: "addColumnBefore",
+    icon: "column-left",
   },
   {
     id: "add-column-after",
@@ -34,6 +35,7 @@ export const TABLE_COMMANDS = Object.freeze([
     title: "Insert column right",
     label: "Right",
     command: "addColumnAfter",
+    icon: "column-right",
   },
   {
     id: "delete-column",
@@ -41,6 +43,7 @@ export const TABLE_COMMANDS = Object.freeze([
     title: "Delete current column",
     label: "Delete",
     command: "deleteColumn",
+    icon: "delete-column",
     tone: "danger",
   },
   {
@@ -49,6 +52,7 @@ export const TABLE_COMMANDS = Object.freeze([
     title: "Insert row above",
     label: "Above",
     command: "addRowBefore",
+    icon: "row-above",
   },
   {
     id: "add-row-after",
@@ -56,6 +60,7 @@ export const TABLE_COMMANDS = Object.freeze([
     title: "Insert row below",
     label: "Below",
     command: "addRowAfter",
+    icon: "row-below",
   },
   {
     id: "delete-row",
@@ -63,6 +68,7 @@ export const TABLE_COMMANDS = Object.freeze([
     title: "Delete current row",
     label: "Delete",
     command: "deleteRow",
+    icon: "delete-row",
     tone: "danger",
   },
   {
@@ -71,6 +77,7 @@ export const TABLE_COMMANDS = Object.freeze([
     title: "Merge selected cells",
     label: "Merge",
     command: "mergeCells",
+    icon: "merge",
   },
   {
     id: "split-cell",
@@ -78,6 +85,7 @@ export const TABLE_COMMANDS = Object.freeze([
     title: "Split current cell",
     label: "Split",
     command: "splitCell",
+    icon: "split",
   },
   {
     id: "merge-or-split",
@@ -85,6 +93,7 @@ export const TABLE_COMMANDS = Object.freeze([
     title: "Merge or split cells",
     label: "Auto",
     command: "mergeOrSplit",
+    icon: "merge",
   },
   {
     id: "toggle-header-row",
@@ -92,6 +101,7 @@ export const TABLE_COMMANDS = Object.freeze([
     title: "Toggle header row",
     label: "Row",
     command: "toggleHeaderRow",
+    icon: "header-row",
   },
   {
     id: "toggle-header-column",
@@ -99,6 +109,7 @@ export const TABLE_COMMANDS = Object.freeze([
     title: "Toggle header column",
     label: "Column",
     command: "toggleHeaderColumn",
+    icon: "header-column",
   },
   {
     id: "toggle-header-cell",
@@ -106,6 +117,7 @@ export const TABLE_COMMANDS = Object.freeze([
     title: "Toggle header cell",
     label: "Cell",
     command: "toggleHeaderCell",
+    icon: "header-cell",
   },
   {
     id: "align-left",
@@ -114,6 +126,8 @@ export const TABLE_COMMANDS = Object.freeze([
     label: "Left",
     command: "setCellAttribute",
     args: ["align", null],
+    icon: "align-left",
+    variant: "icon",
   },
   {
     id: "align-center",
@@ -122,6 +136,8 @@ export const TABLE_COMMANDS = Object.freeze([
     label: "Center",
     command: "setCellAttribute",
     args: ["align", "center"],
+    icon: "align-center",
+    variant: "icon",
   },
   {
     id: "align-right",
@@ -130,6 +146,8 @@ export const TABLE_COMMANDS = Object.freeze([
     label: "Right",
     command: "setCellAttribute",
     args: ["align", "right"],
+    icon: "align-right",
+    variant: "icon",
   },
   {
     id: "cell-bg-clear",
@@ -138,6 +156,8 @@ export const TABLE_COMMANDS = Object.freeze([
     label: "Clear",
     command: "setCellAttribute",
     args: ["backgroundColor", null],
+    icon: "color-clear",
+    variant: "swatch",
   },
   {
     id: "cell-bg-yellow",
@@ -146,6 +166,8 @@ export const TABLE_COMMANDS = Object.freeze([
     label: "Yellow",
     command: "setCellAttribute",
     args: ["backgroundColor", "rgba(245, 158, 11, 0.16)"],
+    icon: "color-yellow",
+    variant: "swatch",
   },
   {
     id: "cell-bg-blue",
@@ -154,6 +176,8 @@ export const TABLE_COMMANDS = Object.freeze([
     label: "Blue",
     command: "setCellAttribute",
     args: ["backgroundColor", "rgba(59, 130, 246, 0.14)"],
+    icon: "color-blue",
+    variant: "swatch",
   },
   {
     id: "cell-bg-green",
@@ -162,6 +186,8 @@ export const TABLE_COMMANDS = Object.freeze([
     label: "Green",
     command: "setCellAttribute",
     args: ["backgroundColor", "rgba(16, 185, 129, 0.14)"],
+    icon: "color-green",
+    variant: "swatch",
   },
   {
     id: "previous-cell",
@@ -169,6 +195,7 @@ export const TABLE_COMMANDS = Object.freeze([
     title: "Move to previous cell",
     label: "Prev",
     command: "goToPreviousCell",
+    icon: "previous",
   },
   {
     id: "next-cell",
@@ -176,6 +203,7 @@ export const TABLE_COMMANDS = Object.freeze([
     title: "Move to next cell",
     label: "Next",
     command: "goToNextCell",
+    icon: "next",
   },
   {
     id: "fix-table",
@@ -183,6 +211,7 @@ export const TABLE_COMMANDS = Object.freeze([
     title: "Repair table structure",
     label: "Repair",
     command: "fixTables",
+    icon: "repair",
   },
   {
     id: "delete-table",
@@ -190,6 +219,7 @@ export const TABLE_COMMANDS = Object.freeze([
     title: "Delete table",
     label: "Delete",
     command: "deleteTable",
+    icon: "delete-table",
     tone: "danger",
   },
 ]);
@@ -562,6 +592,13 @@ function enabledCommandIds(commands) {
     .map((command) => command.id);
 }
 
+function tableCommandVariant(command) {
+  if (command?.variant) return command.variant;
+  if (command?.group === "Align") return "icon";
+  if (command?.group === "Cell color") return "swatch";
+  return "text";
+}
+
 function visibleCommands(commands, mode = "context", selectionKind = "cell") {
   const allowed = mode === "keyboard"
     ? KEYBOARD_TABLE_COMMAND_IDS
@@ -776,6 +813,8 @@ class TiptapTableToolbarView {
       button.textContent = command.label;
       button.dataset.commandId = command.id;
       button.dataset.group = command.group;
+      button.dataset.icon = command.icon ?? command.id;
+      button.dataset.variant = command.variant ?? tableCommandVariant(command);
       button.dataset.tone = command.tone ?? "default";
       button.dataset.active = command.active ? "true" : "false";
       button.dataset.keyboardActive = state.activeCommandId === command.id ? "true" : "false";
@@ -792,6 +831,18 @@ class TiptapTableToolbarView {
       button.addEventListener("mousedown", (event) => {
         event.preventDefault();
       });
+      if (command.variant === "icon" || command.variant === "swatch") {
+        const visual = createElement(
+          this.#document,
+          "span",
+          "mn-tiptap-table-toolbar-button-visual",
+        );
+        if (visual) {
+          visual.setAttribute("aria-hidden", "true");
+          visual.dataset.icon = command.icon ?? command.id;
+          button.replaceChildren(visual);
+        }
+      }
       commandGroups.at(-1)?.appendChild(button);
     });
     this.#list.append(...commandGroups);
@@ -1140,6 +1191,7 @@ export class TiptapTableToolbarController {
       return localizeTableCommand({
         ...command,
         disabled,
+        variant: tableCommandVariant(command),
         active:
           command.command === "setCellAttribute" &&
           command.args?.length >= 2 &&

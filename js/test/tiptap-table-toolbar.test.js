@@ -415,6 +415,20 @@ test("Tiptap table toolbar exposes grouped enterprise table commands", () => {
       ["Table", "delete-table", "deleteTable"],
     ],
   );
+  assert.deepEqual(
+    TABLE_COMMANDS
+      .filter((command) => command.variant)
+      .map((command) => [command.id, command.variant, command.icon]),
+    [
+      ["align-left", "icon", "align-left"],
+      ["align-center", "icon", "align-center"],
+      ["align-right", "icon", "align-right"],
+      ["cell-bg-clear", "swatch", "color-clear"],
+      ["cell-bg-yellow", "swatch", "color-yellow"],
+      ["cell-bg-blue", "swatch", "color-blue"],
+      ["cell-bg-green", "swatch", "color-green"],
+    ],
+  );
 });
 
 test("Tiptap table toolbar sets cell alignment attributes", () => {
@@ -535,6 +549,29 @@ test("Tiptap table toolbar marks active cell background commands", () => {
   const blue = created.find((element) => element.dataset.commandId === "cell-bg-blue");
   assert.equal(yellow.dataset.active, "true");
   assert.equal(blue.dataset.active, "false");
+  assert.equal(yellow.dataset.variant, "swatch");
+  assert.equal(yellow.children[0]?.dataset?.icon, "color-yellow");
+});
+
+test("Tiptap table toolbar renders alignment commands as icon buttons", () => {
+  const { created, documentRef } = createDocument();
+  const { editor } = createTableHarness();
+  editor.commands.setCellAttribute = () => true;
+  const controller = createTiptapTableToolbarController({
+    dom: { document: documentRef },
+  });
+
+  controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
+  const trigger = created.find((element) =>
+    String(element.className).includes("mn-tiptap-table-cell-menu-trigger"),
+  );
+  trigger.onpointerdown({ preventDefault() {}, stopPropagation() {} });
+
+  const alignCenter = created.find((element) => element.dataset.commandId === "align-center");
+  assert.equal(alignCenter.dataset.variant, "icon");
+  assert.equal(alignCenter.dataset.icon, "align-center");
+  assert.equal(alignCenter.children[0]?.dataset?.icon, "align-center");
+  assert.equal(alignCenter.children.length, 1);
 });
 
 test("Tiptap table toolbar runs navigation and repair commands when available", () => {
