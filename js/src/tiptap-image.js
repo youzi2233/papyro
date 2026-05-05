@@ -167,8 +167,8 @@ export const PapyroImage = Node.create({
   },
 
   addNodeView() {
-    return ({ editor, node }) => ({
-      dom: createImageDom(editor.view.dom.ownerDocument, node.attrs),
+    return ({ node, view }) => ({
+      dom: createImageDom(view.dom.ownerDocument, node.attrs),
     });
   },
 

@@ -128,7 +128,7 @@ export function renderKatexElement(element, source, displayMode) {
   }
 }
 
-function setMathNodeSource(editor, getPos, node, source) {
+function setMathNodeSource(view, getPos, node, source) {
   if (typeof getPos !== "function") return false;
 
   const pos = getPos();
@@ -138,16 +138,16 @@ function setMathNodeSource(editor, getPos, node, source) {
     ...node.attrs,
     source: normalizeMathSource(source),
   };
-  editor.view.dispatch(editor.view.state.tr.setNodeMarkup(pos, undefined, nextAttrs));
+  view.dispatch(view.state.tr.setNodeMarkup(pos, undefined, nextAttrs));
   return true;
 }
 
 function createMathNodeView({ displayMode }) {
-  return ({ editor, getPos, node }) => {
+  return ({ editor, getPos, node, view }) => {
     let currentNode = node;
     let editing = false;
     let draft = currentNode.attrs.source ?? "";
-    const documentRef = editor.view.dom.ownerDocument;
+    const documentRef = view.dom.ownerDocument;
     const tagName = displayMode ? "div" : "span";
     const root = documentRef.createElement(tagName);
     const preview = documentRef.createElement(tagName);
@@ -169,7 +169,7 @@ function createMathNodeView({ displayMode }) {
     const commit = () => {
       if (!editing) return;
       editing = false;
-      setMathNodeSource(editor, getPos, currentNode, sourceEditor.value);
+      setMathNodeSource(view, getPos, currentNode, sourceEditor.value);
       render();
     };
     const cancel = () => {

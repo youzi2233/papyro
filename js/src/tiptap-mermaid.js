@@ -21,14 +21,14 @@ export function tokenizeMermaidBlock(source) {
   };
 }
 
-function setMermaidSource(editor, getPos, node, source) {
+function setMermaidSource(view, getPos, node, source) {
   if (typeof getPos !== "function") return false;
 
   const pos = getPos();
   if (!Number.isSafeInteger(pos)) return false;
 
-  editor.view.dispatch(
-    editor.view.state.tr.setNodeMarkup(pos, undefined, {
+  view.dispatch(
+    view.state.tr.setNodeMarkup(pos, undefined, {
       ...node.attrs,
       source: normalizeMermaidSource(source),
     }),
@@ -37,11 +37,11 @@ function setMermaidSource(editor, getPos, node, source) {
 }
 
 function createMermaidNodeView() {
-  return ({ editor, getPos, node }) => {
+  return ({ editor, getPos, node, view }) => {
     let currentNode = node;
     let editing = false;
     let renderTimer = 0;
-    const documentRef = editor.view.dom.ownerDocument;
+    const documentRef = view.dom.ownerDocument;
     const windowRef = documentRef.defaultView ?? window;
     const root = documentRef.createElement("div");
     const preview = documentRef.createElement("div");
@@ -71,7 +71,7 @@ function createMermaidNodeView() {
       if (!editing) return;
       editing = false;
       windowRef.clearTimeout(renderTimer);
-      setMermaidSource(editor, getPos, currentNode, sourceEditor.value);
+      setMermaidSource(view, getPos, currentNode, sourceEditor.value);
       render();
     };
     const cancel = () => {
