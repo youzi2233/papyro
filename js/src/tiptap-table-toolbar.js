@@ -848,12 +848,18 @@ class TiptapTableToolbarView {
     const menuCommands = state.menuOpen ? visibleCommands(state.commands, state.mode, state.selection?.kind) : [];
     const commandGroups = [];
     menuCommands.forEach((command) => {
-      if (commandGroups.at(-1)?.dataset?.group !== command.group) {
+      const layoutGroup = command.layoutGroup ?? tableCommandLayoutGroup(command);
+      const groupKey = layoutGroup === "danger" ? "danger" : command.group;
+      if (commandGroups.at(-1)?.dataset?.groupKey !== groupKey) {
         const groupElement = createElement(this.#document, "div", "mn-tiptap-table-toolbar-group");
         if (!groupElement) return;
+        groupElement.dataset.groupKey = groupKey;
         groupElement.dataset.group = command.group;
-        groupElement.dataset.layoutGroup = command.layoutGroup ?? tableCommandLayoutGroup(command);
-        const label = createElement(this.#document, "div", "mn-tiptap-table-toolbar-group-label");
+        groupElement.dataset.layoutGroup = layoutGroup;
+        const label =
+          layoutGroup === "danger"
+            ? null
+            : createElement(this.#document, "div", "mn-tiptap-table-toolbar-group-label");
         if (label) {
           label.textContent = command.group;
           groupElement.appendChild(label);

@@ -1178,6 +1178,54 @@ test("Tiptap table toolbar scopes context commands to row and column selections"
   );
 });
 
+test("Tiptap table toolbar separates destructive row actions from ordinary commands", () => {
+  const { created, documentRef } = createDocument();
+  const { editor } = createTableHarness({
+    addRowBefore: () => true,
+    addRowAfter: () => true,
+    deleteRow: () => true,
+    toggleHeaderRow: () => true,
+  });
+  const controller = createTiptapTableToolbarController({
+    dom: { document: documentRef },
+  });
+
+  controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
+  const rowHandle = created.find((element) =>
+    String(element.className).includes("mn-tiptap-table-axis-handle row"),
+  );
+  rowHandle.onpointerdown({ preventDefault() {}, stopPropagation() {} });
+
+  const root = created.find((element) =>
+    String(element.className).includes("mn-tiptap-table-toolbar"),
+  );
+  const groups = root.children[0].children;
+  const dangerGroup = groups.find((element) => element.dataset.layoutGroup === "danger");
+  const rowGroup = groups.find((element) => element.dataset.group === "Rows");
+  const headerGroup = groups.find((element) => element.dataset.group === "Headers");
+
+  assert.equal(dangerGroup.dataset.groupKey, "danger");
+  assert.equal(dangerGroup.children.some((child) => String(child.className).includes("group-label")), false);
+  assert.deepEqual(
+    dangerGroup.children
+      .filter((element) => element.dataset.commandId)
+      .map((element) => [element.dataset.commandId, element.dataset.tone]),
+    [["delete-row", "danger"]],
+  );
+  assert.deepEqual(
+    rowGroup.children
+      .filter((element) => element.dataset.commandId)
+      .map((element) => element.dataset.commandId),
+    ["add-row-after", "add-row-before"],
+  );
+  assert.deepEqual(
+    headerGroup.children
+      .filter((element) => element.dataset.commandId)
+      .map((element) => element.dataset.commandId),
+    ["toggle-header-row"],
+  );
+});
+
 test("Tiptap table toolbar keeps cell and axis context menus focused", () => {
   const { created, documentRef } = createDocument();
   const { editor } = createTableHarness({
