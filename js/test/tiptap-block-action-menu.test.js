@@ -55,6 +55,10 @@ function createEditor() {
       schema: { marks },
       doc: {
         nodesBetween() {},
+        textBetween(from, to) {
+          calls.push(["textBetween", from, to]);
+          return "Block text";
+        },
       },
     },
   };
@@ -195,15 +199,9 @@ test("Tiptap block action menu opens for Hybrid block targets", () => {
   assert.deepEqual(
     controller.state.commands.map((command) => command.id),
     [
-      "paragraph",
-      "heading-1",
-      "heading-2",
-      "heading-3",
-      "bullet-list",
-      "ordered-list",
-      "task-list",
-      "blockquote",
-      "callout",
+      "copy-block",
+      "duplicate-block",
+      "reset-formatting",
       "text-color-ink",
       "text-color-muted",
       "text-color-accent",
@@ -212,11 +210,6 @@ test("Tiptap block action menu opens for Hybrid block targets", () => {
       "highlight-yellow",
       "highlight-blue",
       "highlight-green",
-      "code-block",
-      "divider",
-      "reset-formatting",
-      "copy-block",
-      "duplicate-block",
       "delete",
     ],
   );
@@ -278,7 +271,7 @@ test("Tiptap block action menu runs the selected command", () => {
   assert.equal(controller.state.open, false);
   assert.deepEqual(calls, [
     ["focus", 4],
-    ["setParagraph"],
+    ["textBetween", 4, 10],
     ["focus", null],
   ]);
   assert.deepEqual(view.calls.at(-1), ["hide"]);
@@ -404,18 +397,15 @@ test("Tiptap block action menu renders grouped command sections", () => {
   assert.deepEqual(
     list.children.map((section) => section.children[0].textContent),
     [
-      "Text",
-      "Lists",
-      "Blocks",
+      "Actions",
       "Color",
       "Highlight",
-      "Actions",
       "Danger",
     ],
   );
-  assert.equal(list.children[0].children[1].dataset.commandId, "paragraph");
-  assert.equal(list.children[5].children[1].dataset.commandId, "reset-formatting");
-  assert.equal(list.children[5].children[2].dataset.commandId, "copy-block");
+  assert.equal(list.children[0].children[1].dataset.commandId, "copy-block");
+  assert.equal(list.children[0].children[3].dataset.commandId, "reset-formatting");
+  assert.equal(list.children[1].children[1].dataset.commandId, "text-color-ink");
 });
 
 test("Tiptap block action menu renders callout kind sections for callout blocks", () => {
@@ -433,18 +423,15 @@ test("Tiptap block action menu renders callout kind sections for callout blocks"
   assert.deepEqual(
     list.children.map((section) => section.children[0].textContent),
     [
-      "Text",
-      "Lists",
-      "Blocks",
+      "Actions",
       "Callout",
       "Color",
       "Highlight",
-      "Actions",
       "Danger",
     ],
   );
   assert.deepEqual(
-    list.children[3].children.slice(1).map((item) => item.dataset.commandId),
+    list.children[1].children.slice(1).map((item) => item.dataset.commandId),
     [
       "callout-kind-note",
       "callout-kind-tip",

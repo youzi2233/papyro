@@ -286,6 +286,23 @@ test("Tiptap block actions expose menu metadata in priority order", () => {
   const controller = createTiptapBlockActionController();
   const commands = controller.list({ editor, target: { pos: 2, node: paragraph } });
 
+  assert.deepEqual(
+    commands.map((command) => command.id),
+    [
+      "copy-block",
+      "duplicate-block",
+      "reset-formatting",
+      "text-color-ink",
+      "text-color-muted",
+      "text-color-accent",
+      "text-color-danger",
+      "highlight-clear",
+      "highlight-yellow",
+      "highlight-blue",
+      "highlight-green",
+      "delete",
+    ],
+  );
   assert.deepEqual(commands.find((command) => command.id === "copy-block"), {
     id: "copy-block",
     title: "Copy block",
@@ -339,6 +356,13 @@ test("Tiptap block action menu keeps content insertion in the slash menu", () =>
     .list({ editor, target: { pos: 2, node: paragraph } })
     .map((command) => command.id);
 
+  assert.equal(commandIds.includes("paragraph"), false);
+  assert.equal(commandIds.includes("heading-1"), false);
+  assert.equal(commandIds.includes("bullet-list"), false);
+  assert.equal(commandIds.includes("blockquote"), false);
+  assert.equal(commandIds.includes("callout"), false);
+  assert.equal(commandIds.includes("code-block"), false);
+  assert.equal(commandIds.includes("divider"), false);
   assert.equal(commandIds.includes("table"), false);
   assert.equal(commandIds.includes("math-block"), false);
   assert.equal(commandIds.includes("mermaid"), false);

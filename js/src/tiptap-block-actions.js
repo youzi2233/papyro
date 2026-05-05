@@ -198,6 +198,7 @@ function createCommand({
   description,
   group,
   icon,
+  visibleInBlockMenu = true,
   shortcut = "",
   priority = 100,
   tone = "default",
@@ -214,6 +215,7 @@ function createCommand({
     description,
     group,
     icon,
+    visibleInBlockMenu,
     shortcut,
     priority,
     tone,
@@ -229,6 +231,7 @@ export const PAPYRO_TIPTAP_BLOCK_ACTIONS = Object.freeze([
     description: "Use plain body text",
     group: "Text",
     icon: "paragraph",
+    visibleInBlockMenu: false,
     priority: 20,
     run: ({ editor }) => editorCommand(editor, "setParagraph"),
   }),
@@ -238,6 +241,7 @@ export const PAPYRO_TIPTAP_BLOCK_ACTIONS = Object.freeze([
     description: "Large section title",
     group: "Text",
     icon: "heading-1",
+    visibleInBlockMenu: false,
     priority: 21,
     run: ({ editor }) => runEditorCommand(editor, "toggleHeading", [{ level: 1 }], "# "),
   }),
@@ -247,6 +251,7 @@ export const PAPYRO_TIPTAP_BLOCK_ACTIONS = Object.freeze([
     description: "Use a medium section title",
     group: "Text",
     icon: "heading-2",
+    visibleInBlockMenu: false,
     priority: 22,
     run: ({ editor }) => runEditorCommand(editor, "toggleHeading", [{ level: 2 }], "## "),
   }),
@@ -256,6 +261,7 @@ export const PAPYRO_TIPTAP_BLOCK_ACTIONS = Object.freeze([
     description: "Small subsection title",
     group: "Text",
     icon: "heading-3",
+    visibleInBlockMenu: false,
     priority: 23,
     run: ({ editor }) => runEditorCommand(editor, "toggleHeading", [{ level: 3 }], "### "),
   }),
@@ -265,6 +271,7 @@ export const PAPYRO_TIPTAP_BLOCK_ACTIONS = Object.freeze([
     description: "Turn this block into bullets",
     group: "Lists",
     icon: "bullet-list",
+    visibleInBlockMenu: false,
     priority: 30,
     run: ({ editor }) => runEditorCommand(editor, "toggleBulletList", [], "- "),
   }),
@@ -274,6 +281,7 @@ export const PAPYRO_TIPTAP_BLOCK_ACTIONS = Object.freeze([
     description: "Turn this block into steps",
     group: "Lists",
     icon: "ordered-list",
+    visibleInBlockMenu: false,
     priority: 31,
     run: ({ editor }) => runEditorCommand(editor, "toggleOrderedList", [], "1. "),
   }),
@@ -283,6 +291,7 @@ export const PAPYRO_TIPTAP_BLOCK_ACTIONS = Object.freeze([
     description: "Create Markdown checkboxes",
     group: "Lists",
     icon: "task-list",
+    visibleInBlockMenu: false,
     priority: 32,
     run: ({ editor }) =>
       canRunEditorCommand(editor, "toggleTaskList")
@@ -295,6 +304,7 @@ export const PAPYRO_TIPTAP_BLOCK_ACTIONS = Object.freeze([
     description: "Highlight a quoted passage",
     group: "Blocks",
     icon: "quote",
+    visibleInBlockMenu: false,
     priority: 40,
     run: ({ editor }) => runEditorCommand(editor, "toggleBlockquote", [], "> "),
   }),
@@ -304,6 +314,7 @@ export const PAPYRO_TIPTAP_BLOCK_ACTIONS = Object.freeze([
     description: "Insert a note callout",
     group: "Blocks",
     icon: "callout",
+    visibleInBlockMenu: false,
     priority: 41,
     run: ({ editor }) =>
       runEditorCommand(
@@ -320,7 +331,7 @@ export const PAPYRO_TIPTAP_BLOCK_ACTIONS = Object.freeze([
       description: `Switch callout to ${option.title.toLowerCase()}`,
       group: "Callout",
       icon: "callout",
-      priority: 44 + index,
+      priority: 20 + index,
       enabled: ({ target }) => isCalloutTarget(target),
       run: ({ editor, target }) => setCalloutKind(editor, target, option.kind),
     }),
@@ -332,7 +343,7 @@ export const PAPYRO_TIPTAP_BLOCK_ACTIONS = Object.freeze([
       description: option.description,
       group: "Color",
       icon: `text-color ${option.id}`,
-      priority: 44 + index,
+      priority: 30 + index,
       enabled: ({ editor, target }) => canStyleTarget(editor, target),
       run: ({ editor, target }) => setTargetTextColor(editor, target, option.color),
     }),
@@ -344,7 +355,7 @@ export const PAPYRO_TIPTAP_BLOCK_ACTIONS = Object.freeze([
       description: option.description,
       group: "Highlight",
       icon: `highlight ${option.id}`,
-      priority: 48 + index * 0.1,
+      priority: 40 + index,
       enabled: ({ editor, target }) => canHighlightTarget(editor, target),
       run: ({ editor, target }) => setTargetHighlight(editor, target, option.color),
     }),
@@ -355,6 +366,7 @@ export const PAPYRO_TIPTAP_BLOCK_ACTIONS = Object.freeze([
     description: "Use a fenced code block",
     group: "Blocks",
     icon: "code-block",
+    visibleInBlockMenu: false,
     priority: 52,
     run: ({ editor }) =>
       runEditorCommand(editor, "toggleCodeBlock", [], "```\ncode\n```"),
@@ -365,6 +377,7 @@ export const PAPYRO_TIPTAP_BLOCK_ACTIONS = Object.freeze([
     description: "Insert a horizontal rule",
     group: "Blocks",
     icon: "divider",
+    visibleInBlockMenu: false,
     priority: 53,
     run: ({ editor }) => runEditorCommand(editor, "setHorizontalRule", [], "\n---\n"),
   }),
@@ -438,7 +451,7 @@ export const PAPYRO_TIPTAP_BLOCK_ACTIONS = Object.freeze([
     description: "Clear marks and return to plain text",
     group: "Actions",
     icon: "reset-formatting",
-    priority: 69,
+    priority: 12,
     run: ({ editor, target }) => clearTargetFormatting(editor, target),
   }),
   createCommand({
@@ -448,7 +461,7 @@ export const PAPYRO_TIPTAP_BLOCK_ACTIONS = Object.freeze([
     group: "Actions",
     icon: "copy",
     shortcut: "Ctrl C",
-    priority: 70,
+    priority: 10,
     run: ({ editor, target }) => {
       const text = readTargetMarkdown(editor, target) || readTargetText(editor, target);
       if (!text) return false;
@@ -463,7 +476,7 @@ export const PAPYRO_TIPTAP_BLOCK_ACTIONS = Object.freeze([
     group: "Actions",
     icon: "duplicate",
     shortcut: "Ctrl D",
-    priority: 71,
+    priority: 11,
     run: ({ editor, target }) => duplicateTarget(editor, target),
   }),
   createCommand({
@@ -504,6 +517,7 @@ export class TiptapBlockActionController {
   list(context = {}) {
     const language = normalizeTiptapLanguage(context.language ?? context.entry?.preferences?.language ?? this.#language);
     return this.#commands
+      .filter((command) => command.visibleInBlockMenu !== false)
       .filter((command) => command.enabled(context) !== false)
       .sort((left, right) => left.priority - right.priority)
       .map((command) => ({
