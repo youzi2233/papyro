@@ -352,6 +352,61 @@ test("Tiptap runtime preserves set_view_mode protocol state", () => {
   ]);
 });
 
+test("Tiptap runtime mode contract keeps rich editing Hybrid-only", () => {
+  const sourcePaneCalls = [];
+  const sourcePaneControllerFactory = () => ({
+    attach: ({ entry }) => sourcePaneCalls.push(["attach", entry.viewMode]),
+    applyMode: (entry) => sourcePaneCalls.push(["applyMode", entry.viewMode]),
+    setMarkdown: (markdown) => sourcePaneCalls.push(["setMarkdown", markdown]),
+    insertMarkdown: () => false,
+    focus: () => false,
+    destroy: () => sourcePaneCalls.push(["destroy"]),
+  });
+  const { calls, registry, runtime } = createRuntimeHarness({ sourcePaneControllerFactory });
+
+  runtime.ensureEditor({
+    tabId: "tab-a",
+    containerId: "editor-root",
+    initialContent: "# Note",
+    viewMode: "preview",
+  });
+
+  assert.equal(registry.get("tab-a").viewMode, "preview");
+  assert.equal(registry.get("tab-a").dom.dataset.viewMode, "preview");
+  assert.deepEqual(calls, [
+    ["constructor", "# Note", "markdown", false, false],
+    ["mount", "mn-tiptap-runtime", "tab-a"],
+    ["setEditable", false],
+    ["blockHintsAttach"],
+    ["blockHandleAttach", "mn-tiptap-runtime"],
+    ["formatToolbarAttach", "mn-tiptap-runtime"],
+    ["pasteControllerAttach", "mn-tiptap-runtime"],
+    ["slashMenuAttach", "mn-tiptap-runtime"],
+  ]);
+  assert.deepEqual(sourcePaneCalls, [["attach", "preview"]]);
+
+  calls.length = 0;
+  sourcePaneCalls.length = 0;
+
+  runtime.handleRustMessage("tab-a", { type: "set_view_mode", mode: "source" });
+  runtime.handleRustMessage("tab-a", { type: "set_view_mode", mode: "hybrid" });
+
+  assert.deepEqual(calls, [
+    ["setEditable", false],
+    ["blockHandleRefresh"],
+    ["formatToolbarRefresh"],
+    ["syncOutline", "tab-a", "source"],
+    ["setEditable", true],
+    ["blockHandleRefresh"],
+    ["formatToolbarRefresh"],
+    ["syncOutline", "tab-a", "hybrid"],
+  ]);
+  assert.deepEqual(sourcePaneCalls, [
+    ["applyMode", "source"],
+    ["applyMode", "hybrid"],
+  ]);
+});
+
 test("Tiptap runtime preserves insert_markdown protocol updates", () => {
   const { calls, registry, runtime } = createRuntimeHarness();
   const messages = [];

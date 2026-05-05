@@ -139,7 +139,7 @@ flowchart TD
 - [x] Wrap the current CodeMirror runtime in an injectable runtime factory.
 - [ ] Split the current `js/src/editor.js` facade into smaller runtime modules.
 - [ ] Define an `EditorRuntimeAdapter` contract: `mount`, `attachChannel`, `handleMessage`, `setViewMode`, `destroy`, and `getMarkdown`.
-- [ ] Keep the CodeMirror adapter as the default implementation with no behavior change.
+- [x] Switch the migration branch default runtime to Tiptap while keeping an explicit CodeMirror fallback selector.
 - [ ] Add adapter contract tests.
 
 ### 2. Tiptap Foundation
@@ -151,8 +151,8 @@ flowchart TD
 
 ### 3. Source, Hybrid, And Preview
 
-- [ ] Hybrid uses Tiptap rich-text editing.
-- [ ] Hybrid interaction design references the official Notion-like template while staying local-first, Markdown-first, and Papyro-token based.
+- [x] Hybrid uses Tiptap rich-text editing by default on the migration branch.
+- [x] Hybrid interaction design references the official Notion-like template while staying local-first, Markdown-first, and Papyro-token based.
 - [x] Add a Tiptap mode controller that normalizes Source, Hybrid, and Preview and keeps non-Hybrid modes non-editable in the rich-text editor.
 - [x] Add a reusable Tiptap slash command controller for headings, lists, quotes, code, dividers, tables, math, and Mermaid.
 - [x] Add a Papyro slash command menu controller with keyboard navigation and token-based styling for common Markdown block insertion.
@@ -163,7 +163,7 @@ flowchart TD
 - [ ] Add advanced block action menus and responsive editor toolbar behavior on top of the shared Tiptap UI primitives.
 - [x] Source uses a source editor pane synchronized through `MarkdownSyncController`.
 - [x] Add `MarkdownSyncController` as the canonical Markdown state boundary for Tiptap runtime updates.
-- [ ] Preview remains Rust-rendered HTML.
+- [x] Preview remains Rust-rendered HTML.
 - [ ] Mode switching preserves selection, dirty state, and scroll snapshots.
 - [ ] Outline clicks work in Source and Hybrid.
 

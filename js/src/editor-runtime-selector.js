@@ -1,17 +1,28 @@
-export const DEFAULT_EDITOR_RUNTIME_KIND = "codemirror";
+export const DEFAULT_EDITOR_RUNTIME_KIND = "tiptap";
+export const FALLBACK_EDITOR_RUNTIME_KIND = "codemirror";
+
+const SUPPORTED_EDITOR_RUNTIME_KINDS = Object.freeze([
+  FALLBACK_EDITOR_RUNTIME_KIND,
+  DEFAULT_EDITOR_RUNTIME_KIND,
+]);
 
 export function normalizeEditorRuntimeKind(kind) {
-  if (kind === "tiptap") return "tiptap";
+  if (SUPPORTED_EDITOR_RUNTIME_KINDS.includes(kind)) return kind;
   return DEFAULT_EDITOR_RUNTIME_KIND;
 }
 
 export function selectEditorRuntimeAdapter({ requestedKind, adapters }) {
   const runtimeAdapters = adapters ?? {};
   const normalizedKind = normalizeEditorRuntimeKind(requestedKind);
+  const candidates = [
+    normalizedKind,
+    DEFAULT_EDITOR_RUNTIME_KIND,
+    FALLBACK_EDITOR_RUNTIME_KIND,
+  ];
 
-  return (
-    runtimeAdapters[normalizedKind] ??
-    runtimeAdapters[DEFAULT_EDITOR_RUNTIME_KIND] ??
-    null
-  );
+  for (const candidate of candidates) {
+    if (runtimeAdapters[candidate]) return runtimeAdapters[candidate];
+  }
+
+  return null;
 }

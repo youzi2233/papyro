@@ -98,6 +98,14 @@ struct EditorTypography {
     line_height: f32,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct EditorModeSurfaceContract {
+    show_editor_host: bool,
+    show_rust_preview: bool,
+    host_visible: bool,
+    runtime_view_mode: ViewMode,
+}
+
 impl EditorTypography {
     fn from_surface_model(model: &EditorSurfaceViewModel) -> Self {
         Self {
@@ -132,6 +140,18 @@ fn theme_value(theme: &Theme) -> &'static str {
         "dark"
     } else {
         "light"
+    }
+}
+
+fn editor_mode_surface_contract(
+    is_active_host: bool,
+    view_mode: &ViewMode,
+) -> EditorModeSurfaceContract {
+    EditorModeSurfaceContract {
+        show_editor_host: *view_mode != ViewMode::Preview,
+        show_rust_preview: *view_mode == ViewMode::Preview,
+        host_visible: is_active_host && view_mode.is_editable(),
+        runtime_view_mode: host_runtime_view_mode(is_active_host, view_mode),
     }
 }
 
@@ -334,6 +354,7 @@ pub fn EditorPane(
         active_document_key.as_ref(),
         block_hint_state.read().as_ref(),
     );
+    let active_surface_contract = editor_mode_surface_contract(true, &view_mode);
 
     rsx! {
         main { class: "mn-editor", style: "{editor_style}",
@@ -355,32 +376,40 @@ pub fn EditorPane(
                 section { class: "mn-document",
                     div { class: "mn-document-main",
                         div {
-                            class: if view_mode == ViewMode::Preview { "mn-editor-edit hidden" } else { "mn-editor-edit" },
+                            class: if active_surface_contract.show_editor_host { "mn-editor-edit" } else { "mn-editor-edit hidden" },
                             div { class: "mn-editor-hosts",
                                 for host in pane.host_items.clone() {
+                                    {
+                                        let contract = editor_mode_surface_contract(
+                                            host.is_active,
+                                            &view_mode,
+                                        );
+                                        rsx! {
                                     div {
                                         key: "{host.tab_id}",
                                         "data-tab-id": "{host.tab_id}",
                                         class: if host.is_active { "mn-editor-host-slot" } else { "mn-editor-host-slot hidden" },
                                         EditorHost {
                                             tab_id: host.tab_id.clone(),
-                                            is_visible: host.is_active && view_mode.is_editable(),
+                                            is_visible: contract.host_visible,
                                             initial_content: host.initial_content.clone(),
                                             block_hints: block_hints_for_host(
                                                 host.is_active,
                                                 block_hints.as_ref(),
                                             ),
-                                            view_mode: host_runtime_view_mode(host.is_active, &view_mode),
+                                            view_mode: contract.runtime_view_mode,
                                             auto_link_paste: host_runtime_auto_link_paste(
                                                 host.is_active,
                                                 auto_link_paste,
                                             ),
                                         }
                                     }
+                                        }
+                                    }
                                 }
                             }
                         }
-                        if view_mode == ViewMode::Preview {
+                        if active_surface_contract.show_rust_preview {
                             PreviewPane {
                                 active_document: pane.active_document.clone(),
                                 workspace_path: workspace_path.clone(),
@@ -1138,6 +1167,37 @@ mod tests {
         );
         assert!(host_runtime_auto_link_paste(true, true));
         assert!(!host_runtime_auto_link_paste(true, false));
+    }
+
+    #[test]
+    fn editor_mode_surface_contract_keeps_preview_rust_rendered() {
+        assert_eq!(
+            editor_mode_surface_contract(true, &ViewMode::Hybrid),
+            EditorModeSurfaceContract {
+                show_editor_host: true,
+                show_rust_preview: false,
+                host_visible: true,
+                runtime_view_mode: ViewMode::Hybrid,
+            }
+        );
+        assert_eq!(
+            editor_mode_surface_contract(true, &ViewMode::Source),
+            EditorModeSurfaceContract {
+                show_editor_host: true,
+                show_rust_preview: false,
+                host_visible: true,
+                runtime_view_mode: ViewMode::Source,
+            }
+        );
+        assert_eq!(
+            editor_mode_surface_contract(true, &ViewMode::Preview),
+            EditorModeSurfaceContract {
+                show_editor_host: false,
+                show_rust_preview: true,
+                host_visible: false,
+                runtime_view_mode: ViewMode::Preview,
+            }
+        );
     }
 
     #[test]

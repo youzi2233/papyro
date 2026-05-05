@@ -151,7 +151,7 @@ flowchart TD
 - [x] 把当前 CodeMirror runtime 包装成可注入的 runtime 工厂。
 - [ ] 把当前 `js/src/editor.js` facade 入口拆成小模块。
 - [ ] 定义 `EditorRuntimeAdapter` 契约：`mount`、`attachChannel`、`handleMessage`、`setViewMode`、`destroy`、`getMarkdown`。
-- [ ] 保持 CodeMirror adapter 默认启用，确保无行为变化。
+- [x] 将迁移分支默认 runtime 切换到 Tiptap，同时保留显式 CodeMirror 回退选择器。
 - [ ] 增加 adapter contract 单测。
 
 ### 2. 引入 Tiptap 基础运行时
@@ -163,8 +163,8 @@ flowchart TD
 
 ### 3. Source/Hybrid/Preview 模式契约
 
-- [ ] Hybrid 使用 Tiptap 富文本编辑。
-- [ ] Hybrid 交互设计参考官方 Notion-like template，但保持 local-first、Markdown-first 和 Papyro token 化样式。
+- [x] 迁移分支默认让 Hybrid 使用 Tiptap 富文本编辑。
+- [x] Hybrid 交互设计参考官方 Notion-like template，但保持 local-first、Markdown-first 和 Papyro token 化样式。
 - [x] 增加 Tiptap mode controller，统一 Source、Hybrid、Preview，并让非 Hybrid 模式关闭富文本编辑态。
 - [x] 增加可复用的 Tiptap slash command controller，覆盖标题、列表、引用、代码、分割线、表格、公式和 Mermaid。
 - [x] 增加带键盘导航和 token 化样式的 Papyro slash command menu controller，用于常见 Markdown block 插入。
@@ -175,7 +175,7 @@ flowchart TD
 - [ ] 基于共享 Tiptap UI primitives 增加高级 block action menu 和响应式编辑器 toolbar 行为。
 - [x] Source 使用源码编辑面板，并通过 `MarkdownSyncController` 同步到 Tiptap。
 - [x] 增加 `MarkdownSyncController`，作为 Tiptap runtime 更新的 canonical Markdown 状态边界。
-- [ ] Preview 继续使用 Rust HTML 渲染，不让 Tiptap 接管只读预览。
+- [x] Preview 继续使用 Rust HTML 渲染，不让 Tiptap 接管只读预览。
 - [ ] 模式切换不丢 selection、dirty state 或 scroll snapshot。
 - [ ] 大纲点击在 Source 和 Hybrid 都能跳到目标位置。
 
