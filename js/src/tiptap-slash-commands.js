@@ -24,6 +24,25 @@ function insertMarkdown(editor, markdown) {
   return editorCommand(editor, "insertContent", markdown, { contentType: "markdown" });
 }
 
+export function createMarkdownTable(rows = 3, cols = 2) {
+  const rowCount = Math.max(1, Number(rows) || 3);
+  const columnCount = Math.max(1, Number(cols) || 2);
+  const header = Array.from({ length: columnCount }, (_, index) => `Column ${index + 1}`);
+  const divider = Array.from({ length: columnCount }, () => "---");
+  const body = Array.from({ length: Math.max(1, rowCount - 1) }, () =>
+    Array.from({ length: columnCount }, () => ""),
+  );
+  const renderRow = (cells) => `| ${cells.join(" | ")} |`;
+
+  return [
+    "",
+    renderRow(header),
+    renderRow(divider),
+    ...body.map(renderRow),
+    "",
+  ].join("\n");
+}
+
 function focusEditor(editor) {
   editor?.commands?.focus?.();
 }
@@ -206,13 +225,16 @@ export const PAPYRO_TIPTAP_SLASH_COMMANDS = Object.freeze([
     aliases: ["grid"],
     keywords: ["cells", "表格"],
     priority: 50,
-    run: ({ editor }) =>
-      runEditorCommand(
+    run: ({ editor, tableSize = {} }) => {
+      const rows = Math.max(1, Number(tableSize.rows) || 3);
+      const cols = Math.max(1, Number(tableSize.cols) || 2);
+      return runEditorCommand(
         editor,
         "insertTable",
-        [{ rows: 3, cols: 2, withHeaderRow: true }],
-        "\n| Column | Notes |\n| --- | --- |\n|  |  |\n",
-      ),
+        [{ rows, cols, withHeaderRow: true }],
+        createMarkdownTable(rows, cols),
+      );
+    },
   }),
   createCommand({
     id: "math-block",

@@ -44,6 +44,10 @@ function createEditor(text, cursor = text.length) {
         calls.push(["insertContent", content, options.contentType]);
         return true;
       },
+      insertTable: (attrs) => {
+        calls.push(["insertTable", attrs.rows, attrs.cols, attrs.withHeaderRow]);
+        return true;
+      },
       setParagraph: () => {
         calls.push(["setParagraph"]);
         return true;
@@ -213,6 +217,21 @@ test("Tiptap slash menu opens as a block insert menu without deleting a trigger"
     ["insertContentAt", 8, "\n", "markdown"],
     ["focus"],
     ["setParagraph"],
+    ["focus"],
+  ]);
+});
+
+test("Tiptap slash menu forwards table picker dimensions to the command", () => {
+  const { calls, editor } = createEditor("/table");
+  const view = createViewSpy();
+  const controller = createTiptapSlashMenuController({ view });
+  controller.attach({ editor, root: {} });
+
+  assert.equal(controller.choose("table", { tableSize: { rows: 5, cols: 4 } }), true);
+
+  assert.deepEqual(calls, [
+    ["deleteRange", 0, 6],
+    ["insertTable", 5, 4, true],
     ["focus"],
   ]);
 });

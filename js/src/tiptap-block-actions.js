@@ -38,6 +38,44 @@ function insertMarkdown(editor, markdown) {
   return editorCommand(editor, "insertContent", markdown, { contentType: "markdown" });
 }
 
+function nodeToJson(node) {
+  if (!node) return null;
+  if (typeof node.toJSON === "function") return node.toJSON();
+  return {
+    type: node.type?.name ?? node.type ?? "paragraph",
+    text: node.text,
+    attrs: node.attrs,
+    content: Array.isArray(node.content)
+      ? node.content
+      : node.content?.content?.map?.((child) => nodeToJson(child)),
+  };
+}
+
+function readTargetMarkdown(editor, target) {
+  const from = target?.pos;
+  const to = targetEndPos(target);
+  const doc = editor?.state?.doc;
+  if (!Number.isFinite(from) || !Number.isFinite(to) || to <= from || !doc) {
+    return "";
+  }
+
+  if (typeof editor?.storage?.markdown?.manager?.serialize === "function") {
+    try {
+      const node = target?.node ?? (typeof doc.nodeAt === "function" ? doc.nodeAt(from) : null);
+      const json = nodeToJson(node);
+      const markdown = json ? editor.storage.markdown.manager.serialize(json) : "";
+      if (typeof markdown === "string" && markdown.trim()) return markdown.trim();
+    } catch (_error) {
+      // Fall back to plain text when Markdown serialization is unavailable for a custom node.
+    }
+  }
+
+  if (typeof doc.textBetween === "function") {
+    return doc.textBetween(from, to, "\n", "\n").trim();
+  }
+  return "";
+}
+
 function readTargetText(editor, target) {
   const from = target?.pos;
   const to = targetEndPos(target);
@@ -75,6 +113,13 @@ function deleteTarget(editor, target) {
     return editorCommand(editor, "deleteRange", { from, to });
   }
   return editorCommand(editor, "deleteNode", target?.kind);
+}
+
+function duplicateTarget(editor, target) {
+  const markdown = readTargetMarkdown(editor, target);
+  const position = targetEndPos(target);
+  if (!markdown || !Number.isFinite(position)) return false;
+  return insertMarkdownAt(editor, `\n${markdown}\n`, position);
 }
 
 function canRunEditorCommand(editor, commandName) {
@@ -289,17 +334,27 @@ export const PAPYRO_TIPTAP_BLOCK_ACTIONS = Object.freeze([
   createCommand({
     id: "copy-block",
     title: "Copy block",
-    description: "Copy this block as plain text",
+    description: "Copy this block as Markdown",
     group: "Actions",
     icon: "copy",
     shortcut: "Ctrl C",
     priority: 70,
     run: ({ editor, target }) => {
-      const text = readTargetText(editor, target);
+      const text = readTargetMarkdown(editor, target) || readTargetText(editor, target);
       if (!text) return false;
       writeClipboard(text).catch(() => {});
       return true;
     },
+  }),
+  createCommand({
+    id: "duplicate-block",
+    title: "Duplicate block",
+    description: "Copy this block below",
+    group: "Actions",
+    icon: "duplicate",
+    shortcut: "Ctrl D",
+    priority: 71,
+    run: ({ editor, target }) => duplicateTarget(editor, target),
   }),
   createCommand({
     id: "delete",

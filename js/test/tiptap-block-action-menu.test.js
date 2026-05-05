@@ -136,6 +136,7 @@ test("Tiptap block action menu opens for Hybrid block targets", () => {
       "mermaid",
       "image",
       "copy-block",
+      "duplicate-block",
       "delete",
     ],
   );

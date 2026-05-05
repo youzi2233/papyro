@@ -14,6 +14,12 @@ import {
 
 const DEFAULT_MAX_ITEMS = 8;
 const DEFAULT_MAX_QUERY_LENGTH = 48;
+const TABLE_GRID_ROWS = 6;
+const TABLE_GRID_COLS = 6;
+
+function chooseTableSize(tablePicker, rows, cols) {
+  tablePicker?._choose?.(rows, cols);
+}
 
 function isTriggerBoundary(character) {
   return !character || /\s/.test(character);
@@ -99,6 +105,8 @@ class TiptapSlashMenuView {
   #root = null;
   #list = null;
   #empty = null;
+  #tablePicker = null;
+  #tablePickerLabel = null;
 
   constructor({ document = defaultDocument(), ownerId = "mn-tiptap-slash-menu" } = {}) {
     this.#document = document;
@@ -111,18 +119,47 @@ class TiptapSlashMenuView {
     const root = createElement(this.#document, "div", "mn-tiptap-slash-menu hidden");
     const list = createElement(this.#document, "div", "mn-tiptap-slash-menu-list");
     const empty = createElement(this.#document, "div", "mn-tiptap-slash-menu-empty");
-    if (!root || !list || !empty) return;
+    const tablePicker = createElement(this.#document, "div", "mn-tiptap-table-size-picker hidden");
+    const tablePickerLabel = createElement(this.#document, "div", "mn-tiptap-table-size-picker-label");
+    const tablePickerGrid = createElement(this.#document, "div", "mn-tiptap-table-size-picker-grid");
+    if (!root || !list || !empty || !tablePicker || !tablePickerLabel || !tablePickerGrid) return;
 
     root.id = this.#ownerId;
     root.role = "listbox";
     root.setAttribute("aria-label", "Markdown block commands");
     empty.textContent = "No commands";
-    root.append(list, empty);
+    tablePickerLabel.textContent = "Table 3 x 2";
+    for (let row = 1; row <= TABLE_GRID_ROWS; row += 1) {
+      for (let col = 1; col <= TABLE_GRID_COLS; col += 1) {
+        const cell = createElement(this.#document, "button", "mn-tiptap-table-size-picker-cell");
+        if (!cell) continue;
+        cell.type = "button";
+        cell.dataset.row = String(row);
+        cell.dataset.col = String(col);
+        cell.setAttribute("aria-label", `Insert ${row} by ${col} table`);
+        cell.addEventListener("pointerenter", () => {
+          this.#updateTablePickerSize(row, col);
+        });
+        cell.addEventListener("pointerdown", (event) => {
+          event.preventDefault();
+          event.stopPropagation?.();
+          chooseTableSize(tablePicker, row, col);
+        });
+        cell.addEventListener("mousedown", (event) => {
+          event.preventDefault();
+        });
+        tablePickerGrid.appendChild(cell);
+      }
+    }
+    tablePicker.append(tablePickerLabel, tablePickerGrid);
+    root.append(list, empty, tablePicker);
     mountFloatingRoot(root, container, this.#document);
 
     this.#root = root;
     this.#list = list;
     this.#empty = empty;
+    this.#tablePicker = tablePicker;
+    this.#tablePickerLabel = tablePickerLabel;
     setHidden(root, true);
   }
 
@@ -153,13 +190,18 @@ class TiptapSlashMenuView {
       group.textContent = command.group ?? "";
 
       item.append(title, group, description);
+      item.addEventListener("pointerdown", (event) => {
+        event.preventDefault();
+        event.stopPropagation?.();
+        state.choose(command.id);
+      });
       item.addEventListener("mousedown", (event) => {
         event.preventDefault();
-        state.choose(command.id);
       });
       this.#list.appendChild(item);
     });
 
+    this.#updateTablePicker(state);
     setHidden(this.#empty, state.commands.length > 0);
     updateActiveDescendant(this.#root, this.#ownerId, state.commands, state.selectedIndex);
     setHidden(this.#root, false);
@@ -179,6 +221,33 @@ class TiptapSlashMenuView {
     this.#root = null;
     this.#list = null;
     this.#empty = null;
+    this.#tablePicker = null;
+    this.#tablePickerLabel = null;
+  }
+
+  #updateTablePicker(state) {
+    if (!this.#tablePicker) return;
+    const selectedCommand = state.commands[state.selectedIndex];
+    const showPicker = selectedCommand?.id === "table";
+    setHidden(this.#tablePicker, !showPicker);
+    if (showPicker) {
+      this.#tablePicker._choose = (rows, cols) => state.choose("table", { tableSize: { rows, cols } });
+      this.#updateTablePickerSize(3, 2);
+    } else {
+      this.#tablePicker._choose = null;
+    }
+  }
+
+  #updateTablePickerSize(rows, cols) {
+    if (!this.#tablePicker || !this.#tablePickerLabel) return;
+    this.#tablePickerLabel.textContent = `Table ${rows} x ${cols}`;
+    this.#tablePicker
+      .querySelectorAll?.(".mn-tiptap-table-size-picker-cell")
+      ?.forEach?.((cell) => {
+        const cellRow = Number(cell.dataset?.row);
+        const cellCol = Number(cell.dataset?.col);
+        cell.classList?.toggle?.("active", cellRow <= rows && cellCol <= cols);
+      });
   }
 }
 
@@ -269,7 +338,7 @@ export class TiptapSlashMenuController {
     this.#view.update?.(
       {
         ...this.#state,
-        choose: (commandId) => this.choose(commandId),
+      choose: (commandId, options) => this.choose(commandId, options),
       },
       editor,
     );
@@ -310,7 +379,7 @@ export class TiptapSlashMenuController {
     this.#view.update?.(
       {
         ...this.#state,
-        choose: (commandId) => this.choose(commandId),
+      choose: (commandId, options) => this.choose(commandId, options),
       },
       this.#editor,
     );
@@ -327,14 +396,14 @@ export class TiptapSlashMenuController {
     this.#view.update?.(
       {
         ...this.#state,
-        choose: (commandId) => this.choose(commandId),
+      choose: (commandId, options) => this.choose(commandId, options),
       },
       this.#editor,
     );
     return this.state;
   }
 
-  choose(commandId = this.#state.commands[this.#state.selectedIndex]?.id) {
+  choose(commandId = this.#state.commands[this.#state.selectedIndex]?.id, options = {}) {
     if (!this.#state.open || !commandId || !this.#editor) return false;
     const range = this.#state.range;
     const shouldDeleteRange = this.#state.deleteRangeBeforeRun;
@@ -348,6 +417,7 @@ export class TiptapSlashMenuController {
       editor: this.#editor,
       entry: this.#entry,
       source: "slash_menu",
+      ...options,
     });
     return result.ok;
   }

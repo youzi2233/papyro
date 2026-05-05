@@ -177,6 +177,7 @@ flowchart TD
 - [x] 基于共享 Tiptap UI primitives 增加高级 block action menu 和响应式编辑器 toolbar 行为。
   - 块操作菜单现在基于可复用命令模型，按 Insert/Text/Lists/Blocks/Advanced/Danger 分区展示，优先调用富 Tiptap 命令，不可用时回退 Markdown 插入，并保留键盘导航与桌面/移动端 token 化样式。
   - 块操作柄现在在重复 hover 刷新后仍保持回调稳定，并在 pointer 交互阶段触发 `+` 插入，避免 WebView click 顺序导致控件无响应。
+  - 块操作菜单继续向官方 Notion-like template 的 Drag Context Menu 靠齐，新增复制为 Markdown 和重复块动作；slash/`+` 插入菜单新增 1x1 到 6x6 表格尺寸选择器，避免固定尺寸表格破坏写作流。
   - 浮动格式栏现在暴露 density 状态，在窄窗口或选区空间受限时自动切换为 compact 控件。
 - [x] Source 使用源码编辑面板，并通过 `MarkdownSyncController` 同步到 Tiptap。
 - [x] 增加 `MarkdownSyncController`，作为 Tiptap runtime 更新的 canonical Markdown 状态边界。
@@ -202,7 +203,7 @@ flowchart TD
 ### 5. Markdown block 能力迁移
 
 - [x] Task list：checkbox 直接切换并 round-trip 为 `- [ ]` / `- [x]`。
-- [x] Table：从 pipe table 解析到文档表格，支持新增/删除行列、表格边缘快捷添加、表头切换、合并/拆分单元格、单元格导航、表格修复和删除。
+- [x] Table：从 pipe table 解析到文档表格，支持 slash/`+` 表格尺寸选择、新增/删除行列、表格边缘快捷添加、表头切换、合并/拆分单元格、单元格导航、表格修复和删除。
 - [x] Math：inline/display 公式有编辑态、预览态和错误反馈。
 - [x] Mermaid：保留源码编辑和渲染预览，失败时显示错误。
 - [x] Image：本地图片 URL、粘贴图片请求和 Markdown 图片语法保持兼容。

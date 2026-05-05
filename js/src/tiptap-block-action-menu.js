@@ -143,10 +143,11 @@ class TiptapBlockActionMenuView {
         item.append(icon, copy, shortcut);
         item.addEventListener("pointerdown", (event) => {
           event.preventDefault();
+          event.stopPropagation?.();
+          state.run(command.id);
         });
         item.addEventListener("mousedown", (event) => {
           event.preventDefault();
-          state.run(command.id);
         });
         section.appendChild(item);
       });

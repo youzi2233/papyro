@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
+  createMarkdownTable,
   createTiptapSlashCommandController,
   PAPYRO_TIPTAP_SLASH_COMMANDS,
 } from "../src/tiptap-slash-commands.js";
@@ -130,6 +131,24 @@ test("Tiptap slash commands create rich tables when the table extension is avail
   ]);
 });
 
+test("Tiptap slash commands create tables with requested dimensions", () => {
+  const { calls, editor } = createFakeEditor();
+  const controller = createTiptapSlashCommandController();
+
+  assert.equal(
+    controller.run("table", { editor, tableSize: { rows: 4, cols: 5 } }).ok,
+    true,
+  );
+  assert.deepEqual(calls, [
+    ["insertTable", 4, 5, true],
+    ["focus"],
+  ]);
+  assert.equal(
+    createMarkdownTable(2, 3),
+    "\n| Column 1 | Column 2 | Column 3 |\n| --- | --- | --- |\n|  |  |  |\n",
+  );
+});
+
 test("Tiptap slash commands create rich math blocks when the math extension is available", () => {
   const { calls, editor } = createFakeEditor();
   const controller = createTiptapSlashCommandController();
@@ -217,7 +236,7 @@ test("Tiptap slash commands fall back to Markdown for tables without table comma
   assert.deepEqual(calls, [
     [
       "insertContent",
-      "\n| Column | Notes |\n| --- | --- |\n|  |  |\n",
+      "\n| Column 1 | Column 2 |\n| --- | --- |\n|  |  |\n|  |  |\n",
       "markdown",
     ],
     ["focus"],

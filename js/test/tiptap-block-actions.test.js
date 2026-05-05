@@ -75,6 +75,17 @@ function createEditor() {
         return true;
       },
     },
+    state: {
+      doc: {
+        nodeAt() {
+          return null;
+        },
+        textBetween(from, to) {
+          calls.push(["textBetween", from, to]);
+          return "Block text";
+        },
+      },
+    },
   };
 
   return { calls, editor };
@@ -101,6 +112,7 @@ test("Tiptap block actions expose stable command ids", () => {
       "mermaid",
       "image",
       "copy-block",
+      "duplicate-block",
       "delete",
     ],
   );
@@ -146,6 +158,60 @@ test("Tiptap block actions delete the target range", () => {
   assert.deepEqual(calls, [
     ["focus", 2],
     ["deleteRange", 2, 8],
+    ["focus", null],
+  ]);
+});
+
+test("Tiptap block actions duplicate target Markdown below the block", () => {
+  const { calls, editor } = createEditor();
+  const controller = createTiptapBlockActionController();
+
+  assert.equal(
+    controller.run("duplicate-block", {
+      editor,
+      target: { pos: 2, node: { nodeSize: 6 } },
+    }).ok,
+    true,
+  );
+  assert.deepEqual(calls, [
+    ["focus", 2],
+    ["textBetween", 2, 8],
+    ["insertContentAt", 8, "\nBlock text\n", "markdown"],
+    ["focus", null],
+  ]);
+});
+
+test("Tiptap block actions prefer Markdown manager serialization for duplicate", () => {
+  const { calls, editor } = createEditor();
+  editor.storage = {
+    markdown: {
+      manager: {
+        serialize(json) {
+          calls.push(["serialize", json.type]);
+          return "## Serialized";
+        },
+      },
+    },
+  };
+  const controller = createTiptapBlockActionController();
+
+  assert.equal(
+    controller.run("duplicate-block", {
+      editor,
+      target: {
+        pos: 2,
+        node: {
+          nodeSize: 6,
+          toJSON: () => ({ type: "heading", attrs: { level: 2 }, content: [] }),
+        },
+      },
+    }).ok,
+    true,
+  );
+  assert.deepEqual(calls, [
+    ["focus", 2],
+    ["serialize", "heading"],
+    ["insertContentAt", 8, "\n## Serialized\n", "markdown"],
     ["focus", null],
   ]);
 });
