@@ -193,7 +193,7 @@ flowchart TD
 
 ### 5. Markdown block 能力迁移
 
-- [ ] Task list：checkbox 直接切换并 round-trip 为 `- [ ]` / `- [x]`。
+- [x] Task list：checkbox 直接切换并 round-trip 为 `- [ ]` / `- [x]`。
 - [ ] Table：从 pipe table 解析到文档表格，支持新增/删除行列和单元格导航。
 - [ ] Math：inline/display 公式有编辑态、预览态和错误反馈。
 - [ ] Mermaid：保留源码编辑和渲染预览，失败时显示错误。

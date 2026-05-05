@@ -181,7 +181,7 @@ flowchart TD
 
 ### 5. Markdown Block Migration
 
-- [ ] Task list round-trips `- [ ]` and `- [x]`.
+- [x] Task list round-trips `- [ ]` and `- [x]`.
 - [ ] Pipe tables become editable tables with row/column operations and cell navigation.
 - [ ] Inline and display math support edit, preview, and error states.
 - [ ] Mermaid supports source editing and rendered preview.

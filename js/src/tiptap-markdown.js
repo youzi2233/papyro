@@ -1,6 +1,8 @@
 import { MarkdownManager } from "@tiptap/markdown";
 import { StarterKit } from "@tiptap/starter-kit";
 
+import { createPapyroTaskListExtensions } from "./tiptap-task-list.js";
+
 export function createPapyroTiptapExtensions() {
   return [
     StarterKit.configure({
@@ -13,6 +15,7 @@ export function createPapyroTiptapExtensions() {
         linkOnPaste: false,
       },
     }),
+    ...createPapyroTaskListExtensions(),
   ];
 }
 

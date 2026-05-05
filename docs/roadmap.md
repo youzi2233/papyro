@@ -237,6 +237,7 @@ Tasks:
 - [x] Preserve Tiptap `auto_link_paste` behavior for selected-text URL paste.
 - [x] Preserve `set_block_hints` as a Tiptap migration compatibility message.
 - [x] Preserve Tiptap `destroy` semantics with stale instance protection.
+- [x] Add Tiptap task list extensions with checked/unchecked Markdown round-trip coverage.
 - [ ] Migrate task lists, tables, math, Mermaid, images, and code blocks.
 - [ ] Remove CodeMirror dependencies, `.cm-*` CSS, and obsolete tests.
 - [ ] Finish full acceptance checks and push the completed migration.

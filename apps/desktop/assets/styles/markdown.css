@@ -256,6 +256,51 @@
     background: var(--mn-hybrid-selection, var(--mn-selection-bg, rgba(100, 116, 139, .26)));
 }
 
+.mn-tiptap-task-list {
+    list-style: none;
+    padding-left: 0;
+}
+
+.mn-tiptap-task-item {
+    display: grid;
+    grid-template-columns: 22px minmax(0, 1fr);
+    align-items: start;
+    gap: 8px;
+    margin: 0.22em 0;
+}
+
+.mn-tiptap-task-item > label {
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: calc(var(--mn-document-body-size) * var(--mn-document-line-height));
+    cursor: pointer;
+    user-select: none;
+}
+
+.mn-tiptap-task-item input[type="checkbox"] {
+    width: 15px;
+    height: 15px;
+    margin: 0;
+    border: 1px solid color-mix(in srgb, var(--mn-editor-ink) 24%, transparent);
+    border-radius: 4px;
+    accent-color: var(--mn-accent);
+    cursor: pointer;
+}
+
+.mn-tiptap-task-item > div {
+    min-width: 0;
+}
+
+.mn-tiptap-task-item[data-checked="true"] > div {
+    color: var(--mn-ink-3);
+}
+
+.mn-tiptap-task-item[data-checked="true"] > div p {
+    text-decoration: line-through;
+    text-decoration-color: color-mix(in srgb, var(--mn-ink-3) 55%, transparent);
+}
+
 .mn-tiptap-editor > *:first-child { margin-top: 0; }
 .mn-tiptap-editor > *:last-child { margin-bottom: 0; }
 

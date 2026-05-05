@@ -1022,6 +1022,43 @@ small {
     display: none;
 }
 
+.mn-tiptap-task-list {
+    list-style: none;
+    padding-left: 0;
+}
+
+.mn-tiptap-task-item {
+    display: grid;
+    grid-template-columns: 22px minmax(0, 1fr);
+    align-items: start;
+    gap: 8px;
+}
+
+.mn-tiptap-task-item > label {
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 1.7em;
+    cursor: pointer;
+    user-select: none;
+}
+
+.mn-tiptap-task-item input[type="checkbox"] {
+    width: 15px;
+    height: 15px;
+    margin: 0;
+    accent-color: var(--mn-accent);
+    cursor: pointer;
+}
+
+.mn-tiptap-task-item[data-checked="true"] > div {
+    color: var(--mn-muted);
+}
+
+.mn-tiptap-task-item[data-checked="true"] > div p {
+    text-decoration: line-through;
+}
+
 .mn-preview-notice {
     margin-bottom: 12px;
     padding: 10px 12px;

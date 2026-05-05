@@ -21,6 +21,9 @@ A paragraph with **bold**, *italic*, \`inline code\`, ~~strike~~, and [docs](htt
 - First item
 - Second item
 
+- [ ] Draft task
+- [x] Reviewed task
+
 1. Ordered one
 2. Ordered two
 
@@ -59,15 +62,35 @@ function collectMarks(node, marks = []) {
   return marks;
 }
 
+function collectTaskItems(node, tasks = []) {
+  if (!node || typeof node !== "object") return tasks;
+
+  if (node.type === "taskItem") {
+    tasks.push({
+      checked: node.attrs?.checked ?? false,
+      text: node.content?.[0]?.content?.[0]?.text ?? "",
+    });
+  }
+
+  for (const child of node.content ?? []) {
+    collectTaskItems(child, tasks);
+  }
+
+  return tasks;
+}
+
 test("Tiptap Markdown manager parses the baseline Markdown blocks", () => {
   const doc = parseTiptapMarkdown(markdownFixture);
   const nodeTypes = collectNodeTypes(doc);
   const marks = collectMarks(doc);
+  const tasks = collectTaskItems(doc);
 
   assert.deepEqual(doc.content.slice(0, 2).map((node) => node.attrs.level), [1, 2]);
   assert.ok(nodeTypes.includes("paragraph"));
   assert.ok(nodeTypes.includes("blockquote"));
   assert.ok(nodeTypes.includes("bulletList"));
+  assert.ok(nodeTypes.includes("taskList"));
+  assert.ok(nodeTypes.includes("taskItem"));
   assert.ok(nodeTypes.includes("orderedList"));
   assert.ok(nodeTypes.includes("codeBlock"));
   assert.ok(marks.includes("bold"));
@@ -75,6 +98,10 @@ test("Tiptap Markdown manager parses the baseline Markdown blocks", () => {
   assert.ok(marks.includes("code"));
   assert.ok(marks.includes("strike"));
   assert.ok(marks.includes("link"));
+  assert.deepEqual(tasks, [
+    { checked: false, text: "Draft task" },
+    { checked: true, text: "Reviewed task" },
+  ]);
 });
 
 test("Tiptap Markdown serialization keeps semantic Markdown output", () => {
@@ -91,8 +118,22 @@ test("Tiptap Markdown serialization keeps semantic Markdown output", () => {
   assert.match(output, /\[docs\]\(https:\/\/example\.com\)/);
   assert.match(output, /^> Quote line/m);
   assert.match(output, /^- First item/m);
+  assert.match(output, /^- \[ \] Draft task/m);
+  assert.match(output, /^- \[x\] Reviewed task/m);
   assert.match(output, /^1\. Ordered one/m);
   assert.match(output, /^```rust\nfn main\(\) \{/m);
+});
+
+test("Tiptap Markdown task lists round trip checked state", () => {
+  const markdown = "- [ ] Plan migration\n- [x] Ship source pane";
+  const { parsed, serialized, reparsed } = roundTripTiptapMarkdown(markdown);
+
+  assert.deepEqual(collectTaskItems(parsed), [
+    { checked: false, text: "Plan migration" },
+    { checked: true, text: "Ship source pane" },
+  ]);
+  assert.equal(serialized, markdown);
+  assert.deepEqual(collectTaskItems(reparsed), collectTaskItems(parsed));
 });
 
 test("Tiptap Markdown round trip is stable at the document JSON level", () => {
