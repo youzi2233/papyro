@@ -1,6 +1,8 @@
 import { createTiptapBlockActionController } from "./tiptap-block-actions.js";
+import { blockHandleActionsLabel } from "./tiptap-i18n.js";
 import {
   commandElementId,
+  bindPointerActivation,
   createElement,
   createFloatingDismissController,
   defaultDocument,
@@ -99,7 +101,7 @@ class TiptapBlockActionMenuView {
 
     root.id = this.#ownerId;
     root.role = "menu";
-    root.setAttribute("aria-label", "Block actions");
+    root.setAttribute("aria-label", blockHandleActionsLabel("english"));
     root.appendChild(list);
     mountFloatingRoot(root, container, this.#document);
 
@@ -111,6 +113,7 @@ class TiptapBlockActionMenuView {
   update(state) {
     if (!this.#root || !this.#list || !state.open) return;
 
+    this.#root.setAttribute("aria-label", blockHandleActionsLabel(state.language));
     this.#list.replaceChildren();
     groupedCommands(state.commands).forEach((group) => {
       const section = createElement(
@@ -165,14 +168,7 @@ class TiptapBlockActionMenuView {
         shortcut.hidden = !command.shortcut;
         copy.append(title, description);
         item.append(icon, copy, shortcut);
-        item.addEventListener("pointerdown", (event) => {
-          event.preventDefault();
-          event.stopPropagation?.();
-          state.run(command.id);
-        });
-        item.addEventListener("mousedown", (event) => {
-          event.preventDefault();
-        });
+        bindPointerActivation(item, () => state.run(command.id));
         section.appendChild(item);
       });
 
@@ -268,6 +264,7 @@ export class TiptapBlockActionMenuController {
       }),
       selectedIndex: 0,
       anchorRect,
+      language: this.#entry?.preferences?.language,
     };
     this.#view.update?.(
       {

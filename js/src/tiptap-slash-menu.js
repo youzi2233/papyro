@@ -3,6 +3,7 @@ import { PAPYRO_CALLOUT_KIND_OPTIONS } from "./tiptap-markdown-snippets.js";
 import {
   calloutOptionLabel,
   insertTableLabel,
+  localizeCalloutKindOption,
   markdownCommandsLabel,
   noCommandsLabel,
   tableSizeLabel,
@@ -208,9 +209,10 @@ class TiptapSlashMenuView {
 
       item.type = "button";
       item.dataset.calloutKind = option.kind;
-      item.setAttribute("aria-label", calloutOptionLabel(this.#language, option.title));
-      title.textContent = option.title;
-      description.textContent = option.description;
+      const localizedOption = localizeCalloutKindOption(option, this.#language);
+      item.setAttribute("aria-label", calloutOptionLabel(this.#language, localizedOption.title));
+      title.textContent = localizedOption.title;
+      description.textContent = localizedOption.description;
       copy.append(title, description);
       item.append(tone, copy);
       bindPointerActivation(item, () => chooseCalloutKind(calloutPicker, option.kind));
@@ -242,6 +244,7 @@ class TiptapSlashMenuView {
           insertTableLabel(this.#language, cell.dataset?.row, cell.dataset?.col),
         );
       });
+    this.#updateCalloutOptionLabels();
 
     this.#list.replaceChildren();
     state.commands.forEach((command, index) => {
@@ -324,6 +327,23 @@ class TiptapSlashMenuView {
         ? (kind) => state.choose("callout", { calloutKind: kind })
         : null;
     }
+  }
+
+  #updateCalloutOptionLabels() {
+    this.#calloutPicker
+      ?.querySelectorAll?.(".mn-tiptap-callout-kind-option")
+      ?.forEach?.((item) => {
+        const option = PAPYRO_CALLOUT_KIND_OPTIONS.find(
+          (candidate) => candidate.kind === item.dataset?.calloutKind,
+        );
+        if (!option) return;
+        const localizedOption = localizeCalloutKindOption(option, this.#language);
+        const title = item.querySelector?.(".mn-tiptap-callout-kind-title");
+        const description = item.querySelector?.(".mn-tiptap-callout-kind-description");
+        item.setAttribute("aria-label", calloutOptionLabel(this.#language, localizedOption.title));
+        if (title) title.textContent = localizedOption.title;
+        if (description) description.textContent = localizedOption.description;
+      });
   }
 
   #updateTablePickerSize(rows, cols) {

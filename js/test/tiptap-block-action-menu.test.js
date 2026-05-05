@@ -157,7 +157,9 @@ function createDocument() {
       appendChild(child) {
         this.children.push(child);
       },
-      addEventListener() {},
+      addEventListener(name, handler) {
+        this[`on${name}`] = handler;
+      },
       replaceChildren(...children) {
         this.children = children;
       },
@@ -275,6 +277,39 @@ test("Tiptap block action menu runs the selected command", () => {
     ["focus", null],
   ]);
   assert.deepEqual(view.calls.at(-1), ["hide"]);
+});
+
+test("Tiptap block action menu items support click fallback without double-run", () => {
+  const { calls, editor } = createEditor();
+  const documentRef = createDocument();
+  const controller = createTiptapBlockActionMenuController({
+    dom: { document: documentRef },
+  });
+  const event = () => ({ preventDefault() {}, stopPropagation() {} });
+  controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
+  controller.open(createTarget());
+  const item = documentRef.body.children[0].children[0].children[0].children[1];
+
+  item.onclick(event());
+
+  assert.deepEqual(calls, [
+    ["focus", 4],
+    ["textBetween", 4, 10],
+    ["focus", null],
+  ]);
+  assert.equal(controller.state.open, false);
+
+  calls.length = 0;
+  controller.open(createTarget());
+  const freshItem = documentRef.body.children[0].children[0].children[0].children[1];
+  freshItem.onpointerdown(event());
+  freshItem.onclick(event());
+
+  assert.deepEqual(calls, [
+    ["focus", 4],
+    ["textBetween", 4, 10],
+    ["focus", null],
+  ]);
 });
 
 test("Tiptap block action menu runs advertised keyboard shortcuts", () => {
@@ -406,6 +441,24 @@ test("Tiptap block action menu renders grouped command sections", () => {
   assert.equal(list.children[0].children[1].dataset.commandId, "copy-block");
   assert.equal(list.children[0].children[3].dataset.commandId, "reset-formatting");
   assert.equal(list.children[1].children[1].dataset.commandId, "text-color-ink");
+});
+
+test("Tiptap block action menu localizes its accessible label", () => {
+  const { editor } = createEditor();
+  const documentRef = createDocument();
+  const controller = createTiptapBlockActionMenuController({
+    dom: { document: documentRef },
+  });
+  controller.attach({
+    editor,
+    root: {},
+    entry: { viewMode: "hybrid", preferences: { language: "Chinese" } },
+  });
+
+  controller.open(createTarget());
+
+  const menu = documentRef.body.children[0];
+  assert.equal(menu.attributes.get("aria-label"), "块操作");
 });
 
 test("Tiptap block action menu renders callout kind sections for callout blocks", () => {

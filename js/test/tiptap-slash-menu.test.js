@@ -193,6 +193,9 @@ function createDocument() {
         });
         return results;
       },
+      querySelector(selector) {
+        return this.querySelectorAll(selector)[0] ?? null;
+      },
       remove() {},
       scrollIntoView(options) {
         scrollCalls.push([this.id, options]);
@@ -531,6 +534,28 @@ test("Tiptap slash menu forwards callout kind choices to the command", () => {
     ["setCalloutBlock", "WARNING", "Callout text"],
     ["focus"],
   ]);
+});
+
+test("Tiptap slash menu localizes callout kind picker choices", () => {
+  const { editor } = createEditor("/callout");
+  const documentRef = createDocument();
+  const controller = createTiptapSlashMenuController({
+    dom: { document: documentRef },
+  });
+
+  controller.attach({
+    editor,
+    root: {},
+    entry: { preferences: { language: "Chinese" } },
+  });
+
+  const option = documentRef.body.children[0].querySelector(".mn-tiptap-callout-kind-option");
+  assert.equal(option["aria-label"], "插入备注标注");
+  assert.equal(option.querySelector(".mn-tiptap-callout-kind-title").textContent, "备注");
+  assert.equal(
+    option.querySelector(".mn-tiptap-callout-kind-description").textContent,
+    "普通补充信息",
+  );
 });
 
 test("Tiptap slash menu closes on outside pointer events", () => {

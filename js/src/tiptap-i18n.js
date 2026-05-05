@@ -153,6 +153,25 @@ export function localizeTableCommand(command, language) {
   };
 }
 
+const CALLOUT_KIND_LABELS = Object.freeze({
+  NOTE: ["Note", "备注", "Neutral context", "普通补充信息"],
+  TIP: ["Tip", "提示", "Helpful suggestion", "有帮助的建议"],
+  WARNING: ["Warning", "警告", "Risk or caution", "风险或注意事项"],
+  DANGER: ["Danger", "危险", "Critical issue", "关键问题"],
+});
+
+export function localizeCalloutKindOption(option, language) {
+  const kind = String(option?.kind ?? "").trim().toUpperCase();
+  const labels = CALLOUT_KIND_LABELS[kind];
+  return {
+    ...option,
+    title: labels ? localizedText(language, labels[0], labels[1]) : option?.title,
+    description: labels
+      ? localizedText(language, labels[2], labels[3])
+      : option?.description,
+  };
+}
+
 export function tableSizeLabel(language, rows, cols) {
   return localizedText(language, `Table ${rows} x ${cols}`, `表格 ${rows} x ${cols}`);
 }
