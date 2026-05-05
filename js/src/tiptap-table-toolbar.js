@@ -8,17 +8,122 @@ import {
   viewportSize,
 } from "./tiptap-ui-primitives.js";
 
-const TABLE_COMMANDS = Object.freeze([
-  { id: "add-column-before", title: "Insert column left", label: "Col left", command: "addColumnBefore" },
-  { id: "add-column-after", title: "Insert column right", label: "Col right", command: "addColumnAfter" },
-  { id: "delete-column", title: "Delete column", label: "Del col", command: "deleteColumn", tone: "danger" },
-  { id: "add-row-before", title: "Insert row above", label: "Row above", command: "addRowBefore" },
-  { id: "add-row-after", title: "Insert row below", label: "Row below", command: "addRowAfter" },
-  { id: "delete-row", title: "Delete row", label: "Del row", command: "deleteRow", tone: "danger" },
-  { id: "merge-cells", title: "Merge selected cells", label: "Merge", command: "mergeCells" },
-  { id: "split-cell", title: "Split selected cell", label: "Split", command: "splitCell" },
-  { id: "toggle-header-row", title: "Toggle header row", label: "Head row", command: "toggleHeaderRow" },
-  { id: "delete-table", title: "Delete table", label: "Del table", command: "deleteTable", tone: "danger" },
+export const TABLE_COMMANDS = Object.freeze([
+  {
+    id: "add-column-before",
+    group: "Columns",
+    title: "Insert column left",
+    label: "Left",
+    command: "addColumnBefore",
+  },
+  {
+    id: "add-column-after",
+    group: "Columns",
+    title: "Insert column right",
+    label: "Right",
+    command: "addColumnAfter",
+  },
+  {
+    id: "delete-column",
+    group: "Columns",
+    title: "Delete current column",
+    label: "Delete",
+    command: "deleteColumn",
+    tone: "danger",
+  },
+  {
+    id: "add-row-before",
+    group: "Rows",
+    title: "Insert row above",
+    label: "Above",
+    command: "addRowBefore",
+  },
+  {
+    id: "add-row-after",
+    group: "Rows",
+    title: "Insert row below",
+    label: "Below",
+    command: "addRowAfter",
+  },
+  {
+    id: "delete-row",
+    group: "Rows",
+    title: "Delete current row",
+    label: "Delete",
+    command: "deleteRow",
+    tone: "danger",
+  },
+  {
+    id: "merge-cells",
+    group: "Cells",
+    title: "Merge selected cells",
+    label: "Merge",
+    command: "mergeCells",
+  },
+  {
+    id: "split-cell",
+    group: "Cells",
+    title: "Split current cell",
+    label: "Split",
+    command: "splitCell",
+  },
+  {
+    id: "merge-or-split",
+    group: "Cells",
+    title: "Merge or split cells",
+    label: "Auto",
+    command: "mergeOrSplit",
+  },
+  {
+    id: "toggle-header-row",
+    group: "Headers",
+    title: "Toggle header row",
+    label: "Row",
+    command: "toggleHeaderRow",
+  },
+  {
+    id: "toggle-header-column",
+    group: "Headers",
+    title: "Toggle header column",
+    label: "Column",
+    command: "toggleHeaderColumn",
+  },
+  {
+    id: "toggle-header-cell",
+    group: "Headers",
+    title: "Toggle header cell",
+    label: "Cell",
+    command: "toggleHeaderCell",
+  },
+  {
+    id: "previous-cell",
+    group: "Navigate",
+    title: "Move to previous cell",
+    label: "Prev",
+    command: "goToPreviousCell",
+  },
+  {
+    id: "next-cell",
+    group: "Navigate",
+    title: "Move to next cell",
+    label: "Next",
+    command: "goToNextCell",
+  },
+  {
+    id: "fix-table",
+    group: "Table",
+    title: "Repair table structure",
+    label: "Repair",
+    command: "fixTables",
+  },
+  {
+    id: "delete-table",
+    group: "Table",
+    title: "Delete table",
+    label: "Delete",
+    command: "deleteTable",
+    tone: "danger",
+  },
 ]);
 
 function closestTableElement(target, editorDom) {
@@ -82,14 +187,24 @@ class TiptapTableToolbarView {
     if (!this.#root || !this.#list || !state.open) return;
 
     this.#list.replaceChildren();
+    let lastGroup = null;
     state.commands.forEach((command) => {
+      if (lastGroup && lastGroup !== command.group) {
+        const divider = createElement(this.#document, "span", "mn-tiptap-table-toolbar-divider");
+        divider?.setAttribute?.("aria-hidden", "true");
+        if (divider) this.#list.appendChild(divider);
+      }
+      lastGroup = command.group;
+
       const button = createElement(this.#document, "button", "mn-tiptap-table-toolbar-button");
       if (!button) return;
 
       button.type = "button";
       button.title = command.title;
+      button.setAttribute("aria-label", command.title);
       button.textContent = command.label;
       button.dataset.commandId = command.id;
+      button.dataset.group = command.group;
       button.dataset.tone = command.tone ?? "default";
       button.addEventListener("mousedown", (event) => {
         event.preventDefault();
@@ -175,7 +290,9 @@ export class TiptapTableToolbarController {
       open: true,
       table: context.table,
       rect: context.rect,
-      commands: TABLE_COMMANDS.filter((command) => typeof editor.commands?.[command.command] === "function"),
+      commands: TABLE_COMMANDS.filter(
+        (command) => typeof editor.commands?.[command.command] === "function",
+      ),
     };
     this.#view.update?.({
       ...this.#state,

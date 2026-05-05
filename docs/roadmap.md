@@ -233,6 +233,7 @@ Tasks:
 - [x] Upgrade the block handle into Notion-like dual controls: `+` opens block insertion, while the handle selects the current block and opens block actions.
 - [x] Add the first Papyro-native block action menu controller.
 - [x] Add the first Tiptap table floating toolbar with row/column insertion and deletion, cell merge/split, header toggles, and table deletion.
+- [x] Upgrade the Tiptap table toolbar into grouped column, row, cell, header, navigation, repair, and delete commands so table editing feels closer to mature document editors.
 - [x] Add shared Tiptap UI primitives for popover placement, menu active-descendant state, toolbar roots, and visibility handling.
 - [x] Add advanced block action menus and responsive editor toolbar behavior.
 - [x] Fix Tiptap Hybrid scroll-container constraints so long documents scroll inside the editor host instead of being clipped by the outer shell.

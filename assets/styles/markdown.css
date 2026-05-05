@@ -694,6 +694,14 @@
     overflow-x: auto;
 }
 
+.mn-tiptap-table-toolbar-divider {
+    flex: 0 0 auto;
+    width: 1px;
+    height: 18px;
+    margin: 0 3px;
+    background: var(--mn-border);
+}
+
 .mn-tiptap-table-toolbar-button {
     display: inline-flex;
     align-items: center;

@@ -1,9 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { createTiptapTableToolbarController } from "../src/tiptap-table-toolbar.js";
+import {
+  TABLE_COMMANDS,
+  createTiptapTableToolbarController,
+} from "../src/tiptap-table-toolbar.js";
 
-function createTableHarness() {
+function createTableHarness(commandOverrides = {}) {
   const calls = [];
   const table = {
     className: "mn-tiptap-table",
@@ -38,19 +41,19 @@ function createTableHarness() {
       },
     },
     commands: {
-      addColumnBefore: () => {
-        calls.push(["addColumnBefore"]);
-        return true;
-      },
-      deleteTable: () => {
-        calls.push(["deleteTable"]);
-        return true;
-      },
       focus: () => calls.push(["focus"]),
+      ...commandOverrides,
     },
   };
 
   return { calls, editor, table };
+}
+
+function commandSpy(calls, name, result = true) {
+  return () => {
+    calls.push([name]);
+    return result;
+  };
 }
 
 function createViewSpy() {
@@ -61,7 +64,7 @@ function createViewSpy() {
       calls.push(["mount", root?.className ?? ""]);
     },
     update(state) {
-      calls.push(["update", state.commands.map((command) => command.id)]);
+      calls.push(["update", state.commands.map((command) => [command.group, command.id])]);
       this.run = state.run;
     },
     hide() {
@@ -74,7 +77,9 @@ function createViewSpy() {
 }
 
 test("Tiptap table toolbar opens when the selection is inside a table", () => {
-  const { editor } = createTableHarness();
+  const { calls, editor } = createTableHarness();
+  editor.commands.addColumnBefore = commandSpy(calls, "addColumnBefore");
+  editor.commands.deleteTable = commandSpy(calls, "deleteTable");
   const view = createViewSpy();
   const controller = createTiptapTableToolbarController({ view });
   controller.attach({ editor, root: { className: "runtime" }, entry: { viewMode: "hybrid" } });
@@ -86,12 +91,19 @@ test("Tiptap table toolbar opens when the selection is inside a table", () => {
   ]);
   assert.deepEqual(view.calls, [
     ["mount", "runtime"],
-    ["update", ["add-column-before", "delete-table"]],
+    [
+      "update",
+      [
+        ["Columns", "add-column-before"],
+        ["Table", "delete-table"],
+      ],
+    ],
   ]);
 });
 
 test("Tiptap table toolbar runs table commands and restores focus", () => {
   const { calls, editor } = createTableHarness();
+  editor.commands.deleteTable = commandSpy(calls, "deleteTable");
   const view = createViewSpy();
   const controller = createTiptapTableToolbarController({ view });
   controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
@@ -109,4 +121,51 @@ test("Tiptap table toolbar stays closed outside Hybrid mode", () => {
 
   assert.equal(controller.state.open, false);
   assert.deepEqual(view.calls, [["mount", ""]]);
+});
+
+test("Tiptap table toolbar exposes grouped enterprise table commands", () => {
+  assert.deepEqual(
+    TABLE_COMMANDS.map((command) => [command.group, command.id, command.command]),
+    [
+      ["Columns", "add-column-before", "addColumnBefore"],
+      ["Columns", "add-column-after", "addColumnAfter"],
+      ["Columns", "delete-column", "deleteColumn"],
+      ["Rows", "add-row-before", "addRowBefore"],
+      ["Rows", "add-row-after", "addRowAfter"],
+      ["Rows", "delete-row", "deleteRow"],
+      ["Cells", "merge-cells", "mergeCells"],
+      ["Cells", "split-cell", "splitCell"],
+      ["Cells", "merge-or-split", "mergeOrSplit"],
+      ["Headers", "toggle-header-row", "toggleHeaderRow"],
+      ["Headers", "toggle-header-column", "toggleHeaderColumn"],
+      ["Headers", "toggle-header-cell", "toggleHeaderCell"],
+      ["Navigate", "previous-cell", "goToPreviousCell"],
+      ["Navigate", "next-cell", "goToNextCell"],
+      ["Table", "fix-table", "fixTables"],
+      ["Table", "delete-table", "deleteTable"],
+    ],
+  );
+});
+
+test("Tiptap table toolbar runs navigation and repair commands when available", () => {
+  const { calls, editor } = createTableHarness();
+  editor.commands.goToNextCell = commandSpy(calls, "goToNextCell");
+  editor.commands.fixTables = commandSpy(calls, "fixTables");
+  const view = createViewSpy();
+  const controller = createTiptapTableToolbarController({ view });
+  controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
+
+  assert.deepEqual(controller.state.commands.map((command) => command.id), [
+    "next-cell",
+    "fix-table",
+  ]);
+  assert.equal(controller.run("next-cell"), true);
+  assert.equal(controller.run("fix-table"), true);
+
+  assert.deepEqual(calls, [
+    ["goToNextCell"],
+    ["focus"],
+    ["fixTables"],
+    ["focus"],
+  ]);
 });

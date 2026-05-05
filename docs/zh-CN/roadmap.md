@@ -208,6 +208,7 @@ flowchart LR
 - [x] 把块操作柄升级为 Notion-like 双入口：`+` 打开块插入菜单，句柄点击选中当前块并打开块操作菜单。
 - [x] 增加第一版 Papyro 原生块操作菜单 controller。
 - [x] 增加第一版 Tiptap 表格浮动工具条，支持插入/删除行列、合并/拆分单元格、切换表头和删除表格。
+- [x] 把 Tiptap 表格工具条升级为列、行、单元格、表头、导航、修复、删除分组命令，让表格编辑更接近成熟文档产品。
 - [x] 增加共享 Tiptap UI primitives，用于 popover 定位、菜单 active-descendant 状态、toolbar root 和显隐处理。
 - [x] 增加高级块操作菜单和响应式编辑器 toolbar 行为。
 - [x] 修复 Tiptap Hybrid 滚动容器约束，避免内容撑开宿主后被外层裁剪导致无法滚动。
