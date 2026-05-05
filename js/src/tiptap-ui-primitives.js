@@ -138,3 +138,36 @@ export function updateActiveDescendant(root, ownerId, commands, selectedIndex) {
     commands?.length > 0 ? commandElementId(ownerId, selectedIndex) : "",
   );
 }
+
+function findElementById(root, id) {
+  if (!root || !id) return null;
+  if (root.id === id) return root;
+  if (typeof root.querySelector === "function") {
+    try {
+      const found = root.querySelector(`#${id}`);
+      if (found) return found;
+    } catch (_error) {
+      // Fall through to the small tree walk used by tests and non-standard DOMs.
+    }
+  }
+
+  const children = Array.from(root.children ?? []);
+  for (const child of children) {
+    const found = findElementById(child, id);
+    if (found) return found;
+  }
+  return null;
+}
+
+export function scrollActiveDescendantIntoView(root, ownerId, commands, selectedIndex) {
+  if (!root || !commands?.length) return false;
+  const active = findElementById(root, commandElementId(ownerId, selectedIndex));
+  if (!active) return false;
+
+  if (typeof active.scrollIntoView === "function") {
+    active.scrollIntoView({ block: "nearest", inline: "nearest" });
+    return true;
+  }
+
+  return false;
+}

@@ -181,6 +181,7 @@ flowchart TD
   - 块操作菜单继续向官方 Notion-like template 的 Drag Context Menu 靠齐，新增复制为 Markdown 和重复块动作；slash/`+` 插入菜单新增 1x1 到 6x6 表格尺寸选择器，避免固定尺寸表格破坏写作流。
   - 浮动格式栏现在暴露 density 状态，在窄窗口或选区空间受限时自动切换为 compact 控件，并从 pointerdown 执行命令以减少 WebView 焦点竞争。
   - slash/`+` 插入菜单、块操作菜单、浮动格式栏和表格工具条共享浮层 dismiss 生命周期：外部点击、滚动和窗口变化会关闭浮层，点击当前块或表格内部会保持上下文不丢失。
+  - slash 菜单和块操作菜单共享 active-descendant 滚动逻辑，键盘导航长菜单时会保持当前命令可见。
 - [x] Source 使用源码编辑面板，并通过 `MarkdownSyncController` 同步到 Tiptap。
 - [x] 增加 `MarkdownSyncController`，作为 Tiptap runtime 更新的 canonical Markdown 状态边界。
 - [x] Source 面板输入会跳过未变化 Markdown，避免源码编辑产生重复 dirty/content 事件。

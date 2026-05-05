@@ -8,6 +8,7 @@ import {
   isComposingKeyboardEvent,
   mountFloatingRoot,
   positionFloatingElement,
+  scrollActiveDescendantIntoView,
   setHidden,
   updateActiveDescendant,
   viewportSize,
@@ -158,6 +159,7 @@ class TiptapBlockActionMenuView {
     });
 
     updateActiveDescendant(this.#root, this.#ownerId, state.commands, state.selectedIndex);
+    scrollActiveDescendantIntoView(this.#root, this.#ownerId, state.commands, state.selectedIndex);
     setHidden(this.#root, false);
     placeMenu(this.#root, state.target, this.#window, state.anchorRect);
   }

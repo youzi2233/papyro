@@ -8,6 +8,7 @@ import {
   isComposingKeyboardEvent,
   mountFloatingRoot,
   positionFloatingElement,
+  scrollActiveDescendantIntoView,
   setHidden,
   updateActiveDescendant,
   viewportSize,
@@ -143,4 +144,36 @@ test("Tiptap UI primitives expose viewport size and active descendant helpers", 
     }),
     { width: 640, height: 360 },
   );
+});
+
+test("Tiptap UI primitives scroll active descendants into view", () => {
+  const calls = [];
+  const active = {
+    id: "menu-item-2",
+    children: [],
+    scrollIntoView(options) {
+      calls.push(options);
+    },
+  };
+  const root = {
+    id: "menu",
+    children: [
+      {
+        id: "section",
+        children: [{ id: "menu-item-0", children: [] }, active],
+      },
+    ],
+  };
+
+  assert.equal(
+    scrollActiveDescendantIntoView(
+      root,
+      "menu",
+      [{ id: "one" }, { id: "two" }, { id: "three" }],
+      2,
+    ),
+    true,
+  );
+  assert.deepEqual(calls, [{ block: "nearest", inline: "nearest" }]);
+  assert.equal(scrollActiveDescendantIntoView(root, "menu", [], 0), false);
 });

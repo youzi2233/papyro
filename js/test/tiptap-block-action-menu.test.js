@@ -116,6 +116,7 @@ function createDismissDocument() {
 }
 
 function createDocument() {
+  const scrollCalls = [];
   const body = {
     children: [],
     appendChild(child) {
@@ -123,6 +124,13 @@ function createDocument() {
       child.parentNode = this;
     },
   };
+
+  function walk(element, visit) {
+    (element.children ?? []).forEach((child) => {
+      visit(child);
+      walk(child, visit);
+    });
+  }
 
   function createElement(tagName) {
     return {
@@ -149,7 +157,19 @@ function createDocument() {
       replaceChildren(...children) {
         this.children = children;
       },
+      querySelector(selector) {
+        if (!String(selector).startsWith("#")) return null;
+        const id = String(selector).slice(1);
+        let found = null;
+        walk(this, (child) => {
+          if (!found && child.id === id) found = child;
+        });
+        return found;
+      },
       remove() {},
+      scrollIntoView(options) {
+        scrollCalls.push([this.id, options]);
+      },
       setAttribute(name, value) {
         this.attributes.set(name, value);
       },
@@ -159,6 +179,7 @@ function createDocument() {
   return {
     body,
     createElement,
+    scrollCalls,
   };
 }
 
@@ -231,6 +252,23 @@ test("Tiptap block action menu supports keyboard selection", () => {
 
   assert.equal(controller.state.selectedIndex, 1);
   assert.equal(view.calls.at(-1)[3], 1);
+});
+
+test("Tiptap block action menu scrolls keyboard selections into view", () => {
+  const { editor } = createEditor();
+  const documentRef = createDocument();
+  const controller = createTiptapBlockActionMenuController({
+    dom: { document: documentRef },
+  });
+  controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
+  controller.open(createTarget());
+
+  controller.handleKeyDown({ key: "ArrowDown", preventDefault() {} });
+
+  assert.deepEqual(documentRef.scrollCalls.at(-1), [
+    "mn-tiptap-block-action-menu-item-1",
+    { block: "nearest", inline: "nearest" },
+  ]);
 });
 
 test("Tiptap block action menu runs the selected command", () => {

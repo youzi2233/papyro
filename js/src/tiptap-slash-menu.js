@@ -10,6 +10,7 @@ import {
   isComposingKeyboardEvent,
   mountFloatingRoot,
   positionFloatingElement,
+  scrollActiveDescendantIntoView,
   setHidden,
   updateActiveDescendant,
   viewportSize,
@@ -243,6 +244,7 @@ class TiptapSlashMenuView {
     this.#updateTablePicker(state);
     setHidden(this.#empty, state.commands.length > 0);
     updateActiveDescendant(this.#root, this.#ownerId, state.commands, state.selectedIndex);
+    scrollActiveDescendantIntoView(this.#root, this.#ownerId, state.commands, state.selectedIndex);
     setHidden(this.#root, false);
     placeMenu(this.#root, editor, state.range, state.anchorRect);
   }

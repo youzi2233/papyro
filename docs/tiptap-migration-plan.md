@@ -169,6 +169,7 @@ flowchart TD
   - The block action menu now moves closer to the official Notion-like template's Drag Context Menu with copy-as-Markdown and duplicate-block actions; the slash/`+` insertion menu adds a 1x1 through 6x6 table-size picker so table insertion is no longer fixed to one default shape.
   - The floating format toolbar now exposes a density state, switches to compact controls in narrow viewports or constrained selection positions, and runs commands from pointerdown to avoid WebView focus races.
   - The slash/`+` insertion menu, block action menu, floating format toolbar, and table toolbar now share a dismiss lifecycle: outside clicks, scrolling, and window changes close overlays, while interactions inside the current block or table keep context alive.
+  - Slash and block action menus now share active-descendant scrolling so keyboard navigation keeps the selected command visible in long menus.
 - [x] Source uses a source editor pane synchronized through `MarkdownSyncController`.
 - [x] Add `MarkdownSyncController` as the canonical Markdown state boundary for Tiptap runtime updates.
 - [x] Source pane input now skips unchanged Markdown so source editing does not emit redundant dirty/content events.

@@ -132,6 +132,78 @@ function createDismissDocument() {
   };
 }
 
+function createDocument() {
+  const scrollCalls = [];
+  const body = {
+    children: [],
+    appendChild(child) {
+      this.children.push(child);
+      child.parentNode = this;
+    },
+  };
+
+  function walk(element, visit) {
+    (element.children ?? []).forEach((child) => {
+      visit(child);
+      walk(child, visit);
+    });
+  }
+
+  function createElement(tagName) {
+    const element = {
+      tagName: tagName.toUpperCase(),
+      children: [],
+      className: "",
+      dataset: {},
+      style: {},
+      classList: {
+        values: new Set(),
+        toggle(name, enabled) {
+          if (enabled) this.values.add(name);
+          else this.values.delete(name);
+        },
+      },
+      append(...children) {
+        this.children.push(...children);
+      },
+      appendChild(child) {
+        this.children.push(child);
+      },
+      addEventListener(name, handler) {
+        this[`on${name}`] = handler;
+      },
+      replaceChildren(...children) {
+        this.children = children;
+      },
+      querySelectorAll(selector) {
+        const results = [];
+        if (!String(selector).startsWith(".")) return results;
+        const className = String(selector).slice(1);
+        walk(this, (child) => {
+          if (String(child.className ?? "").split(/\s+/).includes(className)) {
+            results.push(child);
+          }
+        });
+        return results;
+      },
+      remove() {},
+      scrollIntoView(options) {
+        scrollCalls.push([this.id, options]);
+      },
+      setAttribute(name, value) {
+        this[name] = value;
+      },
+    };
+    return element;
+  }
+
+  return {
+    body,
+    createElement,
+    scrollCalls,
+  };
+}
+
 test("findSlashTrigger detects slash queries at text boundaries", () => {
   assert.deepEqual(findSlashTrigger("/h2"), { from: 0, to: 3, query: "h2" });
   assert.deepEqual(findSlashTrigger("hello /table"), {
@@ -180,6 +252,22 @@ test("Tiptap slash menu keyboard selection wraps through command results", () =>
   assert.equal(controller.state.selectedIndex, 0);
   controller.moveSelection(-1);
   assert.equal(controller.state.selectedIndex, 2);
+});
+
+test("Tiptap slash menu scrolls keyboard selections into view", () => {
+  const { editor } = createEditor("/标题");
+  const documentRef = createDocument();
+  const controller = createTiptapSlashMenuController({
+    dom: { document: documentRef },
+  });
+  controller.attach({ editor, root: {} });
+
+  controller.moveSelection(1);
+
+  assert.deepEqual(documentRef.scrollCalls.at(-1), [
+    "mn-tiptap-slash-menu-item-1",
+    { block: "nearest", inline: "nearest" },
+  ]);
 });
 
 test("Tiptap slash menu runs selected command and removes trigger text", () => {
