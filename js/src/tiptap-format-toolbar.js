@@ -1,32 +1,13 @@
 import { createTiptapFormatCommandController } from "./tiptap-format-commands.js";
-
-const DEFAULT_COLLISION_MARGIN = 10;
-
-function clamp(value, min, max) {
-  return Math.max(min, Math.min(max, value));
-}
-
-function defaultDocument() {
-  return typeof document === "undefined" ? null : document;
-}
-
-function defaultWindow(documentRef) {
-  return documentRef?.defaultView ?? (typeof window === "undefined" ? null : window);
-}
-
-function createElement(documentRef, tagName, className) {
-  const element = documentRef?.createElement?.(tagName) ?? null;
-  if (element && className) {
-    element.className = className;
-  }
-  return element;
-}
-
-function setHidden(element, hidden) {
-  if (!element) return;
-  element.hidden = hidden;
-  element.classList?.toggle?.("hidden", hidden);
-}
+import {
+  createElement,
+  defaultDocument,
+  defaultWindow,
+  mountFloatingRoot,
+  positionFloatingElement,
+  setHidden,
+  viewportSize,
+} from "./tiptap-ui-primitives.js";
 
 function selectionContext(editor) {
   const state = editor?.state ?? editor?.view?.state;
@@ -57,32 +38,19 @@ function selectionRect(editor, range) {
   };
 }
 
-function viewportSize(editor, fallbackWindow) {
-  const documentElement = editor?.view?.dom?.ownerDocument?.documentElement;
-  return {
-    width: documentElement?.clientWidth ?? fallbackWindow?.innerWidth ?? 1024,
-    height: documentElement?.clientHeight ?? fallbackWindow?.innerHeight ?? 768,
-  };
-}
-
 function placeToolbar(element, editor, range, fallbackWindow) {
   const rect = selectionRect(editor, range);
   if (!element || !rect) return;
 
-  const viewport = viewportSize(editor, fallbackWindow);
-  const width = element.offsetWidth || 184;
-  const height = element.offsetHeight || 38;
-  const margin = DEFAULT_COLLISION_MARGIN;
-  const center = rect.left + (rect.right - rect.left) / 2;
-  const left = clamp(center - width / 2, margin, Math.max(margin, viewport.width - width - margin));
-  const preferredTop = rect.top - height - 8;
-  const top =
-    preferredTop < margin
-      ? clamp(rect.bottom + 8, margin, viewport.height - height - margin)
-      : clamp(preferredTop, margin, viewport.height - height - margin);
-
-  element.style.left = `${left}px`;
-  element.style.top = `${top}px`;
+  positionFloatingElement(element, rect, {
+    viewport: viewportSize(editor?.view?.dom, fallbackWindow),
+    size: {
+      width: 184,
+      height: 38,
+      margin: 10,
+    },
+    placement: "top",
+  });
 }
 
 class TiptapFormatToolbarView {
@@ -106,7 +74,7 @@ class TiptapFormatToolbarView {
     root.role = "toolbar";
     root.setAttribute("aria-label", "Text formatting");
     root.appendChild(list);
-    (container?.ownerDocument?.body ?? this.#document.body)?.appendChild(root);
+    mountFloatingRoot(root, container, this.#document);
 
     this.#root = root;
     this.#list = list;

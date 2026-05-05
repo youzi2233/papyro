@@ -1,15 +1,19 @@
 import { createTiptapSlashCommandController } from "./tiptap-slash-commands.js";
+import {
+  clamp,
+  commandElementId,
+  createElement,
+  defaultDocument,
+  defaultWindow,
+  mountFloatingRoot,
+  positionFloatingElement,
+  setHidden,
+  updateActiveDescendant,
+  viewportSize,
+} from "./tiptap-ui-primitives.js";
 
 const DEFAULT_MAX_ITEMS = 8;
 const DEFAULT_MAX_QUERY_LENGTH = 48;
-
-function clamp(value, min, max) {
-  return Math.max(min, Math.min(max, value));
-}
-
-function defaultDocument() {
-  return typeof document === "undefined" ? null : document;
-}
 
 function isTriggerBoundary(character) {
   return !character || /\s/.test(character);
@@ -34,24 +38,6 @@ function textSelectionContext(editor) {
   };
 }
 
-function commandElementId(ownerId, index) {
-  return `${ownerId}-item-${index}`;
-}
-
-function setHidden(element, hidden) {
-  if (!element) return;
-  element.hidden = hidden;
-  element.classList?.toggle?.("hidden", hidden);
-}
-
-function createElement(documentRef, tagName, className) {
-  const element = documentRef?.createElement?.(tagName) ?? null;
-  if (element && className) {
-    element.className = className;
-  }
-  return element;
-}
-
 function placeMenu(element, editor, range) {
   const view = editor?.view;
   if (!element || !view || typeof view.coordsAtPos !== "function" || !range) {
@@ -59,21 +45,15 @@ function placeMenu(element, editor, range) {
   }
 
   const rect = view.coordsAtPos(range.to);
-  const viewportWidth = view.dom?.ownerDocument?.documentElement?.clientWidth ?? window.innerWidth;
-  const viewportHeight =
-    view.dom?.ownerDocument?.documentElement?.clientHeight ?? window.innerHeight;
-  const width = element.offsetWidth || 320;
-  const height = element.offsetHeight || 220;
-  const margin = 10;
-  const left = clamp(rect.left, margin, Math.max(margin, viewportWidth - width - margin));
-  const preferredTop = rect.bottom + 8;
-  const top =
-    preferredTop + height + margin > viewportHeight
-      ? clamp(rect.top - height - 8, margin, viewportHeight - height - margin)
-      : clamp(preferredTop, margin, viewportHeight - height - margin);
-
-  element.style.left = `${left}px`;
-  element.style.top = `${top}px`;
+  positionFloatingElement(element, rect, {
+    viewport: viewportSize(view.dom, defaultWindow(view.dom?.ownerDocument)),
+    size: {
+      width: 320,
+      height: 220,
+      margin: 10,
+    },
+    placement: "bottom",
+  });
 }
 
 export function findSlashTrigger(
@@ -125,7 +105,7 @@ class TiptapSlashMenuView {
     root.setAttribute("aria-label", "Markdown block commands");
     empty.textContent = "No commands";
     root.append(list, empty);
-    (container?.ownerDocument?.body ?? this.#document.body)?.appendChild(root);
+    mountFloatingRoot(root, container, this.#document);
 
     this.#root = root;
     this.#list = list;
@@ -168,10 +148,7 @@ class TiptapSlashMenuView {
     });
 
     setHidden(this.#empty, state.commands.length > 0);
-    this.#root.setAttribute(
-      "aria-activedescendant",
-      state.commands.length > 0 ? commandElementId(this.#ownerId, state.selectedIndex) : "",
-    );
+    updateActiveDescendant(this.#root, this.#ownerId, state.commands, state.selectedIndex);
     setHidden(this.#root, false);
     placeMenu(this.#root, editor, state.range);
   }

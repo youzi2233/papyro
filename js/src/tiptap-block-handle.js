@@ -1,3 +1,11 @@
+import {
+  createElement,
+  defaultDocument,
+  defaultWindow,
+  mountFloatingRoot,
+  setHidden,
+} from "./tiptap-ui-primitives.js";
+
 const BLOCK_SELECTOR = [
   "blockquote",
   "h1",
@@ -18,28 +26,6 @@ const BLOCK_SELECTOR = [
 
 const HORIZONTAL_GAP = 10;
 const DEFAULT_HANDLE_SIZE = 28;
-
-function defaultDocument() {
-  return typeof document === "undefined" ? null : document;
-}
-
-function defaultWindow(documentRef) {
-  return documentRef?.defaultView ?? (typeof window === "undefined" ? null : window);
-}
-
-function createElement(documentRef, tagName, className) {
-  const element = documentRef?.createElement?.(tagName) ?? null;
-  if (element && className) {
-    element.className = className;
-  }
-  return element;
-}
-
-function setHidden(element, hidden) {
-  if (!element) return;
-  element.hidden = hidden;
-  element.classList?.toggle?.("hidden", hidden);
-}
 
 function isElement(value) {
   return value && value.nodeType === 1;
@@ -129,7 +115,7 @@ class TiptapBlockHandleView {
     });
     button.appendChild(icon);
     root.appendChild(button);
-    (container?.ownerDocument?.body ?? this.#document.body)?.appendChild(root);
+    mountFloatingRoot(root, container, this.#document);
 
     this.#root = root;
     this.#button = button;

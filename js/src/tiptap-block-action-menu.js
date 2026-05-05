@@ -1,65 +1,33 @@
 import { createTiptapBlockActionController } from "./tiptap-block-actions.js";
+import {
+  commandElementId,
+  createElement,
+  defaultDocument,
+  defaultWindow,
+  mountFloatingRoot,
+  positionFloatingElement,
+  setHidden,
+  updateActiveDescendant,
+  viewportSize,
+} from "./tiptap-ui-primitives.js";
 
 const DEFAULT_WIDTH = 280;
 const DEFAULT_HEIGHT = 248;
 const DEFAULT_MARGIN = 10;
 
-function clamp(value, min, max) {
-  return Math.max(min, Math.min(max, value));
-}
-
-function defaultDocument() {
-  return typeof document === "undefined" ? null : document;
-}
-
-function defaultWindow(documentRef) {
-  return documentRef?.defaultView ?? (typeof window === "undefined" ? null : window);
-}
-
-function createElement(documentRef, tagName, className) {
-  const element = documentRef?.createElement?.(tagName) ?? null;
-  if (element && className) {
-    element.className = className;
-  }
-  return element;
-}
-
-function setHidden(element, hidden) {
-  if (!element) return;
-  element.hidden = hidden;
-  element.classList?.toggle?.("hidden", hidden);
-}
-
-function viewportSize(reference, fallbackWindow) {
-  const documentElement = reference?.ownerDocument?.documentElement;
-  return {
-    width: documentElement?.clientWidth ?? fallbackWindow?.innerWidth ?? 1024,
-    height: documentElement?.clientHeight ?? fallbackWindow?.innerHeight ?? 768,
-  };
-}
-
 function placeMenu(element, target, fallbackWindow) {
   const rect = target?.block?.getBoundingClientRect?.();
   if (!element || !rect) return;
 
-  const viewport = viewportSize(target.block, fallbackWindow);
-  const width = element.offsetWidth || DEFAULT_WIDTH;
-  const height = element.offsetHeight || DEFAULT_HEIGHT;
-  const margin = DEFAULT_MARGIN;
-  const preferredLeft = rect.left - width - 12;
-  const fallbackLeft = rect.left + 12;
-  const left =
-    preferredLeft < margin
-      ? clamp(fallbackLeft, margin, viewport.width - width - margin)
-      : clamp(preferredLeft, margin, viewport.width - width - margin);
-  const top = clamp(rect.top, margin, Math.max(margin, viewport.height - height - margin));
-
-  element.style.left = `${left}px`;
-  element.style.top = `${top}px`;
-}
-
-function commandElementId(ownerId, index) {
-  return `${ownerId}-item-${index}`;
+  positionFloatingElement(element, rect, {
+    viewport: viewportSize(target.block, fallbackWindow),
+    size: {
+      width: DEFAULT_WIDTH,
+      height: DEFAULT_HEIGHT,
+      margin: DEFAULT_MARGIN,
+    },
+    placement: "left",
+  });
 }
 
 class TiptapBlockActionMenuView {
@@ -90,7 +58,7 @@ class TiptapBlockActionMenuView {
     root.role = "menu";
     root.setAttribute("aria-label", "Block actions");
     root.appendChild(list);
-    (container?.ownerDocument?.body ?? this.#document.body)?.appendChild(root);
+    mountFloatingRoot(root, container, this.#document);
 
     this.#root = root;
     this.#list = list;
@@ -130,10 +98,7 @@ class TiptapBlockActionMenuView {
       this.#list.appendChild(item);
     });
 
-    this.#root.setAttribute(
-      "aria-activedescendant",
-      state.commands.length > 0 ? commandElementId(this.#ownerId, state.selectedIndex) : "",
-    );
+    updateActiveDescendant(this.#root, this.#ownerId, state.commands, state.selectedIndex);
     setHidden(this.#root, false);
     placeMenu(this.#root, state.target, this.#window);
   }
