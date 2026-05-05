@@ -46,6 +46,10 @@ function runEditorCommand(editor, commandName, args = [], fallbackMarkdown) {
   return ok;
 }
 
+function refreshTableChrome(entry, editor) {
+  entry?.tableToolbar?.refresh?.(editor);
+}
+
 function commandSearchText(command) {
   return [
     command.id,
@@ -248,15 +252,19 @@ export const PAPYRO_TIPTAP_SLASH_COMMANDS = Object.freeze([
     aliases: ["grid"],
     keywords: ["cells", "表格"],
     priority: 50,
-    run: ({ editor, tableSize = {} }) => {
+    run: ({ editor, entry, tableSize = {} }) => {
       const rows = Math.max(1, Number(tableSize.rows) || 3);
       const cols = Math.max(1, Number(tableSize.cols) || 2);
-      return runEditorCommand(
+      const ok = runEditorCommand(
         editor,
         "insertTable",
         [{ rows, cols, withHeaderRow: true }],
         createMarkdownTable(rows, cols),
       );
+      if (ok) {
+        refreshTableChrome(entry, editor);
+      }
+      return ok;
     },
   }),
   createCommand({
