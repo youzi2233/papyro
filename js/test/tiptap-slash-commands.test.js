@@ -39,6 +39,10 @@ function createFakeEditor() {
         calls.push(["toggleHeading", attrs.level]);
         return true;
       },
+      insertTable: (attrs) => {
+        calls.push(["insertTable", attrs.rows, attrs.cols, attrs.withHeaderRow]);
+        return true;
+      },
       toggleOrderedList: () => {
         calls.push(["toggleOrderedList"]);
         return true;
@@ -98,7 +102,7 @@ test("Tiptap slash commands call rich editor commands when available", () => {
   assert.deepEqual(calls, [["toggleHeading", 2], ["focus"]]);
 });
 
-test("Tiptap slash commands insert Markdown for Markdown-first blocks", () => {
+test("Tiptap slash commands create rich tables when the table extension is available", () => {
   const { calls, editor } = createFakeEditor();
   const controller = createTiptapSlashCommandController();
 
@@ -108,11 +112,7 @@ test("Tiptap slash commands insert Markdown for Markdown-first blocks", () => {
     error: null,
   });
   assert.deepEqual(calls, [
-    [
-      "insertContent",
-      "\n| Column | Notes |\n| --- | --- |\n|  |  |\n",
-      "markdown",
-    ],
+    ["insertTable", 3, 2, true],
     ["focus"],
   ]);
 });
@@ -136,6 +136,34 @@ test("Tiptap slash commands fall back to Markdown when an editor command is unav
     error: null,
   });
   assert.deepEqual(calls, [["insertContent", "# ", "markdown"], ["focus"]]);
+});
+
+test("Tiptap slash commands fall back to Markdown for tables without table commands", () => {
+  const calls = [];
+  const editor = {
+    commands: {
+      focus: () => calls.push(["focus"]),
+      insertContent: (content, options) => {
+        calls.push(["insertContent", content, options.contentType]);
+        return true;
+      },
+    },
+  };
+  const controller = createTiptapSlashCommandController();
+
+  assert.deepEqual(controller.run("table", { editor }), {
+    ok: true,
+    commandId: "table",
+    error: null,
+  });
+  assert.deepEqual(calls, [
+    [
+      "insertContent",
+      "\n| Column | Notes |\n| --- | --- |\n|  |  |\n",
+      "markdown",
+    ],
+    ["focus"],
+  ]);
 });
 
 test("Tiptap slash command controller reports unknown commands", () => {

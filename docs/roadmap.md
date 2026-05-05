@@ -238,6 +238,7 @@ Tasks:
 - [x] Preserve `set_block_hints` as a Tiptap migration compatibility message.
 - [x] Preserve Tiptap `destroy` semantics with stale instance protection.
 - [x] Add Tiptap task list extensions with checked/unchecked Markdown round-trip coverage.
+- [x] Add Tiptap table extensions with pipe table round-trip coverage and rich insert command support.
 - [ ] Migrate task lists, tables, math, Mermaid, images, and code blocks.
 - [ ] Remove CodeMirror dependencies, `.cm-*` CSS, and obsolete tests.
 - [ ] Finish full acceptance checks and push the completed migration.

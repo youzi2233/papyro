@@ -182,7 +182,7 @@ flowchart TD
 ### 5. Markdown Block Migration
 
 - [x] Task list round-trips `- [ ]` and `- [x]`.
-- [ ] Pipe tables become editable tables with row/column operations and cell navigation.
+- [x] Pipe tables become editable tables with row/column operations and cell navigation.
 - [ ] Inline and display math support edit, preview, and error states.
 - [ ] Mermaid supports source editing and rendered preview.
 - [ ] Images preserve local image URLs, paste image requests, and Markdown image syntax.

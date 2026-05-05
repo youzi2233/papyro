@@ -301,6 +301,45 @@
     text-decoration-color: color-mix(in srgb, var(--mn-ink-3) 55%, transparent);
 }
 
+.mn-tiptap-editor .tableWrapper {
+    overflow-x: auto;
+    margin: 0 0 var(--mn-markdown-block-gap);
+}
+
+.mn-tiptap-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--mn-font-ui);
+    font-size: .92em;
+}
+
+.mn-tiptap-table-header,
+.mn-tiptap-table-cell {
+    min-width: 96px;
+    padding: var(--mn-markdown-table-cell-pad);
+    border: var(--mn-markdown-table-border);
+    vertical-align: top;
+}
+
+.mn-tiptap-table-header {
+    background: var(--mn-markdown-table-head-bg);
+    color: var(--mn-ink-2);
+    font-size: .88em;
+    font-weight: var(--mn-weight-bold);
+    letter-spacing: var(--mn-letter-normal);
+    text-align: left;
+    text-transform: uppercase;
+}
+
+.mn-tiptap-table-row:nth-child(even) .mn-tiptap-table-cell {
+    background: var(--mn-markdown-table-bg);
+}
+
+.mn-tiptap-table-cell p,
+.mn-tiptap-table-header p {
+    margin: 0;
+}
+
 .mn-tiptap-editor > *:first-child { margin-top: 0; }
 .mn-tiptap-editor > *:last-child { margin-bottom: 0; }
 

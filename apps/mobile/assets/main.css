@@ -1059,6 +1059,35 @@ small {
     text-decoration: line-through;
 }
 
+.mn-tiptap-editor .tableWrapper {
+    overflow-x: auto;
+}
+
+.mn-tiptap-table {
+    width: 100%;
+    min-width: 420px;
+    border-collapse: collapse;
+}
+
+.mn-tiptap-table-header,
+.mn-tiptap-table-cell {
+    min-width: 96px;
+    padding: 8px 10px;
+    border: 1px solid var(--mn-border);
+    vertical-align: top;
+}
+
+.mn-tiptap-table-header {
+    background: var(--mn-soft);
+    font-weight: 650;
+    text-align: left;
+}
+
+.mn-tiptap-table-cell p,
+.mn-tiptap-table-header p {
+    margin: 0;
+}
+
 .mn-preview-notice {
     margin-bottom: 12px;
     padding: 10px 12px;

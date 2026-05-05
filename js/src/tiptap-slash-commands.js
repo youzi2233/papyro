@@ -207,7 +207,12 @@ export const PAPYRO_TIPTAP_SLASH_COMMANDS = Object.freeze([
     keywords: ["cells", "表格"],
     priority: 50,
     run: ({ editor }) =>
-      insertMarkdown(editor, "\n| Column | Notes |\n| --- | --- |\n|  |  |\n"),
+      runEditorCommand(
+        editor,
+        "insertTable",
+        [{ rows: 3, cols: 2, withHeaderRow: true }],
+        "\n| Column | Notes |\n| --- | --- |\n|  |  |\n",
+      ),
   }),
   createCommand({
     id: "math-block",
