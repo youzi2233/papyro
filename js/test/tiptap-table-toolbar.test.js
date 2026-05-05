@@ -655,6 +655,13 @@ test("Tiptap table toolbar quick add buttons run row and column insertion", () =
     String(element.className).includes("mn-tiptap-table-add-column"),
   );
 
+  assert.equal(rowButton.textContent ?? "", "");
+  assert.equal(columnButton.textContent ?? "", "");
+  assert.equal(rowButton.style.left, "219px");
+  assert.equal(rowButton.style.top, "164px");
+  assert.equal(columnButton.style.left, "366px");
+  assert.equal(columnButton.style.top, "103px");
+
   rowButton.onpointerdown({ preventDefault() {}, stopPropagation() {} });
   columnButton.onpointerdown({ preventDefault() {}, stopPropagation() {} });
 

@@ -226,6 +226,10 @@ export const TABLE_COMMANDS = Object.freeze([
 ]);
 
 const TABLE_AXIS_HANDLE_SIZE = 22;
+const TABLE_ADD_ROW_WIDTH = 42;
+const TABLE_ADD_ROW_HEIGHT = 22;
+const TABLE_ADD_COLUMN_WIDTH = 22;
+const TABLE_ADD_COLUMN_HEIGHT = 42;
 const TABLE_MENU_COMMAND_SCOPE = Object.freeze({
   cell: new Set([
     "align-left",
@@ -744,9 +748,7 @@ class TiptapTableToolbarView {
 
     root.role = "toolbar";
     addRowButton.type = "button";
-    addRowButton.textContent = "+";
     addColumnButton.type = "button";
-    addColumnButton.textContent = "+";
     tableSelectButton.type = "button";
     cellMenuButton.type = "button";
     cellMenuButton.setAttribute("aria-hidden", "false");
@@ -877,10 +879,10 @@ class TiptapTableToolbarView {
 
     const addRow = state.commands.find((command) => command.id === "add-row-after");
     const addColumn = state.commands.find((command) => command.id === "add-column-after");
-    this.#addRowButton.style.left = `${rect.left + Math.max(0, rect.width ?? rect.right - rect.left) / 2 - 12}px`;
+    this.#addRowButton.style.left = `${rect.left + Math.max(0, rect.width ?? rect.right - rect.left) / 2 - TABLE_ADD_ROW_WIDTH / 2}px`;
     this.#addRowButton.style.top = `${rect.bottom + 6}px`;
     this.#addColumnButton.style.left = `${rect.right + 6}px`;
-    this.#addColumnButton.style.top = `${rect.top + Math.max(0, rect.height ?? rect.bottom - rect.top) / 2 - 12}px`;
+    this.#addColumnButton.style.top = `${rect.top + Math.max(0, rect.height ?? rect.bottom - rect.top) / 2 - TABLE_ADD_COLUMN_HEIGHT / 2}px`;
 
     this.#addRowButton._mnCommand = addRow;
     this.#addColumnButton._mnCommand = addColumn;

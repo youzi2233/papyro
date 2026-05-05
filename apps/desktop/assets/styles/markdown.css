@@ -1199,14 +1199,55 @@
     z-index: 161;
     display: grid;
     place-items: center;
-    width: 26px;
-    height: 26px;
+    min-width: 0;
     border: var(--mn-border-default);
     border-radius: var(--mn-radius-round);
     background: var(--mn-surface-raised);
     color: var(--mn-accent);
     box-shadow: var(--mn-shadow-sm);
-    font: var(--mn-weight-semibold) var(--mn-type-control) / 1 var(--mn-font-ui);
+    padding: 0;
+    transition:
+        background-color var(--mn-transition-fast),
+        border-color var(--mn-transition-fast),
+        box-shadow var(--mn-transition-fast),
+        color var(--mn-transition-fast),
+        opacity var(--mn-transition-fast);
+}
+
+.mn-tiptap-table-quick-add::before,
+.mn-tiptap-table-quick-add::after {
+    content: "";
+    position: absolute;
+    border-radius: var(--mn-radius-round);
+    background: currentColor;
+}
+
+.mn-tiptap-table-quick-add::before {
+    width: 12px;
+    height: 1.5px;
+}
+
+.mn-tiptap-table-quick-add::after {
+    width: 1.5px;
+    height: 12px;
+}
+
+.mn-tiptap-table-add-row {
+    width: 42px;
+    height: 22px;
+}
+
+.mn-tiptap-table-add-column {
+    width: 22px;
+    height: 42px;
+}
+
+.mn-tiptap-table-quick-add:hover,
+.mn-tiptap-table-quick-add:focus-visible {
+    outline: 0;
+    border-color: var(--mn-accent);
+    background: var(--mn-accent-wash);
+    box-shadow: var(--mn-focus-ring-sm);
 }
 
 .mn-tiptap-table-quick-add.hidden {
