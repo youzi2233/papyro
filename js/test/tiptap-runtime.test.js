@@ -29,6 +29,7 @@ function createRuntimeHarness({
     extensions,
     parse: (markdown) => ({ type: "doc", markdown }),
   }),
+  blockHintsControllerFactory,
   blockHandleControllerFactory,
   formatToolbarControllerFactory,
   pasteControllerFactory,
@@ -45,6 +46,26 @@ function createRuntimeHarness({
       close: () => calls.push(["blockHandleClose"]),
       destroy: () => calls.push(["blockHandleDestroy"]),
       refresh: () => calls.push(["blockHandleRefresh"]),
+    }));
+
+  const createBlockHintsController =
+    blockHintsControllerFactory ??
+    (() => ({
+      hints: null,
+      attach: (entry) => {
+        calls.push(["blockHintsAttach"]);
+        entry.blockHints = null;
+        return null;
+      },
+      apply: (entry, hints) => {
+        calls.push(["blockHintsApply", hints?.revision ?? null]);
+        entry.blockHints = {
+          revision: hints.revision,
+          fallback: hints.fallback,
+          blocks: hints.blocks,
+        };
+        return { changed: true, error: null, hints: entry.blockHints };
+      },
     }));
 
   const createFormatToolbar =
@@ -151,6 +172,7 @@ function createRuntimeHarness({
     editorConstructor: FakeTiptapEditor,
     extensionsFactory: () => ["starter-kit"],
     markdownManagerFactory,
+    blockHintsControllerFactory: createBlockHintsController,
     blockHandleControllerFactory: createBlockHandle,
     formatToolbarControllerFactory: createFormatToolbar,
     pasteControllerFactory: createPasteController,
@@ -189,6 +211,7 @@ test("Tiptap runtime creates an editor instance and registry entry", () => {
     ["constructor", "# Note", "markdown", false, true],
     ["mount", "mn-tiptap-runtime", "tab-a"],
     ["setEditable", true],
+    ["blockHintsAttach"],
     ["blockHandleAttach", "mn-tiptap-runtime"],
     ["formatToolbarAttach", "mn-tiptap-runtime"],
     ["pasteControllerAttach", "mn-tiptap-runtime"],
@@ -221,6 +244,7 @@ test("Tiptap runtime reattaches existing editors without rebuilding", () => {
     ["constructor", "# Note", "markdown", false, true],
     ["mount", "mn-tiptap-runtime", "tab-a"],
     ["setEditable", true],
+    ["blockHintsAttach"],
     ["blockHandleAttach", "mn-tiptap-runtime"],
     ["formatToolbarAttach", "mn-tiptap-runtime"],
     ["pasteControllerAttach", "mn-tiptap-runtime"],
@@ -251,6 +275,14 @@ test("Tiptap runtime handles baseline Rust messages", () => {
     auto_link_paste: false,
   });
   runtime.handleRustMessage("tab-a", {
+    type: "set_block_hints",
+    hints: {
+      revision: 7,
+      fallback: { type: "none" },
+      blocks: [{ kind: "heading", from_line: 1, to_line: 1 }],
+    },
+  });
+  runtime.handleRustMessage("tab-a", {
     type: "run_slash_command",
     command_id: "heading-2",
   });
@@ -263,6 +295,7 @@ test("Tiptap runtime handles baseline Rust messages", () => {
   assert.equal(registry.get("tab-a").dioxus.id, "dioxus-a");
   assert.equal(registry.get("tab-a").viewMode, "source");
   assert.deepEqual(registry.get("tab-a").preferences, { autoLinkPaste: false });
+  assert.equal(registry.get("tab-a").blockHints.revision, 7);
   assert.equal(registry.get("tab-a").dom.dataset.viewMode, "source");
   assert.deepEqual(calls, [
     ["syncOutline", "tab-a", "hybrid"],
@@ -275,6 +308,7 @@ test("Tiptap runtime handles baseline Rust messages", () => {
     ["blockHandleRefresh"],
     ["slashMenuRefresh"],
     ["formatToolbarRefresh"],
+    ["blockHintsApply", 7],
     ["toggleHeading", 2],
     ["focus"],
     ["toggleBold"],

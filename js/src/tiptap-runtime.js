@@ -5,6 +5,7 @@ import { createTiptapRuntimeAdapter } from "./editor-runtime.js";
 import { createMarkdownSyncController } from "./markdown-sync-controller.js";
 import { createTiptapBlockActionController } from "./tiptap-block-actions.js";
 import { createTiptapBlockActionMenuController } from "./tiptap-block-action-menu.js";
+import { createTiptapBlockHintsController } from "./tiptap-block-hints-controller.js";
 import { createTiptapBlockHandleController } from "./tiptap-block-handle.js";
 import { createTiptapFormatCommandController } from "./tiptap-format-commands.js";
 import { createTiptapFormatToolbarController } from "./tiptap-format-toolbar.js";
@@ -66,6 +67,7 @@ function createEntry({
   instanceId,
   modeController,
   markdownSync,
+  blockHintsController,
   blockHandle,
   formatCommands,
   formatToolbar,
@@ -83,6 +85,8 @@ function createEntry({
     viewMode: modeController.mode,
     modeController,
     markdownSync,
+    blockHints: blockHintsController.hints,
+    blockHintsController,
     blockHandle,
     formatCommands,
     formatToolbar,
@@ -104,6 +108,7 @@ export function createTiptapEditorRuntime({
   modeControllerFactory = createTiptapModeController,
   blockActionControllerFactory = createTiptapBlockActionController,
   blockActionMenuControllerFactory = createTiptapBlockActionMenuController,
+  blockHintsControllerFactory = createTiptapBlockHintsController,
   blockHandleControllerFactory = createTiptapBlockHandleController,
   formatCommandControllerFactory = createTiptapFormatCommandController,
   formatToolbarControllerFactory = createTiptapFormatToolbarController,
@@ -134,6 +139,10 @@ export function createTiptapEditorRuntime({
   const createBlockActionMenuController = requireFunction(
     blockActionMenuControllerFactory,
     "blockActionMenuControllerFactory",
+  );
+  const createBlockHintsController = requireFunction(
+    blockHintsControllerFactory,
+    "blockHintsControllerFactory",
   );
   const createBlockHandleController = requireFunction(
     blockHandleControllerFactory,
@@ -214,6 +223,7 @@ export function createTiptapEditorRuntime({
       manager: markdownManager,
     });
     const modeController = createModeController(viewMode);
+    const blockHintsController = createBlockHintsController();
     const blockActions = createBlockActionController();
     const blockActionMenu = createBlockActionMenuController({
       commandController: blockActions,
@@ -289,6 +299,7 @@ export function createTiptapEditorRuntime({
       instanceId,
       modeController,
       markdownSync,
+      blockHintsController,
       blockHandle,
       formatCommands,
       formatToolbar,
@@ -298,6 +309,7 @@ export function createTiptapEditorRuntime({
       slashMenu,
     });
     modeController.apply(entry, modeController.mode);
+    blockHintsController.attach(entry);
     preferencesController.attach(entry);
     blockHandle.attach({ editor, root, entry });
     formatToolbar.attach({ editor, root, entry });
@@ -352,6 +364,8 @@ export function createTiptapEditorRuntime({
         });
       } else if (message.type === "set_preferences") {
         entry.preferencesController.apply(entry, message);
+      } else if (message.type === "set_block_hints") {
+        entry.blockHintsController.apply(entry, message.hints);
       } else if (message.type === "run_slash_command") {
         const result = entry.slashCommands.run(message.command_id ?? message.commandId, {
           editor: entry.editor,
