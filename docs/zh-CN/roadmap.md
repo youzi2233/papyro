@@ -204,6 +204,7 @@ flowchart LR
 - [x] 增加可复用的 slash command controller，作为 Notion-like 但 Papyro 原生块插入体验的 headless 基础。
 - [x] 增加第一版 Notion-like 但 Papyro 原生的 slash command menu controller。
 - [x] 增加第一版 Papyro 原生浮动格式栏 controller。
+- [x] 浮动格式栏按钮统一为 pointer-first 触发，避免 WebView 焦点顺序吞掉行内格式操作。
 - [x] 增加第一版 Papyro 原生块操作柄 controller。
 - [x] 把块操作柄升级为 Notion-like 双入口：`+` 打开块插入菜单，句柄点击选中当前块并打开块操作菜单。
 - [x] 修复块操作柄事件链：重复 hover 更新后仍保留 action/insert 回调，并让 `+` 插入入口在 WebView 指针事件下稳定打开。

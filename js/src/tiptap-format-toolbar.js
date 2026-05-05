@@ -136,9 +136,13 @@ class TiptapFormatToolbarView {
       button.dataset.priority = String(command.priority ?? 100);
       text.textContent = command.label;
       button.append(icon, text);
+      button.addEventListener("pointerdown", (event) => {
+        event.preventDefault();
+        event.stopPropagation?.();
+        state.run(command.id);
+      });
       button.addEventListener("mousedown", (event) => {
         event.preventDefault();
-        state.run(command.id);
       });
       this.#list.appendChild(button);
     });

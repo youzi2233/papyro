@@ -109,6 +109,55 @@ function createDismissDocument() {
   };
 }
 
+function createDocument() {
+  const created = [];
+  const documentRef = {
+    createElement(tagName) {
+      const element = {
+        tagName,
+        children: [],
+        className: "",
+        dataset: {},
+        style: {},
+        classList: {
+          toggle(name, enabled) {
+            element[name] = enabled;
+          },
+        },
+        append(...children) {
+          this.children.push(...children);
+        },
+        appendChild(child) {
+          this.children.push(child);
+        },
+        replaceChildren(...children) {
+          this.children = children;
+        },
+        setAttribute(name, value) {
+          this[name] = value;
+        },
+        addEventListener(name, handler) {
+          this[`on${name}`] = handler;
+        },
+        contains(target) {
+          return target === this;
+        },
+        remove() {
+          this.removed = true;
+        },
+      };
+      created.push(element);
+      return element;
+    },
+    body: {
+      appendChild(child) {
+        this.child = child;
+      },
+    },
+  };
+  return { created, documentRef };
+}
+
 test("Tiptap format toolbar opens for non-empty Hybrid selections", () => {
   const { editor } = createEditor({ active: ["bold"] });
   const view = createViewSpy();
@@ -175,6 +224,30 @@ test("Tiptap format toolbar runs selected commands", () => {
 
   assert.deepEqual(calls, [["toggleBold"], ["focus"]]);
   assert.equal(view.calls[0][0], "update");
+});
+
+test("Tiptap format toolbar buttons run commands from pointerdown", () => {
+  const { created, documentRef } = createDocument();
+  const { calls, editor } = createEditor();
+  const controller = createTiptapFormatToolbarController({
+    dom: { document: documentRef },
+  });
+
+  controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
+  const button = created.find((element) => element.dataset.commandId === "bold");
+  const events = [];
+
+  button.onpointerdown({
+    preventDefault() {
+      events.push("preventDefault");
+    },
+    stopPropagation() {
+      events.push("stopPropagation");
+    },
+  });
+
+  assert.deepEqual(events, ["preventDefault", "stopPropagation"]);
+  assert.deepEqual(calls, [["toggleBold"], ["focus"]]);
 });
 
 test("Tiptap format toolbar closes and destroys view state", () => {

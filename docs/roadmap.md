@@ -229,6 +229,7 @@ Tasks:
 - [x] Add a reusable slash command controller as the headless foundation for Notion-like but Papyro-native block insertion.
 - [x] Add the first Notion-like but Papyro-native slash command menu controller.
 - [x] Add the first Papyro-native floating formatting toolbar controller.
+- [x] Make floating format toolbar buttons pointer-first so inline formatting does not lose to WebView focus ordering.
 - [x] Add the first Papyro-native block handle controller.
 - [x] Upgrade the block handle into Notion-like dual controls: `+` opens block insertion, while the handle selects the current block and opens block actions.
 - [x] Fix block handle event wiring so repeated hover updates keep the action/insert callbacks alive and the `+` insert entry opens from pointer interaction in WebView.
