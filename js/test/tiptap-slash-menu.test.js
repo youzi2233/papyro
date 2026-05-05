@@ -222,6 +222,21 @@ function createDocument() {
   };
 }
 
+function slashMenuCommandItem(root, commandId = null) {
+  const walk = (element) => {
+    if (!element) return null;
+    if (element.dataset?.commandId && (!commandId || element.dataset.commandId === commandId)) {
+      return element;
+    }
+    for (const child of element.children ?? []) {
+      const found = walk(child);
+      if (found) return found;
+    }
+    return null;
+  };
+  return walk(root);
+}
+
 test("findSlashTrigger detects slash queries at text boundaries", () => {
   assert.deepEqual(findSlashTrigger("/h2"), { from: 0, to: 3, query: "h2" });
   assert.deepEqual(findSlashTrigger("hello /table"), {
@@ -285,10 +300,14 @@ test("Tiptap slash menu renders command icons for block insertion", () => {
 
   const menu = documentRef.body.children[0];
   const list = menu.children[0];
-  const firstItem = list.children[0];
+  const firstSection = list.children[0];
+  const firstItem = firstSection.children[1];
   const icon = firstItem.children[0];
   const copy = firstItem.children[1];
+  assert.equal(String(firstSection.className).includes("mn-tiptap-slash-menu-section"), true);
+  assert.equal(firstSection.children[0].textContent, "Advanced");
   assert.equal(firstItem.dataset.commandId, "table");
+  assert.equal(firstItem.dataset.group, "Advanced");
   assert.equal(icon.dataset.icon, "table");
   assert.equal(String(icon.className).includes("mn-tiptap-slash-menu-icon table"), true);
   assert.equal(copy.children[0].textContent, "Table");
@@ -527,7 +546,7 @@ test("Tiptap slash menu command items support click fallback without double-run"
     dom: { document: documentRef },
   });
   controller.attach({ editor, root: {} });
-  const item = documentRef.body.children[0].children[0].children[0];
+  const item = slashMenuCommandItem(documentRef.body.children[0]);
   const events = [];
   const event = () => ({
     preventDefault() {
@@ -553,7 +572,7 @@ test("Tiptap slash menu command items support click fallback without double-run"
   });
   const fresh = createEditor("/h2");
   second.attach({ editor: fresh.editor, root: {} });
-  const freshItem = documentRef.body.children[1].children[0].children[0];
+  const freshItem = slashMenuCommandItem(documentRef.body.children[1]);
   freshItem.onpointerdown(event());
   freshItem.onclick(event());
 

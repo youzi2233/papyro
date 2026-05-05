@@ -39,6 +39,25 @@ function chooseCalloutKind(calloutPicker, kind) {
   calloutPicker?._choose?.(kind);
 }
 
+function groupedCommands(commands) {
+  const groups = [];
+  const byName = new Map();
+  commands.forEach((command, index) => {
+    const groupName = command.group || "Text";
+    let group = byName.get(groupName);
+    if (!group) {
+      group = {
+        name: groupName,
+        commands: [],
+      };
+      byName.set(groupName, group);
+      groups.push(group);
+    }
+    group.commands.push({ ...command, index });
+  });
+  return groups;
+}
+
 function entryLanguage(entry) {
   return entry?.preferences?.language ?? "english";
 }
@@ -287,40 +306,52 @@ class TiptapSlashMenuView {
     this.#updateCalloutOptionLabels();
 
     this.#list.replaceChildren();
-    state.commands.forEach((command, index) => {
-      const item = createElement(this.#document, "button", "mn-tiptap-slash-menu-item");
-      const icon = createElement(
-        this.#document,
-        "span",
-        `mn-tiptap-slash-menu-icon ${command.icon ?? "paragraph"}`,
-      );
-      const copy = createElement(this.#document, "span", "mn-tiptap-slash-menu-copy");
-      const title = createElement(this.#document, "span", "mn-tiptap-slash-menu-title");
-      const description = createElement(
-        this.#document,
-        "span",
-        "mn-tiptap-slash-menu-description",
-      );
-      const group = createElement(this.#document, "span", "mn-tiptap-slash-menu-group");
-      if (!item || !icon || !copy || !title || !description || !group) return;
+    groupedCommands(state.commands).forEach((commandGroup) => {
+      const section = createElement(this.#document, "section", "mn-tiptap-slash-menu-section");
+      const heading = createElement(this.#document, "div", "mn-tiptap-slash-menu-section-title");
+      if (!section || !heading) return;
 
-      item.type = "button";
-      item.id = commandElementId(this.#ownerId, index);
-      item.role = "option";
-      item.setAttribute("aria-selected", String(index === state.selectedIndex));
-      item.classList.toggle("active", index === state.selectedIndex);
-      item.dataset.commandId = command.id;
-      item.tabIndex = -1;
-      icon.setAttribute("aria-hidden", "true");
-      icon.dataset.icon = command.icon ?? "paragraph";
-      title.textContent = command.title;
-      description.textContent = command.description ?? "";
-      group.textContent = command.group ?? "";
-      copy.append(title, description);
+      section.role = "group";
+      section.setAttribute("aria-label", commandGroup.name);
+      heading.textContent = commandGroup.name;
+      section.appendChild(heading);
 
-      item.append(icon, copy, group);
-      bindPointerActivation(item, () => state.choose(command.id));
-      this.#list.appendChild(item);
+      commandGroup.commands.forEach((command) => {
+        const item = createElement(this.#document, "button", "mn-tiptap-slash-menu-item");
+        const icon = createElement(
+          this.#document,
+          "span",
+          `mn-tiptap-slash-menu-icon ${command.icon ?? "paragraph"}`,
+        );
+        const copy = createElement(this.#document, "span", "mn-tiptap-slash-menu-copy");
+        const title = createElement(this.#document, "span", "mn-tiptap-slash-menu-title");
+        const description = createElement(
+          this.#document,
+          "span",
+          "mn-tiptap-slash-menu-description",
+        );
+        if (!item || !icon || !copy || !title || !description) return;
+
+        item.type = "button";
+        item.id = commandElementId(this.#ownerId, command.index);
+        item.role = "option";
+        item.setAttribute("aria-selected", String(command.index === state.selectedIndex));
+        item.classList.toggle("active", command.index === state.selectedIndex);
+        item.dataset.commandId = command.id;
+        item.dataset.group = command.group ?? "";
+        item.tabIndex = -1;
+        icon.setAttribute("aria-hidden", "true");
+        icon.dataset.icon = command.icon ?? "paragraph";
+        title.textContent = command.title;
+        description.textContent = command.description ?? "";
+        copy.append(title, description);
+
+        item.append(icon, copy);
+        bindPointerActivation(item, () => state.choose(command.id));
+        section.appendChild(item);
+      });
+
+      this.#list.appendChild(section);
     });
 
     this.#updateTablePicker(state);

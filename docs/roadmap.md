@@ -269,6 +269,7 @@ Tasks:
 - [x] Add keyboard access to the Tiptap table toolbar: Shift+F10 opens it from a table selection, arrow keys move between enabled commands, Enter/Space runs the focused command, and Escape closes it.
 - [x] Add shared floating dismiss lifecycle to the slash/`+` insertion menu, block action menu, floating format toolbar, and table toolbar so outside clicks, scrolling, and window changes close overlays while the current block/table bridge stays interactive.
 - [x] Keep slash and block action menu keyboard navigation scrolled to the active item so long Notion-like menus remain usable from the keyboard.
+- [x] Group the slash/`+` insertion menu into quiet Text/List/Block/Advanced sections and remove repeated right-side group tags, making insertion feel closer to mature document editors.
 - [x] Add advanced block action menus and responsive editor toolbar behavior.
 - [x] Fix Tiptap Hybrid scroll-container constraints so long documents scroll inside the editor host instead of being clipped by the outer shell.
 - [x] Preserve Tiptap `content_changed`, `insert_markdown`, and `set_view_mode` protocol behavior with runtime tests.

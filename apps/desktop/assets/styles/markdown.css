@@ -661,13 +661,27 @@
 
 .mn-tiptap-slash-menu-list {
     display: grid;
-    gap: 3px;
+    gap: 6px;
     overflow-y: auto;
+}
+
+.mn-tiptap-slash-menu-section {
+    display: grid;
+    gap: 3px;
+}
+
+.mn-tiptap-slash-menu-section-title {
+    padding: 2px 8px 1px;
+    color: var(--mn-ink-3);
+    font-size: var(--mn-type-label);
+    font-weight: var(--mn-weight-semibold);
+    line-height: var(--mn-line-caption);
+    text-transform: uppercase;
 }
 
 .mn-tiptap-slash-menu-item {
     display: grid;
-    grid-template-columns: 30px minmax(0, 1fr) auto;
+    grid-template-columns: 30px minmax(0, 1fr);
     align-items: center;
     gap: 10px;
     width: 100%;
@@ -798,14 +812,6 @@
     color: var(--mn-ink-3);
     font-size: var(--mn-type-caption);
     line-height: var(--mn-line-caption);
-}
-
-.mn-tiptap-slash-menu-group {
-    align-self: center;
-    color: var(--mn-ink-3);
-    font-size: var(--mn-type-label);
-    font-weight: var(--mn-weight-semibold);
-    text-transform: uppercase;
 }
 
 .mn-tiptap-slash-menu-empty {
