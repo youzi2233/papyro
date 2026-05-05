@@ -903,6 +903,11 @@
     color: var(--mn-ink);
 }
 
+.mn-tiptap-table-toolbar-button[data-active="true"] {
+    background: var(--mn-accent-wash);
+    color: var(--mn-accent);
+}
+
 .mn-tiptap-table-toolbar-button[data-tone="danger"] {
     color: var(--mn-danger);
 }

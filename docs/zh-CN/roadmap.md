@@ -215,6 +215,7 @@ flowchart LR
 - [x] 增加表格边缘快捷添加控件，可直接在表格下方新增行、右侧新增列，不必先打开完整工具条。
 - [x] 增加表格行/列边缘选择 handle：点击行左侧或列顶部可直接选中整行/整列，并复用表格工具条执行后续行列操作。
 - [x] 增加表格单元格对齐命令：左对齐、居中、右对齐通过 Tiptap `setCellAttribute('align', ...)` 写入文档模型，并保持 Markdown pipe table 对齐语义。
+- [x] 增加表格单元格背景色命令：清除、黄色、蓝色、绿色通过 Tiptap `setCellAttribute('backgroundColor', ...)` 写入单元格属性，并在工具条中显示当前背景状态。
 - [x] 增加共享 Tiptap UI primitives，用于 popover 定位、菜单 active-descendant 状态、toolbar root 和显隐处理。
 - [x] 增加高级块操作菜单和响应式编辑器 toolbar 行为。
 - [x] 修复 Tiptap Hybrid 滚动容器约束，避免内容撑开宿主后被外层裁剪导致无法滚动。

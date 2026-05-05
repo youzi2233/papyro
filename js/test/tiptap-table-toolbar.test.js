@@ -14,11 +14,20 @@ function createTableHarness(commandOverrides = {}) {
     const rowCells = Array.from({ length: 3 }, (_, columnIndex) => {
       const cell = {
         nodeType: 1,
+        tagName: "TD",
         rowIndex,
         columnIndex,
         parentElement: null,
+        attributes: new Map(),
+        style: {},
         closest(selector) {
           return selector.includes("table") ? table : null;
+        },
+        getAttribute(name) {
+          return this.attributes.get(name) ?? null;
+        },
+        setAttribute(name, value) {
+          this.attributes.set(name, value);
         },
         getBoundingClientRect: () => ({
           left: 120 + columnIndex * 80,
@@ -120,6 +129,55 @@ function createViewSpy() {
   };
 }
 
+function createDocument() {
+  const created = [];
+  const documentRef = {
+    createElement(tagName) {
+      const element = {
+        tagName,
+        children: [],
+        className: "",
+        dataset: {},
+        hidden: false,
+        style: {},
+        classList: {
+          toggle(name, enabled) {
+            element.hidden = enabled && name === "hidden";
+          },
+        },
+        appendChild(child) {
+          this.children.push(child);
+        },
+        replaceChildren(...children) {
+          this.children = children;
+        },
+        setAttribute(name, value) {
+          this[name] = value;
+        },
+        addEventListener(name, handler) {
+          this[`on${name}`] = handler;
+        },
+        contains(target) {
+          return target === this;
+        },
+        remove() {
+          this.removed = true;
+        },
+      };
+      created.push(element);
+      return element;
+    },
+    body: {
+      children: [],
+      appendChild(child) {
+        this.children.push(child);
+      },
+    },
+  };
+
+  return { created, documentRef };
+}
+
 test("Tiptap table toolbar opens when the selection is inside a table", () => {
   const { calls, editor } = createTableHarness();
   editor.commands.addColumnBefore = commandSpy(calls, "addColumnBefore");
@@ -186,6 +244,10 @@ test("Tiptap table toolbar exposes grouped enterprise table commands", () => {
       ["Align", "align-left", "setCellAttribute"],
       ["Align", "align-center", "setCellAttribute"],
       ["Align", "align-right", "setCellAttribute"],
+      ["Cell color", "cell-bg-clear", "setCellAttribute"],
+      ["Cell color", "cell-bg-yellow", "setCellAttribute"],
+      ["Cell color", "cell-bg-blue", "setCellAttribute"],
+      ["Cell color", "cell-bg-green", "setCellAttribute"],
       ["Navigate", "previous-cell", "goToPreviousCell"],
       ["Navigate", "next-cell", "goToNextCell"],
       ["Table", "fix-table", "fixTables"],
@@ -208,6 +270,10 @@ test("Tiptap table toolbar sets cell alignment attributes", () => {
     "align-left",
     "align-center",
     "align-right",
+    "cell-bg-clear",
+    "cell-bg-yellow",
+    "cell-bg-blue",
+    "cell-bg-green",
   ]);
   assert.equal(controller.run("align-left"), true);
   assert.equal(controller.run("align-center"), true);
@@ -221,6 +287,49 @@ test("Tiptap table toolbar sets cell alignment attributes", () => {
     ["setCellAttribute", "align", "right"],
     ["focus"],
   ]);
+});
+
+test("Tiptap table toolbar sets cell background attributes", () => {
+  const { calls, editor } = createTableHarness();
+  editor.commands.setCellAttribute = (name, value) => {
+    calls.push(["setCellAttribute", name, value]);
+    return true;
+  };
+  const view = createViewSpy();
+  const controller = createTiptapTableToolbarController({ view });
+  controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
+
+  assert.equal(controller.run("cell-bg-yellow"), true);
+  assert.equal(controller.run("cell-bg-clear"), true);
+
+  assert.deepEqual(calls, [
+    ["setCellAttribute", "backgroundColor", "rgba(245, 158, 11, 0.16)"],
+    ["focus"],
+    ["setCellAttribute", "backgroundColor", null],
+    ["focus"],
+  ]);
+});
+
+test("Tiptap table toolbar marks active cell background commands", () => {
+  const { created, documentRef } = createDocument();
+  const { editor } = createTableHarness();
+  const activeCell = editor.view.domAtPos().node;
+  editor.view.domAtPos = () => ({ node: activeCell });
+  activeCell.setAttribute(
+    "data-cell-background",
+    "rgba(245, 158, 11, 0.16)",
+  );
+  editor.commands.setCellAttribute = () => true;
+  const controller = createTiptapTableToolbarController({
+    dom: { document: documentRef },
+  });
+
+  controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
+
+  const yellow = created.find((element) => element.dataset.commandId === "cell-bg-yellow");
+  const blue = created.find((element) => element.dataset.commandId === "cell-bg-blue");
+  assert.equal(yellow.dataset.active, "true");
+  assert.equal(blue.dataset.active, "false");
 });
 
 test("Tiptap table toolbar runs navigation and repair commands when available", () => {
@@ -247,47 +356,7 @@ test("Tiptap table toolbar runs navigation and repair commands when available", 
 });
 
 test("Tiptap table toolbar quick add buttons run row and column insertion", () => {
-  const created = [];
-  const documentRef = {
-    createElement(tagName) {
-      const element = {
-        tagName,
-        children: [],
-        className: "",
-        dataset: {},
-        hidden: false,
-        style: {},
-        classList: {
-          toggle(name, enabled) {
-            element.hidden = enabled && name === "hidden";
-          },
-        },
-        appendChild(child) {
-          this.children.push(child);
-        },
-        replaceChildren(...children) {
-          this.children = children;
-        },
-        setAttribute(name, value) {
-          this[name] = value;
-        },
-        addEventListener(name, handler) {
-          this[`on${name}`] = handler;
-        },
-        contains(target) {
-          return target === this;
-        },
-      };
-      created.push(element);
-      return element;
-    },
-    body: {
-      children: [],
-      appendChild(child) {
-        this.children.push(child);
-      },
-    },
-  };
+  const { created, documentRef } = createDocument();
   const { calls, editor } = createTableHarness();
   editor.commands.addRowAfter = commandSpy(calls, "addRowAfter");
   editor.commands.addColumnAfter = commandSpy(calls, "addColumnAfter");
@@ -315,50 +384,7 @@ test("Tiptap table toolbar quick add buttons run row and column insertion", () =
 });
 
 test("Tiptap table toolbar axis handles select rows and columns", () => {
-  const created = [];
-  const documentRef = {
-    createElement(tagName) {
-      const element = {
-        tagName,
-        children: [],
-        className: "",
-        dataset: {},
-        hidden: false,
-        style: {},
-        classList: {
-          toggle(name, enabled) {
-            element.hidden = enabled && name === "hidden";
-          },
-        },
-        appendChild(child) {
-          this.children.push(child);
-        },
-        replaceChildren(...children) {
-          this.children = children;
-        },
-        setAttribute(name, value) {
-          this[name] = value;
-        },
-        addEventListener(name, handler) {
-          this[`on${name}`] = handler;
-        },
-        contains(target) {
-          return target === this;
-        },
-        remove() {
-          this.removed = true;
-        },
-      };
-      created.push(element);
-      return element;
-    },
-    body: {
-      children: [],
-      appendChild(child) {
-        this.children.push(child);
-      },
-    },
-  };
+  const { created, documentRef } = createDocument();
   const { calls, editor } = createTableHarness();
   editor.commands.setCellSelection = (selection) => {
     calls.push(["setCellSelection", selection.anchorCell, selection.headCell]);

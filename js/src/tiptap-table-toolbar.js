@@ -120,6 +120,38 @@ export const TABLE_COMMANDS = Object.freeze([
     args: ["align", "right"],
   },
   {
+    id: "cell-bg-clear",
+    group: "Cell color",
+    title: "Clear cell background",
+    label: "Clear",
+    command: "setCellAttribute",
+    args: ["backgroundColor", null],
+  },
+  {
+    id: "cell-bg-yellow",
+    group: "Cell color",
+    title: "Use a soft yellow cell background",
+    label: "Yellow",
+    command: "setCellAttribute",
+    args: ["backgroundColor", "rgba(245, 158, 11, 0.16)"],
+  },
+  {
+    id: "cell-bg-blue",
+    group: "Cell color",
+    title: "Use a soft blue cell background",
+    label: "Blue",
+    command: "setCellAttribute",
+    args: ["backgroundColor", "rgba(59, 130, 246, 0.14)"],
+  },
+  {
+    id: "cell-bg-green",
+    group: "Cell color",
+    title: "Use a soft green cell background",
+    label: "Green",
+    command: "setCellAttribute",
+    args: ["backgroundColor", "rgba(16, 185, 129, 0.14)"],
+  },
+  {
     id: "previous-cell",
     group: "Navigate",
     title: "Move to previous cell",
@@ -224,6 +256,29 @@ function runEditorCommand(editor, commandName, args = []) {
   return ok;
 }
 
+function cellValue(editor, name) {
+  const selection = editor?.state?.selection;
+  const view = editor?.view;
+  const domAtPos = typeof view?.domAtPos === "function" && Number.isFinite(selection?.from)
+    ? view.domAtPos(selection.from)
+    : null;
+  const node = domAtPos?.node?.nodeType === 1 ? domAtPos.node : domAtPos?.node?.parentElement;
+  const cell = node?.tagName === "TH" || node?.tagName === "TD"
+    ? node
+    : node?.closest?.("th,td") ?? null;
+  if (!cell) return null;
+
+  if (name === "backgroundColor") {
+    return cell.getAttribute?.("data-cell-background") || cell.style?.backgroundColor || null;
+  }
+
+  if (name === "align") {
+    return cell.style?.textAlign || cell.getAttribute?.("align") || null;
+  }
+
+  return null;
+}
+
 export function selectTableAxis(editor, grid, axis, index) {
   if (!editor || typeof editor.commands?.setCellSelection !== "function") return false;
   const axisIndex = Number(index);
@@ -326,6 +381,7 @@ class TiptapTableToolbarView {
       button.dataset.commandId = command.id;
       button.dataset.group = command.group;
       button.dataset.tone = command.tone ?? "default";
+      button.dataset.active = command.active ? "true" : "false";
       button.addEventListener("mousedown", (event) => {
         event.preventDefault();
         state.run(command.id);
@@ -510,7 +566,13 @@ export class TiptapTableToolbarController {
       grid: context.grid,
       commands: TABLE_COMMANDS.filter(
         (command) => typeof editor.commands?.[command.command] === "function",
-      ),
+      ).map((command) => ({
+        ...command,
+        active:
+          command.command === "setCellAttribute" &&
+          command.args?.length >= 2 &&
+          cellValue(editor, command.args[0]) === command.args[1],
+      })),
     };
     this.#view.update?.({
       ...this.#state,
