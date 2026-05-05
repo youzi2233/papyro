@@ -849,6 +849,11 @@ class TiptapTableToolbarView {
       this.#cellMenuButton.title = cellMenuLabel;
       this.#cellMenuButton.setAttribute("aria-label", cellMenuLabel);
       this.#cellMenuButton.dataset.open = state.menuOpen ? "true" : "false";
+      this.#cellMenuButton.dataset.selectionKind = state.selection?.kind ?? "cell";
+      this.#cellMenuButton.dataset.selectedCount = String(
+        state.selection?.positions?.size ?? 0,
+      );
+      this.#cellMenuButton.setAttribute("aria-expanded", state.menuOpen ? "true" : "false");
       this.#cellMenuButton._mnRun = () => state.openCellMenu?.("context") !== false;
       if (!this.#cellMenuButton._mnBound) {
         bindPointerCommand(this.#cellMenuButton, null, () => this.#cellMenuButton?._mnRun?.());

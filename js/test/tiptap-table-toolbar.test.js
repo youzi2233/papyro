@@ -1083,6 +1083,9 @@ test("Tiptap table toolbar positions the cell menu trigger inside the selected c
   assert.equal(trigger.style.left, "149px");
   assert.equal(trigger.style.top, "96px");
   assert.equal(trigger.textContent ?? "", "");
+  assert.equal(trigger.dataset.selectionKind, "cell");
+  assert.equal(trigger.dataset.selectedCount, "0");
+  assert.equal(trigger["aria-expanded"], "false");
 });
 
 test("Tiptap table toolbar anchors multi-cell actions to the head cell", () => {
@@ -1113,10 +1116,13 @@ test("Tiptap table toolbar anchors multi-cell actions to the head cell", () => {
   assert.equal(controller.state.selection.kind, "cells");
   assert.equal(trigger.style.left, "229px");
   assert.equal(trigger.style.top, "96px");
+  assert.equal(trigger.dataset.selectionKind, "cells");
+  assert.equal(trigger.dataset.selectedCount, "2");
 
   trigger.onpointerdown({ preventDefault() {}, stopPropagation() {} });
 
   assert.equal(root.hidden, false);
+  assert.equal(trigger["aria-expanded"], "true");
   assert.equal(root.style.left, "125px");
   assert.equal(root.style.top, "132px");
 });

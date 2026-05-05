@@ -1171,11 +1171,11 @@
     z-index: 164;
     display: grid;
     place-items: center;
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
     border: var(--mn-border-default);
     border-radius: var(--mn-radius-round);
-    background: var(--mn-surface-raised);
+    background: color-mix(in srgb, var(--mn-surface-raised) 92%, transparent);
     color: var(--mn-ink-3);
     box-shadow: var(--mn-shadow-xs);
     padding: 0;
@@ -1188,11 +1188,25 @@
 .mn-tiptap-table-cell-menu-trigger::before {
     content: "";
     display: block;
-    width: 4px;
-    height: 4px;
+    width: 3.5px;
+    height: 3.5px;
     border-radius: var(--mn-radius-round);
     background: currentColor;
     box-shadow: -5px 0 0 currentColor, 5px 0 0 currentColor;
+    opacity: .78;
+}
+
+.mn-tiptap-table-cell-menu-trigger[data-selection-kind="cells"] {
+    width: 24px;
+    height: 24px;
+    color: var(--mn-accent);
+}
+
+.mn-tiptap-table-cell-menu-trigger[data-selection-kind="row"],
+.mn-tiptap-table-cell-menu-trigger[data-selection-kind="column"],
+.mn-tiptap-table-cell-menu-trigger[data-selection-kind="table"] {
+    width: 22px;
+    height: 22px;
 }
 
 .mn-tiptap-table-cell-menu-trigger.hidden {
@@ -1207,6 +1221,12 @@
     background: var(--mn-accent-wash);
     color: var(--mn-accent);
     box-shadow: var(--mn-focus-ring-sm);
+}
+
+.mn-tiptap-table-cell-menu-trigger:hover::before,
+.mn-tiptap-table-cell-menu-trigger:focus-visible::before,
+.mn-tiptap-table-cell-menu-trigger[data-open="true"]::before {
+    opacity: 1;
 }
 
 .mn-tiptap-table-quick-add {
