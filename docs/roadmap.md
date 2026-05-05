@@ -242,6 +242,7 @@ Tasks:
 - [x] Add row and column edge handles for tables: clicking the left row rail or top column rail selects the full row/column and reuses the table toolbar for follow-up operations.
 - [x] Add a top-left whole-table handle so one click selects the full table before delete, header, alignment, and cell-style operations.
 - [x] Add table cell alignment commands: left, center, and right use Tiptap `setCellAttribute('align', ...)` so pipe table alignment remains part of the Markdown document model.
+- [x] Make table toolbar command buttons pointer-first so WebView focus ordering does not swallow table operations.
 - [x] Add shared Tiptap UI primitives for popover placement, menu active-descendant state, toolbar roots, and visibility handling.
 - [x] Add shared floating dismiss lifecycle to the slash/`+` insertion menu, block action menu, floating format toolbar, and table toolbar so outside clicks, scrolling, and window changes close overlays while the current block/table bridge stays interactive.
 - [x] Add advanced block action menus and responsive editor toolbar behavior.

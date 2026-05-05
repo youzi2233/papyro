@@ -399,9 +399,13 @@ class TiptapTableToolbarView {
       button.dataset.group = command.group;
       button.dataset.tone = command.tone ?? "default";
       button.dataset.active = command.active ? "true" : "false";
+      button.addEventListener("pointerdown", (event) => {
+        event.preventDefault();
+        event.stopPropagation?.();
+        state.run(command.id);
+      });
       button.addEventListener("mousedown", (event) => {
         event.preventDefault();
-        state.run(command.id);
       });
       this.#list.appendChild(button);
     });

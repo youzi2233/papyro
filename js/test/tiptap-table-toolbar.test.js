@@ -245,6 +245,31 @@ test("Tiptap table toolbar runs table commands and restores focus", () => {
   assert.deepEqual(calls, [["deleteTable"], ["focus"]]);
 });
 
+test("Tiptap table toolbar command buttons run from pointerdown", () => {
+  const { created, documentRef } = createDocument();
+  const { calls, editor } = createTableHarness();
+  editor.commands.deleteTable = commandSpy(calls, "deleteTable");
+  const controller = createTiptapTableToolbarController({
+    dom: { document: documentRef },
+  });
+
+  controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
+  const button = created.find((element) => element.dataset.commandId === "delete-table");
+  const events = [];
+
+  button.onpointerdown({
+    preventDefault() {
+      events.push("preventDefault");
+    },
+    stopPropagation() {
+      events.push("stopPropagation");
+    },
+  });
+
+  assert.deepEqual(events, ["preventDefault", "stopPropagation"]);
+  assert.deepEqual(calls, [["deleteTable"], ["focus"]]);
+});
+
 test("Tiptap table toolbar stays closed outside Hybrid mode", () => {
   const { editor } = createTableHarness();
   const view = createViewSpy();
