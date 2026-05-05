@@ -397,6 +397,13 @@ export function createTiptapEditorRuntime({
       } else if (message.type === "focus") {
         entry.editor.commands?.focus?.();
       } else if (message.type === "destroy") {
+        if (
+          entry.instanceId &&
+          message.instance_id &&
+          entry.instanceId !== message.instance_id
+        ) {
+          return "destroyed";
+        }
         let released = null;
         if (typeof runtimeRegistry.unregister === "function") {
           released = runtimeRegistry.unregister(tabId);
@@ -409,6 +416,7 @@ export function createTiptapEditorRuntime({
         released?.pasteController?.destroy?.();
         released?.slashMenu?.destroy?.();
         released?.editor?.destroy?.();
+        return "destroyed";
       }
     },
 

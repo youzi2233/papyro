@@ -393,7 +393,7 @@ test("Tiptap runtime destroys and unregisters editor entries", () => {
   });
   calls.length = 0;
 
-  runtime.handleRustMessage("tab-a", { type: "destroy" });
+  assert.equal(runtime.handleRustMessage("tab-a", { type: "destroy" }), "destroyed");
 
   assert.equal(registry.has("tab-a"), false);
   assert.deepEqual(calls, [
@@ -403,6 +403,37 @@ test("Tiptap runtime destroys and unregisters editor entries", () => {
     ["slashMenuDestroy"],
     ["destroy"],
   ]);
+});
+
+test("Tiptap runtime ignores stale host destroy messages", () => {
+  const { calls, registry, runtime } = createRuntimeHarness();
+  runtime.ensureEditor({
+    tabId: "tab-a",
+    containerId: "editor-root",
+    instanceId: "host-new",
+    initialContent: "# Note",
+  });
+  calls.length = 0;
+
+  assert.equal(
+    runtime.handleRustMessage("tab-a", {
+      type: "destroy",
+      instance_id: "host-old",
+    }),
+    "destroyed",
+  );
+
+  assert.equal(registry.has("tab-a"), true);
+  assert.deepEqual(calls, []);
+
+  assert.equal(
+    runtime.handleRustMessage("tab-a", {
+      type: "destroy",
+      instance_id: "host-new",
+    }),
+    "destroyed",
+  );
+  assert.equal(registry.has("tab-a"), false);
 });
 
 test("Tiptap runtime wires paste handling through editor props", () => {

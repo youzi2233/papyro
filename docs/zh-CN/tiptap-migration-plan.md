@@ -181,7 +181,8 @@ flowchart TD
 ### 4. Rust/JS 协议兼容
 
 - [ ] 保持 `content_changed`、`save_requested`、`paste_image_requested`、`runtime_ready`、`runtime_error` 事件不变。
-- [ ] 保持 `insert_markdown`、`set_view_mode`、`destroy` 消息不变。
+- [ ] 保持 `insert_markdown`、`set_view_mode` 消息不变。
+- [x] 保持 `destroy` 语义，包括 stale host instance 保护。
 - [x] 通过 Tiptap preferences controller 保持 `set_preferences` 状态更新。
 - [x] 通过 Tiptap block hints controller 对 `set_block_hints` 做兼容处理。
 - [x] 通过 Tiptap paste controller 保持选中文字后粘贴 URL 的 `auto_link_paste` 行为。
