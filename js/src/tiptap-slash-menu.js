@@ -78,6 +78,46 @@ function coordsRectAtPos(editor, pos) {
   }
 }
 
+function blockInsertAnchorRect(target) {
+  const rect = target?.block?.getBoundingClientRect?.();
+  if (!rect) return null;
+
+  const left = Number(rect.left);
+  const top = Number(rect.top);
+  const height = Number(rect.height ?? 0);
+  const bottom = Number(rect.bottom ?? (Number.isFinite(top) ? top + height : NaN));
+  if (![left, bottom].every(Number.isFinite)) return null;
+
+  return {
+    left,
+    right: left,
+    top: bottom,
+    bottom,
+    width: 0,
+    height: 0,
+  };
+}
+
+function isSuspiciousOriginCaretRect(rect) {
+  if (!usableAnchorRect(rect)) return false;
+  const left = Math.abs(Number(rect.left));
+  const top = Math.abs(Number(rect.top));
+  const width = Math.abs(Number(rect.right ?? rect.left) - Number(rect.left));
+  return left <= 1 && top <= 1 && width <= 2;
+}
+
+function blockInsertMenuAnchorRect(slashRect, target, fallbackRect = null) {
+  const blockAnchor = blockInsertAnchorRect(target);
+  const fallback = usableAnchorRect(blockAnchor) ? blockAnchor : fallbackRect;
+  if (
+    usableAnchorRect(slashRect) &&
+    !(usableAnchorRect(fallback) && isSuspiciousOriginCaretRect(slashRect))
+  ) {
+    return slashRect;
+  }
+  return fallback;
+}
+
 function placeMenu(element, editor, range, anchorRect = null, placement = "bottom") {
   if (element && usableAnchorRect(anchorRect)) {
     positionFloatingElement(element, anchorRect, {
@@ -498,7 +538,7 @@ export class TiptapSlashMenuController {
       selectedIndex: 0,
       deleteRangeBeforeRun: true,
       cleanupRangeOnClose: true,
-      anchorRect: usableAnchorRect(slashRect) ? slashRect : anchorRect,
+      anchorRect: blockInsertMenuAnchorRect(slashRect, target, anchorRect),
       placement: "bottom",
     };
     this.#view.update?.(

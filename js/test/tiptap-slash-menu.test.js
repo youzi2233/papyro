@@ -100,6 +100,13 @@ function createViewSpy() {
         state.selectedIndex,
         state.range,
         state.cleanupRangeOnClose ?? false,
+        state.anchorRect
+          ? {
+              left: state.anchorRect.left,
+              top: state.anchorRect.top,
+              bottom: state.anchorRect.bottom,
+            }
+          : null,
       ]);
       this.choose = state.choose;
     },
@@ -248,6 +255,7 @@ test("Tiptap slash menu opens from editor text and ranks commands", () => {
       0,
       { from: 6, to: 9 },
       false,
+      null,
     ],
   ]);
 });
@@ -425,6 +433,34 @@ test("Tiptap slash menu opens as a block insert menu without deleting a trigger"
     ["setParagraph"],
     ["focus"],
   ]);
+});
+
+test("Tiptap slash menu falls back to the block edge when inserted caret coords are at the window origin", () => {
+  const { editor } = createEditor("plain");
+  editor.view.coordsAtPos = () => ({ left: 0, right: 0, top: 0, bottom: 0 });
+  const view = createViewSpy();
+  const controller = createTiptapSlashMenuController({ view });
+  controller.attach({ editor, root: {} });
+
+  controller.openAtBlock({
+    block: {
+      getBoundingClientRect: () => ({
+        left: 96,
+        top: 44,
+        right: 420,
+        bottom: 78,
+        width: 324,
+        height: 34,
+      }),
+    },
+    pos: 3,
+    node: {
+      nodeSize: 5,
+    },
+  });
+
+  assert.equal(controller.state.open, true);
+  assert.deepEqual(view.calls.at(-1).at(-1), { left: 96, top: 78, bottom: 78 });
 });
 
 test("Tiptap slash menu removes temporary block insert triggers on cancel", () => {
