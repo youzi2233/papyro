@@ -119,6 +119,7 @@ test("Tiptap slash command query localizes visible command labels", () => {
     title: "一级标题",
     description: "大型章节标题",
     group: "文本",
+    icon: "heading-1",
     aliases: ["h1", "title"],
     keywords: ["heading", "headline", "标题", "一级标题"],
     priority: 20,

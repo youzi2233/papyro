@@ -259,6 +259,12 @@ class TiptapSlashMenuView {
     this.#list.replaceChildren();
     state.commands.forEach((command, index) => {
       const item = createElement(this.#document, "button", "mn-tiptap-slash-menu-item");
+      const icon = createElement(
+        this.#document,
+        "span",
+        `mn-tiptap-slash-menu-icon ${command.icon ?? "paragraph"}`,
+      );
+      const copy = createElement(this.#document, "span", "mn-tiptap-slash-menu-copy");
       const title = createElement(this.#document, "span", "mn-tiptap-slash-menu-title");
       const description = createElement(
         this.#document,
@@ -266,7 +272,7 @@ class TiptapSlashMenuView {
         "mn-tiptap-slash-menu-description",
       );
       const group = createElement(this.#document, "span", "mn-tiptap-slash-menu-group");
-      if (!item || !title || !description || !group) return;
+      if (!item || !icon || !copy || !title || !description || !group) return;
 
       item.type = "button";
       item.id = commandElementId(this.#ownerId, index);
@@ -275,11 +281,14 @@ class TiptapSlashMenuView {
       item.classList.toggle("active", index === state.selectedIndex);
       item.dataset.commandId = command.id;
       item.tabIndex = -1;
+      icon.setAttribute("aria-hidden", "true");
+      icon.dataset.icon = command.icon ?? "paragraph";
       title.textContent = command.title;
       description.textContent = command.description ?? "";
       group.textContent = command.group ?? "";
+      copy.append(title, description);
 
-      item.append(title, group, description);
+      item.append(icon, copy, group);
       item.addEventListener("pointerdown", (event) => {
         event.preventDefault();
         event.stopPropagation?.();

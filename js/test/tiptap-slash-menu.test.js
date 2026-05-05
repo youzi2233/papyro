@@ -261,6 +261,26 @@ test("Tiptap slash menu keyboard selection wraps through command results", () =>
   assert.equal(controller.state.selectedIndex, 2);
 });
 
+test("Tiptap slash menu renders command icons for block insertion", () => {
+  const { editor } = createEditor("/table");
+  const documentRef = createDocument();
+  const controller = createTiptapSlashMenuController({
+    dom: { document: documentRef },
+  });
+
+  controller.attach({ editor, root: {} });
+
+  const menu = documentRef.body.children[0];
+  const list = menu.children[0];
+  const firstItem = list.children[0];
+  const icon = firstItem.children[0];
+  const copy = firstItem.children[1];
+  assert.equal(firstItem.dataset.commandId, "table");
+  assert.equal(icon.dataset.icon, "table");
+  assert.equal(String(icon.className).includes("mn-tiptap-slash-menu-icon table"), true);
+  assert.equal(copy.children[0].textContent, "Table");
+});
+
 test("Tiptap slash menu scrolls keyboard selections into view", () => {
   const { editor } = createEditor("/标题");
   const documentRef = createDocument();

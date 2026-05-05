@@ -139,6 +139,7 @@ export function localizeSlashCommand(command, language) {
     title: labels ? localizedText(language, labels[0], labels[1]) : command.title,
     description: labels ? localizedText(language, labels[2], labels[3]) : command.description,
     group: labels ? localizedText(language, labels[4], labels[5]) : localizedGroup(command.group, language),
+    icon: command.icon ?? "paragraph",
   };
 }
 
