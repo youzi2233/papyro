@@ -34,8 +34,8 @@ function groupedCommands(commands) {
   return groups;
 }
 
-function placeMenu(element, target, fallbackWindow) {
-  const rect = target?.block?.getBoundingClientRect?.();
+function placeMenu(element, target, fallbackWindow, anchorRect = null) {
+  const rect = anchorRect ?? target?.block?.getBoundingClientRect?.();
   if (!element || !rect) return;
 
   positionFloatingElement(element, rect, {
@@ -156,7 +156,7 @@ class TiptapBlockActionMenuView {
 
     updateActiveDescendant(this.#root, this.#ownerId, state.commands, state.selectedIndex);
     setHidden(this.#root, false);
-    placeMenu(this.#root, state.target, this.#window);
+    placeMenu(this.#root, state.target, this.#window, state.anchorRect);
   }
 
   hide() {
@@ -184,6 +184,7 @@ export class TiptapBlockActionMenuController {
     target: null,
     commands: [],
     selectedIndex: 0,
+    anchorRect: null,
   };
 
   constructor({
@@ -214,7 +215,7 @@ export class TiptapBlockActionMenuController {
     this.#view.mount?.(root);
   }
 
-  open(target) {
+  open(target, { anchorRect = null } = {}) {
     if (!this.#editor || this.#entry?.viewMode !== "hybrid" || !target?.block) {
       this.close();
       return this.state;
@@ -225,6 +226,7 @@ export class TiptapBlockActionMenuController {
       target,
       commands: this.#commands.list({ editor: this.#editor, entry: this.#entry, target }),
       selectedIndex: 0,
+      anchorRect,
     };
     this.#view.update?.(
       {
@@ -303,6 +305,7 @@ export class TiptapBlockActionMenuController {
       target: null,
       commands: [],
       selectedIndex: 0,
+      anchorRect: null,
     };
     this.#view.hide?.();
   }

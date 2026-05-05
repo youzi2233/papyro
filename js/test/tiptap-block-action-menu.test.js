@@ -135,6 +135,7 @@ test("Tiptap block action menu opens for Hybrid block targets", () => {
       "math-block",
       "mermaid",
       "image",
+      "copy-block",
       "delete",
     ],
   );
@@ -199,8 +200,8 @@ test("Tiptap block action menu renders grouped command sections", () => {
   const menu = documentRef.body.children[0];
   const list = menu.children[0];
   assert.deepEqual(
-    list.children.map((section) => section.children[0].textContent),
-    ["Insert", "Text", "Lists", "Blocks", "Advanced", "Danger"],
+      list.children.map((section) => section.children[0].textContent),
+    ["Insert", "Text", "Lists", "Blocks", "Advanced", "Actions", "Danger"],
   );
   assert.equal(list.children[0].children[1].dataset.commandId, "insert-before");
   assert.equal(list.children[4].children[1].dataset.commandId, "table");

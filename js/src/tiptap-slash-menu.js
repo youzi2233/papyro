@@ -38,7 +38,20 @@ function textSelectionContext(editor) {
   };
 }
 
-function placeMenu(element, editor, range) {
+function placeMenu(element, editor, range, anchorRect = null) {
+  if (element && anchorRect) {
+    positionFloatingElement(element, anchorRect, {
+      viewport: viewportSize(editor?.view?.dom, defaultWindow(editor?.view?.dom?.ownerDocument)),
+      size: {
+        width: 320,
+        height: 220,
+        margin: 10,
+      },
+      placement: "bottom",
+    });
+    return;
+  }
+
   const view = editor?.view;
   if (!element || !view || typeof view.coordsAtPos !== "function" || !range) {
     return;
@@ -150,11 +163,15 @@ class TiptapSlashMenuView {
     setHidden(this.#empty, state.commands.length > 0);
     updateActiveDescendant(this.#root, this.#ownerId, state.commands, state.selectedIndex);
     setHidden(this.#root, false);
-    placeMenu(this.#root, editor, state.range);
+    placeMenu(this.#root, editor, state.range, state.anchorRect);
   }
 
   hide() {
     setHidden(this.#root, true);
+  }
+
+  contains(target) {
+    return this.#root?.contains?.(target) ?? false;
   }
 
   destroy() {
@@ -175,6 +192,8 @@ export class TiptapSlashMenuController {
     range: null,
     commands: [],
     selectedIndex: 0,
+    deleteRangeBeforeRun: true,
+    anchorRect: null,
   };
   #editor = null;
   #entry = null;
@@ -244,6 +263,8 @@ export class TiptapSlashMenuController {
       },
       commands,
       selectedIndex: nextSelectedIndex < 0 ? 0 : nextSelectedIndex,
+      deleteRangeBeforeRun: true,
+      anchorRect: null,
     };
     this.#view.update?.(
       {
@@ -251,6 +272,47 @@ export class TiptapSlashMenuController {
         choose: (commandId) => this.choose(commandId),
       },
       editor,
+    );
+    return this.state;
+  }
+
+  openAtBlock(target, { anchorRect = null } = {}) {
+    if (!this.#editor || (this.#entry && this.#entry.viewMode !== "hybrid")) {
+      this.close();
+      return this.state;
+    }
+
+    const position = blockInsertPosition(target);
+    if (!Number.isFinite(position)) {
+      this.close();
+      return this.state;
+    }
+
+    this.#editor.commands?.focus?.(position);
+    this.#editor.commands?.insertContentAt?.(position, "\n", {
+      contentType: "markdown",
+    });
+    this.#editor.commands?.focus?.();
+
+    const commands = this.#commands.query("", { limit: this.#maxItems });
+    this.#state = {
+      open: true,
+      query: "",
+      range: {
+        from: position,
+        to: position,
+      },
+      commands,
+      selectedIndex: 0,
+      deleteRangeBeforeRun: false,
+      anchorRect,
+    };
+    this.#view.update?.(
+      {
+        ...this.#state,
+        choose: (commandId) => this.choose(commandId),
+      },
+      this.#editor,
     );
     return this.state;
   }
@@ -275,9 +337,10 @@ export class TiptapSlashMenuController {
   choose(commandId = this.#state.commands[this.#state.selectedIndex]?.id) {
     if (!this.#state.open || !commandId || !this.#editor) return false;
     const range = this.#state.range;
+    const shouldDeleteRange = this.#state.deleteRangeBeforeRun;
     this.close();
 
-    if (range && typeof this.#editor.commands?.deleteRange === "function") {
+    if (shouldDeleteRange && range && typeof this.#editor.commands?.deleteRange === "function") {
       this.#editor.commands.deleteRange(range);
     }
 
@@ -327,6 +390,8 @@ export class TiptapSlashMenuController {
       range: null,
       commands: [],
       selectedIndex: 0,
+      deleteRangeBeforeRun: true,
+      anchorRect: null,
     };
     this.#view.hide?.();
   }
@@ -337,8 +402,17 @@ export class TiptapSlashMenuController {
     this.#editor = null;
     this.#entry = null;
   }
+
+  contains(target) {
+    return this.#view.contains?.(target) ?? false;
+  }
 }
 
 export function createTiptapSlashMenuController(options) {
   return new TiptapSlashMenuController(options);
+}
+
+function blockInsertPosition(target) {
+  const nodeSize = target?.node?.nodeSize ?? target?.block?.pmViewDesc?.node?.nodeSize ?? 0;
+  return Number.isFinite(target?.pos) ? target.pos + Math.max(1, nodeSize) : null;
 }

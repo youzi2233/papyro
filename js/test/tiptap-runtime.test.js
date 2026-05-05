@@ -37,6 +37,7 @@ function createRuntimeHarness({
   preferencesControllerFactory,
   sourcePaneControllerFactory,
   slashMenuControllerFactory,
+  tableToolbarControllerFactory,
   layout,
 } = {}) {
   const calls = [];
@@ -102,6 +103,16 @@ function createRuntimeHarness({
         return event.key === "ArrowDown";
       },
       refresh: () => calls.push(["slashMenuRefresh"]),
+    }));
+
+  const createTableToolbar =
+    tableToolbarControllerFactory ??
+    (() => ({
+      attach: ({ root }) => calls.push(["tableToolbarAttach", root.className]),
+      close: () => calls.push(["tableToolbarClose"]),
+      contains: () => false,
+      destroy: () => calls.push(["tableToolbarDestroy"]),
+      refresh: () => calls.push(["tableToolbarRefresh"]),
     }));
 
   class FakeTiptapEditor {
@@ -203,6 +214,7 @@ function createRuntimeHarness({
     ...(preferencesControllerFactory ? { preferencesControllerFactory } : {}),
     ...(sourcePaneControllerFactory ? { sourcePaneControllerFactory } : {}),
     slashMenuControllerFactory: createSlashMenu,
+    tableToolbarControllerFactory: createTableToolbar,
     ...(layout ? { layout } : {}),
     navigation: {
       attachPreviewScroll: () => "preview-scroll",
@@ -242,6 +254,7 @@ test("Tiptap runtime creates an editor instance and registry entry", () => {
     ["formatToolbarAttach", "mn-tiptap-runtime"],
     ["pasteControllerAttach", "mn-tiptap-runtime"],
     ["slashMenuAttach", "mn-tiptap-runtime"],
+    ["tableToolbarAttach", "mn-tiptap-runtime"],
   ]);
 });
 
@@ -320,9 +333,11 @@ test("Tiptap runtime reattaches existing editors without rebuilding", () => {
     ["formatToolbarAttach", "mn-tiptap-runtime"],
     ["pasteControllerAttach", "mn-tiptap-runtime"],
     ["slashMenuAttach", "mn-tiptap-runtime"],
+    ["tableToolbarAttach", "mn-tiptap-runtime"],
     ["setEditable", false],
     ["blockHandleRefresh"],
     ["formatToolbarRefresh"],
+    ["tableToolbarRefresh"],
   ]);
 });
 
@@ -373,12 +388,14 @@ test("Tiptap runtime handles baseline Rust messages", () => {
     ["setEditable", false],
     ["blockHandleRefresh"],
     ["formatToolbarRefresh"],
+    ["tableToolbarRefresh"],
     ["syncOutline", "tab-a", "source"],
     ["setContent", "## Updated", "markdown"],
     ["insertContent", "\n- item", "markdown"],
     ["blockHandleRefresh"],
     ["slashMenuRefresh"],
     ["formatToolbarRefresh"],
+    ["tableToolbarRefresh"],
     ["blockHintsApply", 7],
     ["toggleHeading", 2],
     ["focus"],
@@ -414,6 +431,7 @@ test("Tiptap runtime preserves set_view_mode protocol state", () => {
     ["setEditable", false],
     ["blockHandleRefresh"],
     ["formatToolbarRefresh"],
+    ["tableToolbarRefresh"],
     ["syncOutline", "tab-a", "preview"],
   ]);
 });
@@ -448,6 +466,7 @@ test("Tiptap runtime mode contract keeps rich editing Hybrid-only", () => {
     ["formatToolbarAttach", "mn-tiptap-runtime"],
     ["pasteControllerAttach", "mn-tiptap-runtime"],
     ["slashMenuAttach", "mn-tiptap-runtime"],
+    ["tableToolbarAttach", "mn-tiptap-runtime"],
   ]);
   assert.deepEqual(sourcePaneCalls, [["attach", "preview"]]);
 
@@ -461,10 +480,12 @@ test("Tiptap runtime mode contract keeps rich editing Hybrid-only", () => {
     ["setEditable", false],
     ["blockHandleRefresh"],
     ["formatToolbarRefresh"],
+    ["tableToolbarRefresh"],
     ["syncOutline", "tab-a", "source"],
     ["setEditable", true],
     ["blockHandleRefresh"],
     ["formatToolbarRefresh"],
+    ["tableToolbarRefresh"],
     ["syncOutline", "tab-a", "hybrid"],
   ]);
   assert.deepEqual(sourcePaneCalls, [
@@ -585,6 +606,7 @@ test("Tiptap runtime preserves insert_markdown protocol updates", () => {
     ["blockHandleRefresh"],
     ["slashMenuRefresh"],
     ["formatToolbarRefresh"],
+    ["tableToolbarRefresh"],
   ]);
   assert.deepEqual(messages, [
     {
@@ -802,6 +824,7 @@ test("Tiptap runtime destroys and unregisters editor entries", () => {
     ["formatToolbarDestroy"],
     ["pasteControllerDestroy"],
     ["slashMenuDestroy"],
+    ["tableToolbarDestroy"],
     ["destroy"],
   ]);
   assert.deepEqual(detached, ["hybrid", "layout:hybrid"]);

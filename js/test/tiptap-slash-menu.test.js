@@ -36,8 +36,16 @@ function createEditor(text, cursor = text.length) {
         calls.push(["focus"]);
         return true;
       },
+      insertContentAt: (pos, content, options) => {
+        calls.push(["insertContentAt", pos, content, options.contentType]);
+        return true;
+      },
       insertContent: (content, options) => {
         calls.push(["insertContent", content, options.contentType]);
+        return true;
+      },
+      setParagraph: () => {
+        calls.push(["setParagraph"]);
         return true;
       },
       toggleHeading: (attrs) => {
@@ -184,4 +192,27 @@ test("Tiptap slash menu stays closed without a slash trigger", () => {
 
   assert.equal(controller.state.open, false);
   assert.deepEqual(view.calls, [["mount", ""]]);
+});
+
+test("Tiptap slash menu opens as a block insert menu without deleting a trigger", () => {
+  const { calls, editor } = createEditor("plain");
+  const view = createViewSpy();
+  const controller = createTiptapSlashMenuController({ view });
+  controller.attach({ editor, root: {} });
+
+  controller.openAtBlock({
+    pos: 3,
+    node: {
+      nodeSize: 5,
+    },
+  });
+  assert.equal(controller.handleKeyDown({ key: "Enter", preventDefault() {} }), true);
+
+  assert.deepEqual(calls, [
+    ["focus"],
+    ["insertContentAt", 8, "\n", "markdown"],
+    ["focus"],
+    ["setParagraph"],
+    ["focus"],
+  ]);
 });

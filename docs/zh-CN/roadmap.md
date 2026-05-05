@@ -205,9 +205,12 @@ flowchart LR
 - [x] 增加第一版 Notion-like 但 Papyro 原生的 slash command menu controller。
 - [x] 增加第一版 Papyro 原生浮动格式栏 controller。
 - [x] 增加第一版 Papyro 原生块操作柄 controller。
+- [x] 把块操作柄升级为 Notion-like 双入口：`+` 打开块插入菜单，句柄点击选中当前块并打开块操作菜单。
 - [x] 增加第一版 Papyro 原生块操作菜单 controller。
+- [x] 增加第一版 Tiptap 表格浮动工具条，支持插入/删除行列、合并/拆分单元格、切换表头和删除表格。
 - [x] 增加共享 Tiptap UI primitives，用于 popover 定位、菜单 active-descendant 状态、toolbar root 和显隐处理。
 - [x] 增加高级块操作菜单和响应式编辑器 toolbar 行为。
+- [x] 修复 Tiptap Hybrid 滚动容器约束，避免内容撑开宿主后被外层裁剪导致无法滚动。
 - [x] 通过 runtime 测试保持 Tiptap `content_changed`、`insert_markdown` 和 `set_view_mode` 协议行为。
 - [x] 保持 Tiptap `save_requested`、`paste_image_requested` 和 `runtime_error` 协议行为；`runtime_ready` 继续由 editor host 负责。
 - [x] 通过测试覆盖的 controller 保持 Tiptap `set_preferences` 状态更新。
@@ -224,6 +227,7 @@ flowchart LR
 - [x] 清理 CodeMirror npm 依赖和旧 JS runtime 测试。
 - [x] 清理剩余 `.cm-*` CSS，并把 host surface 改成语义化 Tiptap/editor class。
 - [x] 完成全量自动化验收并推送迁移收口提交。
+- [ ] 实现完整块拖拽排序体验；在正式实现前不要把动作柄标记为 draggable，避免给用户错误暗示。
 - [ ] 完成发布候选手工 smoke：Source/Hybrid/Preview、中文 IME、粘贴、撤销、表格、公式、Mermaid、图片、大纲、保存失败、外部文件打开。
 
 ## Phase 4.5 - 主题、字体和 Markdown 样式

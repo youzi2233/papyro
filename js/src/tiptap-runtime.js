@@ -20,6 +20,7 @@ import { createTiptapPreferencesController } from "./tiptap-preferences-controll
 import { createTiptapSourcePaneController } from "./tiptap-source-pane.js";
 import { createTiptapSlashCommandController } from "./tiptap-slash-commands.js";
 import { createTiptapSlashMenuController } from "./tiptap-slash-menu.js";
+import { createTiptapTableToolbarController } from "./tiptap-table-toolbar.js";
 import {
   createPapyroMarkdownManager,
   createPapyroTiptapExtensions,
@@ -157,6 +158,7 @@ function createEntry({
   sourcePane,
   slashCommands,
   slashMenu,
+  tableToolbar,
 }) {
   return {
     editor,
@@ -179,6 +181,7 @@ function createEntry({
     sourcePane,
     slashCommands,
     slashMenu,
+    tableToolbar,
   };
 }
 
@@ -202,6 +205,7 @@ export function createTiptapEditorRuntime({
   sourcePaneControllerFactory = createTiptapSourcePaneController,
   slashCommandControllerFactory = createTiptapSlashCommandController,
   slashMenuControllerFactory = createTiptapSlashMenuController,
+  tableToolbarControllerFactory = createTiptapTableToolbarController,
   clipboard = {},
   layout = {},
   navigation,
@@ -268,6 +272,10 @@ export function createTiptapEditorRuntime({
     slashMenuControllerFactory,
     "slashMenuControllerFactory",
   );
+  const createTableToolbarController = requireFunction(
+    tableToolbarControllerFactory,
+    "tableToolbarControllerFactory",
+  );
   const transferImage = requireFunction(
     clipboard.imageFileFromTransfer ?? imageFileFromTransfer,
     "clipboard.imageFileFromTransfer",
@@ -324,6 +332,7 @@ export function createTiptapEditorRuntime({
       existing.sourcePane.applyMode(existing);
       existing.blockHandle.refresh();
       existing.formatToolbar.refresh(existing.editor);
+      existing.tableToolbar.refresh(existing.editor);
       return existing.editor;
     }
 
@@ -349,12 +358,6 @@ export function createTiptapEditorRuntime({
         document: documentRef,
       },
     });
-    const blockHandle = createBlockHandleController({
-      menu: blockActionMenu,
-      dom: {
-        document: documentRef,
-      },
-    });
     const formatCommands = createFormatCommandController();
     const formatToolbar = createFormatToolbarController({
       commandController: formatCommands,
@@ -371,6 +374,18 @@ export function createTiptapEditorRuntime({
     const slashCommands = createSlashCommandController();
     const slashMenu = createSlashMenuController({
       commandController: slashCommands,
+      dom: {
+        document: documentRef,
+      },
+    });
+    const tableToolbar = createTableToolbarController({
+      dom: {
+        document: documentRef,
+      },
+    });
+    const blockHandle = createBlockHandleController({
+      menu: blockActionMenu,
+      insertMenu: slashMenu,
       dom: {
         document: documentRef,
       },
@@ -401,6 +416,7 @@ export function createTiptapEditorRuntime({
         entry.blockHandle.refresh();
         entry.slashMenu.refresh(targetEditor);
         entry.formatToolbar.refresh(targetEditor);
+        entry.tableToolbar.refresh(targetEditor);
       });
       editor.on("selectionUpdate", ({ editor: updatedEditor } = {}) => {
         const targetEditor = updatedEditor ?? editor;
@@ -408,6 +424,7 @@ export function createTiptapEditorRuntime({
         entry?.blockHandle?.refresh();
         entry?.slashMenu?.refresh(targetEditor);
         entry?.formatToolbar?.refresh(targetEditor);
+        entry?.tableToolbar?.refresh(targetEditor);
         entry?.modeSnapshots?.capture(entry, entry?.viewMode);
         syncOutline(tabId, entry?.viewMode);
       });
@@ -422,6 +439,9 @@ export function createTiptapEditorRuntime({
         }
         if (!entry?.formatToolbar?.contains?.(activeElement)) {
           entry?.formatToolbar?.close();
+        }
+        if (!entry?.tableToolbar?.contains?.(activeElement)) {
+          entry?.tableToolbar?.close();
         }
       });
     }
@@ -443,6 +463,7 @@ export function createTiptapEditorRuntime({
       sourcePane,
       slashCommands,
       slashMenu,
+      tableToolbar,
     });
     modeController.apply(entry, modeController.mode);
     blockHintsController.attach(entry);
@@ -453,6 +474,7 @@ export function createTiptapEditorRuntime({
     formatToolbar.attach({ editor, root, entry });
     pasteController.attach({ editor, root, entry });
     slashMenu.attach({ editor, root, entry });
+    tableToolbar.attach({ editor, root, entry });
     runtimeRegistry.set(tabId, entry);
 
     return editor;
@@ -488,6 +510,7 @@ export function createTiptapEditorRuntime({
         attachEditorScroll(tabId, entry);
         entry.blockHandle.refresh();
         entry.formatToolbar.refresh(entry.editor);
+        entry.tableToolbar.refresh(entry.editor);
         syncOutline(tabId, entry.viewMode);
       } else if (message.type === "set_content") {
         const result = entry.markdownSync.setMarkdown(message.content ?? "");
@@ -574,6 +597,7 @@ export function createTiptapEditorRuntime({
         detachLayoutObserver(released);
         released?.sourcePane?.destroy?.();
         released?.slashMenu?.destroy?.();
+        released?.tableToolbar?.destroy?.();
         released?.editor?.destroy?.();
         return "destroyed";
       }

@@ -990,9 +990,11 @@ small {
     flex-direction: column;
     flex: 1;
     min-height: 0;
+    height: 100%;
     min-width: 0;
     width: 100%;
-    overflow: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
     background: var(--mn-panel);
     color: var(--mn-text);
 }
@@ -1274,7 +1276,8 @@ small {
 
 .mn-tiptap-slash-menu,
 .mn-tiptap-block-action-menu,
-.mn-tiptap-format-toolbar {
+.mn-tiptap-format-toolbar,
+.mn-tiptap-table-toolbar {
     position: fixed;
     z-index: 160;
     border: 1px solid var(--mn-border);
@@ -1288,6 +1291,7 @@ small {
 .mn-tiptap-slash-menu.hidden,
 .mn-tiptap-block-action-menu.hidden,
 .mn-tiptap-format-toolbar.hidden,
+.mn-tiptap-table-toolbar.hidden,
 .mn-tiptap-slash-menu-empty.hidden,
 .mn-tiptap-block-handle.hidden {
     display: none;
@@ -1345,12 +1349,13 @@ small {
     font-size: 12px;
 }
 
+.mn-tiptap-block-selected { background: var(--mn-accent-wash); }
 .mn-tiptap-block-handle {
     position: fixed;
     z-index: 155;
-    display: grid;
+    display: flex;
     align-items: center;
-    justify-items: start;
+    gap: 4px;
     width: 28px;
     height: 28px;
 }
@@ -1388,6 +1393,7 @@ small {
 
 .mn-tiptap-block-handle-icon::before { left: 3px; }
 .mn-tiptap-block-handle-icon::after { right: 3px; }
+.mn-tiptap-block-insert-icon::before { content: "+"; }
 
 .mn-tiptap-slash-menu,
 .mn-tiptap-block-action-menu {

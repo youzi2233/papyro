@@ -6,6 +6,11 @@ function freezeCommand(command) {
   return Object.freeze({ ...command });
 }
 
+function clipboardApi() {
+  if (typeof globalThis === "undefined") return null;
+  return globalThis.navigator?.clipboard ?? null;
+}
+
 function editorCommand(editor, commandName, ...args) {
   const command = editor?.commands?.[commandName];
   if (typeof command !== "function") {
@@ -31,6 +36,23 @@ function insertMarkdownAt(editor, markdown, pos) {
 
 function insertMarkdown(editor, markdown) {
   return editorCommand(editor, "insertContent", markdown, { contentType: "markdown" });
+}
+
+function readTargetText(editor, target) {
+  const from = target?.pos;
+  const to = targetEndPos(target);
+  const doc = editor?.state?.doc;
+  if (!Number.isFinite(from) || !Number.isFinite(to) || typeof doc?.textBetween !== "function") {
+    return "";
+  }
+  return doc.textBetween(from, to, "\n", "\n").trim();
+}
+
+async function writeClipboard(text) {
+  const clipboard = clipboardApi();
+  if (typeof clipboard?.writeText !== "function") return false;
+  await clipboard.writeText(text);
+  return true;
 }
 
 function runEditorCommand(editor, commandName, args = [], fallbackMarkdown = null) {
@@ -263,6 +285,21 @@ export const PAPYRO_TIPTAP_BLOCK_ACTIONS = Object.freeze([
         [{ src: "assets/image.png", alt: "alt text", title: "" }],
         "![alt text](assets/image.png)",
       ),
+  }),
+  createCommand({
+    id: "copy-block",
+    title: "Copy block",
+    description: "Copy this block as plain text",
+    group: "Actions",
+    icon: "copy",
+    shortcut: "Ctrl C",
+    priority: 70,
+    run: ({ editor, target }) => {
+      const text = readTargetText(editor, target);
+      if (!text) return false;
+      writeClipboard(text).catch(() => {});
+      return true;
+    },
   }),
   createCommand({
     id: "delete",

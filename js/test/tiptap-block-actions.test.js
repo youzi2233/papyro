@@ -100,6 +100,7 @@ test("Tiptap block actions expose stable command ids", () => {
       "math-block",
       "mermaid",
       "image",
+      "copy-block",
       "delete",
     ],
   );

@@ -26,6 +26,9 @@ const BLOCK_SELECTOR = [
 
 const HORIZONTAL_GAP = 10;
 const DEFAULT_HANDLE_SIZE = 28;
+const CONTROL_GAP = 4;
+const BRIDGE_PADDING = 8;
+const SELECTED_CLASS = "mn-tiptap-block-selected";
 
 function isElement(value) {
   return value && value.nodeType === 1;
@@ -57,6 +60,14 @@ function blockPosition(editor, block) {
   }
 }
 
+function blockNode(editor, block, pos) {
+  if (Number.isFinite(pos)) {
+    const node = editor?.state?.doc?.nodeAt?.(pos);
+    if (node) return node;
+  }
+  return block?.pmViewDesc?.node ?? null;
+}
+
 function blockKind(block) {
   const tagName = String(block?.tagName ?? "").toLowerCase();
   if (!tagName) return "block";
@@ -73,11 +84,13 @@ function blockTargetFromEvent(event, editor) {
   const editorDom = editor?.view?.dom;
   const block = closestBlockElement(event?.target, editorDom);
   if (!block) return null;
+  const pos = blockPosition(editor, block);
 
   return {
     block,
     kind: blockKind(block),
-    pos: blockPosition(editor, block),
+    pos,
+    node: blockNode(editor, block, pos),
   };
 }
 
@@ -89,8 +102,10 @@ class TiptapBlockHandleView {
   #document;
   #window;
   #root = null;
-  #button = null;
+  #insertButton = null;
+  #actionButton = null;
   #onAction = null;
+  #onInsert = null;
 
   constructor({ document = defaultDocument(), window = defaultWindow(document) } = {}) {
     this.#document = document;
@@ -101,34 +116,58 @@ class TiptapBlockHandleView {
     if (this.#root || !this.#document) return;
 
     const root = createElement(this.#document, "div", "mn-tiptap-block-handle hidden");
-    const button = createElement(this.#document, "button", "mn-tiptap-block-handle-button");
+    const insertButton = createElement(
+      this.#document,
+      "button",
+      "mn-tiptap-block-handle-button mn-tiptap-block-handle-insert",
+    );
+    const insertIcon = createElement(this.#document, "span", "mn-tiptap-block-insert-icon");
+    const actionButton = createElement(
+      this.#document,
+      "button",
+      "mn-tiptap-block-handle-button mn-tiptap-block-handle-action",
+    );
     const icon = createElement(this.#document, "span", "mn-tiptap-block-handle-icon");
-    if (!root || !button || !icon) return;
+    if (!root || !insertButton || !insertIcon || !actionButton || !icon) return;
 
-    button.type = "button";
-    button.draggable = true;
-    button.title = "Block actions";
-    button.setAttribute("aria-label", "Block actions");
-    button.addEventListener("pointerdown", (event) => {
+    insertButton.type = "button";
+    insertButton.title = "Insert block below";
+    insertButton.setAttribute("aria-label", "Insert block below");
+    insertButton.addEventListener("pointerdown", (event) => {
       event.preventDefault();
     });
-    button.addEventListener("mousedown", (event) => {
+    insertButton.addEventListener("mousedown", (event) => {
+      event.preventDefault();
+      this.#onInsert?.(event);
+    });
+
+    actionButton.type = "button";
+    actionButton.title = "Block actions";
+    actionButton.setAttribute("aria-label", "Block actions");
+    actionButton.addEventListener("pointerdown", (event) => {
+      event.preventDefault();
+    });
+    actionButton.addEventListener("mousedown", (event) => {
       event.preventDefault();
       this.#onAction?.(event);
     });
-    button.appendChild(icon);
-    root.appendChild(button);
+
+    insertButton.appendChild(insertIcon);
+    actionButton.appendChild(icon);
+    root.append(insertButton, actionButton);
     mountFloatingRoot(root, container, this.#document);
 
     this.#root = root;
-    this.#button = button;
+    this.#insertButton = insertButton;
+    this.#actionButton = actionButton;
     setHidden(root, true);
   }
 
   update(state) {
-    if (!this.#root || !this.#button || !state.open || !state.target?.block) return;
+    if (!this.#root || !this.#actionButton || !state.open || !state.target?.block) return;
 
     this.#onAction = state.openActions ?? null;
+    this.#onInsert = state.openInsert ?? null;
     const rect = state.target.block.getBoundingClientRect?.();
     if (!rect) return;
 
@@ -136,8 +175,9 @@ class TiptapBlockHandleView {
       state.target.block.ownerDocument?.documentElement?.clientWidth ??
       this.#window?.innerWidth ??
       1024;
-    const size = this.#button.offsetWidth || DEFAULT_HANDLE_SIZE;
-    const bridgeWidth = size + HORIZONTAL_GAP;
+    const size = this.#actionButton.offsetWidth || DEFAULT_HANDLE_SIZE;
+    const controlsWidth = size * 2 + CONTROL_GAP;
+    const bridgeWidth = controlsWidth + HORIZONTAL_GAP;
     const left = Math.max(
       6,
       Math.min(rect.left - bridgeWidth, viewportWidth - bridgeWidth - 6),
@@ -147,12 +187,36 @@ class TiptapBlockHandleView {
     this.#root.dataset.blockKind = state.target.kind;
     this.#root.style.left = `${left}px`;
     this.#root.style.top = `${top}px`;
-    this.#root.style.width = `${bridgeWidth}px`;
+    this.#root.style.width = `${bridgeWidth + BRIDGE_PADDING}px`;
     setHidden(this.#root, false);
   }
 
   contains(target) {
     return this.#root?.contains?.(target) ?? false;
+  }
+
+  containsPointer(event, target) {
+    const handleRect = this.#root?.getBoundingClientRect?.();
+    const blockRect = target?.block?.getBoundingClientRect?.();
+    if (!handleRect || !blockRect) return false;
+
+    const x = Number(event?.clientX);
+    const y = Number(event?.clientY);
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return false;
+
+    const left = Math.min(handleRect.left, blockRect.left) - 2;
+    const right = Math.max(handleRect.right, blockRect.left) + 2;
+    const top = Math.min(handleRect.top, blockRect.top) - 8;
+    const bottom = Math.max(handleRect.bottom, blockRect.bottom) + 8;
+    return x >= left && x <= right && y >= top && y <= bottom;
+  }
+
+  actionRect() {
+    return this.#actionButton?.getBoundingClientRect?.() ?? this.#root?.getBoundingClientRect?.();
+  }
+
+  insertRect() {
+    return this.#insertButton?.getBoundingClientRect?.() ?? this.#root?.getBoundingClientRect?.();
   }
 
   hide() {
@@ -162,13 +226,15 @@ class TiptapBlockHandleView {
   destroy() {
     this.#root?.remove?.();
     this.#root = null;
-    this.#button = null;
+    this.#insertButton = null;
+    this.#actionButton = null;
   }
 }
 
 export class TiptapBlockHandleController {
   #view;
   #menu;
+  #insertMenu;
   #editor = null;
   #entry = null;
   #root = null;
@@ -178,8 +244,9 @@ export class TiptapBlockHandleController {
     target: null,
   };
 
-  constructor({ menu = null, view = null, dom = {} } = {}) {
+  constructor({ menu = null, insertMenu = null, view = null, dom = {} } = {}) {
     this.#menu = menu;
+    this.#insertMenu = insertMenu;
     this.#view =
       view ??
       new TiptapBlockHandleView({
@@ -248,6 +315,10 @@ export class TiptapBlockHandleController {
 
     const target = blockTargetFromEvent(event, this.#editor);
     if (!target) {
+      if (this.#state.open && this.#view.containsPointer?.(event, this.#state.target)) {
+        this.#updateView();
+        return this.state;
+      }
       this.close();
       return this.state;
     }
@@ -269,12 +340,30 @@ export class TiptapBlockHandleController {
     if (!this.#state.open || !this.#state.target || this.#entry?.viewMode !== "hybrid") {
       return false;
     }
-    this.#menu?.open?.(this.#state.target);
+    this.#selectTarget(this.#state.target);
+    this.#insertMenu?.close?.();
+    this.#menu?.open?.(this.#state.target, { anchorRect: this.#view.actionRect?.() });
     return true;
   }
 
+  openInsert() {
+    if (!this.#state.open || !this.#state.target || this.#entry?.viewMode !== "hybrid") {
+      return false;
+    }
+
+    this.#selectTarget(this.#state.target);
+    this.#menu?.close?.();
+    return this.#insertMenu?.openAtBlock?.(this.#state.target, {
+      anchorRect: this.#view.insertRect?.(),
+    }) !== false;
+  }
+
   handleKeyDown(event) {
-    return this.#menu?.handleKeyDown?.(event) ?? false;
+    return (
+      this.#insertMenu?.handleKeyDown?.(event) ??
+      this.#menu?.handleKeyDown?.(event) ??
+      false
+    );
   }
 
   refresh() {
@@ -292,19 +381,46 @@ export class TiptapBlockHandleController {
       {
         ...this.#state,
         openActions: () => this.openActions(),
+        openInsert: () => this.openInsert(),
       },
       this.#editor,
     );
   }
 
+  #selectTarget(target) {
+    this.#clearSelectedBlock();
+    target?.block?.classList?.add?.(SELECTED_CLASS);
+
+    const from = target?.pos;
+    const to = targetEndPos(target);
+    if (Number.isFinite(from)) {
+      if (typeof this.#editor?.commands?.setNodeSelection === "function") {
+        this.#editor.commands.setNodeSelection(from);
+      } else if (Number.isFinite(to) && to > from) {
+        this.#editor?.commands?.setTextSelection?.({ from, to });
+      } else {
+        this.#editor?.commands?.setTextSelection?.(from);
+      }
+    }
+    this.#editor?.commands?.focus?.();
+  }
+
+  #clearSelectedBlock() {
+    this.#root
+      ?.querySelectorAll?.(`.${SELECTED_CLASS}`)
+      ?.forEach?.((block) => block.classList.remove(SELECTED_CLASS));
+  }
+
   close() {
     if (!this.#state.open) return;
+    this.#clearSelectedBlock();
     this.#state = {
       open: false,
       target: null,
     };
     this.#view.hide?.();
     this.#menu?.close?.();
+    this.#insertMenu?.close?.();
   }
 
   destroy() {
@@ -316,6 +432,11 @@ export class TiptapBlockHandleController {
     this.#entry = null;
     this.#root = null;
   }
+}
+
+function targetEndPos(target) {
+  const nodeSize = target?.node?.nodeSize ?? target?.block?.pmViewDesc?.node?.nodeSize ?? 0;
+  return Number.isFinite(target?.pos) ? target.pos + Math.max(1, nodeSize) : null;
 }
 
 export function createTiptapBlockHandleController(options) {

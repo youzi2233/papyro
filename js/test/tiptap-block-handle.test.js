@@ -59,6 +59,20 @@ function createEditor({ block = null } = {}) {
         return target === paragraph ? 7 : 0;
       },
     },
+    state: {
+      doc: {
+        nodeAt(pos) {
+          return pos === 7 ? { nodeSize: 6 } : null;
+        },
+      },
+    },
+    commands: {
+      focus: () => calls.push(["focus"]),
+      setNodeSelection: (pos) => {
+        calls.push(["setNodeSelection", pos]);
+        return true;
+      },
+    },
   };
 
   return { block: paragraph, calls, editor, root };
@@ -75,6 +89,7 @@ function createViewSpy() {
     update(state) {
       calls.push(["update", state.target.kind, state.target.pos]);
       this.openActions = state.openActions;
+      this.openInsert = state.openInsert;
     },
     hide() {
       calls.push(["hide"]);
@@ -110,6 +125,30 @@ function createMenuSpy() {
     },
     open(target) {
       calls.push(["open", target.kind, target.pos]);
+    },
+  };
+}
+
+function createInsertMenuSpy() {
+  const calls = [];
+  return {
+    calls,
+    attach({ root }) {
+      calls.push(["attach", root?.tagName ?? ""]);
+    },
+    close() {
+      calls.push(["close"]);
+    },
+    destroy() {
+      calls.push(["destroy"]);
+    },
+    handleKeyDown(event) {
+      calls.push(["keydown", event.key]);
+      return event.key === "ArrowDown";
+    },
+    openAtBlock(target) {
+      calls.push(["openAtBlock", target.kind, target.pos, target.node.nodeSize]);
+      return true;
     },
   };
 }
@@ -201,5 +240,26 @@ test("Tiptap block handle opens the action menu from the handle action", () => {
     ["attach", "DIV"],
     ["open", "paragraph", 7],
     ["keydown", "Escape"],
+  ]);
+});
+
+test("Tiptap block handle opens the insert menu from the plus action", () => {
+  const { block, calls, editor } = createEditor();
+  const insertMenu = createInsertMenuSpy();
+  const view = createViewSpy();
+  const controller = createTiptapBlockHandleController({ insertMenu, view });
+  controller.attach({ editor, root: editor.view.dom, entry: { viewMode: "hybrid" } });
+  controller.handlePointerMove({ target: block });
+
+  assert.equal(view.openInsert(), true);
+  assert.equal(controller.handleKeyDown({ key: "ArrowDown" }), true);
+
+  assert.deepEqual(insertMenu.calls, [
+    ["openAtBlock", "paragraph", 7, 6],
+    ["keydown", "ArrowDown"],
+  ]);
+  assert.deepEqual(calls.slice(-2), [
+    ["setNodeSelection", 7],
+    ["focus"],
   ]);
 });
