@@ -595,6 +595,24 @@ test("Tiptap block handle keeps the action menu stable while the pointer leaves 
   assert.notDeepEqual(view.calls.at(-1), ["hide"]);
 });
 
+test("Tiptap block handle keeps an open action menu anchored to its original block", () => {
+  const { block, editor, root } = createEditor();
+  const nextBlock = createElement({ tagName: "H2", parent: root });
+  const menu = createMenuSpy();
+  const view = createViewSpy();
+  const controller = createTiptapBlockHandleController({ menu, view });
+  controller.attach({ editor, root: editor.view.dom, entry: { viewMode: "hybrid" } });
+  controller.handlePointerMove({ target: block });
+  view.openActions();
+
+  controller.handlePointerMove({ target: nextBlock });
+
+  assert.equal(controller.state.open, true);
+  assert.equal(controller.state.target.block, block);
+  assert.equal(menu.state.open, true);
+  assert.deepEqual(view.calls.at(-1), ["update", "paragraph", 7]);
+});
+
 test("Tiptap block handle stays open when the editor mouse leaves with a floating menu open", () => {
   const { block, editor } = createEditor();
   const menu = createMenuSpy();

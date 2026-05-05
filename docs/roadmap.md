@@ -240,6 +240,7 @@ Tasks:
 - [x] Wire the block action menu's advertised shortcuts so Ctrl/Cmd+C copies, Ctrl/Cmd+D duplicates, and Delete/Backspace removes the selected block while the menu is open.
 - [x] Stabilize block handle menus so left-click opens actions on release, right-click does not leak the native WebView menu, small pointer jitter does not become an accidental drag, and moving from the handle into a floating menu keeps the menu open until an outside click.
 - [x] Split the block handle state machine against the official Drag Context Menu benchmark: a normal click selects the current block and opens the current-block menu next to the pointer, drag starts only after the movement threshold, and right-click opens only the Papyro menu while blocking WebView native menus.
+- [x] Keep an open block action or insert menu anchored to its original block while the pointer moves across nearby blocks, so menus do not drift or disappear during normal mouse movement.
 - [x] Add a reset-formatting block action that clears marks, color, and highlights from the current block with localized English/Chinese labels.
 - [x] Make the `+` insertion control create a dedicated slash paragraph on the next line and open the insertion menu at that caret position instead of behaving like a hidden block action.
 - [x] Keep the block action menu focused on current-block actions and styles, with insertion owned by `+` and slash commands.

@@ -118,6 +118,10 @@ function targetEquals(left, right) {
   return left?.block === right?.block && left?.pos === right?.pos && left?.kind === right?.kind;
 }
 
+function targetStillMounted(target, editorDom) {
+  return isElement(target?.block) && isElement(editorDom) && editorDom.contains?.(target.block);
+}
+
 function targetEndPos(target) {
   const nodeSize = target?.node?.nodeSize ?? target?.block?.pmViewDesc?.node?.nodeSize ?? 0;
   return Number.isFinite(target?.pos) ? target.pos + Math.max(1, nodeSize) : null;
@@ -625,7 +629,11 @@ export class TiptapBlockHandleController {
     }
 
     if (this.#hasOpenFloatingMenu()) {
-      this.#updateView();
+      if (targetStillMounted(this.#state.target, this.#editor?.view?.dom)) {
+        this.#updateView();
+      } else {
+        this.close();
+      }
       return this.state;
     }
 
