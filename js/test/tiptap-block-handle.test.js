@@ -73,12 +73,36 @@ function createViewSpy() {
     },
     update(state) {
       calls.push(["update", state.target.kind, state.target.pos]);
+      this.openActions = state.openActions;
     },
     hide() {
       calls.push(["hide"]);
     },
     destroy() {
       calls.push(["destroy"]);
+    },
+  };
+}
+
+function createMenuSpy() {
+  const calls = [];
+  return {
+    calls,
+    attach({ root }) {
+      calls.push(["attach", root?.tagName ?? ""]);
+    },
+    close() {
+      calls.push(["close"]);
+    },
+    destroy() {
+      calls.push(["destroy"]);
+    },
+    handleKeyDown(event) {
+      calls.push(["keydown", event.key]);
+      return event.key === "Escape";
+    },
+    open(target) {
+      calls.push(["open", target.kind, target.pos]);
     },
   };
 }
@@ -139,4 +163,22 @@ test("Tiptap block handle destroys listeners and view state", () => {
   assert.equal(controller.state.open, false);
   assert.equal(editor.view.dom.listeners.size, 0);
   assert.deepEqual(view.calls.slice(-2), [["hide"], ["destroy"]]);
+});
+
+test("Tiptap block handle opens the action menu from the handle action", () => {
+  const { block, editor } = createEditor();
+  const menu = createMenuSpy();
+  const view = createViewSpy();
+  const controller = createTiptapBlockHandleController({ menu, view });
+  controller.attach({ editor, root: editor.view.dom, entry: { viewMode: "hybrid" } });
+  controller.handlePointerMove({ target: block });
+
+  assert.equal(view.openActions(), true);
+  assert.equal(controller.handleKeyDown({ key: "Escape" }), true);
+
+  assert.deepEqual(menu.calls, [
+    ["attach", "DIV"],
+    ["open", "paragraph", 7],
+    ["keydown", "Escape"],
+  ]);
 });

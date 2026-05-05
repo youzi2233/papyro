@@ -203,7 +203,8 @@ flowchart LR
 - [x] 增加第一版 Notion-like 但 Papyro 原生的 slash command menu controller。
 - [x] 增加第一版 Papyro 原生浮动格式栏 controller。
 - [x] 增加第一版 Papyro 原生块操作柄 controller。
-- [ ] 增加完整块操作菜单和响应式编辑器 toolbar primitives。
+- [x] 增加第一版 Papyro 原生块操作菜单 controller。
+- [ ] 增加高级块操作菜单和响应式编辑器 toolbar primitives。
 - [ ] 保持 Rust/JS 协议兼容：`content_changed`、`insert_markdown`、`set_view_mode`、`set_preferences`、`destroy`、`runtime_error`。
 - [ ] 迁移 task list、table、math、Mermaid、image 和 code block。
 - [ ] 清理 CodeMirror 依赖、`.cm-*` CSS 和旧测试。

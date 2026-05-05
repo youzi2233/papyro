@@ -458,6 +458,91 @@
     box-shadow: 0 5px 0 currentColor, 0 10px 0 currentColor;
 }
 
+.mn-tiptap-block-action-menu {
+    position: fixed;
+    z-index: 165;
+    display: grid;
+    width: min(280px, calc(100vw - 20px));
+    max-height: min(320px, calc(100vh - 20px));
+    padding: 6px;
+    border: var(--mn-border-default);
+    border-radius: var(--mn-radius-md);
+    background: var(--mn-surface-raised);
+    color: var(--mn-ink);
+    box-shadow: var(--mn-shadow-md);
+    overflow: hidden;
+    font-family: var(--mn-font-ui);
+}
+
+.mn-tiptap-block-action-menu.hidden {
+    display: none;
+}
+
+.mn-tiptap-block-action-menu-list {
+    display: grid;
+    gap: 2px;
+    overflow-y: auto;
+}
+
+.mn-tiptap-block-action-menu-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+        "title group"
+        "description group";
+    gap: 2px 10px;
+    width: 100%;
+    min-height: 42px;
+    border: 0;
+    border-radius: var(--mn-radius-sm);
+    background: transparent;
+    color: var(--mn-ink-2);
+    padding: 7px 9px;
+    text-align: left;
+    font: inherit;
+}
+
+.mn-tiptap-block-action-menu-item:hover,
+.mn-tiptap-block-action-menu-item.active {
+    background: var(--mn-accent-wash);
+    color: var(--mn-ink);
+}
+
+.mn-tiptap-block-action-menu-item[data-tone="danger"] {
+    color: var(--mn-danger);
+}
+
+.mn-tiptap-block-action-menu-title {
+    grid-area: title;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: var(--mn-type-control);
+    font-weight: var(--mn-weight-semibold);
+    line-height: var(--mn-line-control);
+}
+
+.mn-tiptap-block-action-menu-description {
+    grid-area: description;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--mn-ink-3);
+    font-size: var(--mn-type-caption);
+    line-height: var(--mn-line-caption);
+}
+
+.mn-tiptap-block-action-menu-group {
+    grid-area: group;
+    align-self: center;
+    color: var(--mn-ink-3);
+    font-size: var(--mn-type-label);
+    font-weight: var(--mn-weight-semibold);
+    text-transform: uppercase;
+}
+
 .mn-codemirror-host.initializing {
     position: absolute;
     inset: 0;

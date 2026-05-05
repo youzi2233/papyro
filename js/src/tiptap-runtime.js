@@ -3,6 +3,8 @@ import { Markdown } from "@tiptap/markdown";
 
 import { createTiptapRuntimeAdapter } from "./editor-runtime.js";
 import { createMarkdownSyncController } from "./markdown-sync-controller.js";
+import { createTiptapBlockActionController } from "./tiptap-block-actions.js";
+import { createTiptapBlockActionMenuController } from "./tiptap-block-action-menu.js";
 import { createTiptapBlockHandleController } from "./tiptap-block-handle.js";
 import { createTiptapFormatCommandController } from "./tiptap-format-commands.js";
 import { createTiptapFormatToolbarController } from "./tiptap-format-toolbar.js";
@@ -89,6 +91,8 @@ export function createTiptapEditorRuntime({
   markdownManagerFactory = createPapyroMarkdownManager,
   markdownSyncFactory = createMarkdownSyncController,
   modeControllerFactory = createTiptapModeController,
+  blockActionControllerFactory = createTiptapBlockActionController,
+  blockActionMenuControllerFactory = createTiptapBlockActionMenuController,
   blockHandleControllerFactory = createTiptapBlockHandleController,
   formatCommandControllerFactory = createTiptapFormatCommandController,
   formatToolbarControllerFactory = createTiptapFormatToolbarController,
@@ -109,6 +113,14 @@ export function createTiptapEditorRuntime({
   const createModeController = requireFunction(
     modeControllerFactory,
     "modeControllerFactory",
+  );
+  const createBlockActionController = requireFunction(
+    blockActionControllerFactory,
+    "blockActionControllerFactory",
+  );
+  const createBlockActionMenuController = requireFunction(
+    blockActionMenuControllerFactory,
+    "blockActionMenuControllerFactory",
   );
   const createBlockHandleController = requireFunction(
     blockHandleControllerFactory,
@@ -181,7 +193,15 @@ export function createTiptapEditorRuntime({
       manager: markdownManager,
     });
     const modeController = createModeController(viewMode);
+    const blockActions = createBlockActionController();
+    const blockActionMenu = createBlockActionMenuController({
+      commandController: blockActions,
+      dom: {
+        document: documentRef,
+      },
+    });
     const blockHandle = createBlockHandleController({
+      menu: blockActionMenu,
       dom: {
         document: documentRef,
       },

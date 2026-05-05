@@ -104,6 +104,7 @@ class TiptapBlockHandleView {
   #window;
   #root = null;
   #button = null;
+  #onAction = null;
 
   constructor({ document = defaultDocument(), window = defaultWindow(document) } = {}) {
     this.#document = document;
@@ -122,6 +123,10 @@ class TiptapBlockHandleView {
     button.draggable = true;
     button.title = "Block actions";
     button.setAttribute("aria-label", "Block actions");
+    button.addEventListener("mousedown", (event) => {
+      event.preventDefault();
+      this.#onAction?.(event);
+    });
     button.appendChild(icon);
     root.appendChild(button);
     (container?.ownerDocument?.body ?? this.#document.body)?.appendChild(root);
@@ -134,6 +139,7 @@ class TiptapBlockHandleView {
   update(state) {
     if (!this.#root || !this.#button || !state.open || !state.target?.block) return;
 
+    this.#onAction = state.openActions ?? null;
     const rect = state.target.block.getBoundingClientRect?.();
     if (!rect) return;
 
@@ -164,6 +170,7 @@ class TiptapBlockHandleView {
 
 export class TiptapBlockHandleController {
   #view;
+  #menu;
   #editor = null;
   #entry = null;
   #root = null;
@@ -173,7 +180,8 @@ export class TiptapBlockHandleController {
     target: null,
   };
 
-  constructor({ view = null, dom = {} } = {}) {
+  constructor({ menu = null, view = null, dom = {} } = {}) {
+    this.#menu = menu;
     this.#view =
       view ??
       new TiptapBlockHandleView({
@@ -200,6 +208,7 @@ export class TiptapBlockHandleController {
     this.#entry = entry ?? null;
     this.#root = root ?? editor?.view?.dom ?? null;
     this.#view.mount?.(root);
+    this.#menu?.attach?.({ editor, root, entry });
     this.#bind();
   }
 
@@ -211,14 +220,17 @@ export class TiptapBlockHandleController {
     const onMouseMove = (event) => this.handlePointerMove(event);
     const onMouseLeave = () => this.close();
     const onScroll = () => this.close();
+    const onKeyDown = (event) => this.handleKeyDown(event);
 
     listenTarget.addEventListener("mousemove", onMouseMove);
     listenTarget.addEventListener("mouseleave", onMouseLeave);
     listenTarget.addEventListener("scroll", onScroll, true);
+    listenTarget.addEventListener("keydown", onKeyDown);
     this.#removeListeners = [
       () => listenTarget.removeEventListener?.("mousemove", onMouseMove),
       () => listenTarget.removeEventListener?.("mouseleave", onMouseLeave),
       () => listenTarget.removeEventListener?.("scroll", onScroll, true),
+      () => listenTarget.removeEventListener?.("keydown", onKeyDown),
     ];
   }
 
@@ -248,8 +260,20 @@ export class TiptapBlockHandleController {
       open: true,
       target,
     };
-    this.#view.update?.(this.#state, this.#editor);
+    this.#updateView();
     return this.state;
+  }
+
+  openActions() {
+    if (!this.#state.open || !this.#state.target || this.#entry?.viewMode !== "hybrid") {
+      return false;
+    }
+    this.#menu?.open?.(this.#state.target);
+    return true;
+  }
+
+  handleKeyDown(event) {
+    return this.#menu?.handleKeyDown?.(event) ?? false;
   }
 
   refresh() {
@@ -258,8 +282,18 @@ export class TiptapBlockHandleController {
       return this.state;
     }
 
-    this.#view.update?.(this.#state, this.#editor);
+    this.#updateView();
     return this.state;
+  }
+
+  #updateView() {
+    this.#view.update?.(
+      {
+        ...this.#state,
+        openActions: () => this.openActions(),
+      },
+      this.#editor,
+    );
   }
 
   close() {
@@ -269,11 +303,13 @@ export class TiptapBlockHandleController {
       target: null,
     };
     this.#view.hide?.();
+    this.#menu?.close?.();
   }
 
   destroy() {
     this.close();
     this.#unbind();
+    this.#menu?.destroy?.();
     this.#view.destroy?.();
     this.#editor = null;
     this.#entry = null;
