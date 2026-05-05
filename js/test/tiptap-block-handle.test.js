@@ -85,6 +85,8 @@ function createEditor({ block = null } = {}) {
 function createViewSpy() {
   const calls = [];
   let hovered = false;
+  let actionCount = 0;
+  let insertCount = 0;
   return {
     calls,
     mount(root) {
@@ -95,6 +97,8 @@ function createViewSpy() {
       this.openActions = state.openActions;
       this.openInsert = state.openInsert;
       this.startDrag = state.startDrag;
+      actionCount += typeof state.openActions === "function" ? 1 : 0;
+      insertCount += typeof state.openInsert === "function" ? 1 : 0;
     },
     updateDrag(state) {
       calls.push(["drag", state.open, state.drop?.placement ?? null, state.drop?.pos ?? null]);
@@ -110,6 +114,12 @@ function createViewSpy() {
     },
     setHovered(value) {
       hovered = value;
+    },
+    get actionCount() {
+      return actionCount;
+    },
+    get insertCount() {
+      return insertCount;
     },
   };
 }
@@ -217,6 +227,38 @@ test("Tiptap block handle stays open while moving through the handle hover bridg
 
   assert.equal(controller.state.open, true);
   assert.notDeepEqual(view.calls.at(-1), ["hide"]);
+});
+
+test("Tiptap block handle keeps callbacks after repeated hover updates", () => {
+  const { block, editor } = createEditor();
+  const insertMenu = createInsertMenuSpy();
+  const menu = createMenuSpy();
+  const view = createViewSpy();
+  const controller = createTiptapBlockHandleController({ insertMenu, menu, view });
+  controller.attach({ editor, root: editor.view.dom, entry: { viewMode: "hybrid" } });
+
+  controller.handlePointerMove({ target: block });
+  controller.handlePointerMove({ target: block });
+
+  assert.equal(view.actionCount, 2);
+  assert.equal(view.insertCount, 2);
+  assert.equal(view.openInsert(), true);
+  assert.equal(view.openActions(), true);
+  assert.ok(insertMenu.calls.some((call) => call[0] === "openAtBlock"));
+  assert.equal(menu.calls.at(-1)[0], "open");
+});
+
+test("Tiptap block handle insert action works from pointerdown", () => {
+  const { block, editor } = createEditor();
+  const insertMenu = createInsertMenuSpy();
+  const view = createViewSpy();
+  const controller = createTiptapBlockHandleController({ insertMenu, view });
+  controller.attach({ editor, root: editor.view.dom, entry: { viewMode: "hybrid" } });
+  controller.handlePointerMove({ target: block });
+
+  assert.equal(view.openInsert({ preventDefault() {}, stopPropagation() {} }), true);
+
+  assert.deepEqual(insertMenu.calls, [["openAtBlock", "paragraph", 7, 6]]);
 });
 
 test("Tiptap block handle destroys listeners and view state", () => {

@@ -164,6 +164,7 @@ flowchart TD
 - [x] Add reusable UI primitives for Tiptap popover placement, menu active-descendant state, toolbar roots, and shared visibility handling.
 - [x] Add advanced block action menus and responsive editor toolbar behavior on top of the shared Tiptap UI primitives.
   - The block action menu now uses a reusable command model with grouped Insert/Text/Lists/Blocks/Advanced/Danger sections, rich Tiptap commands where available, Markdown fallbacks, keyboard navigation, and token-based desktop/mobile styling.
+  - The block handle now keeps callbacks stable across repeated hover refreshes and triggers `+` insertion on pointer interaction so WebView click ordering does not leave the control inert.
   - The floating format toolbar now exposes a density state and switches to compact controls in narrow viewports or constrained selection positions.
 - [x] Source uses a source editor pane synchronized through `MarkdownSyncController`.
 - [x] Add `MarkdownSyncController` as the canonical Markdown state boundary for Tiptap runtime updates.
@@ -189,7 +190,7 @@ flowchart TD
 ### 5. Markdown Block Migration
 
 - [x] Task list round-trips `- [ ]` and `- [x]`.
-- [x] Pipe tables become editable tables with row/column operations, header toggles, cell merge/split, cell navigation, repair commands, and table deletion.
+- [x] Pipe tables become editable tables with row/column operations, table-edge quick add controls, header toggles, cell merge/split, cell navigation, repair commands, and table deletion.
 - [x] Inline and display math support edit, preview, and error states.
 - [x] Mermaid supports source editing and rendered preview.
 - [x] Images preserve local image URLs, paste image requests, and Markdown image syntax.

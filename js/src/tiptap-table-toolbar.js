@@ -161,6 +161,8 @@ class TiptapTableToolbarView {
   #window;
   #root = null;
   #list = null;
+  #addRowButton = null;
+  #addColumnButton = null;
 
   constructor({ document = defaultDocument(), window = defaultWindow(document) } = {}) {
     this.#document = document;
@@ -172,15 +174,39 @@ class TiptapTableToolbarView {
 
     const root = createElement(this.#document, "div", "mn-tiptap-table-toolbar hidden");
     const list = createElement(this.#document, "div", "mn-tiptap-table-toolbar-list");
-    if (!root || !list) return;
+    const addRowButton = createElement(
+      this.#document,
+      "button",
+      "mn-tiptap-table-quick-add mn-tiptap-table-add-row hidden",
+    );
+    const addColumnButton = createElement(
+      this.#document,
+      "button",
+      "mn-tiptap-table-quick-add mn-tiptap-table-add-column hidden",
+    );
+    if (!root || !list || !addRowButton || !addColumnButton) return;
 
     root.role = "toolbar";
     root.setAttribute("aria-label", "Table tools");
+    addRowButton.type = "button";
+    addRowButton.textContent = "+";
+    addRowButton.title = "Add row below";
+    addRowButton.setAttribute("aria-label", "Add row below");
+    addColumnButton.type = "button";
+    addColumnButton.textContent = "+";
+    addColumnButton.title = "Add column right";
+    addColumnButton.setAttribute("aria-label", "Add column right");
     root.appendChild(list);
     mountFloatingRoot(root, container, this.#document);
+    mountFloatingRoot(addRowButton, container, this.#document);
+    mountFloatingRoot(addColumnButton, container, this.#document);
     this.#root = root;
     this.#list = list;
+    this.#addRowButton = addRowButton;
+    this.#addColumnButton = addColumnButton;
     setHidden(root, true);
+    setHidden(addRowButton, true);
+    setHidden(addColumnButton, true);
   }
 
   update(state) {
@@ -214,6 +240,7 @@ class TiptapTableToolbarView {
     });
 
     setHidden(this.#root, false);
+    this.#updateQuickAdd(state);
     positionFloatingElement(this.#root, state.rect, {
       viewport: viewportSize(state.table, this.#window),
       size: {
@@ -225,18 +252,54 @@ class TiptapTableToolbarView {
     });
   }
 
+  #updateQuickAdd(state) {
+    const rect = state.rect;
+    if (!rect || !this.#addRowButton || !this.#addColumnButton) return;
+
+    const addRow = state.commands.some((command) => command.id === "add-row-after");
+    const addColumn = state.commands.some((command) => command.id === "add-column-after");
+    this.#addRowButton.style.left = `${rect.left + Math.max(0, rect.width ?? rect.right - rect.left) / 2 - 12}px`;
+    this.#addRowButton.style.top = `${rect.bottom + 6}px`;
+    this.#addColumnButton.style.left = `${rect.right + 6}px`;
+    this.#addColumnButton.style.top = `${rect.top + Math.max(0, rect.height ?? rect.bottom - rect.top) / 2 - 12}px`;
+
+    this.#addRowButton.onpointerdown = (event) => {
+      event.preventDefault();
+      event.stopPropagation?.();
+      state.run("add-row-after");
+    };
+    this.#addColumnButton.onpointerdown = (event) => {
+      event.preventDefault();
+      event.stopPropagation?.();
+      state.run("add-column-after");
+    };
+    setHidden(this.#addRowButton, !addRow);
+    setHidden(this.#addColumnButton, !addColumn);
+  }
+
   hide() {
     setHidden(this.#root, true);
+    setHidden(this.#addRowButton, true);
+    setHidden(this.#addColumnButton, true);
   }
 
   contains(target) {
-    return this.#root?.contains?.(target) ?? false;
+    return (
+      this.#root?.contains?.(target) ||
+      this.#addRowButton?.contains?.(target) ||
+      this.#addColumnButton?.contains?.(target) ||
+      false
+    );
   }
 
   destroy() {
     this.#root?.remove?.();
+    this.#addRowButton?.remove?.();
+    this.#addColumnButton?.remove?.();
     this.#root = null;
     this.#list = null;
+    this.#addRowButton = null;
+    this.#addColumnButton = null;
   }
 }
 

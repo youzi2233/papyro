@@ -254,10 +254,12 @@ class TiptapBlockHandleView {
     insertButton.setAttribute("aria-label", "Insert block below");
     insertButton.addEventListener("pointerdown", (event) => {
       event.preventDefault();
-    });
-    insertButton.addEventListener("mousedown", (event) => {
-      event.preventDefault();
+      event.stopPropagation?.();
       this.#onInsert?.(event);
+    });
+    insertButton.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation?.();
     });
 
     actionButton.type = "button";
@@ -265,10 +267,12 @@ class TiptapBlockHandleView {
     actionButton.setAttribute("aria-label", "Block actions");
     actionButton.addEventListener("pointerdown", (event) => {
       event.preventDefault();
+      event.stopPropagation?.();
       this.#onDragStart?.(event);
     });
     actionButton.addEventListener("click", (event) => {
       event.preventDefault();
+      event.stopPropagation?.();
       this.#onAction?.(event);
     });
 
@@ -481,7 +485,7 @@ export class TiptapBlockHandleController {
     }
 
     if (targetEquals(this.#state.target, target) && this.#state.open) {
-      this.#view.update?.(this.#state, this.#editor);
+      this.#updateView();
       return this.state;
     }
 

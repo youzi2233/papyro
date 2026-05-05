@@ -169,3 +169,71 @@ test("Tiptap table toolbar runs navigation and repair commands when available", 
     ["focus"],
   ]);
 });
+
+test("Tiptap table toolbar quick add buttons run row and column insertion", () => {
+  const created = [];
+  const documentRef = {
+    createElement(tagName) {
+      const element = {
+        tagName,
+        children: [],
+        className: "",
+        dataset: {},
+        hidden: false,
+        style: {},
+        classList: {
+          toggle(name, enabled) {
+            element.hidden = enabled && name === "hidden";
+          },
+        },
+        appendChild(child) {
+          this.children.push(child);
+        },
+        replaceChildren(...children) {
+          this.children = children;
+        },
+        setAttribute(name, value) {
+          this[name] = value;
+        },
+        addEventListener(name, handler) {
+          this[`on${name}`] = handler;
+        },
+        contains(target) {
+          return target === this;
+        },
+      };
+      created.push(element);
+      return element;
+    },
+    body: {
+      children: [],
+      appendChild(child) {
+        this.children.push(child);
+      },
+    },
+  };
+  const { calls, editor } = createTableHarness();
+  editor.commands.addRowAfter = commandSpy(calls, "addRowAfter");
+  editor.commands.addColumnAfter = commandSpy(calls, "addColumnAfter");
+  const controller = createTiptapTableToolbarController({
+    dom: { document: documentRef },
+  });
+
+  controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
+  const rowButton = created.find((element) =>
+    String(element.className).includes("mn-tiptap-table-add-row"),
+  );
+  const columnButton = created.find((element) =>
+    String(element.className).includes("mn-tiptap-table-add-column"),
+  );
+
+  rowButton.onpointerdown({ preventDefault() {}, stopPropagation() {} });
+  columnButton.onpointerdown({ preventDefault() {}, stopPropagation() {} });
+
+  assert.deepEqual(calls, [
+    ["addRowAfter"],
+    ["focus"],
+    ["addColumnAfter"],
+    ["focus"],
+  ]);
+});

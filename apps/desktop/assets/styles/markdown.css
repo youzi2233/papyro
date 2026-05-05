@@ -728,6 +728,25 @@
     color: var(--mn-danger);
 }
 
+.mn-tiptap-table-quick-add {
+    position: fixed;
+    z-index: 161;
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    border: var(--mn-border-default);
+    border-radius: var(--mn-radius-sm);
+    background: var(--mn-surface-raised);
+    color: var(--mn-accent);
+    box-shadow: var(--mn-shadow-sm);
+    font: var(--mn-weight-semibold) var(--mn-type-control) / 1 var(--mn-font-ui);
+}
+
+.mn-tiptap-table-quick-add.hidden {
+    display: none;
+}
+
 .mn-tiptap-format-toolbar-list {
     display: flex;
     align-items: center;
