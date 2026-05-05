@@ -230,7 +230,8 @@ Tasks:
 - [x] Add the first Papyro-native block handle controller.
 - [x] Add the first Papyro-native block action menu controller.
 - [ ] Add advanced block action menus and responsive editor toolbar primitives.
-- [ ] Preserve Rust/JS protocol compatibility for `content_changed`, `insert_markdown`, `set_view_mode`, and `runtime_error`.
+- [x] Preserve Tiptap `content_changed`, `insert_markdown`, and `set_view_mode` protocol behavior with runtime tests.
+- [ ] Preserve remaining Rust/JS protocol compatibility for `save_requested`, `paste_image_requested`, `runtime_ready`, and `runtime_error`.
 - [x] Preserve Tiptap `set_preferences` state updates through a tested controller.
 - [x] Preserve Tiptap `auto_link_paste` behavior for selected-text URL paste.
 - [x] Preserve `set_block_hints` as a Tiptap migration compatibility message.

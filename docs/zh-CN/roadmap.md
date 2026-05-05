@@ -205,7 +205,8 @@ flowchart LR
 - [x] 增加第一版 Papyro 原生块操作柄 controller。
 - [x] 增加第一版 Papyro 原生块操作菜单 controller。
 - [ ] 增加高级块操作菜单和响应式编辑器 toolbar primitives。
-- [ ] 保持 Rust/JS 协议兼容：`content_changed`、`insert_markdown`、`set_view_mode`、`runtime_error`。
+- [x] 通过 runtime 测试保持 Tiptap `content_changed`、`insert_markdown` 和 `set_view_mode` 协议行为。
+- [ ] 保持剩余 Rust/JS 协议兼容：`save_requested`、`paste_image_requested`、`runtime_ready`、`runtime_error`。
 - [x] 通过测试覆盖的 controller 保持 Tiptap `set_preferences` 状态更新。
 - [x] 保持 Tiptap 选中文字后粘贴 URL 的 `auto_link_paste` 行为。
 - [x] 把 `set_block_hints` 保留为 Tiptap 迁移期兼容消息。

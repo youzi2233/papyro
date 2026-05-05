@@ -324,6 +324,62 @@ test("Tiptap runtime handles baseline Rust messages", () => {
   ]);
 });
 
+test("Tiptap runtime preserves set_view_mode protocol state", () => {
+  const { calls, registry, runtime } = createRuntimeHarness();
+  runtime.ensureEditor({
+    tabId: "tab-a",
+    containerId: "editor-root",
+    initialContent: "# Note",
+    viewMode: "hybrid",
+  });
+  calls.length = 0;
+
+  runtime.handleRustMessage("tab-a", { type: "set_view_mode", mode: "preview" });
+
+  const entry = registry.get("tab-a");
+  assert.equal(entry.viewMode, "preview");
+  assert.equal(entry.dom.dataset.viewMode, "preview");
+  assert.deepEqual(calls, [
+    ["setEditable", false],
+    ["blockHandleRefresh"],
+    ["formatToolbarRefresh"],
+    ["syncOutline", "tab-a", "preview"],
+  ]);
+});
+
+test("Tiptap runtime preserves insert_markdown protocol updates", () => {
+  const { calls, registry, runtime } = createRuntimeHarness();
+  const messages = [];
+  runtime.ensureEditor({
+    tabId: "tab-a",
+    containerId: "editor-root",
+    initialContent: "# Note",
+    viewMode: "hybrid",
+  });
+  runtime.attachChannel("tab-a", { send: (message) => messages.push(message) });
+  calls.length = 0;
+
+  runtime.handleRustMessage("tab-a", {
+    type: "insert_markdown",
+    markdown: "\n- item",
+  });
+
+  assert.equal(registry.get("tab-a").editor.markdown, "# Note\n- item");
+  assert.deepEqual(calls, [
+    ["insertContent", "\n- item", "markdown"],
+    ["blockHandleRefresh"],
+    ["slashMenuRefresh"],
+    ["formatToolbarRefresh"],
+  ]);
+  assert.deepEqual(messages, [
+    {
+      type: "content_changed",
+      tab_id: "tab-a",
+      content: "# Note\n- item",
+    },
+  ]);
+});
+
 test("Tiptap runtime applies preferences through the injected controller", () => {
   const preferenceCalls = [];
   const preferencesControllerFactory = () => ({
