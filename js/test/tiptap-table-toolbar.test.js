@@ -183,12 +183,44 @@ test("Tiptap table toolbar exposes grouped enterprise table commands", () => {
       ["Headers", "toggle-header-row", "toggleHeaderRow"],
       ["Headers", "toggle-header-column", "toggleHeaderColumn"],
       ["Headers", "toggle-header-cell", "toggleHeaderCell"],
+      ["Align", "align-left", "setCellAttribute"],
+      ["Align", "align-center", "setCellAttribute"],
+      ["Align", "align-right", "setCellAttribute"],
       ["Navigate", "previous-cell", "goToPreviousCell"],
       ["Navigate", "next-cell", "goToNextCell"],
       ["Table", "fix-table", "fixTables"],
       ["Table", "delete-table", "deleteTable"],
     ],
   );
+});
+
+test("Tiptap table toolbar sets cell alignment attributes", () => {
+  const { calls, editor } = createTableHarness();
+  editor.commands.setCellAttribute = (name, value) => {
+    calls.push(["setCellAttribute", name, value]);
+    return true;
+  };
+  const view = createViewSpy();
+  const controller = createTiptapTableToolbarController({ view });
+  controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
+
+  assert.deepEqual(controller.state.commands.map((command) => command.id), [
+    "align-left",
+    "align-center",
+    "align-right",
+  ]);
+  assert.equal(controller.run("align-left"), true);
+  assert.equal(controller.run("align-center"), true);
+  assert.equal(controller.run("align-right"), true);
+
+  assert.deepEqual(calls, [
+    ["setCellAttribute", "align", null],
+    ["focus"],
+    ["setCellAttribute", "align", "center"],
+    ["focus"],
+    ["setCellAttribute", "align", "right"],
+    ["focus"],
+  ]);
 });
 
 test("Tiptap table toolbar runs navigation and repair commands when available", () => {

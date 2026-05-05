@@ -96,6 +96,30 @@ export const TABLE_COMMANDS = Object.freeze([
     command: "toggleHeaderCell",
   },
   {
+    id: "align-left",
+    group: "Align",
+    title: "Align current cells left",
+    label: "Left",
+    command: "setCellAttribute",
+    args: ["align", null],
+  },
+  {
+    id: "align-center",
+    group: "Align",
+    title: "Align current cells center",
+    label: "Center",
+    command: "setCellAttribute",
+    args: ["align", "center"],
+  },
+  {
+    id: "align-right",
+    group: "Align",
+    title: "Align current cells right",
+    label: "Right",
+    command: "setCellAttribute",
+    args: ["align", "right"],
+  },
+  {
     id: "previous-cell",
     group: "Navigate",
     title: "Move to previous cell",
@@ -192,10 +216,10 @@ function activeTableContext(editor) {
   };
 }
 
-function runEditorCommand(editor, commandName) {
+function runEditorCommand(editor, commandName, args = []) {
   const command = editor?.commands?.[commandName];
   if (typeof command !== "function") return false;
-  const ok = command() !== false;
+  const ok = command(...args) !== false;
   if (ok) editor?.commands?.focus?.();
   return ok;
 }
@@ -499,7 +523,7 @@ export class TiptapTableToolbarController {
   run(commandId) {
     const command = TABLE_COMMANDS.find((item) => item.id === commandId);
     if (!command || !this.#editor) return false;
-    const ok = runEditorCommand(this.#editor, command.command);
+    const ok = runEditorCommand(this.#editor, command.command, command.args);
     this.refresh(this.#editor);
     return ok;
   }
