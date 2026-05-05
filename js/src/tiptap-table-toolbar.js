@@ -292,6 +292,10 @@ export function selectTableAxis(editor, grid, axis, index) {
     positions = (grid ?? [])
       .map((row) => row.cells.find((cell) => cell.columnIndex === axisIndex)?.pos)
       .filter(Number.isFinite);
+  } else if (axis === "table") {
+    positions = (grid ?? [])
+      .flatMap((row) => row.cells.map((cell) => cell.pos))
+      .filter(Number.isFinite);
   }
 
   if (positions.length === 0) return false;
@@ -311,6 +315,7 @@ class TiptapTableToolbarView {
   #list = null;
   #addRowButton = null;
   #addColumnButton = null;
+  #tableSelectButton = null;
   #rowHandles = [];
   #columnHandles = [];
 
@@ -334,7 +339,12 @@ class TiptapTableToolbarView {
       "button",
       "mn-tiptap-table-quick-add mn-tiptap-table-add-column hidden",
     );
-    if (!root || !list || !addRowButton || !addColumnButton) return;
+    const tableSelectButton = createElement(
+      this.#document,
+      "button",
+      "mn-tiptap-table-axis-handle table hidden",
+    );
+    if (!root || !list || !addRowButton || !addColumnButton || !tableSelectButton) return;
 
     root.role = "toolbar";
     root.setAttribute("aria-label", "Table tools");
@@ -346,17 +356,23 @@ class TiptapTableToolbarView {
     addColumnButton.textContent = "+";
     addColumnButton.title = "Add column right";
     addColumnButton.setAttribute("aria-label", "Add column right");
+    tableSelectButton.type = "button";
+    tableSelectButton.title = "Select table";
+    tableSelectButton.setAttribute("aria-label", "Select table");
     root.appendChild(list);
     mountFloatingRoot(root, container, this.#document);
     mountFloatingRoot(addRowButton, container, this.#document);
     mountFloatingRoot(addColumnButton, container, this.#document);
+    mountFloatingRoot(tableSelectButton, container, this.#document);
     this.#root = root;
     this.#list = list;
     this.#addRowButton = addRowButton;
     this.#addColumnButton = addColumnButton;
+    this.#tableSelectButton = tableSelectButton;
     setHidden(root, true);
     setHidden(addRowButton, true);
     setHidden(addColumnButton, true);
+    setHidden(tableSelectButton, true);
   }
 
   update(state) {
@@ -392,6 +408,7 @@ class TiptapTableToolbarView {
 
     setHidden(this.#root, false);
     this.#updateQuickAdd(state);
+    this.#updateTableHandle(state);
     this.#updateAxisHandles(state);
     positionFloatingElement(this.#root, state.rect, {
       viewport: viewportSize(state.table, this.#window),
@@ -427,6 +444,21 @@ class TiptapTableToolbarView {
     };
     setHidden(this.#addRowButton, !addRow);
     setHidden(this.#addColumnButton, !addColumn);
+  }
+
+  #updateTableHandle(state) {
+    const rect = state.rect;
+    if (!rect || !this.#tableSelectButton) return;
+
+    this.#tableSelectButton.style.left = `${rect.left - TABLE_AXIS_HANDLE_SIZE - 6}px`;
+    this.#tableSelectButton.style.top = `${rect.top - TABLE_AXIS_HANDLE_SIZE - 6}px`;
+    this.#tableSelectButton.onpointerdown = (event) => {
+      event.preventDefault();
+      event.stopPropagation?.();
+      state.selectAxis("table", 0);
+    };
+    this.#tableSelectButton.onmousedown = (event) => event.preventDefault();
+    setHidden(this.#tableSelectButton, (state.grid ?? []).length === 0);
   }
 
   #updateAxisHandles(state) {
@@ -487,6 +519,7 @@ class TiptapTableToolbarView {
     setHidden(this.#root, true);
     setHidden(this.#addRowButton, true);
     setHidden(this.#addColumnButton, true);
+    setHidden(this.#tableSelectButton, true);
     this.#clearAxisHandles();
   }
 
@@ -495,6 +528,7 @@ class TiptapTableToolbarView {
       this.#root?.contains?.(target) ||
       this.#addRowButton?.contains?.(target) ||
       this.#addColumnButton?.contains?.(target) ||
+      this.#tableSelectButton?.contains?.(target) ||
       this.#rowHandles.some((button) => button.contains?.(target)) ||
       this.#columnHandles.some((button) => button.contains?.(target)) ||
       false
@@ -505,11 +539,13 @@ class TiptapTableToolbarView {
     this.#root?.remove?.();
     this.#addRowButton?.remove?.();
     this.#addColumnButton?.remove?.();
+    this.#tableSelectButton?.remove?.();
     this.#clearAxisHandles();
     this.#root = null;
     this.#list = null;
     this.#addRowButton = null;
     this.#addColumnButton = null;
+    this.#tableSelectButton = null;
   }
 }
 

@@ -973,6 +973,16 @@
     box-shadow: -4px 0 0 currentColor, 4px 0 0 currentColor;
 }
 
+.mn-tiptap-table-axis-handle.table::before {
+    width: 11px;
+    height: 11px;
+    border: 1.5px solid currentColor;
+    border-radius: 3px;
+    background:
+        linear-gradient(currentColor, currentColor) 50% 50% / 100% 1px no-repeat,
+        linear-gradient(currentColor, currentColor) 50% 50% / 1px 100% no-repeat;
+}
+
 .mn-tiptap-format-toolbar-list {
     display: flex;
     align-items: center;

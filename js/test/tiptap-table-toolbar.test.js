@@ -413,7 +413,7 @@ test("Tiptap table toolbar quick add buttons run row and column insertion", () =
   ]);
 });
 
-test("Tiptap table toolbar axis handles select rows and columns", () => {
+test("Tiptap table toolbar axis handles select tables rows and columns", () => {
   const { created, documentRef } = createDocument();
   const { calls, editor } = createTableHarness();
   editor.commands.setCellSelection = (selection) => {
@@ -425,6 +425,9 @@ test("Tiptap table toolbar axis handles select rows and columns", () => {
   });
 
   controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
+  const tableHandle = created.find((element) =>
+    String(element.className).includes("mn-tiptap-table-axis-handle table"),
+  );
   const rowHandle = created.find((element) =>
     String(element.className).includes("mn-tiptap-table-axis-handle row"),
   );
@@ -432,10 +435,13 @@ test("Tiptap table toolbar axis handles select rows and columns", () => {
     String(element.className).includes("mn-tiptap-table-axis-handle column"),
   );
 
+  tableHandle.onpointerdown({ preventDefault() {}, stopPropagation() {} });
   rowHandle.onpointerdown({ preventDefault() {}, stopPropagation() {} });
   columnHandle.onpointerdown({ preventDefault() {}, stopPropagation() {} });
 
   assert.deepEqual(calls, [
+    ["setCellSelection", 10, 15],
+    ["focus"],
     ["setCellSelection", 10, 12],
     ["focus"],
     ["setCellSelection", 10, 13],
@@ -445,6 +451,28 @@ test("Tiptap table toolbar axis handles select rows and columns", () => {
 
 test("selectTableAxis rejects missing table selection commands", () => {
   assert.equal(selectTableAxis({ commands: {} }, [], "row", 0), false);
+  const selected = [];
+  assert.equal(
+    selectTableAxis(
+      {
+        commands: {
+          setCellSelection(selection) {
+            selected.push(selection);
+            return true;
+          },
+          focus() {},
+        },
+      },
+      [
+        { cells: [{ pos: 3 }, { pos: 4 }] },
+        { cells: [{ pos: 8 }, { pos: 9 }] },
+      ],
+      "table",
+      0,
+    ),
+    true,
+  );
+  assert.deepEqual(selected, [{ anchorCell: 3, headCell: 9 }]);
   assert.equal(
     selectTableAxis(
       {

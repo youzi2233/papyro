@@ -214,6 +214,7 @@ flowchart LR
 - [x] 把 Tiptap 表格工具条升级为列、行、单元格、表头、导航、修复、删除分组命令，让表格编辑更接近成熟文档产品。
 - [x] 增加表格边缘快捷添加控件，可直接在表格下方新增行、右侧新增列，不必先打开完整工具条。
 - [x] 增加表格行/列边缘选择 handle：点击行左侧或列顶部可直接选中整行/整列，并复用表格工具条执行后续行列操作。
+- [x] 增加表格左上角整表选择 handle：点击即可选中整张表，便于继续执行删除、表头、对齐和单元格样式操作。
 - [x] 增加表格单元格对齐命令：左对齐、居中、右对齐通过 Tiptap `setCellAttribute('align', ...)` 写入文档模型，并保持 Markdown pipe table 对齐语义。
 - [x] 增加表格单元格背景色命令：清除、黄色、蓝色、绿色通过 Tiptap `setCellAttribute('backgroundColor', ...)` 写入单元格属性，并在工具条中显示当前背景状态。
 - [x] 增加共享 Tiptap UI primitives，用于 popover 定位、菜单 active-descendant 状态、toolbar root 和显隐处理。
