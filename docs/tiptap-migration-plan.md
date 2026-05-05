@@ -165,6 +165,7 @@ flowchart TD
 - [x] Add advanced block action menus and responsive editor toolbar behavior on top of the shared Tiptap UI primitives.
   - The block action menu now uses a reusable command model with grouped Insert/Text/Lists/Blocks/Advanced/Danger sections, rich Tiptap commands where available, Markdown fallbacks, keyboard navigation, and token-based desktop/mobile styling.
   - The block handle now keeps callbacks stable across repeated hover refreshes and triggers `+` insertion on pointer interaction so WebView click ordering does not leave the control inert.
+  - The block handle hover bridge now survives the gutter gap between text and floating controls, so `+` insertion and action handles remain reachable during pointer movement.
   - The block action menu now moves closer to the official Notion-like template's Drag Context Menu with copy-as-Markdown and duplicate-block actions; the slash/`+` insertion menu adds a 1x1 through 6x6 table-size picker so table insertion is no longer fixed to one default shape.
   - The floating format toolbar now exposes a density state and switches to compact controls in narrow viewports or constrained selection positions.
   - The slash/`+` insertion menu, block action menu, floating format toolbar, and table toolbar now share a dismiss lifecycle: outside clicks, scrolling, and window changes close overlays, while interactions inside the current block or table keep context alive.

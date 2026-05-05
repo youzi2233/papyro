@@ -177,6 +177,7 @@ flowchart TD
 - [x] 基于共享 Tiptap UI primitives 增加高级 block action menu 和响应式编辑器 toolbar 行为。
   - 块操作菜单现在基于可复用命令模型，按 Insert/Text/Lists/Blocks/Advanced/Danger 分区展示，优先调用富 Tiptap 命令，不可用时回退 Markdown 插入，并保留键盘导航与桌面/移动端 token 化样式。
   - 块操作柄现在在重复 hover 刷新后仍保持回调稳定，并在 pointer 交互阶段触发 `+` 插入，避免 WebView click 顺序导致控件无响应。
+  - 块操作柄 hover bridge 现在能覆盖正文与浮动控件之间的沟槽空隙，鼠标移向 `+` 和操作柄时不会提前消失。
   - 块操作菜单继续向官方 Notion-like template 的 Drag Context Menu 靠齐，新增复制为 Markdown 和重复块动作；slash/`+` 插入菜单新增 1x1 到 6x6 表格尺寸选择器，避免固定尺寸表格破坏写作流。
   - 浮动格式栏现在暴露 density 状态，在窄窗口或选区空间受限时自动切换为 compact 控件。
   - slash/`+` 插入菜单、块操作菜单、浮动格式栏和表格工具条共享浮层 dismiss 生命周期：外部点击、滚动和窗口变化会关闭浮层，点击当前块或表格内部会保持上下文不丢失。

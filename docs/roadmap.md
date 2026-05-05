@@ -232,6 +232,7 @@ Tasks:
 - [x] Add the first Papyro-native block handle controller.
 - [x] Upgrade the block handle into Notion-like dual controls: `+` opens block insertion, while the handle selects the current block and opens block actions.
 - [x] Fix block handle event wiring so repeated hover updates keep the action/insert callbacks alive and the `+` insert entry opens from pointer interaction in WebView.
+- [x] Keep the block handle hover bridge alive while moving from text to floating controls so the action and insert affordances do not disappear across the gutter gap.
 - [x] Add the first Papyro-native block action menu controller.
 - [x] Match the official Tiptap Notion-like template quality bar for block menus: copy as Markdown, duplicate block, and delete are now available from the block menu, with pointer-first menu activation to avoid WebView/ProseMirror focus races.
 - [x] Add a table-size picker to the slash/`+` insertion menu so users can insert 1x1 through 6x6 tables instead of only the fixed 3x2 default.

@@ -442,6 +442,10 @@ export class TiptapBlockHandleController {
     const onMouseMove = (event) => this.handlePointerMove(event);
     const onMouseLeave = (event) => {
       if (this.#view.contains?.(event?.relatedTarget)) return;
+      if (this.#state.open && this.#view.containsPointer?.(event, this.#state.target)) {
+        this.#updateView();
+        return;
+      }
       this.close();
     };
     const onScroll = () => this.close();
@@ -476,7 +480,11 @@ export class TiptapBlockHandleController {
 
     const target = blockTargetFromEvent(event, this.#editor);
     if (!target) {
-      if (this.#state.open && this.#view.containsPointer?.(event, this.#state.target)) {
+      if (
+        this.#state.open &&
+        (this.#view.contains?.(event?.target) ||
+          this.#view.containsPointer?.(event, this.#state.target))
+      ) {
         this.#updateView();
         return this.state;
       }

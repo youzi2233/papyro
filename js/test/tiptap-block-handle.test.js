@@ -85,6 +85,7 @@ function createEditor({ block = null } = {}) {
 function createViewSpy() {
   const calls = [];
   let hovered = false;
+  let bridgePointer = false;
   let actionCount = 0;
   let insertCount = 0;
   return {
@@ -112,8 +113,14 @@ function createViewSpy() {
     contains() {
       return hovered;
     },
+    containsPointer() {
+      return bridgePointer;
+    },
     setHovered(value) {
       hovered = value;
+    },
+    setBridgePointer(value) {
+      bridgePointer = value;
     },
     get actionCount() {
       return actionCount;
@@ -227,6 +234,38 @@ test("Tiptap block handle stays open while moving through the handle hover bridg
 
   assert.equal(controller.state.open, true);
   assert.notDeepEqual(view.calls.at(-1), ["hide"]);
+});
+
+test("Tiptap block handle keeps the bridge alive before the floating handle is the related target", () => {
+  const { block, editor } = createEditor();
+  const view = createViewSpy();
+  const controller = createTiptapBlockHandleController({ view });
+  controller.attach({ editor, root: editor.view.dom, entry: { viewMode: "hybrid" } });
+  controller.handlePointerMove({ target: block });
+
+  view.setBridgePointer(true);
+  editor.view.dom.listeners.get("mouseleave")({
+    clientX: 92,
+    clientY: 52,
+    relatedTarget: null,
+  });
+
+  assert.equal(controller.state.open, true);
+  assert.deepEqual(view.calls.at(-1), ["update", "paragraph", 7]);
+});
+
+test("Tiptap block handle stays open when pointer events target the floating handle", () => {
+  const { block, editor } = createEditor();
+  const view = createViewSpy();
+  const controller = createTiptapBlockHandleController({ view });
+  controller.attach({ editor, root: editor.view.dom, entry: { viewMode: "hybrid" } });
+  controller.handlePointerMove({ target: block });
+
+  view.setHovered(true);
+  controller.handlePointerMove({ target: { id: "floating-handle" } });
+
+  assert.equal(controller.state.open, true);
+  assert.deepEqual(view.calls.at(-1), ["update", "paragraph", 7]);
 });
 
 test("Tiptap block handle keeps callbacks after repeated hover updates", () => {
