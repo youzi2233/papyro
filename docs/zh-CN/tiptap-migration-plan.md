@@ -198,7 +198,7 @@ flowchart TD
 - [x] Math：inline/display 公式有编辑态、预览态和错误反馈。
 - [x] Mermaid：保留源码编辑和渲染预览，失败时显示错误。
 - [x] Image：本地图片 URL、粘贴图片请求和 Markdown 图片语法保持兼容。
-- [ ] Code block：语言信息、代码文本和高亮主题策略明确。
+- [x] Code block：语言信息、代码文本和高亮主题策略明确。
 
 ### 6. 删除 CodeMirror 依赖
 

@@ -173,6 +173,23 @@ function collectImages(node, images = []) {
   return images;
 }
 
+function collectCodeBlocks(node, codeBlocks = []) {
+  if (!node || typeof node !== "object") return codeBlocks;
+
+  if (node.type === "codeBlock") {
+    codeBlocks.push({
+      language: node.attrs?.language ?? null,
+      text: plainText(node),
+    });
+  }
+
+  for (const child of node.content ?? []) {
+    collectCodeBlocks(child, codeBlocks);
+  }
+
+  return codeBlocks;
+}
+
 test("Tiptap Markdown manager parses the baseline Markdown blocks", () => {
   const doc = parseTiptapMarkdown(markdownFixture);
   const nodeTypes = collectNodeTypes(doc);
@@ -182,6 +199,7 @@ test("Tiptap Markdown manager parses the baseline Markdown blocks", () => {
   const math = collectMath(doc);
   const mermaid = collectMermaid(doc);
   const images = collectImages(doc);
+  const codeBlocks = collectCodeBlocks(doc);
 
   assert.deepEqual(doc.content.slice(0, 2).map((node) => node.attrs.level), [1, 2]);
   assert.ok(nodeTypes.includes("paragraph"));
@@ -231,6 +249,12 @@ test("Tiptap Markdown manager parses the baseline Markdown blocks", () => {
   assert.deepEqual(mermaid, ["flowchart TD\n  A --> B"]);
   assert.deepEqual(images, [
     { src: "assets/logo.png", alt: "Papyro logo", title: "Logo" },
+  ]);
+  assert.deepEqual(codeBlocks, [
+    {
+      language: "rust",
+      text: 'fn main() {\n  println!("hi");\n}',
+    },
   ]);
 });
 
@@ -348,6 +372,25 @@ test("Tiptap Markdown images round trip local URLs, alt text, and titles", () =>
   ]);
   assert.equal(serialized, markdown);
   assert.deepEqual(collectImages(reparsed), collectImages(parsed));
+});
+
+test("Tiptap Markdown code blocks round trip language metadata and text", () => {
+  const markdown = [
+    "```ts",
+    "const answer: number = 42;",
+    "console.log(answer);",
+    "```",
+  ].join("\n");
+  const { parsed, serialized, reparsed } = roundTripTiptapMarkdown(markdown);
+
+  assert.deepEqual(collectCodeBlocks(parsed), [
+    {
+      language: "ts",
+      text: "const answer: number = 42;\nconsole.log(answer);",
+    },
+  ]);
+  assert.equal(serialized, markdown);
+  assert.deepEqual(collectCodeBlocks(reparsed), collectCodeBlocks(parsed));
 });
 
 test("Tiptap Markdown round trip is stable at the document JSON level", () => {

@@ -217,7 +217,8 @@ flowchart LR
 - [x] 增加 Tiptap math 扩展，并用 inline/display Markdown round-trip 和 KaTeX 预览/错误态测试覆盖。
 - [x] 增加 Tiptap Mermaid 扩展，并用 fenced code round-trip 和共享预览/错误渲染测试覆盖。
 - [x] 增加 Tiptap image 扩展，并用本地 URL Markdown round-trip 和共享粘贴/拖拽协议测试覆盖。
-- [ ] 迁移 task list、table、math、Mermaid、image 和 code block。
+- [x] 增加 Tiptap code block 配置，并用语言元数据、fenced Markdown round-trip 和共享代码样式测试覆盖。
+- [x] 迁移 task list、table、math、Mermaid、image 和 code block。
 - [ ] 清理 CodeMirror 依赖、`.cm-*` CSS 和旧测试。
 - [ ] 完成全量验收并推送最终迁移提交。
 

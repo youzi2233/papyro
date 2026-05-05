@@ -508,6 +508,33 @@
     overflow-wrap: anywhere;
 }
 
+.mn-tiptap-editor pre,
+.mn-tiptap-code-block {
+    position: relative;
+    margin: 0 0 var(--mn-markdown-block-gap);
+    overflow-x: auto;
+    border: var(--mn-code-border);
+    border-radius: var(--mn-markdown-code-radius);
+    background: var(--mn-code-block-surface);
+    color: var(--mn-code-ink);
+    padding: var(--mn-markdown-code-block-pad-y) var(--mn-markdown-code-block-pad-x);
+    font-family: var(--mn-markdown-mono-font);
+    font-size: var(--mn-markdown-code-block-size);
+    line-height: var(--mn-markdown-code-block-line);
+    tab-size: 2;
+}
+
+.mn-tiptap-editor pre code,
+.mn-tiptap-code-block code {
+    display: block;
+    min-width: max-content;
+    background: transparent;
+    border: 0;
+    padding: 0;
+    color: inherit;
+    font: inherit;
+}
+
 .mn-tiptap-editor > *:first-child { margin-top: 0; }
 .mn-tiptap-editor > *:last-child { margin-bottom: 0; }
 
