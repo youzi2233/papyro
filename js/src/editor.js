@@ -26,6 +26,10 @@ import { createEditorRuntimeRegistry } from "./editor-registry.js";
 import { createPapyroEditorFacade } from "./editor-runtime.js";
 import { selectEditorRuntimeAdapter } from "./editor-runtime-selector.js";
 import { createTiptapEditorRuntime } from "./tiptap-runtime.js";
+import {
+  imageFileFromTransfer,
+  sendEditorImageRequest,
+} from "./editor-clipboard.js";
 
 import {
   activeOutlineHeadingIndex,
@@ -106,43 +110,13 @@ function isVisibleElement(element) {
   );
 }
 
-function blobToBase64(blob) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = String(reader.result ?? "");
-      const comma = result.indexOf(",");
-      resolve(comma >= 0 ? result.slice(comma + 1) : result);
-    };
-    reader.onerror = () => reject(reader.error ?? new Error("Failed to read image"));
-    reader.readAsDataURL(blob);
-  });
-}
-
-function imageFileFromTransfer(transfer) {
-  const items = Array.from(transfer?.items ?? []);
-  for (const item of items) {
-    if (item.kind !== "file" || !item.type.startsWith("image/")) continue;
-    const file = item.getAsFile();
-    if (file) return { file, mimeType: item.type };
-  }
-
-  const files = Array.from(transfer?.files ?? []);
-  const file = files.find((file) => file.type.startsWith("image/"));
-  return file ? { file, mimeType: file.type } : null;
-}
-
 async function sendEditorImage(tabId, image) {
-  const { file, mimeType } = image;
-  const entry = editorRegistry.get(tabId);
-  const data = await blobToBase64(file);
-  editorRegistry.get(tabId)?.dioxus?.send({
-    type: "paste_image_requested",
-    tab_id: tabId,
-    mime_type: file.type || mimeType || "image/png",
-    data,
+  await sendEditorImageRequest({
+    tabId,
+    image,
+    getEntry: () => editorRegistry.get(tabId),
   });
-  entry?.view?.focus();
+  editorRegistry.get(tabId)?.view?.focus();
 }
 
 function placeCursorAtDrop(view, event) {

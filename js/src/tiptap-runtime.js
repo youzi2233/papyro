@@ -1,6 +1,10 @@
 import { Editor } from "@tiptap/core";
 import { Markdown } from "@tiptap/markdown";
 
+import {
+  imageFileFromTransfer,
+  sendEditorImageRequest,
+} from "./editor-clipboard.js";
 import { createTiptapRuntimeAdapter } from "./editor-runtime.js";
 import { createMarkdownSyncController } from "./markdown-sync-controller.js";
 import { createTiptapBlockActionController } from "./tiptap-block-actions.js";
@@ -37,7 +41,54 @@ function defaultDocument() {
   return typeof document === "undefined" ? null : document;
 }
 
-function defaultEditorOptions(initialContent, extensions, viewMode, tabId, registry) {
+function isSaveShortcut(event) {
+  if (!event || event.altKey) return false;
+  const key = String(event.key ?? "").toLowerCase();
+  return key === "s" && (event.ctrlKey || event.metaKey);
+}
+
+function requestSave(entry, tabId, event) {
+  if (!entry) return false;
+
+  event?.preventDefault?.();
+  entry.dioxus?.send?.({
+    type: "save_requested",
+    tab_id: tabId,
+  });
+  return true;
+}
+
+function placeCursorAtDrop(editor, view, event) {
+  const position = view?.posAtCoords?.({
+    left: event?.clientX ?? 0,
+    top: event?.clientY ?? 0,
+  })?.pos;
+  if (!Number.isSafeInteger(position)) return;
+
+  editor?.commands?.setTextSelection?.(position);
+  editor?.commands?.focus?.();
+}
+
+function sendTiptapImageRequest(entry, tabId, image, sendImageRequest) {
+  return sendImageRequest({
+    tabId,
+    image,
+    getEntry: () => entry,
+  }).then((sent) => {
+    if (sent) entry?.editor?.commands?.focus?.();
+    return sent;
+  });
+}
+
+function defaultEditorOptions({
+  initialContent,
+  extensions,
+  viewMode,
+  tabId,
+  registry,
+  transferImage,
+  sendImageRequest,
+}) {
   return {
     element: null,
     extensions: [...extensions, Markdown],
@@ -51,11 +102,38 @@ function defaultEditorOptions(initialContent, extensions, viewMode, tabId, regis
       },
       handleKeyDown: (_view, event) => {
         const entry = registry.get(tabId);
+        if (isSaveShortcut(event) && requestSave(entry, tabId, event)) {
+          return true;
+        }
+
         return entry?.slashMenu?.handleKeyDown(event) ?? false;
       },
       handlePaste: (view, event, slice) => {
         const entry = registry.get(tabId);
+        const image = transferImage(event?.clipboardData);
+        if (image && entry?.dioxus) {
+          event?.preventDefault?.();
+          sendTiptapImageRequest(entry, tabId, image, sendImageRequest).catch((error) => {
+            console.warn("Failed to send pasted image", error);
+          });
+          return true;
+        }
+
         return entry?.pasteController?.handlePaste({ view, event, slice }) ?? false;
+      },
+      handleDrop: (view, event) => {
+        const entry = registry.get(tabId);
+        const image = transferImage(event?.dataTransfer);
+        if (!image || !entry?.dioxus) {
+          return false;
+        }
+
+        event?.preventDefault?.();
+        placeCursorAtDrop(entry.editor, view, event);
+        sendTiptapImageRequest(entry, tabId, image, sendImageRequest).catch((error) => {
+          console.warn("Failed to send dropped image", error);
+        });
+        return true;
       },
     },
   };
@@ -116,6 +194,7 @@ export function createTiptapEditorRuntime({
   preferencesControllerFactory = createTiptapPreferencesController,
   slashCommandControllerFactory = createTiptapSlashCommandController,
   slashMenuControllerFactory = createTiptapSlashMenuController,
+  clipboard = {},
   navigation,
 } = {}) {
   const runtimeRegistry = requireObject(registry, "registry");
@@ -171,6 +250,14 @@ export function createTiptapEditorRuntime({
   const createSlashMenuController = requireFunction(
     slashMenuControllerFactory,
     "slashMenuControllerFactory",
+  );
+  const transferImage = requireFunction(
+    clipboard.imageFileFromTransfer ?? imageFileFromTransfer,
+    "clipboard.imageFileFromTransfer",
+  );
+  const sendImageRequest = requireFunction(
+    clipboard.sendEditorImageRequest ?? sendEditorImageRequest,
+    "clipboard.sendEditorImageRequest",
   );
 
   const controls = requireObject(navigation, "navigation");
@@ -254,13 +341,15 @@ export function createTiptapEditorRuntime({
       },
     });
     const editor = new TiptapEditor(
-      defaultEditorOptions(
-        markdownSync.markdown,
+      defaultEditorOptions({
+        initialContent: markdownSync.markdown,
         extensions,
-        modeController.mode,
+        viewMode: modeController.mode,
         tabId,
-        runtimeRegistry,
-      ),
+        registry: runtimeRegistry,
+        transferImage,
+        sendImageRequest,
+      }),
     );
     if (typeof editor.on === "function") {
       editor.on("update", ({ editor: updatedEditor } = {}) => {

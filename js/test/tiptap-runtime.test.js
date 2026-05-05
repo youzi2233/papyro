@@ -29,6 +29,7 @@ function createRuntimeHarness({
     extensions,
     parse: (markdown) => ({ type: "doc", markdown }),
   }),
+  clipboard,
   blockHintsControllerFactory,
   blockHandleControllerFactory,
   formatToolbarControllerFactory,
@@ -122,6 +123,7 @@ function createRuntimeHarness({
         toggleItalic: () => calls.push(["toggleItalic"]),
         setHorizontalRule: () => calls.push(["setHorizontalRule"]),
         setParagraph: () => calls.push(["setParagraph"]),
+        setTextSelection: (position) => calls.push(["setTextSelection", position]),
         toggleHeading: (attrs) => calls.push(["toggleHeading", attrs.level]),
       };
       calls.push([
@@ -172,6 +174,7 @@ function createRuntimeHarness({
     editorConstructor: FakeTiptapEditor,
     extensionsFactory: () => ["starter-kit"],
     markdownManagerFactory,
+    ...(clipboard ? { clipboard } : {}),
     blockHintsControllerFactory: createBlockHintsController,
     blockHandleControllerFactory: createBlockHandle,
     formatToolbarControllerFactory: createFormatToolbar,
@@ -440,6 +443,54 @@ test("Tiptap runtime reports parse failures without touching the editor", () => 
   ]);
 });
 
+test("Tiptap runtime reports slash command failures through runtime_error", () => {
+  const messages = [];
+  const { runtime } = createRuntimeHarness();
+  runtime.ensureEditor({
+    tabId: "tab-a",
+    containerId: "editor-root",
+    initialContent: "# Note",
+  });
+  runtime.attachChannel("tab-a", { send: (message) => messages.push(message) });
+
+  runtime.handleRustMessage("tab-a", {
+    type: "run_slash_command",
+    command_id: "missing-command",
+  });
+
+  assert.deepEqual(messages, [
+    {
+      type: "runtime_error",
+      tab_id: "tab-a",
+      message: "unknown_slash_command",
+    },
+  ]);
+});
+
+test("Tiptap runtime reports format command failures through runtime_error", () => {
+  const messages = [];
+  const { runtime } = createRuntimeHarness();
+  runtime.ensureEditor({
+    tabId: "tab-a",
+    containerId: "editor-root",
+    initialContent: "# Note",
+  });
+  runtime.attachChannel("tab-a", { send: (message) => messages.push(message) });
+
+  runtime.handleRustMessage("tab-a", {
+    type: "run_format_command",
+    command_id: "missing-command",
+  });
+
+  assert.deepEqual(messages, [
+    {
+      type: "runtime_error",
+      tab_id: "tab-a",
+      message: "unknown_format_command",
+    },
+  ]);
+});
+
 test("Tiptap runtime destroys and unregisters editor entries", () => {
   const { calls, registry, runtime } = createRuntimeHarness();
   runtime.ensureEditor({
@@ -518,6 +569,155 @@ test("Tiptap runtime wires paste handling through editor props", () => {
 
   assert.equal(handled, true);
   assert.deepEqual(pasteCalls, [["attach", "mn-tiptap-runtime"], ["paste", "paste"]]);
+});
+
+test("Tiptap runtime sends save requests from editor shortcuts", () => {
+  const { calls, registry, runtime } = createRuntimeHarness();
+  const messages = [];
+  runtime.ensureEditor({
+    tabId: "tab-a",
+    containerId: "editor-root",
+    initialContent: "# Note",
+  });
+  runtime.attachChannel("tab-a", { send: (message) => messages.push(message) });
+  calls.length = 0;
+
+  const event = {
+    key: "s",
+    ctrlKey: true,
+    preventDefault: () => calls.push(["preventDefault"]),
+  };
+  const handled = registry.get("tab-a").editor.options.editorProps.handleKeyDown(null, event);
+
+  assert.equal(handled, true);
+  assert.deepEqual(calls, [["preventDefault"]]);
+  assert.deepEqual(messages, [{ type: "save_requested", tab_id: "tab-a" }]);
+});
+
+test("Tiptap runtime sends image paste requests through the Rust protocol", async () => {
+  const image = { file: { type: "image/png" }, mimeType: "image/png" };
+  const clipboardCalls = [];
+  const { calls, registry, runtime } = createRuntimeHarness({
+    clipboard: {
+      imageFileFromTransfer: (transfer) => {
+        clipboardCalls.push(["imageFileFromTransfer", transfer.kind]);
+        return image;
+      },
+      sendEditorImageRequest: async ({ tabId, image: requestedImage, getEntry }) => {
+        clipboardCalls.push([
+          "sendEditorImageRequest",
+          tabId,
+          requestedImage.mimeType,
+          Boolean(getEntry()?.dioxus),
+        ]);
+        getEntry()?.dioxus?.send({
+          type: "paste_image_requested",
+          tab_id: tabId,
+          mime_type: requestedImage.mimeType,
+          data: "abc123",
+        });
+        return true;
+      },
+    },
+  });
+  const messages = [];
+  runtime.ensureEditor({
+    tabId: "tab-a",
+    containerId: "editor-root",
+    initialContent: "# Note",
+  });
+  runtime.attachChannel("tab-a", { send: (message) => messages.push(message) });
+  calls.length = 0;
+
+  const event = {
+    type: "paste",
+    clipboardData: { kind: "clipboard" },
+    preventDefault: () => calls.push(["preventDefault"]),
+  };
+  const handled = registry.get("tab-a").editor.options.editorProps.handlePaste(null, event, null);
+  await Promise.resolve();
+
+  assert.equal(handled, true);
+  assert.deepEqual(calls, [["preventDefault"], ["focus"]]);
+  assert.deepEqual(clipboardCalls, [
+    ["imageFileFromTransfer", "clipboard"],
+    ["sendEditorImageRequest", "tab-a", "image/png", true],
+  ]);
+  assert.deepEqual(messages, [
+    {
+      type: "paste_image_requested",
+      tab_id: "tab-a",
+      mime_type: "image/png",
+      data: "abc123",
+    },
+  ]);
+});
+
+test("Tiptap runtime sends image drop requests and moves the selection", async () => {
+  const image = { file: { type: "" }, mimeType: "image/jpeg" };
+  const clipboardCalls = [];
+  const { calls, registry, runtime } = createRuntimeHarness({
+    clipboard: {
+      imageFileFromTransfer: (transfer) => {
+        clipboardCalls.push(["imageFileFromTransfer", transfer.kind]);
+        return image;
+      },
+      sendEditorImageRequest: async ({ tabId, image: requestedImage, getEntry }) => {
+        clipboardCalls.push(["sendEditorImageRequest", tabId, requestedImage.mimeType]);
+        getEntry()?.dioxus?.send({
+          type: "paste_image_requested",
+          tab_id: tabId,
+          mime_type: requestedImage.mimeType,
+          data: "drop123",
+        });
+        return true;
+      },
+    },
+  });
+  const messages = [];
+  runtime.ensureEditor({
+    tabId: "tab-a",
+    containerId: "editor-root",
+    initialContent: "# Note",
+  });
+  runtime.attachChannel("tab-a", { send: (message) => messages.push(message) });
+  calls.length = 0;
+
+  const view = {
+    posAtCoords: (coords) => {
+      calls.push(["posAtCoords", coords.left, coords.top]);
+      return { pos: 4 };
+    },
+  };
+  const event = {
+    dataTransfer: { kind: "drop" },
+    clientX: 12,
+    clientY: 20,
+    preventDefault: () => calls.push(["preventDefault"]),
+  };
+  const handled = registry.get("tab-a").editor.options.editorProps.handleDrop(view, event, null, false);
+  await Promise.resolve();
+
+  assert.equal(handled, true);
+  assert.deepEqual(calls, [
+    ["preventDefault"],
+    ["posAtCoords", 12, 20],
+    ["setTextSelection", 4],
+    ["focus"],
+    ["focus"],
+  ]);
+  assert.deepEqual(clipboardCalls, [
+    ["imageFileFromTransfer", "drop"],
+    ["sendEditorImageRequest", "tab-a", "image/jpeg"],
+  ]);
+  assert.deepEqual(messages, [
+    {
+      type: "paste_image_requested",
+      tab_id: "tab-a",
+      mime_type: "image/jpeg",
+      data: "drop123",
+    },
+  ]);
 });
 
 test("Tiptap runtime wires slash menu keyboard handling through editor props", () => {

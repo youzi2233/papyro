@@ -1,5 +1,5 @@
 import * as esbuild from "esbuild";
-import { copyFile, mkdir } from "node:fs/promises";
+import { copyFile, mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { argv } from "node:process";
 
@@ -19,6 +19,14 @@ async function syncHostCopies() {
   );
 }
 
+async function stripTrailingWhitespace(file) {
+  const content = await readFile(file, "utf8");
+  const normalized = content.replace(/[ \t]+$/gm, "");
+  if (normalized !== content) {
+    await writeFile(file, normalized);
+  }
+}
+
 const ctx = await esbuild.context({
   entryPoints: ["src/editor.js"],
   bundle: true,
@@ -36,6 +44,7 @@ const ctx = await esbuild.context({
         build.onEnd(async (result) => {
           if (result.errors.length > 0) return;
 
+          await stripTrailingWhitespace(outFile);
           await syncHostCopies();
           console.log(
             `Synced editor bundle to ${hostCopies
