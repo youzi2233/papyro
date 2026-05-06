@@ -8,10 +8,12 @@ import {
   createElement,
   createFloatingDismissController,
   isComposingKeyboardEvent,
+  menuCommandItems,
   mountFloatingRoot,
   positionFloatingElement,
   scrollActiveDescendantIntoView,
   setHidden,
+  syncMenuActiveDescendant,
   updateActiveDescendant,
   viewportSize,
 } from "../src/tiptap-ui-primitives.js";
@@ -202,6 +204,59 @@ test("Tiptap UI primitives scroll active descendants into view", () => {
   );
   assert.deepEqual(calls, [{ block: "nearest", inline: "nearest" }]);
   assert.equal(scrollActiveDescendantIntoView(root, "menu", [], 0), false);
+});
+
+test("Tiptap UI primitives sync command menu active descendants without forced hover scroll", () => {
+  const calls = [];
+  const command = (index) => ({
+    id: `menu-item-${index}`,
+    dataset: { commandIndex: String(index) },
+    children: [],
+    classList: {
+      values: new Set(),
+      toggle(name, enabled) {
+        if (enabled) this.values.add(name);
+        else this.values.delete(name);
+      },
+    },
+    setAttribute(name, value) {
+      this[name] = value;
+    },
+    scrollIntoView(options) {
+      calls.push([index, options]);
+    },
+  });
+  const first = command(0);
+  const second = command(1);
+  const root = {
+    id: "menu",
+    children: [{ children: [first, second] }],
+    setAttribute(name, value) {
+      this[name] = value;
+    },
+  };
+
+  assert.deepEqual(menuCommandItems(root), [first, second]);
+  assert.equal(
+    syncMenuActiveDescendant(root, "menu", [{ id: "one" }, { id: "two" }], 1, {
+      ariaSelected: true,
+      manageTabIndex: true,
+      scroll: false,
+    }),
+    true,
+  );
+
+  assert.equal(root["aria-activedescendant"], "menu-item-1");
+  assert.equal(first.classList.values.has("active"), false);
+  assert.equal(second.classList.values.has("active"), true);
+  assert.equal(first["aria-selected"], "false");
+  assert.equal(second["aria-selected"], "true");
+  assert.equal(first.tabIndex, -1);
+  assert.equal(second.tabIndex, 0);
+  assert.deepEqual(calls, []);
+
+  syncMenuActiveDescendant(root, "menu", [{ id: "one" }, { id: "two" }], 0);
+  assert.deepEqual(calls, [[0, { block: "nearest", inline: "nearest" }]]);
 });
 
 test("Tiptap UI primitives bind pointer activation with click fallback", () => {

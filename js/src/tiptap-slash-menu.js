@@ -22,9 +22,8 @@ import {
   isComposingKeyboardEvent,
   mountFloatingRoot,
   positionFloatingElement,
-  scrollActiveDescendantIntoView,
   setHidden,
-  updateActiveDescendant,
+  syncMenuActiveDescendant,
   viewportSize,
 } from "./tiptap-ui-primitives.js";
 
@@ -222,29 +221,11 @@ function rangeEquals(left, right) {
     left.to === right?.to;
 }
 
-function commandMenuItems(root) {
-  const items = [];
-  const visit = (element) => {
-    if (!element) return;
-    if (element.dataset?.commandIndex != null) {
-      items.push(element);
-    }
-    Array.from(element.children ?? []).forEach(visit);
-  };
-  visit(root);
-  return items;
-}
-
 function syncActiveCommand(root, ownerId, commands, selectedIndex, { scroll = true } = {}) {
-  commandMenuItems(root).forEach((item) => {
-    const active = Number(item.dataset?.commandIndex) === selectedIndex;
-    item.classList?.toggle?.("active", active);
-    item.setAttribute?.("aria-selected", String(active));
+  return syncMenuActiveDescendant(root, ownerId, commands, selectedIndex, {
+    ariaSelected: true,
+    scroll,
   });
-  updateActiveDescendant(root, ownerId, commands, selectedIndex);
-  if (scroll) {
-    scrollActiveDescendantIntoView(root, ownerId, commands, selectedIndex);
-  }
 }
 
 class TiptapSlashMenuView {

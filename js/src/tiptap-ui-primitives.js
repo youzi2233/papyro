@@ -206,6 +206,49 @@ export function scrollActiveDescendantIntoView(root, ownerId, commands, selected
   return false;
 }
 
+export function menuCommandItems(root, { indexDataset = "commandIndex" } = {}) {
+  const items = [];
+  const visit = (element) => {
+    if (!element) return;
+    if (element.dataset?.[indexDataset] != null) {
+      items.push(element);
+    }
+    Array.from(element.children ?? []).forEach(visit);
+  };
+  visit(root);
+  return items;
+}
+
+export function syncMenuActiveDescendant(
+  root,
+  ownerId,
+  commands,
+  selectedIndex,
+  {
+    activeClass = "active",
+    ariaSelected = false,
+    manageTabIndex = false,
+    scroll = true,
+  } = {},
+) {
+  if (!root) return false;
+  menuCommandItems(root).forEach((item) => {
+    const active = Number(item.dataset?.commandIndex) === selectedIndex;
+    item.classList?.toggle?.(activeClass, active);
+    if (ariaSelected) {
+      item.setAttribute?.("aria-selected", String(active));
+    }
+    if (manageTabIndex) {
+      item.tabIndex = active ? 0 : -1;
+    }
+  });
+  updateActiveDescendant(root, ownerId, commands, selectedIndex);
+  if (scroll) {
+    scrollActiveDescendantIntoView(root, ownerId, commands, selectedIndex);
+  }
+  return true;
+}
+
 export function bindPointerActivation(element, run) {
   if (!element || typeof run !== "function") return;
 

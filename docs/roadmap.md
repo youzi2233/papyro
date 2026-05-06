@@ -291,6 +291,7 @@ Tasks:
 - [x] Make table context menu hover and focus sync the active command state, matching keyboard navigation and keeping table command panels predictable for mixed mouse/keyboard use.
 - [x] Expose the table repair action in whole-table context menus so users can recover malformed table structure from the same scoped menu as header and delete actions.
 - [x] Add shared Tiptap UI primitives for popover placement, menu active-descendant state, toolbar roots, and visibility handling.
+- [x] Move command-panel active-descendant synchronization into a reusable Tiptap UI primitive so slash, block, and future table menus share the same hover, focus, and keyboard state contract.
 - [x] Respect Tiptap `editor.can()` in the table toolbar so unavailable row, column, cell, and repair actions render disabled instead of looking clickable.
 - [x] Add keyboard access to the Tiptap table toolbar: Shift+F10 opens it from a table selection, arrow keys move between enabled commands, Enter/Space runs the focused command, and Escape closes it.
 - [x] Add shared floating dismiss lifecycle to the slash/`+` insertion menu, block action menu, floating format toolbar, and table toolbar so outside clicks, scrolling, and window changes close overlays while the current block/table bridge stays interactive.
