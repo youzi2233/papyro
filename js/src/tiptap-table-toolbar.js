@@ -14,13 +14,16 @@ import {
 } from "./tiptap-i18n.js";
 import {
   bindPointerActivation,
+  commandElementId,
   createElement,
   createFloatingDismissController,
   defaultDocument,
   defaultWindow,
+  menuCommandItems,
   mountFloatingRoot,
   positionFloatingElement,
   setHidden,
+  syncMenuActiveDescendant,
   viewportSize,
 } from "./tiptap-ui-primitives.js";
 
@@ -235,6 +238,7 @@ const TABLE_ADD_COLUMN_WIDTH = 22;
 const TABLE_ADD_COLUMN_HEIGHT = 42;
 const TABLE_CONTEXT_MENU_WIDTH = 276;
 const TABLE_KEYBOARD_MENU_WIDTH = 520;
+const TABLE_TOOLBAR_OWNER_ID = "mn-tiptap-table-toolbar";
 const TABLE_MENU_COMMAND_SCOPE = Object.freeze({
   cell: new Set([
     "split-cell",
@@ -722,20 +726,6 @@ function commandButtonById(root, commandId) {
   return null;
 }
 
-function commandButtons(root) {
-  if (!root) return [];
-  const buttons = [];
-  const walk = (element) => {
-    if (!element) return;
-    if (element.dataset?.commandId) {
-      buttons.push(element);
-    }
-    Array.from(element.children ?? []).forEach(walk);
-  };
-  walk(root);
-  return buttons;
-}
-
 function guardPointerEvent(event) {
   event?.preventDefault?.();
   event?.stopPropagation?.();
@@ -749,6 +739,32 @@ function bindPointerCommand(button, command, run) {
   };
 
   bindPointerActivation(button, execute);
+}
+
+function syncTableToolbarActiveCommand(
+  root,
+  ownerId,
+  commands,
+  activeCommandId,
+  { keyboardActive = true, scroll = true } = {},
+) {
+  if (!root) return false;
+
+  const selectedIndex = commands.findIndex(
+    (command) => command.id === activeCommandId && !command.disabled,
+  );
+  const hasSelection = selectedIndex >= 0;
+  const syncCommands = hasSelection ? commands : [];
+  syncMenuActiveDescendant(root, ownerId, syncCommands, selectedIndex, {
+    manageTabIndex: true,
+    scroll: hasSelection && scroll,
+  });
+  menuCommandItems(root).forEach((button) => {
+    const active = Number(button.dataset?.commandIndex) === selectedIndex;
+    button.dataset.keyboardActive = active ? "true" : "false";
+  });
+  root.dataset.keyboardActive = keyboardActive ? "true" : "false";
+  return hasSelection;
 }
 
 export function selectTableAxis(editor, grid, axis, index) {
@@ -796,6 +812,7 @@ class TiptapTableToolbarView {
   #columnHandles = [];
   #selectionBackdrop = null;
   #lastTable = null;
+  #menuCommands = [];
 
   constructor({ document = defaultDocument(), window = defaultWindow(document) } = {}) {
     this.#document = document;
@@ -850,6 +867,7 @@ class TiptapTableToolbarView {
       !selectionBackdrop
     ) return;
 
+    root.id = TABLE_TOOLBAR_OWNER_ID;
     root.role = "toolbar";
     header.append(eyebrow, title, subtitle);
     addRowButton.type = "button";
@@ -931,8 +949,9 @@ class TiptapTableToolbarView {
       }
     }
     const menuCommands = state.menuOpen ? visibleCommands(state.commands, state.mode, state.selection?.kind) : [];
+    this.#menuCommands = menuCommands;
     const commandGroups = [];
-    menuCommands.forEach((command) => {
+    menuCommands.forEach((command, commandIndex) => {
       const layoutGroup = command.layoutGroup ?? tableCommandLayoutGroup(command);
       const groupKey = layoutGroup === "danger" ? "danger" : command.groupKey ?? command.group;
       if (commandGroups.at(-1)?.dataset?.groupKey !== groupKey) {
@@ -956,10 +975,13 @@ class TiptapTableToolbarView {
       if (!button) return;
 
       button.type = "button";
+      button.id = commandElementId(TABLE_TOOLBAR_OWNER_ID, commandIndex);
+      button.role = state.mode === "context" ? "menuitem" : "button";
       button.title = command.title;
       button.setAttribute("aria-label", command.title);
       button.textContent = state.mode === "context" ? command.title : command.label;
       button.dataset.commandId = command.id;
+      button.dataset.commandIndex = String(commandIndex);
       button.dataset.group = command.group;
       button.dataset.icon = command.icon ?? command.id;
       button.dataset.variant = command.variant ?? tableCommandVariant(command);
@@ -1004,7 +1026,16 @@ class TiptapTableToolbarView {
     this.#list.append(...commandGroups);
 
     setHidden(this.#root, !state.menuOpen || menuCommands.length === 0);
-    this.#root.dataset.keyboardActive = state.keyboardActive ? "true" : "false";
+    syncTableToolbarActiveCommand(
+      this.#root,
+      TABLE_TOOLBAR_OWNER_ID,
+      menuCommands,
+      state.activeCommandId,
+      {
+        keyboardActive: state.keyboardActive,
+        scroll: state.keyboardActive,
+      },
+    );
     this.#root.onkeydown = (event) => state.handleKeyDown?.(event);
     this.#applySelectionState(state);
     this.#updateSelectionBackdrop(state);
@@ -1227,14 +1258,16 @@ class TiptapTableToolbarView {
   setActiveCommand(commandId, keyboardActive = true) {
     if (!this.#root) return false;
 
-    const buttons = commandButtons(this.#list);
-    buttons.forEach((button) => {
-      const active = button.dataset.commandId === commandId;
-      button.dataset.keyboardActive = active ? "true" : "false";
-      button.tabIndex = active ? 0 : -1;
-    });
-    this.#root.dataset.keyboardActive = keyboardActive ? "true" : "false";
-    return true;
+    return syncTableToolbarActiveCommand(
+      this.#root,
+      TABLE_TOOLBAR_OWNER_ID,
+      this.#menuCommands,
+      commandId,
+      {
+        keyboardActive,
+        scroll: keyboardActive,
+      },
+    );
   }
 
   focusCommand(commandId) {
@@ -1263,6 +1296,7 @@ class TiptapTableToolbarView {
     this.#tableSelectButton = null;
     this.#cellMenuButton = null;
     this.#selectionBackdrop = null;
+    this.#menuCommands = [];
   }
 }
 

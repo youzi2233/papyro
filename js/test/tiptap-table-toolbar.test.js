@@ -980,6 +980,15 @@ test("Tiptap table toolbar supports keyboard navigation and execution", () => {
   );
   assert.equal(controller.state.activeCommandId, "add-column-before");
   assert.equal(documentRef.activeElement?.dataset?.commandId, "add-column-before");
+  const root = created.find((element) =>
+    String(element.className).includes("mn-tiptap-table-toolbar"),
+  );
+  const addColumnBefore = toolbarCommandButton(created, "add-column-before");
+  assert.equal(
+    addColumnBefore.id,
+    `mn-tiptap-table-toolbar-item-${addColumnBefore.dataset.commandIndex}`,
+  );
+  assert.equal(root["aria-activedescendant"], addColumnBefore.id);
   assert.equal(
     tableToolbarHeader(created).title.textContent,
     "Table tools",
@@ -988,6 +997,8 @@ test("Tiptap table toolbar supports keyboard navigation and execution", () => {
   assert.equal(controller.handleKeyDown(keyboardEvent("ArrowRight")), true);
   assert.equal(controller.state.activeCommandId, "delete-table");
   assert.equal(documentRef.activeElement?.dataset?.commandId, "delete-table");
+  const deleteTable = toolbarCommandButton(created, "delete-table");
+  assert.equal(root["aria-activedescendant"], deleteTable.id);
 
   assert.equal(controller.handleKeyDown(keyboardEvent("Enter")), true);
   assert.deepEqual(calls, [["deleteTable"], ["focus"]]);
@@ -1023,13 +1034,21 @@ test("Tiptap table context menu syncs hover and focus active commands", () => {
   assert.equal(controller.state.activeCommandId, "align-center");
   assert.equal(root.dataset.keyboardActive, "false");
   assert.equal(center.dataset.keyboardActive, "true");
-  assert.equal(toolbarCommandButton(created, "align-left").dataset.keyboardActive, "false");
+  assert.equal(root["aria-activedescendant"], center.id);
+  assert.equal(
+    toolbarCommandButton(created, "align-left").dataset.keyboardActive,
+    "false",
+  );
+  assert.equal(toolbarCommandButton(created, "align-left").tabIndex, -1);
 
   green.onfocus?.({ preventDefault() {}, stopPropagation() {} });
   assert.equal(controller.state.activeCommandId, "cell-bg-green");
   assert.equal(root.dataset.keyboardActive, "true");
   assert.equal(green.dataset.keyboardActive, "true");
+  assert.equal(root["aria-activedescendant"], green.id);
+  assert.equal(green.tabIndex, 0);
   assert.equal(center.dataset.keyboardActive, "false");
+  assert.equal(center.tabIndex, -1);
 });
 
 test("Tiptap table toolbar handles keyboard events after focus enters the toolbar", () => {
