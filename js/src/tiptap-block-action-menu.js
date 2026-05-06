@@ -1,5 +1,8 @@
 import { createTiptapBlockActionController } from "./tiptap-block-actions.js";
-import { blockHandleActionsLabel } from "./tiptap-i18n.js";
+import {
+  blockActionTargetLabel,
+  blockHandleActionsLabel,
+} from "./tiptap-i18n.js";
 import {
   commandElementId,
   bindPointerActivation,
@@ -95,6 +98,9 @@ class TiptapBlockActionMenuView {
   #window;
   #ownerId;
   #root = null;
+  #header = null;
+  #eyebrow = null;
+  #title = null;
   #list = null;
 
   constructor({
@@ -111,16 +117,25 @@ class TiptapBlockActionMenuView {
     if (this.#root || !this.#document) return;
 
     const root = createElement(this.#document, "div", "mn-tiptap-block-action-menu hidden");
+    const header = createElement(this.#document, "div", "mn-tiptap-block-action-menu-header");
+    const eyebrow = createElement(this.#document, "div", "mn-tiptap-block-action-menu-eyebrow");
+    const title = createElement(this.#document, "div", "mn-tiptap-block-action-menu-heading");
     const list = createElement(this.#document, "div", "mn-tiptap-block-action-menu-list");
-    if (!root || !list) return;
+    if (!root || !header || !eyebrow || !title || !list) return;
 
     root.id = this.#ownerId;
     root.role = "menu";
     root.setAttribute("aria-label", blockHandleActionsLabel("english"));
-    root.appendChild(list);
+    eyebrow.textContent = blockHandleActionsLabel("english");
+    title.textContent = blockActionTargetLabel("english", "block");
+    header.append(eyebrow, title);
+    root.append(header, list);
     mountFloatingRoot(root, container, this.#document);
 
     this.#root = root;
+    this.#header = header;
+    this.#eyebrow = eyebrow;
+    this.#title = title;
     this.#list = list;
     setHidden(root, true);
   }
@@ -129,6 +144,12 @@ class TiptapBlockActionMenuView {
     if (!this.#root || !this.#list || !state.open) return;
 
     this.#root.setAttribute("aria-label", blockHandleActionsLabel(state.language));
+    if (this.#eyebrow) {
+      this.#eyebrow.textContent = blockHandleActionsLabel(state.language);
+    }
+    if (this.#title) {
+      this.#title.textContent = blockActionTargetLabel(state.language, state.target?.kind);
+    }
     this.#list.replaceChildren();
     groupedCommands(state.commands).forEach((group) => {
       const section = createElement(
@@ -210,6 +231,9 @@ class TiptapBlockActionMenuView {
   destroy() {
     this.#root?.remove?.();
     this.#root = null;
+    this.#header = null;
+    this.#eyebrow = null;
+    this.#title = null;
     this.#list = null;
   }
 }

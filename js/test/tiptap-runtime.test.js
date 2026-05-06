@@ -41,6 +41,7 @@ function createRuntimeHarness({
   slashMenuControllerFactory,
   tableToolbarControllerFactory,
   layout,
+  document: documentOverride,
 } = {}) {
   const calls = [];
   const registry = createEditorRuntimeRegistry();
@@ -52,6 +53,7 @@ function createRuntimeHarness({
       close: () => calls.push(["blockHandleClose"]),
       destroy: () => calls.push(["blockHandleDestroy"]),
       refresh: () => calls.push(["blockHandleRefresh"]),
+      shouldKeepOpenOnEditorBlur: () => false,
     }));
 
   const createBlockHintsController =
@@ -209,12 +211,16 @@ function createRuntimeHarness({
     }
   }
 
+  const documentRef =
+    documentOverride ??
+    {
+      getElementById: (containerId) => (containerId === "editor-root" ? container : null),
+    };
+
   const runtime = createTiptapEditorRuntime({
     registry,
     dom: {
-      document: {
-        getElementById: (containerId) => (containerId === "editor-root" ? container : null),
-      },
+      document: documentRef,
       createElement,
     },
     editorConstructor: FakeTiptapEditor,
@@ -1137,4 +1143,43 @@ test("Tiptap runtime keeps facade navigation methods available", () => {
   assert.equal(runtime.scrollEditorToLine(), "editor-line");
   assert.equal(runtime.scrollPreviewToHeading(), "preview-heading");
   assert.equal(runtime.renderPreviewMermaid(), "mermaid");
+});
+
+test("Tiptap runtime keeps block insert menus stable when editor blur is internal", () => {
+  const container = createContainer();
+  const activeElement = { id: "block-floating-menu" };
+  const documentRef = {
+    getElementById: (containerId) => (containerId === "editor-root" ? container : null),
+    get activeElement() {
+      return activeElement;
+    },
+  };
+  const { calls, registry, runtime } = createRuntimeHarness({
+    container,
+    document: documentRef,
+    blockHandleControllerFactory: () => ({
+      attach: ({ root }) => calls.push(["blockHandleAttach", root.className]),
+      close: () => calls.push(["blockHandleClose"]),
+      destroy: () => calls.push(["blockHandleDestroy"]),
+      refresh: () => calls.push(["blockHandleRefresh"]),
+      shouldKeepOpenOnEditorBlur: (target) => {
+        calls.push(["blockHandleBlurGuard", target.id]);
+        return true;
+      },
+    }),
+  });
+  runtime.ensureEditor({
+    tabId: "tab-a",
+    containerId: "editor-root",
+    initialContent: "# Note",
+  });
+  calls.length = 0;
+
+  registry.get("tab-a").editor.emit("blur");
+
+  assert.deepEqual(calls, [
+    ["blockHandleBlurGuard", "block-floating-menu"],
+    ["formatToolbarClose"],
+    ["tableToolbarClose"],
+  ]);
 });

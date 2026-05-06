@@ -189,6 +189,26 @@ function createDocument() {
   };
 }
 
+function findElementByClass(root, className) {
+  if (!root) return null;
+  if (String(root.className ?? "").split(/\s+/).includes(className)) return root;
+  for (const child of root.children ?? []) {
+    const found = findElementByClass(child, className);
+    if (found) return found;
+  }
+  return null;
+}
+
+function findCommandItem(root, commandId) {
+  if (!root) return null;
+  if (root.dataset?.commandId === commandId) return root;
+  for (const child of root.children ?? []) {
+    const found = findCommandItem(child, commandId);
+    if (found) return found;
+  }
+  return null;
+}
+
 test("Tiptap block action menu opens for Hybrid block targets", () => {
   const { editor } = createEditor();
   const view = createViewSpy();
@@ -288,7 +308,7 @@ test("Tiptap block action menu items support click fallback without double-run",
   const event = () => ({ preventDefault() {}, stopPropagation() {} });
   controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
   controller.open(createTarget());
-  const item = documentRef.body.children[0].children[0].children[0].children[1];
+  const item = findCommandItem(documentRef.body.children[0], "copy-block");
 
   item.onclick(event());
 
@@ -301,7 +321,7 @@ test("Tiptap block action menu items support click fallback without double-run",
 
   calls.length = 0;
   controller.open(createTarget());
-  const freshItem = documentRef.body.children[0].children[0].children[0].children[1];
+  const freshItem = findCommandItem(documentRef.body.children[0], "copy-block");
   freshItem.onpointerdown(event());
   freshItem.onclick(event());
 
@@ -428,7 +448,7 @@ test("Tiptap block action menu renders grouped command sections", () => {
   controller.open(createTarget());
 
   const menu = documentRef.body.children[0];
-  const list = menu.children[0];
+  const list = findElementByClass(menu, "mn-tiptap-block-action-menu-list");
   assert.deepEqual(
     list.children.map((section) => section.children[0].textContent),
     [
@@ -477,7 +497,7 @@ test("Tiptap block action menu renders callout kind sections for callout blocks"
   controller.open(createCalloutTarget());
 
   const menu = documentRef.body.children[0];
-  const list = menu.children[0];
+  const list = findElementByClass(menu, "mn-tiptap-block-action-menu-list");
   assert.deepEqual(
     list.children.map((section) => section.children[0].textContent),
     [

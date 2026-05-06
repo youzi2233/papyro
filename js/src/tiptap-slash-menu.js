@@ -2,10 +2,12 @@ import { createTiptapSlashCommandController } from "./tiptap-slash-commands.js";
 import { PAPYRO_CALLOUT_KIND_OPTIONS } from "./tiptap-markdown-snippets.js";
 import {
   calloutOptionLabel,
+  insertBlockMenuTitleLabel,
   insertTableLabel,
   localizeCalloutKindOption,
   markdownCommandsLabel,
   noCommandsLabel,
+  slashQueryMenuTitleLabel,
   tableSizeLabel,
 } from "./tiptap-i18n.js";
 import { insertSlashParagraphAfterBlock } from "./tiptap-block-handle.js";
@@ -209,6 +211,9 @@ class TiptapSlashMenuView {
   #document;
   #ownerId;
   #root = null;
+  #header = null;
+  #eyebrow = null;
+  #title = null;
   #list = null;
   #empty = null;
   #tablePicker = null;
@@ -225,17 +230,22 @@ class TiptapSlashMenuView {
     if (this.#root || !this.#document) return;
 
     const root = createElement(this.#document, "div", "mn-tiptap-slash-menu hidden");
+    const header = createElement(this.#document, "div", "mn-tiptap-slash-menu-header");
+    const eyebrow = createElement(this.#document, "div", "mn-tiptap-slash-menu-eyebrow");
+    const title = createElement(this.#document, "div", "mn-tiptap-slash-menu-heading");
     const list = createElement(this.#document, "div", "mn-tiptap-slash-menu-list");
     const empty = createElement(this.#document, "div", "mn-tiptap-slash-menu-empty");
     const tablePicker = createElement(this.#document, "div", "mn-tiptap-table-size-picker hidden");
     const tablePickerLabel = createElement(this.#document, "div", "mn-tiptap-table-size-picker-label");
     const tablePickerGrid = createElement(this.#document, "div", "mn-tiptap-table-size-picker-grid");
     const calloutPicker = createElement(this.#document, "div", "mn-tiptap-callout-kind-picker hidden");
-    if (!root || !list || !empty || !tablePicker || !tablePickerLabel || !tablePickerGrid || !calloutPicker) return;
+    if (!root || !header || !eyebrow || !title || !list || !empty || !tablePicker || !tablePickerLabel || !tablePickerGrid || !calloutPicker) return;
 
     root.id = this.#ownerId;
     root.role = "listbox";
     root.setAttribute("aria-label", markdownCommandsLabel(this.#language));
+    eyebrow.textContent = markdownCommandsLabel(this.#language);
+    title.textContent = insertBlockMenuTitleLabel(this.#language);
     empty.textContent = noCommandsLabel(this.#language);
     tablePickerLabel.textContent = tableSizeLabel(this.#language, 3, 2);
     for (let row = 1; row <= TABLE_GRID_ROWS; row += 1) {
@@ -277,10 +287,14 @@ class TiptapSlashMenuView {
       bindPointerActivation(item, () => chooseCalloutKind(calloutPicker, option.kind));
       calloutPicker.appendChild(item);
     });
-    root.append(list, empty, tablePicker, calloutPicker);
+    header.append(eyebrow, title);
+    root.append(header, list, empty, tablePicker, calloutPicker);
     mountFloatingRoot(root, container, this.#document);
 
     this.#root = root;
+    this.#header = header;
+    this.#eyebrow = eyebrow;
+    this.#title = title;
     this.#list = list;
     this.#empty = empty;
     this.#tablePicker = tablePicker;
@@ -294,6 +308,14 @@ class TiptapSlashMenuView {
 
     this.#language = state.language ?? "english";
     this.#root.setAttribute("aria-label", markdownCommandsLabel(this.#language));
+    if (this.#eyebrow) {
+      this.#eyebrow.textContent = markdownCommandsLabel(this.#language);
+    }
+    if (this.#title) {
+      this.#title.textContent = state.cleanupRangeOnClose
+        ? insertBlockMenuTitleLabel(this.#language)
+        : slashQueryMenuTitleLabel(this.#language, state.query);
+    }
     this.#empty.textContent = noCommandsLabel(this.#language);
     this.#root
       .querySelectorAll?.(".mn-tiptap-table-size-picker-cell")
@@ -373,6 +395,9 @@ class TiptapSlashMenuView {
   destroy() {
     this.#root?.remove?.();
     this.#root = null;
+    this.#header = null;
+    this.#eyebrow = null;
+    this.#title = null;
     this.#list = null;
     this.#empty = null;
     this.#tablePicker = null;
@@ -495,12 +520,36 @@ export class TiptapSlashMenuController {
 
     const context = textSelectionContext(editor);
     if (!context) {
+      if (this.#state.open && this.#state.cleanupRangeOnClose) {
+        this.#view.update?.(
+          {
+            ...this.#state,
+            language: entryLanguage(this.#entry),
+            choose: (commandId, options) => this.choose(commandId, options),
+          },
+          editor,
+        );
+        this.#dismiss.open();
+        return this.state;
+      }
       this.close();
       return this.state;
     }
 
     const trigger = findSlashTrigger(context.text);
     if (!trigger) {
+      if (this.#state.open && this.#state.cleanupRangeOnClose) {
+        this.#view.update?.(
+          {
+            ...this.#state,
+            language: entryLanguage(this.#entry),
+            choose: (commandId, options) => this.choose(commandId, options),
+          },
+          editor,
+        );
+        this.#dismiss.open();
+        return this.state;
+      }
       this.close();
       return this.state;
     }

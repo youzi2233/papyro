@@ -191,6 +191,15 @@ export function markdownCommandsLabel(language) {
   return localizedText(language, "Markdown block commands", "Markdown 块命令");
 }
 
+export function insertBlockMenuTitleLabel(language) {
+  return localizedText(language, "Insert block", "\u63d2\u5165\u5185\u5bb9\u5757");
+}
+
+export function slashQueryMenuTitleLabel(language, query) {
+  const normalizedQuery = String(query ?? "");
+  return normalizedQuery ? `/${normalizedQuery}` : insertBlockMenuTitleLabel(language);
+}
+
 export function noCommandsLabel(language) {
   return localizedText(language, "No commands", "没有可用命令");
 }
@@ -205,6 +214,28 @@ export function blockHandleInsertLabel(language) {
 
 export function blockHandleActionsLabel(language) {
   return localizedText(language, "Block actions", "块操作");
+}
+
+export function blockActionTargetLabel(language, kind) {
+  const normalized = String(kind ?? "block").replaceAll("-", "_");
+  const labels = {
+    block: ["Block", "\u5185\u5bb9\u5757"],
+    paragraph: ["Paragraph", "\u6bb5\u843d"],
+    heading: ["Heading", "\u6807\u9898"],
+    list: ["List", "\u5217\u8868"],
+    list_item: ["List item", "\u5217\u8868\u9879"],
+    code_block: ["Code block", "\u4ee3\u7801\u5757"],
+    quote: ["Quote", "\u5f15\u7528"],
+    blockquote: ["Quote", "\u5f15\u7528"],
+    table: ["Table", "\u8868\u683c"],
+    calloutBlock: ["Callout", "\u6807\u6ce8"],
+    callout_block: ["Callout", "\u6807\u6ce8"],
+  };
+  const label = labels[normalized];
+  if (label) return localizedText(language, label[0], label[1]);
+
+  const fallback = normalized.replaceAll("_", " ");
+  return fallback.charAt(0).toUpperCase() + fallback.slice(1);
 }
 
 export function tableToolsLabel(language) {

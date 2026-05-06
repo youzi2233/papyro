@@ -246,6 +246,8 @@ Tasks:
 - [x] Keep the block action menu focused on current-block actions and styles, with insertion owned by `+` and slash commands.
 - [x] Clean up the temporary `/` paragraph created by the `+` insertion flow when the user cancels the menu, while preserving slash triggers the user typed manually.
 - [x] Make the `+` insertion menu ignore suspicious window-origin caret coordinates from WebView/Tiptap mount races and fall back to the source block edge, so the menu does not appear in the top-left corner.
+- [x] Keep block action and `+` insertion menus stable across editor blur, selection refreshes, and normal pointer movement inside the floating menu, so the menu only closes on an outside click, Escape, scroll, resize, or command execution.
+- [x] Polish block action and slash/`+` insertion menus into enterprise-grade command panels with localized headers, tighter section rhythm, stronger selected-block feedback, and resilient tests that no longer depend on fragile child indexes.
 - [x] Add a table-size picker to the slash/`+` insertion menu so users can insert 1x1 through 6x6 tables instead of only the fixed 3x2 default.
 - [x] Add the first Tiptap table floating toolbar with row/column insertion and deletion, cell merge/split, header toggles, and table deletion.
 - [x] Upgrade the Tiptap table toolbar into grouped column, row, cell, header, navigation, repair, and delete commands so table editing feels closer to mature document editors.

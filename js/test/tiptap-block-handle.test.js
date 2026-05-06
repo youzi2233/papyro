@@ -145,6 +145,7 @@ function createViewSpy() {
 function createMenuSpy() {
   const calls = [];
   let open = false;
+  let containedTarget = null;
   return {
     calls,
     get state() {
@@ -165,6 +166,12 @@ function createMenuSpy() {
       calls.push(["keydown", event.key]);
       return event.key === "Escape";
     },
+    contains(target) {
+      return target === containedTarget;
+    },
+    setContainedTarget(target) {
+      containedTarget = target;
+    },
     open(target, options = {}) {
       open = true;
       const rect = options.anchorRect ?? null;
@@ -176,6 +183,7 @@ function createMenuSpy() {
 function createInsertMenuSpy() {
   const calls = [];
   let open = false;
+  let containedTarget = null;
   return {
     calls,
     get state() {
@@ -194,6 +202,12 @@ function createInsertMenuSpy() {
     handleKeyDown(event) {
       calls.push(["keydown", event.key]);
       return event.key === "ArrowDown";
+    },
+    contains(target) {
+      return target === containedTarget;
+    },
+    setContainedTarget(target) {
+      containedTarget = target;
     },
     openAtBlock(target) {
       open = true;
@@ -627,6 +641,41 @@ test("Tiptap block handle stays open when the editor mouse leaves with a floatin
   assert.equal(controller.state.open, true);
   assert.equal(menu.state.open, true);
   assert.notDeepEqual(view.calls.at(-1), ["hide"]);
+});
+
+test("Tiptap block handle keeps floating menus open across editor blur", () => {
+  const { block, editor } = createEditor();
+  const insertMenu = createInsertMenuSpy();
+  const menu = createMenuSpy();
+  const view = createViewSpy();
+  const controller = createTiptapBlockHandleController({ insertMenu, menu, view });
+  controller.attach({ editor, root: editor.view.dom, entry: { viewMode: "hybrid" } });
+  controller.handlePointerMove({ target: block });
+
+  view.openActions();
+  assert.equal(controller.shouldKeepOpenOnEditorBlur({ id: "outside" }), true);
+  menu.close();
+  view.openInsert();
+  assert.equal(controller.shouldKeepOpenOnEditorBlur({ id: "outside" }), true);
+  insertMenu.close();
+  assert.equal(controller.shouldKeepOpenOnEditorBlur({ id: "outside" }), false);
+});
+
+test("Tiptap block handle treats focus inside action and insert menus as internal", () => {
+  const { block, editor } = createEditor();
+  const insertMenu = createInsertMenuSpy();
+  const menu = createMenuSpy();
+  const view = createViewSpy();
+  const actionTarget = { id: "action-target" };
+  const insertTarget = { id: "insert-target" };
+  const controller = createTiptapBlockHandleController({ insertMenu, menu, view });
+  controller.attach({ editor, root: editor.view.dom, entry: { viewMode: "hybrid" } });
+  controller.handlePointerMove({ target: block });
+  menu.setContainedTarget(actionTarget);
+  insertMenu.setContainedTarget(insertTarget);
+
+  assert.equal(controller.shouldKeepOpenOnEditorBlur(actionTarget), true);
+  assert.equal(controller.shouldKeepOpenOnEditorBlur(insertTarget), true);
 });
 
 test("Tiptap block handle closes menus when dragging really starts", () => {

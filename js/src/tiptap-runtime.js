@@ -445,10 +445,12 @@ export function createTiptapEditorRuntime({
       editor.on("blur", () => {
         const entry = runtimeRegistry.get(tabId);
         const activeElement = documentRef?.activeElement;
-        if (!entry?.blockHandle?.contains?.(activeElement)) {
+        const keepBlockHandleOpen =
+          entry?.blockHandle?.shouldKeepOpenOnEditorBlur?.(activeElement) === true;
+        if (!keepBlockHandleOpen) {
           entry?.blockHandle?.close();
         }
-        if (!entry?.slashMenu?.contains?.(activeElement)) {
+        if (!keepBlockHandleOpen && !entry?.slashMenu?.contains?.(activeElement)) {
           entry?.slashMenu?.close();
         }
         if (!entry?.formatToolbar?.contains?.(activeElement)) {

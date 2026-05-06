@@ -568,6 +568,14 @@ export class TiptapBlockHandleController {
     );
   }
 
+  shouldKeepOpenOnEditorBlur(activeElement = null) {
+    return Boolean(
+      this.contains(activeElement) ||
+        this.#drag ||
+        (this.#state.open && this.#hasOpenFloatingMenu()),
+    );
+  }
+
   attach({ editor, root, entry } = {}) {
     this.#editor = editor ?? null;
     this.#entry = entry ?? null;

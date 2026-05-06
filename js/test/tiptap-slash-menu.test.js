@@ -237,6 +237,16 @@ function slashMenuCommandItem(root, commandId = null) {
   return walk(root);
 }
 
+function findElementByClass(root, className) {
+  if (!root) return null;
+  if (String(root.className ?? "").split(/\s+/).includes(className)) return root;
+  for (const child of root.children ?? []) {
+    const found = findElementByClass(child, className);
+    if (found) return found;
+  }
+  return null;
+}
+
 test("findSlashTrigger detects slash queries at text boundaries", () => {
   assert.deepEqual(findSlashTrigger("/h2"), { from: 0, to: 3, query: "h2" });
   assert.deepEqual(findSlashTrigger("hello /table"), {
@@ -299,7 +309,7 @@ test("Tiptap slash menu renders command icons for block insertion", () => {
   controller.attach({ editor, root: {} });
 
   const menu = documentRef.body.children[0];
-  const list = menu.children[0];
+  const list = findElementByClass(menu, "mn-tiptap-slash-menu-list");
   const firstSection = list.children[0];
   const firstItem = firstSection.children[1];
   const icon = firstItem.children[0];
