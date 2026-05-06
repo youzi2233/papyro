@@ -311,3 +311,36 @@ test("Tiptap floating dismiss lets controllers guard focus races without weakeni
 
   assert.deepEqual(calls, ["pointerdown"]);
 });
+
+test("Tiptap floating dismiss supports stricter scroll guards", () => {
+  const listeners = new Map();
+  const calls = [];
+  const editorTarget = { id: "editor" };
+  const outsideTarget = { id: "outside" };
+  const documentRef = {
+    addEventListener(type, listener) {
+      listeners.set(type, listener);
+    },
+    removeEventListener(type, listener) {
+      if (listeners.get(type) === listener) {
+        listeners.delete(type);
+      }
+    },
+  };
+  const controller = createFloatingDismissController({
+    document: documentRef,
+    shouldDismiss: () => true,
+    shouldDismissOnScroll: (event) => event.target !== editorTarget,
+    onDismiss: (event) => calls.push([event.type, event.target?.id]),
+  });
+
+  controller.open();
+  listeners.get("scroll")({ type: "scroll", target: editorTarget });
+  listeners.get("pointerdown")({ type: "pointerdown", target: editorTarget });
+  listeners.get("scroll")({ type: "scroll", target: outsideTarget });
+
+  assert.deepEqual(calls, [
+    ["pointerdown", "editor"],
+    ["scroll", "outside"],
+  ]);
+});

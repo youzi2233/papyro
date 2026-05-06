@@ -607,3 +607,28 @@ test("Tiptap block action menu survives editor focus races until focus leaves th
   assert.equal(controller.state.open, false);
   assert.deepEqual(view.calls.at(-1), ["hide"]);
 });
+
+test("Tiptap block action menu survives editor scroll races", () => {
+  const { editor } = createEditor();
+  const view = createViewSpy();
+  const documentRef = createDismissDocument();
+  const editorDom = {
+    contains: (target) => target === editorDom,
+  };
+  editor.view = { dom: editorDom };
+  const controller = createTiptapBlockActionMenuController({
+    dom: { document: documentRef },
+    view,
+  });
+  controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
+  controller.open(createTarget());
+
+  documentRef.emit("scroll", { type: "scroll", target: editorDom });
+
+  assert.equal(controller.state.open, true);
+  assert.notDeepEqual(view.calls.at(-1), ["hide"]);
+
+  documentRef.emit("scroll", { type: "scroll", target: { id: "outside-scroll" } });
+  assert.equal(controller.state.open, false);
+  assert.deepEqual(view.calls.at(-1), ["hide"]);
+});

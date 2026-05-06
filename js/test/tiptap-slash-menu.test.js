@@ -738,6 +738,43 @@ test("Tiptap slash menu ignores editor focus races but still closes on outside f
   assert.deepEqual(view.calls.at(-1), ["hide"]);
 });
 
+test("Tiptap block insert slash menu survives editor scroll races", () => {
+  const { editor } = createEditor("plain");
+  const view = createViewSpy();
+  const documentRef = createDismissDocument();
+  controllerAttachEditorDocument(editor, documentRef);
+  const controller = createTiptapSlashMenuController({
+    dom: { document: documentRef },
+    view,
+  });
+  controller.attach({ editor, root: {} });
+  controller.openAtBlock({
+    block: {
+      getBoundingClientRect: () => ({
+        left: 96,
+        top: 44,
+        right: 420,
+        bottom: 78,
+        width: 324,
+        height: 34,
+      }),
+    },
+    pos: 3,
+    node: {
+      nodeSize: 5,
+    },
+  });
+
+  documentRef.emit("scroll", { type: "scroll", target: editor.view.dom });
+
+  assert.equal(controller.state.open, true);
+  assert.notDeepEqual(view.calls.at(-1), ["hide"]);
+
+  documentRef.emit("scroll", { type: "scroll", target: { id: "outside-scroll" } });
+  assert.equal(controller.state.open, false);
+  assert.deepEqual(view.calls.at(-1), ["hide"]);
+});
+
 function controllerAttachEditorDocument(editor, documentRef) {
   editor.view.dom.contains = (target) => target === editor.view.dom;
   editor.view.dom.ownerDocument = documentRef;

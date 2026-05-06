@@ -72,6 +72,15 @@ const TIPTAP_REQUIREMENTS = [
   ["Tiptap code block mono font", ".mn-tiptap-code-block", "--mn-markdown-mono-font"],
 ];
 
+const TIPTAP_COMMAND_PANEL_REQUIREMENTS = [
+  ["Tiptap slash command panel", ".mn-tiptap-slash-menu", "user-select: none"],
+  ["Tiptap slash command active rhythm", ".mn-tiptap-slash-menu-item.active", "box-shadow: inset 2px 0 0"],
+  ["Tiptap slash command list scrolling", ".mn-tiptap-slash-menu-list", "scrollbar-gutter: stable"],
+  ["Tiptap block action panel", ".mn-tiptap-block-action-menu", "user-select: none"],
+  ["Tiptap block action active rhythm", ".mn-tiptap-block-action-menu-item.active", "box-shadow: inset 2px 0 0"],
+  ["Tiptap block action list scrolling", ".mn-tiptap-block-action-menu-list", "scrollbar-gutter: stable"],
+];
+
 function main() {
   const args = process.argv.slice(2);
 
@@ -150,6 +159,14 @@ function checkCssText(source) {
       failures.push(`${label} missing token ${token}`);
     }
   }
+  for (const [label, selector, declaration] of TIPTAP_COMMAND_PANEL_REQUIREMENTS) {
+    if (!source.includes(selector)) {
+      failures.push(`${label} missing selector ${selector}`);
+    }
+    if (!source.includes(declaration)) {
+      failures.push(`${label} missing declaration ${declaration}`);
+    }
+  }
   return failures;
 }
 
@@ -173,6 +190,9 @@ ${PREVIEW_REQUIREMENTS.map(
 ${TIPTAP_REQUIREMENTS.map(
   ([, selector, token]) => `${selector} { color: var(${token}); }`,
 ).join("\n")}
+${TIPTAP_COMMAND_PANEL_REQUIREMENTS.map(
+  ([, selector, declaration]) => `${selector} { ${declaration}; }`,
+).join("\n")}
 `;
 
   assert(checkCssText(css).length === 0);
@@ -182,6 +202,13 @@ ${TIPTAP_REQUIREMENTS.map(
 
   const missingTiptap = css.replaceAll(".mn-tiptap-editor", ".mn-editor");
   assert(checkCssText(missingTiptap).some((failure) => failure.includes("Tiptap editor")));
+
+  const missingCommandPanel = css.replaceAll("scrollbar-gutter: stable", "scrollbar-width: thin");
+  assert(
+    checkCssText(missingCommandPanel).some((failure) =>
+      failure.includes("Tiptap slash command list scrolling"),
+    ),
+  );
 
   console.log("Markdown style smoke checker self-test passed.");
 }

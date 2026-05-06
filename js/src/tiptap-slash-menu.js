@@ -497,6 +497,7 @@ export class TiptapSlashMenuController {
       window: windowRef,
       contains: (target) => this.contains(target) || this.#externalContains(target),
       shouldDismiss: (event) => this.#shouldDismiss(event),
+      shouldDismissOnScroll: (event) => this.#shouldDismissOnScroll(event),
       onDismiss: () => this.close(),
     });
   }
@@ -527,6 +528,17 @@ export class TiptapSlashMenuController {
       target == null ||
       target === this.#document?.body ||
       this.#editor?.view?.dom?.contains?.(target)
+    );
+  }
+
+  #shouldDismissOnScroll(event) {
+    const target = event?.target;
+    return !(
+      this.#state.cleanupRangeOnClose &&
+      (target == null ||
+        target === this.#document?.body ||
+        target === this.#editor?.view?.dom ||
+        this.#editor?.view?.dom?.contains?.(target))
     );
   }
 

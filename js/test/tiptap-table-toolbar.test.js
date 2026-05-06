@@ -1699,3 +1699,31 @@ test("Tiptap table toolbar keeps focus races inside the editor from dismissing m
   assert.equal(controller.state.open, false);
   assert.deepEqual(view.calls.at(-1), ["hide"]);
 });
+
+test("Tiptap table context menu survives editor scroll races", () => {
+  const { editor } = createTableHarness({
+    mergeCells: () => true,
+    setCellAttribute: () => true,
+  });
+  const view = createViewSpy();
+  const documentRef = createDismissDocument();
+  const editorDom = editor.view.dom;
+  const containsTableTarget = editorDom.contains.bind(editorDom);
+  editorDom.contains = (target) => target === editorDom || containsTableTarget(target);
+  const controller = createTiptapTableToolbarController({
+    dom: { document: documentRef },
+    view,
+  });
+  controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
+  controller.openCellMenu("context");
+
+  documentRef.emit("scroll", { type: "scroll", target: editorDom });
+
+  assert.equal(controller.state.open, true);
+  assert.equal(controller.state.menuOpen, true);
+  assert.notDeepEqual(view.calls.at(-1), ["hide"]);
+
+  documentRef.emit("scroll", { type: "scroll", target: { id: "outside-scroll" } });
+  assert.equal(controller.state.open, false);
+  assert.deepEqual(view.calls.at(-1), ["hide"]);
+});

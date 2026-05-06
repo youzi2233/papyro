@@ -1285,6 +1285,7 @@ export class TiptapTableToolbarController {
       contains: (target) =>
         this.contains(target) || this.#state.table?.contains?.(target),
       shouldDismiss: (event) => this.#shouldDismiss(event),
+      shouldDismissOnScroll: (event) => this.#shouldDismissOnScroll(event),
       onDismiss: () => this.close(),
     });
   }
@@ -1327,6 +1328,17 @@ export class TiptapTableToolbarController {
       target == null ||
       target === this.#document?.body ||
       this.#editor?.view?.dom?.contains?.(target)
+    );
+  }
+
+  #shouldDismissOnScroll(event) {
+    const target = event?.target;
+    return !(
+      this.#state.menuOpen &&
+      (target == null ||
+        target === this.#document?.body ||
+        target === this.#editor?.view?.dom ||
+        this.#editor?.view?.dom?.contains?.(target))
     );
   }
 

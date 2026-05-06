@@ -607,7 +607,18 @@ export class TiptapBlockHandleController {
       }
       this.close();
     };
-    const onScroll = () => this.close();
+    const onScroll = () => {
+      if (!this.#hasOpenFloatingMenu()) {
+        this.close();
+        return;
+      }
+
+      if (targetStillMounted(this.#state.target, this.#editor?.view?.dom)) {
+        this.#updateView();
+      } else {
+        this.close();
+      }
+    };
     const onKeyDown = (event) => this.handleKeyDown(event);
     const onContextMenu = (event) => this.handleContextMenu(event);
 

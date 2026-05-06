@@ -277,6 +277,7 @@ export class TiptapBlockActionMenuController {
         this.#externalContains(target) ||
         this.#state.target?.block?.contains?.(target),
       shouldDismiss: (event) => this.#shouldDismiss(event),
+      shouldDismissOnScroll: (event) => this.#shouldDismissOnScroll(event),
       onDismiss: () => this.close(),
     });
   }
@@ -305,6 +306,16 @@ export class TiptapBlockActionMenuController {
     return !(
       target == null ||
       target === this.#document?.body ||
+      this.#editor?.view?.dom?.contains?.(target)
+    );
+  }
+
+  #shouldDismissOnScroll(event) {
+    const target = event?.target;
+    return !(
+      target == null ||
+      target === this.#document?.body ||
+      target === this.#editor?.view?.dom ||
       this.#editor?.view?.dom?.contains?.(target)
     );
   }
