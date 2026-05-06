@@ -5,6 +5,9 @@ import {
   selectTableColumnLabel,
   selectTableLabel,
   selectTableRowLabel,
+  tableContextEyebrowLabel,
+  tableContextSubtitleLabel,
+  tableContextTitleLabel,
   tableCellActionsLabel,
   tableSelectionActionsLabel,
   tableToolsLabel,
@@ -230,6 +233,8 @@ const TABLE_ADD_ROW_WIDTH = 42;
 const TABLE_ADD_ROW_HEIGHT = 22;
 const TABLE_ADD_COLUMN_WIDTH = 22;
 const TABLE_ADD_COLUMN_HEIGHT = 42;
+const TABLE_CONTEXT_MENU_WIDTH = 264;
+const TABLE_KEYBOARD_MENU_WIDTH = 520;
 const TABLE_MENU_COMMAND_SCOPE = Object.freeze({
   cell: new Set([
     "align-left",
@@ -698,6 +703,20 @@ function commandButtonById(root, commandId) {
   return null;
 }
 
+function commandButtons(root) {
+  if (!root) return [];
+  const buttons = [];
+  const walk = (element) => {
+    if (!element) return;
+    if (element.dataset?.commandId) {
+      buttons.push(element);
+    }
+    Array.from(element.children ?? []).forEach(walk);
+  };
+  walk(root);
+  return buttons;
+}
+
 function guardPointerEvent(event) {
   event?.preventDefault?.();
   event?.stopPropagation?.();
@@ -745,6 +764,10 @@ class TiptapTableToolbarView {
   #document;
   #window;
   #root = null;
+  #header = null;
+  #eyebrow = null;
+  #title = null;
+  #subtitle = null;
   #list = null;
   #addRowButton = null;
   #addColumnButton = null;
@@ -764,6 +787,10 @@ class TiptapTableToolbarView {
     if (this.#root || !this.#document) return;
 
     const root = createElement(this.#document, "div", "mn-tiptap-table-toolbar hidden");
+    const header = createElement(this.#document, "div", "mn-tiptap-table-toolbar-header");
+    const eyebrow = createElement(this.#document, "div", "mn-tiptap-table-toolbar-eyebrow");
+    const title = createElement(this.#document, "div", "mn-tiptap-table-toolbar-title");
+    const subtitle = createElement(this.#document, "div", "mn-tiptap-table-toolbar-subtitle");
     const list = createElement(this.#document, "div", "mn-tiptap-table-toolbar-list");
     const addRowButton = createElement(
       this.#document,
@@ -792,6 +819,10 @@ class TiptapTableToolbarView {
     );
     if (
       !root ||
+      !header ||
+      !eyebrow ||
+      !title ||
+      !subtitle ||
       !list ||
       !addRowButton ||
       !addColumnButton ||
@@ -801,13 +832,14 @@ class TiptapTableToolbarView {
     ) return;
 
     root.role = "toolbar";
+    header.append(eyebrow, title, subtitle);
     addRowButton.type = "button";
     addColumnButton.type = "button";
     tableSelectButton.type = "button";
     cellMenuButton.type = "button";
     cellMenuButton.setAttribute("aria-hidden", "false");
     cellMenuButton.setAttribute("aria-haspopup", "menu");
-    root.appendChild(list);
+    root.append(header, list);
     mountFloatingRoot(root, container, this.#document);
     mountFloatingRoot(addRowButton, container, this.#document);
     mountFloatingRoot(addColumnButton, container, this.#document);
@@ -815,6 +847,10 @@ class TiptapTableToolbarView {
     mountFloatingRoot(cellMenuButton, container, this.#document);
     mountFloatingRoot(selectionBackdrop, container, this.#document);
     this.#root = root;
+    this.#header = header;
+    this.#eyebrow = eyebrow;
+    this.#title = title;
+    this.#subtitle = subtitle;
     this.#list = list;
     this.#addRowButton = addRowButton;
     this.#addColumnButton = addColumnButton;
@@ -838,6 +874,17 @@ class TiptapTableToolbarView {
     this.#root.dataset.open = state.menuOpen ? "true" : "false";
     this.#root.dataset.selectionKind = state.selection?.kind ?? "cell";
     this.#lastTable = state.table ?? null;
+    if (this.#header && this.#eyebrow && this.#title && this.#subtitle) {
+      this.#eyebrow.textContent = tableContextEyebrowLabel(state.language);
+      this.#title.textContent =
+        state.mode === "context"
+          ? tableContextTitleLabel(state.language, state.selection?.kind)
+          : tableToolsLabel(state.language);
+      this.#subtitle.textContent =
+        state.mode === "context"
+          ? tableContextSubtitleLabel(state.language, state.selection)
+          : "";
+    }
     this.#addRowButton.title = addRowBelowLabel(state.language);
     this.#addRowButton.setAttribute("aria-label", addRowBelowLabel(state.language));
     this.#addColumnButton.title = addColumnRightLabel(state.language);
@@ -931,8 +978,8 @@ class TiptapTableToolbarView {
     positionFloatingElement(this.#root, anchorRect, {
       viewport: viewportSize(state.table, this.#window),
       size: {
-        width: state.mode === "keyboard" ? 520 : 230,
-        height: state.mode === "keyboard" ? 42 : 260,
+        width: state.mode === "keyboard" ? TABLE_KEYBOARD_MENU_WIDTH : TABLE_CONTEXT_MENU_WIDTH,
+        height: state.mode === "keyboard" ? 42 : 310,
         margin: 10,
       },
       placement: state.mode === "keyboard" ? "top" : "bottom",
@@ -1136,9 +1183,7 @@ class TiptapTableToolbarView {
   setActiveCommand(commandId, keyboardActive = true) {
     if (!this.#root) return false;
 
-    const buttons = Array.from(this.#list?.children ?? []).filter(
-      (child) => child?.dataset?.commandId,
-    );
+    const buttons = commandButtons(this.#list);
     buttons.forEach((button) => {
       const active = button.dataset.commandId === commandId;
       button.dataset.keyboardActive = active ? "true" : "false";
@@ -1164,6 +1209,10 @@ class TiptapTableToolbarView {
     this.#selectionBackdrop?.remove?.();
     this.#clearAxisHandles();
     this.#root = null;
+    this.#header = null;
+    this.#eyebrow = null;
+    this.#title = null;
+    this.#subtitle = null;
     this.#list = null;
     this.#addRowButton = null;
     this.#addColumnButton = null;

@@ -187,6 +187,44 @@ function toolbarCommandButton(created, commandId) {
   return find(root);
 }
 
+function tableToolbarList(created) {
+  const root = created.find((element) =>
+    String(element.className).includes("mn-tiptap-table-toolbar"),
+  );
+  const find = (element) => {
+    if (String(element?.className ?? "").includes("mn-tiptap-table-toolbar-list")) {
+      return element;
+    }
+    for (const child of element?.children ?? []) {
+      const found = find(child);
+      if (found) return found;
+    }
+    return null;
+  };
+  return find(root);
+}
+
+function tableToolbarHeader(created) {
+  const root = created.find((element) =>
+    String(element.className).includes("mn-tiptap-table-toolbar"),
+  );
+  const find = (element, className) => {
+    if (String(element?.className ?? "").includes(className)) return element;
+    for (const child of element?.children ?? []) {
+      const found = find(child, className);
+      if (found) return found;
+    }
+    return null;
+  };
+  return {
+    root,
+    header: find(root, "mn-tiptap-table-toolbar-header"),
+    eyebrow: find(root, "mn-tiptap-table-toolbar-eyebrow"),
+    title: find(root, "mn-tiptap-table-toolbar-title"),
+    subtitle: find(root, "mn-tiptap-table-toolbar-subtitle"),
+  };
+}
+
 function commandSpy(calls, name, result = true) {
   return () => {
     calls.push([name]);
@@ -851,7 +889,7 @@ test("Tiptap table toolbar keeps complex command chrome hidden until requested",
   assert.equal(root.hidden, false);
   assert.equal(controller.state.menuOpen, true);
   assert.deepEqual(
-    root.children[0].children
+    tableToolbarList(created).children
       .flatMap((element) => element.children ?? [])
       .filter((element) => element.dataset.commandId)
       .map((element) => element.dataset.commandId),
@@ -900,6 +938,10 @@ test("Tiptap table toolbar supports keyboard navigation and execution", () => {
   );
   assert.equal(controller.state.activeCommandId, "add-column-before");
   assert.equal(documentRef.activeElement?.dataset?.commandId, "add-column-before");
+  assert.equal(
+    tableToolbarHeader(created).title.textContent,
+    "Table tools",
+  );
 
   assert.equal(controller.handleKeyDown(keyboardEvent("ArrowRight")), true);
   assert.equal(controller.state.activeCommandId, "delete-table");
@@ -1127,8 +1169,42 @@ test("Tiptap table toolbar anchors multi-cell actions to the head cell", () => {
 
   assert.equal(root.hidden, false);
   assert.equal(trigger["aria-expanded"], "true");
-  assert.equal(root.style.left, "125px");
+  assert.equal(root.style.left, "108px");
   assert.equal(root.style.top, "132px");
+});
+
+test("Tiptap table toolbar renders localized context headers for table selections", () => {
+  const { created, documentRef } = createDocument();
+  const { editor } = createTableHarness({
+    mergeCells: () => true,
+    setCellAttribute: () => true,
+  });
+  editor.state.selection = {
+    from: 4,
+    $anchorCell: { pos: 10 },
+    $headCell: { pos: 11 },
+    forEachCell(callback) {
+      [10, 11].forEach((pos) => callback({}, pos));
+    },
+  };
+  const controller = createTiptapTableToolbarController({
+    dom: { document: documentRef },
+  });
+
+  controller.attach({
+    editor,
+    root: {},
+    entry: { viewMode: "hybrid", preferences: { language: "Chinese" } },
+  });
+  const trigger = created.find((element) =>
+    String(element.className).includes("mn-tiptap-table-cell-menu-trigger"),
+  );
+  trigger.onpointerdown({ preventDefault() {}, stopPropagation() {} });
+
+  const { eyebrow, title, subtitle } = tableToolbarHeader(created);
+  assert.equal(eyebrow.textContent, "表格");
+  assert.equal(title.textContent, "选区操作");
+  assert.equal(subtitle.textContent, "已选择 2 个单元格");
 });
 
 test("Tiptap table toolbar scopes context commands to row and column selections", () => {
@@ -1209,7 +1285,7 @@ test("Tiptap table toolbar separates destructive row actions from ordinary comma
   const root = created.find((element) =>
     String(element.className).includes("mn-tiptap-table-toolbar"),
   );
-  const groups = root.children[0].children;
+  const groups = tableToolbarList(created).children;
   const dangerGroup = groups.find((element) => element.dataset.layoutGroup === "danger");
   const rowGroup = groups.find((element) => element.dataset.group === "Rows");
   const headerGroup = groups.find((element) => element.dataset.group === "Headers");
@@ -1237,6 +1313,10 @@ test("Tiptap table toolbar separates destructive row actions from ordinary comma
       .map((element) => [element.dataset.commandId, element.textContent]),
     [["toggle-header-row", "Toggle header row"]],
   );
+  const { eyebrow, title, subtitle } = tableToolbarHeader(created);
+  assert.equal(eyebrow.textContent, "Table");
+  assert.equal(title.textContent, "Row actions");
+  assert.equal(subtitle.textContent, "Row 1");
 });
 
 test("Tiptap table toolbar keeps cell and axis context menus focused", () => {
@@ -1418,7 +1498,7 @@ test("Tiptap table toolbar replaces native context menus inside table cells", ()
   assert.equal(controller.state.menuOpen, true);
   assert.equal(root.hidden, false);
   assert.equal(root.dataset.selectionKind, "cell");
-  assert.equal(root.style.left, "125px");
+  assert.equal(root.style.left, "108px");
   assert.equal(root.style.top, "132px");
 
   controller.destroy();
@@ -1449,7 +1529,7 @@ test("Tiptap table toolbar anchors right-click menus to the pointer", () => {
   );
   assert.equal(controller.state.menuAnchorRect.left, 310);
   assert.equal(controller.state.menuAnchorRect.top, 240);
-  assert.equal(root.style.left, "195px");
+  assert.equal(root.style.left, "178px");
   assert.equal(root.style.top, "248px");
 });
 

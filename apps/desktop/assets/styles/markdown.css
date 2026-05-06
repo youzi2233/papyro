@@ -1025,14 +1025,49 @@
 }
 
 .mn-tiptap-table-toolbar[data-mode="context"] {
-    width: 236px;
-    max-width: min(236px, calc(100vw - 20px));
-    padding: 7px;
-    border-radius: var(--mn-radius-lg);
+    width: 264px;
+    max-width: min(264px, calc(100vw - 20px));
+    padding: 8px;
+    border-radius: 12px;
+    box-shadow: 0 18px 42px color-mix(in srgb, var(--mn-ink) 14%, transparent);
 }
 
 .mn-tiptap-table-toolbar.hidden {
     display: none;
+}
+
+.mn-tiptap-table-toolbar-header {
+    display: none;
+}
+
+.mn-tiptap-table-toolbar[data-mode="context"] .mn-tiptap-table-toolbar-header {
+    display: grid;
+    gap: 1px;
+    padding: 6px 8px 8px;
+    border-bottom: var(--mn-border-subtle);
+}
+
+.mn-tiptap-table-toolbar-eyebrow {
+    color: var(--mn-accent);
+    font-size: 10px;
+    font-weight: var(--mn-weight-semibold);
+    line-height: 1.2;
+    letter-spacing: 0;
+    text-transform: uppercase;
+}
+
+.mn-tiptap-table-toolbar-title {
+    color: var(--mn-ink);
+    font-size: var(--mn-type-body-sm);
+    font-weight: var(--mn-weight-semibold);
+    line-height: var(--mn-line-tight);
+}
+
+.mn-tiptap-table-toolbar-subtitle {
+    color: var(--mn-ink-3);
+    font-size: var(--mn-type-caption);
+    font-weight: var(--mn-weight-medium);
+    line-height: var(--mn-line-caption);
 }
 
 .mn-tiptap-table-toolbar-list {
@@ -1044,7 +1079,9 @@
 
 .mn-tiptap-table-toolbar[data-mode="context"] .mn-tiptap-table-toolbar-list {
     display: grid;
-    gap: 8px;
+    gap: 7px;
+    max-height: min(360px, calc(100vh - 130px));
+    padding-top: 7px;
     overflow: auto;
 }
 
@@ -1056,19 +1093,20 @@
 
 .mn-tiptap-table-toolbar[data-mode="context"] .mn-tiptap-table-toolbar-group {
     display: grid;
-    gap: 3px;
+    gap: 4px;
 }
 
 .mn-tiptap-table-toolbar[data-mode="context"] .mn-tiptap-table-toolbar-group[data-layout-group="danger"] {
-    margin-top: 4px;
-    padding-top: 6px;
+    margin-top: 2px;
+    padding-top: 7px;
     border-top: var(--mn-border-subtle);
 }
 
 .mn-tiptap-table-toolbar[data-mode="context"] .mn-tiptap-table-toolbar-group[data-layout-group="align"],
 .mn-tiptap-table-toolbar[data-mode="context"] .mn-tiptap-table-toolbar-group[data-layout-group="cell-color"] {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 5px;
+    gap: 6px;
+    padding: 0 4px;
 }
 
 .mn-tiptap-table-toolbar-group-label {
@@ -1078,9 +1116,9 @@
 .mn-tiptap-table-toolbar[data-mode="context"] .mn-tiptap-table-toolbar-group-label {
     display: block;
     grid-column: 1 / -1;
-    padding: 2px 7px 1px;
+    padding: 0 7px 1px;
     color: var(--mn-ink-3);
-    font-size: var(--mn-type-label);
+    font-size: 10px;
     font-weight: var(--mn-weight-semibold);
     line-height: var(--mn-line-caption);
     text-transform: uppercase;
@@ -1106,9 +1144,9 @@
 .mn-tiptap-table-toolbar[data-mode="context"] .mn-tiptap-table-toolbar-button {
     justify-content: space-between;
     width: 100%;
-    height: 32px;
+    height: 34px;
     padding: 0 10px;
-    border-radius: var(--mn-radius-sm);
+    border-radius: 7px;
     font-weight: var(--mn-weight-medium);
 }
 
@@ -1184,14 +1222,14 @@
 }
 
 .mn-tiptap-table-toolbar-button:hover:not(:disabled) {
-    background: var(--mn-accent-wash);
+    background: color-mix(in srgb, var(--mn-accent) 9%, transparent);
     color: var(--mn-ink);
 }
 
 .mn-tiptap-table-toolbar-button:focus-visible,
 .mn-tiptap-table-toolbar-button[data-keyboard-active="true"] {
     outline: 0;
-    background: var(--mn-accent-wash);
+    background: color-mix(in srgb, var(--mn-accent) 11%, transparent);
     color: var(--mn-ink);
     box-shadow: var(--mn-ring-focus-sm);
 }
@@ -1202,7 +1240,7 @@
 }
 
 .mn-tiptap-table-toolbar-button[data-active="true"] {
-    background: var(--mn-accent-wash);
+    background: color-mix(in srgb, var(--mn-accent) 12%, transparent);
     color: var(--mn-accent);
 }
 
@@ -1216,7 +1254,7 @@
 
 .mn-tiptap-table-toolbar[data-mode="context"] .mn-tiptap-table-toolbar-button[data-tone="danger"]:hover:not(:disabled),
 .mn-tiptap-table-toolbar[data-mode="context"] .mn-tiptap-table-toolbar-button[data-tone="danger"][data-keyboard-active="true"] {
-    background: color-mix(in srgb, var(--mn-danger) 8%, transparent);
+    background: color-mix(in srgb, var(--mn-danger) 9%, transparent);
 }
 
 .mn-tiptap-table-cell-menu-trigger {

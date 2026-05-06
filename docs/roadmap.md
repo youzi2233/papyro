@@ -264,6 +264,7 @@ Tasks:
 - [x] Keep table context menu grouping on stable command group keys while localizing visible labels, so alignment and cell-color icon/swatch layouts remain stable across English and Chinese.
 - [x] Order table context menus by user intent: common insert/header actions appear first, destructive row/column/table deletion is visually quieter and placed last.
 - [x] Use full action labels in table context menus while keeping the keyboard toolbar compact, so row/column/cell menus read like user actions instead of terse developer controls.
+- [x] Promote table context menus into localized command panels with a Table eyebrow, selection-specific titles, concise selection summaries, and wider Notion-like spacing so users know exactly whether they are editing a cell, range, row, column, or whole table.
 - [x] Add table cell alignment commands: left, center, and right use Tiptap `setCellAttribute('align', ...)` so pipe table alignment remains part of the Markdown document model.
 - [x] Make table toolbar command buttons pointer-first so WebView focus ordering does not swallow table operations.
 - [x] Normalize table toolbar active alignment states so default/left/center/right cells reflect the actual Markdown table state.

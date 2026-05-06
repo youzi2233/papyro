@@ -250,6 +250,58 @@ export function tableSelectionActionsLabel(language) {
   return localizedText(language, "Selection actions", "选区操作");
 }
 
+export function tableContextEyebrowLabel(language) {
+  return localizedText(language, "Table", "表格");
+}
+
+export function tableContextTitleLabel(language, selectionKind) {
+  const labels = {
+    cell: ["Cell actions", "单元格操作"],
+    cells: ["Selection actions", "选区操作"],
+    row: ["Row actions", "行操作"],
+    column: ["Column actions", "列操作"],
+    table: ["Table actions", "整表操作"],
+  };
+  const label = labels[selectionKind] ?? labels.cell;
+  return localizedText(language, label[0], label[1]);
+}
+
+export function tableContextSubtitleLabel(language, selection = {}) {
+  const kind = selection?.kind ?? "cell";
+  const selectedCount = selection?.positions?.size ?? 0;
+  if (kind === "table") {
+    return localizedText(language, "Whole table selected", "已选择整张表");
+  }
+  if (kind === "row") {
+    const rows = selection?.rows ?? [];
+    if (rows.length === 1) {
+      const row = Number(rows[0]) + 1;
+      return localizedText(language, `Row ${row}`, `第 ${row} 行`);
+    }
+    return localizedText(language, `${rows.length} rows selected`, `已选择 ${rows.length} 行`);
+  }
+  if (kind === "column") {
+    const columns = selection?.columns ?? [];
+    if (columns.length === 1) {
+      const column = Number(columns[0]) + 1;
+      return localizedText(language, `Column ${column}`, `第 ${column} 列`);
+    }
+    return localizedText(
+      language,
+      `${columns.length} columns selected`,
+      `已选择 ${columns.length} 列`,
+    );
+  }
+  if (kind === "cells" || selectedCount > 1) {
+    const count = Math.max(2, selectedCount);
+    return localizedText(language, `${count} cells selected`, `已选择 ${count} 个单元格`);
+  }
+  if (selectedCount === 1) {
+    return localizedText(language, "1 cell selected", "已选择 1 个单元格");
+  }
+  return localizedText(language, "Current cell", "当前单元格");
+}
+
 export function addRowBelowLabel(language) {
   return localizedText(language, "Add row below", "在下方添加行");
 }
