@@ -271,6 +271,7 @@ const TABLE_MENU_COMMAND_SCOPE = Object.freeze({
   table: new Set([
     "toggle-header-row",
     "toggle-header-column",
+    "fix-table",
     "delete-table",
   ]),
 });
@@ -290,6 +291,7 @@ const TABLE_COMMAND_CONTEXT_ORDER = Object.freeze({
   table: [
     "toggle-header-row",
     "toggle-header-column",
+    "fix-table",
     "delete-table",
   ],
 });

@@ -270,6 +270,7 @@ flowchart LR
 - [x] 归一化表格工具条 active 对齐状态，让默认、左对齐、居中和右对齐能准确反映 Markdown 表格状态。
 - [x] 表格上下文菜单的 hover 和 focus 会同步更新 active command，与键盘导航保持同一套状态，让鼠标/键盘混用时命令面板更可预期。
 - [x] 增加表格单元格背景色命令：清除、黄色、蓝色、绿色通过 Tiptap `setCellAttribute('backgroundColor', ...)` 写入单元格属性，并在工具条中显示当前背景状态。
+- [x] 整表上下文菜单补上“修复表格结构”动作，让用户在表格结构异常时能从同一个作用域菜单恢复，而不是只看到表头和删除。
 - [x] 增加共享 Tiptap UI primitives，用于 popover 定位、菜单 active-descendant 状态、toolbar root 和显隐处理。
 - [x] 表格工具条尊重 Tiptap `editor.can()`，当前状态不可执行的行、列、单元格和修复操作会显示为 disabled，而不是伪装成可点击。
 - [x] 增加 Tiptap 表格工具条键盘访问：在表格选区内 Shift+F10 打开工具条，方向键在可用命令间移动，Enter/Space 执行当前命令，Escape 关闭。

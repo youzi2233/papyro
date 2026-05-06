@@ -1534,6 +1534,7 @@ test("Tiptap table toolbar keeps cell and axis context menus focused", () => {
   assert.deepEqual(toolbarCommandIds(created), [
     "toggle-header-row",
     "toggle-header-column",
+    "fix-table",
     "delete-table",
   ]);
 });
@@ -1596,6 +1597,7 @@ test("Tiptap table toolbar opens table selection menus from the centered trigger
   const { editor } = createTableHarness({
     toggleHeaderRow: () => true,
     toggleHeaderColumn: () => true,
+    fixTables: () => true,
     deleteTable: () => true,
   });
   const controller = createTiptapTableToolbarController({
@@ -1617,6 +1619,7 @@ test("Tiptap table toolbar opens table selection menus from the centered trigger
     [
       "toggle-header-row",
       "toggle-header-column",
+      "fix-table",
       "delete-table",
     ],
   );
