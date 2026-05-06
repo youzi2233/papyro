@@ -646,14 +646,14 @@
     z-index: 150;
     display: grid;
     grid-template-rows: auto minmax(0, 1fr) auto auto auto;
-    width: min(384px, calc(100vw - 20px));
-    max-height: min(440px, calc(100vh - 20px));
-    padding: 6px;
+    width: min(392px, calc(100vw - 20px));
+    max-height: min(460px, calc(100vh - 20px));
+    padding: 8px;
     border: var(--mn-border-default);
-    border-radius: 10px;
+    border-radius: 8px;
     background: var(--mn-surface-raised);
     color: var(--mn-ink);
-    box-shadow: 0 18px 42px color-mix(in srgb, #000 18%, transparent), var(--mn-shadow-lg);
+    box-shadow: 0 18px 44px color-mix(in srgb, #000 16%, transparent), var(--mn-shadow-lg);
     overflow: hidden;
     font-family: var(--mn-font-ui);
 }
@@ -666,9 +666,9 @@
 .mn-tiptap-block-action-menu-header {
     display: grid;
     gap: 1px;
-    padding: 8px 10px 9px;
+    padding: 7px 8px 9px;
     border-bottom: var(--mn-border-subtle);
-    background: color-mix(in srgb, var(--mn-surface-raised) 92%, var(--mn-surface-sunken));
+    background: color-mix(in srgb, var(--mn-surface-raised) 94%, var(--mn-surface-sunken));
 }
 
 .mn-tiptap-slash-menu-eyebrow,
@@ -696,14 +696,14 @@
 .mn-tiptap-slash-menu-list {
     display: grid;
     align-content: start;
-    gap: 7px;
-    padding: 7px 2px 2px;
+    gap: 8px;
+    padding: 8px 0 1px;
     overflow-y: auto;
 }
 
 .mn-tiptap-slash-menu-section {
     display: grid;
-    gap: 3px;
+    gap: 2px;
 }
 
 .mn-tiptap-slash-menu-section-title {
@@ -718,16 +718,16 @@
 
 .mn-tiptap-slash-menu-item {
     display: grid;
-    grid-template-columns: 32px minmax(0, 1fr);
+    grid-template-columns: 30px minmax(0, 1fr);
     align-items: center;
-    gap: 11px;
+    gap: 10px;
     width: 100%;
-    min-height: 46px;
+    min-height: 44px;
     border: 0;
-    border-radius: 8px;
+    border-radius: 6px;
     background: transparent;
     color: var(--mn-ink-2);
-    padding: 7px 9px;
+    padding: 6px 8px;
     text-align: left;
     font: inherit;
 }
@@ -742,10 +742,10 @@
     position: relative;
     display: grid;
     place-items: center;
-    width: 32px;
-    height: 32px;
+    width: 30px;
+    height: 30px;
     border: var(--mn-border-subtle);
-    border-radius: 7px;
+    border-radius: 6px;
     background: color-mix(in srgb, var(--mn-surface-sunken) 84%, transparent);
     color: var(--mn-ink-3);
     font-size: var(--mn-type-small);
@@ -1628,14 +1628,14 @@
     z-index: 165;
     display: grid;
     grid-template-rows: auto minmax(0, 1fr);
-    width: min(336px, calc(100vw - 20px));
-    max-height: min(440px, calc(100vh - 20px));
-    padding: 6px;
+    width: min(352px, calc(100vw - 20px));
+    max-height: min(460px, calc(100vh - 20px));
+    padding: 8px;
     border: var(--mn-border-default);
-    border-radius: 10px;
+    border-radius: 8px;
     background: var(--mn-surface-raised);
     color: var(--mn-ink);
-    box-shadow: 0 18px 42px color-mix(in srgb, #000 18%, transparent), var(--mn-shadow-lg);
+    box-shadow: 0 18px 44px color-mix(in srgb, #000 16%, transparent), var(--mn-shadow-lg);
     overflow: hidden;
     font-family: var(--mn-font-ui);
 }
@@ -1647,14 +1647,14 @@
 .mn-tiptap-block-action-menu-list {
     display: grid;
     align-content: start;
-    gap: 7px;
-    padding: 7px 2px 2px;
+    gap: 8px;
+    padding: 8px 0 1px;
     overflow-y: auto;
 }
 
 .mn-tiptap-block-action-menu-section {
     display: grid;
-    gap: 3px;
+    gap: 2px;
 }
 
 .mn-tiptap-block-action-menu-section-title {
@@ -1669,16 +1669,16 @@
 
 .mn-tiptap-block-action-menu-item {
     display: grid;
-    grid-template-columns: 32px minmax(0, 1fr) auto;
+    grid-template-columns: 30px minmax(0, 1fr) auto;
     align-items: center;
-    gap: 11px;
+    gap: 10px;
     width: 100%;
-    min-height: 44px;
+    min-height: 42px;
     border: 0;
-    border-radius: 8px;
+    border-radius: 6px;
     background: transparent;
     color: var(--mn-ink-2);
-    padding: 6px 9px;
+    padding: 6px 8px;
     text-align: left;
     font: inherit;
 }
@@ -1696,7 +1696,7 @@
     width: 30px;
     height: 30px;
     border: var(--mn-border-subtle);
-    border-radius: 7px;
+    border-radius: 6px;
     background: color-mix(in srgb, var(--mn-surface-sunken) 84%, transparent);
     color: var(--mn-ink-3);
     font-size: var(--mn-type-small);

@@ -32,15 +32,28 @@ export function createFloatingDismissController({
   onDismiss = () => {},
 } = {}) {
   let removeListeners = [];
+  let pointerEventHandled = false;
 
   const close = () => {
     removeListeners.forEach((remove) => remove());
     removeListeners = [];
+    pointerEventHandled = false;
   };
 
   const dismissIfOutside = (event) => {
     if (contains(event?.target)) return;
     onDismiss(event);
+  };
+  const dismissPointer = (event) => {
+    pointerEventHandled = true;
+    dismissIfOutside(event);
+  };
+  const dismissMouse = (event) => {
+    if (pointerEventHandled) {
+      pointerEventHandled = false;
+      return;
+    }
+    dismissIfOutside(event);
   };
 
   return {
@@ -48,11 +61,15 @@ export function createFloatingDismissController({
       close();
       if (!documentRef?.addEventListener) return;
 
-      documentRef.addEventListener("pointerdown", dismissIfOutside, true);
+      documentRef.addEventListener("pointerdown", dismissPointer, true);
+      documentRef.addEventListener("mousedown", dismissMouse, true);
+      documentRef.addEventListener("focusin", dismissIfOutside, true);
       documentRef.addEventListener("scroll", dismissIfOutside, true);
       windowRef?.addEventListener?.("resize", dismissIfOutside);
       removeListeners = [
-        () => documentRef.removeEventListener?.("pointerdown", dismissIfOutside, true),
+        () => documentRef.removeEventListener?.("pointerdown", dismissPointer, true),
+        () => documentRef.removeEventListener?.("mousedown", dismissMouse, true),
+        () => documentRef.removeEventListener?.("focusin", dismissIfOutside, true),
         () => documentRef.removeEventListener?.("scroll", dismissIfOutside, true),
         () => windowRef?.removeEventListener?.("resize", dismissIfOutside),
       ];

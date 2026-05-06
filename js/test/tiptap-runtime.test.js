@@ -107,6 +107,7 @@ function createRuntimeHarness({
         return event.key === "ArrowDown";
       },
       refresh: () => calls.push(["slashMenuRefresh"]),
+      shouldKeepOpenOnEditorBlur: () => false,
     }));
 
   const createTableToolbar =
@@ -1179,6 +1180,51 @@ test("Tiptap runtime keeps block insert menus stable when editor blur is interna
 
   assert.deepEqual(calls, [
     ["blockHandleBlurGuard", "block-floating-menu"],
+    ["formatToolbarClose"],
+    ["tableToolbarClose"],
+  ]);
+});
+
+test("Tiptap runtime keeps slash insert menus stable when editor blur is internal", () => {
+  const container = createContainer();
+  const activeElement = { id: "slash-menu" };
+  const documentRef = {
+    getElementById: (containerId) => (containerId === "editor-root" ? container : null),
+    get activeElement() {
+      return activeElement;
+    },
+  };
+  const { calls, registry, runtime } = createRuntimeHarness({
+    container,
+    document: documentRef,
+    slashMenuControllerFactory: () => ({
+      attach: ({ root }) => calls.push(["slashMenuAttach", root.className]),
+      close: () => calls.push(["slashMenuClose"]),
+      destroy: () => calls.push(["slashMenuDestroy"]),
+      handleKeyDown: (event) => {
+        calls.push(["slashMenuKeyDown", event.key]);
+        return false;
+      },
+      refresh: () => calls.push(["slashMenuRefresh"]),
+      contains: (target) => target === activeElement,
+      shouldKeepOpenOnEditorBlur: (target) => {
+        calls.push(["slashMenuBlurGuard", target.id]);
+        return true;
+      },
+    }),
+  });
+  runtime.ensureEditor({
+    tabId: "tab-a",
+    containerId: "editor-root",
+    initialContent: "# Note",
+  });
+  calls.length = 0;
+
+  registry.get("tab-a").editor.emit("blur");
+
+  assert.deepEqual(calls, [
+    ["slashMenuBlurGuard", "slash-menu"],
+    ["blockHandleClose"],
     ["formatToolbarClose"],
     ["tableToolbarClose"],
   ]);

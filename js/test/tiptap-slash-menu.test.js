@@ -718,3 +718,23 @@ test("Tiptap slash menu treats registered external targets as internal", () => {
   assert.equal(controller.state.open, true);
   assert.notDeepEqual(view.calls.at(-1), ["hide"]);
 });
+
+test("Tiptap slash menu keeps editor blur stable while a command panel is open", () => {
+  const { editor } = createEditor("/table");
+  const view = createViewSpy();
+  const safeTarget = { id: "safe-handle" };
+  const documentRef = { body: { id: "document-body" } };
+  const controller = createTiptapSlashMenuController({ dom: { document: documentRef }, view });
+  controller.attach({ editor, root: {} });
+
+  assert.equal(controller.shouldKeepOpenOnEditorBlur(null), true);
+  assert.equal(controller.shouldKeepOpenOnEditorBlur(documentRef.body), true);
+  assert.equal(controller.shouldKeepOpenOnEditorBlur({ id: "outside" }), false);
+
+  view.setContainedTarget(safeTarget);
+  assert.equal(controller.shouldKeepOpenOnEditorBlur(safeTarget), true);
+
+  controller.setExternalContains((target) => target === safeTarget);
+  view.setContainedTarget(null);
+  assert.equal(controller.shouldKeepOpenOnEditorBlur(safeTarget), true);
+});

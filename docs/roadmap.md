@@ -248,6 +248,8 @@ Tasks:
 - [x] Make the `+` insertion menu ignore suspicious window-origin caret coordinates from WebView/Tiptap mount races and fall back to the source block edge, so the menu does not appear in the top-left corner.
 - [x] Keep block action and `+` insertion menus stable across editor blur, selection refreshes, and normal pointer movement inside the floating menu, so the menu only closes on an outside click, Escape, scroll, resize, or command execution.
 - [x] Polish block action and slash/`+` insertion menus into enterprise-grade command panels with localized headers, tighter section rhythm, stronger selected-block feedback, and resilient tests that no longer depend on fragile child indexes.
+- [x] Harden the shared floating dismiss lifecycle for slash, `+`, and block action panels with pointer, mouse, focus, scroll, and resize guards, so WebView focus races do not make command panels vanish while users move into them.
+- [x] Refine slash and block action panel density, radii, icon sizing, and list rhythm so the menus feel like deliberate document command panels instead of temporary debug lists.
 - [x] Treat the floating block handle itself as a safe boundary for block action and `+` insertion menus, so clicking or moving back through the handle does not dismiss the open command panel before the user can choose an action.
 - [x] Add a table-size picker to the slash/`+` insertion menu so users can insert 1x1 through 6x6 tables instead of only the fixed 3x2 default.
 - [x] Add the first Tiptap table floating toolbar with row/column insertion and deletion, cell merge/split, header toggles, and table deletion.

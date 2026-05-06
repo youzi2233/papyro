@@ -6,6 +6,7 @@ import {
   clamp,
   commandElementId,
   createElement,
+  createFloatingDismissController,
   isComposingKeyboardEvent,
   mountFloatingRoot,
   positionFloatingElement,
@@ -238,4 +239,48 @@ test("Tiptap UI primitives bind pointer activation with click fallback", () => {
     "preventDefault",
     "stopPropagation",
   ]);
+});
+
+test("Tiptap floating dismiss treats pointer mouse and focus events consistently", () => {
+  const listeners = new Map();
+  const calls = [];
+  const safeTarget = { id: "safe" };
+  const documentRef = {
+    addEventListener(type, listener) {
+      listeners.set(type, listener);
+    },
+    removeEventListener(type, listener) {
+      if (listeners.get(type) === listener) {
+        listeners.delete(type);
+      }
+    },
+  };
+  const controller = createFloatingDismissController({
+    document: documentRef,
+    window: {
+      addEventListener(type, listener) {
+        listeners.set(`window:${type}`, listener);
+      },
+      removeEventListener(type, listener) {
+        if (listeners.get(`window:${type}`) === listener) {
+          listeners.delete(`window:${type}`);
+        }
+      },
+    },
+    contains: (target) => target === safeTarget,
+    onDismiss: (event) => calls.push(event.type),
+  });
+
+  controller.open();
+  listeners.get("pointerdown")({ type: "pointerdown", target: safeTarget });
+  listeners.get("mousedown")({ type: "mousedown", target: { id: "ignored-mouse-after-pointer" } });
+  listeners.get("mousedown")({ type: "mousedown", target: { id: "outside-mouse" } });
+  listeners.get("focusin")({ type: "focusin", target: { id: "outside-focus" } });
+  listeners.get("scroll")({ type: "scroll", target: safeTarget });
+  listeners.get("window:resize")({ type: "resize", target: { id: "window" } });
+
+  assert.deepEqual(calls, ["mousedown", "focusin", "resize"]);
+
+  controller.close();
+  assert.equal(listeners.size, 0);
 });

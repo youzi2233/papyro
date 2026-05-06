@@ -460,6 +460,7 @@ export class TiptapSlashMenuController {
   #maxItems;
   #view;
   #dismiss;
+  #document = null;
   #externalContains = () => false;
   #state = {
     open: false,
@@ -485,6 +486,7 @@ export class TiptapSlashMenuController {
     this.#maxItems = maxItems;
     const documentRef = dom.document ?? defaultDocument();
     const windowRef = dom.window ?? defaultWindow(documentRef);
+    this.#document = documentRef;
     this.#view =
       view ??
       new TiptapSlashMenuView({
@@ -515,6 +517,16 @@ export class TiptapSlashMenuController {
 
   setExternalContains(contains) {
     this.#externalContains = typeof contains === "function" ? contains : () => false;
+  }
+
+  shouldKeepOpenOnEditorBlur(activeElement = null) {
+    return Boolean(
+      this.#state.open &&
+        (this.contains(activeElement) ||
+          this.#externalContains(activeElement) ||
+          activeElement == null ||
+          activeElement === this.#document?.body),
+    );
   }
 
   refresh(editor = this.#editor) {

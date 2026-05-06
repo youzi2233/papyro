@@ -447,10 +447,12 @@ export function createTiptapEditorRuntime({
         const activeElement = documentRef?.activeElement;
         const keepBlockHandleOpen =
           entry?.blockHandle?.shouldKeepOpenOnEditorBlur?.(activeElement) === true;
+        const keepSlashMenuOpen =
+          entry?.slashMenu?.shouldKeepOpenOnEditorBlur?.(activeElement) === true;
         if (!keepBlockHandleOpen) {
           entry?.blockHandle?.close();
         }
-        if (!keepBlockHandleOpen && !entry?.slashMenu?.contains?.(activeElement)) {
+        if (!keepBlockHandleOpen && !keepSlashMenuOpen && !entry?.slashMenu?.contains?.(activeElement)) {
           entry?.slashMenu?.close();
         }
         if (!entry?.formatToolbar?.contains?.(activeElement)) {
