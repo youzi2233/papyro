@@ -147,6 +147,7 @@ export function localizeTableCommand(command, language) {
   const labels = TABLE_COMMAND_LABELS[command.id];
   return {
     ...command,
+    groupKey: command.groupKey ?? command.group,
     group: localizedGroup(command.group, language),
     title: labels ? localizedText(language, labels[0], labels[1]) : command.title,
     label: labels ? localizedText(language, labels[2], labels[3]) : command.label,

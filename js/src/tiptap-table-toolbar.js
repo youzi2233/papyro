@@ -632,8 +632,9 @@ function enabledCommandIds(commands) {
 
 function tableCommandVariant(command) {
   if (command?.variant) return command.variant;
-  if (command?.group === "Align") return "icon";
-  if (command?.group === "Cell color") return "swatch";
+  const groupKey = command?.groupKey ?? command?.group;
+  if (groupKey === "Align") return "icon";
+  if (groupKey === "Cell color") return "swatch";
   return "text";
 }
 
@@ -864,7 +865,7 @@ class TiptapTableToolbarView {
     const commandGroups = [];
     menuCommands.forEach((command) => {
       const layoutGroup = command.layoutGroup ?? tableCommandLayoutGroup(command);
-      const groupKey = layoutGroup === "danger" ? "danger" : command.group;
+      const groupKey = layoutGroup === "danger" ? "danger" : command.groupKey ?? command.group;
       if (commandGroups.at(-1)?.dataset?.groupKey !== groupKey) {
         const groupElement = createElement(this.#document, "div", "mn-tiptap-table-toolbar-group");
         if (!groupElement) return;

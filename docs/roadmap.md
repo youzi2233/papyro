@@ -259,6 +259,7 @@ Tasks:
 - [x] Make table row, column, and whole-table handles click-to-open: selecting an axis now opens the scoped context menu beside the selected range, keeps a stable selection backdrop, and groups commands into a quieter menu so table editing feels closer to the official Tiptap Notion-like reference instead of a dense developer toolbar.
 - [x] Make the table cell action trigger select and highlight the focused cell before opening its menu, while preserving existing multi-cell selections, so users can always see which cells the menu will affect.
 - [x] Refine the table cell action trigger into a quieter semantic control with selection-kind state and `aria-expanded`, so single-cell, multi-cell, row, column, and table menus are visually and accessibly distinct.
+- [x] Keep table context menu grouping on stable command group keys while localizing visible labels, so alignment and cell-color icon/swatch layouts remain stable across English and Chinese.
 - [x] Order table context menus by user intent: common insert/header actions appear first, destructive row/column/table deletion is visually quieter and placed last.
 - [x] Use full action labels in table context menus while keeping the keyboard toolbar compact, so row/column/cell menus read like user actions instead of terse developer controls.
 - [x] Add table cell alignment commands: left, center, and right use Tiptap `setCellAttribute('align', ...)` so pipe table alignment remains part of the Markdown document model.

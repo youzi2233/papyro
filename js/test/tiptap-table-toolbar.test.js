@@ -597,6 +597,7 @@ test("Tiptap table toolbar marks active cell background commands", () => {
   assert.equal(yellow.dataset.variant, "swatch");
   assert.equal(yellow.children[0]?.dataset?.icon, "color-yellow");
   assert.equal(colorGroup.dataset.group, "Cell color");
+  assert.equal(colorGroup.dataset.groupKey, "Cell color");
 });
 
 test("Tiptap table toolbar renders alignment commands as icon buttons", () => {
@@ -620,6 +621,7 @@ test("Tiptap table toolbar renders alignment commands as icon buttons", () => {
   assert.equal(alignCenter.children[0]?.dataset?.icon, "align-center");
   assert.equal(alignCenter.children.length, 1);
   assert.equal(alignGroup.dataset.group, "Align");
+  assert.equal(alignGroup.dataset.groupKey, "Align");
 });
 
 test("Tiptap table toolbar keeps icon and swatch layouts stable in Chinese", () => {
@@ -644,6 +646,8 @@ test("Tiptap table toolbar keeps icon and swatch layouts stable in Chinese", () 
   const colorGroup = created.find((element) => element.dataset.layoutGroup === "cell-color");
   assert.notEqual(alignGroup.dataset.group, "Align");
   assert.notEqual(colorGroup.dataset.group, "Cell color");
+  assert.equal(alignGroup.dataset.groupKey, "Align");
+  assert.equal(colorGroup.dataset.groupKey, "Cell color");
   assert.equal(created.find((element) => element.dataset.commandId === "align-center").dataset.variant, "icon");
   assert.equal(created.find((element) => element.dataset.commandId === "cell-bg-yellow").dataset.variant, "swatch");
 });
