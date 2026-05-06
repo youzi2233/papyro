@@ -748,6 +748,39 @@ test("Tiptap table toolbar quick add buttons run row and column insertion", () =
   ]);
 });
 
+test("Tiptap table toolbar anchors quick add buttons to the table grid edges", () => {
+  const { created, documentRef } = createDocument();
+  const { editor, table } = createTableHarness();
+  editor.commands.addRowAfter = () => true;
+  editor.commands.addColumnAfter = () => true;
+  table.getBoundingClientRect = () => ({
+    left: 100,
+    top: 80,
+    width: 300,
+    height: 130,
+    right: 400,
+    bottom: 210,
+  });
+  const controller = createTiptapTableToolbarController({
+    dom: { document: documentRef },
+  });
+
+  controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
+  const rowButton = created.find((element) =>
+    String(element.className).includes("mn-tiptap-table-add-row"),
+  );
+  const columnButton = created.find((element) =>
+    String(element.className).includes("mn-tiptap-table-add-column"),
+  );
+
+  assert.equal(rowButton.style.left, "219px");
+  assert.equal(rowButton.style.top, "164px");
+  assert.equal(rowButton.dataset.edge, "row");
+  assert.equal(columnButton.style.left, "366px");
+  assert.equal(columnButton.style.top, "103px");
+  assert.equal(columnButton.dataset.edge, "column");
+});
+
 test("Tiptap table toolbar controls fall back to click events", () => {
   const { created, documentRef } = createDocument();
   const { calls, editor } = createTableHarness();

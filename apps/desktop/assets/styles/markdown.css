@@ -1340,6 +1340,10 @@
         opacity var(--mn-transition-fast);
 }
 
+.mn-tiptap-table-quick-add::selection {
+    background: transparent;
+}
+
 .mn-tiptap-table-quick-add::before,
 .mn-tiptap-table-quick-add::after {
     content: "";

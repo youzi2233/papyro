@@ -410,7 +410,7 @@ function tableSelectionGrid(table, view) {
 }
 
 function firstRowCells(grid) {
-  return grid.find((row) => row.cells.length > 0)?.cells ?? [];
+  return (grid ?? []).find((row) => row.cells.length > 0)?.cells ?? [];
 }
 
 function selectionCellPositions(selection) {
@@ -524,6 +524,22 @@ function tableSelectionRect(grid, selection, tableRect) {
   }
 
   return null;
+}
+
+function lastTableRowRect(grid, fallbackRect = null) {
+  const lastRow = [...(grid ?? [])].reverse().find((row) => row?.rect);
+  return normalizedRect(lastRow?.rect) ?? normalizedRect(fallbackRect);
+}
+
+function lastTableColumnRect(grid, fallbackRect = null) {
+  const firstRow = firstRowCells(grid);
+  const lastColumnIndex = firstRow.at(-1)?.columnIndex;
+  if (!Number.isInteger(lastColumnIndex)) return normalizedRect(fallbackRect);
+  return unionRects(
+    (grid ?? [])
+      .map((row) => row.cells.find((cell) => cell.columnIndex === lastColumnIndex)?.rect)
+      .filter(Boolean),
+  ) ?? normalizedRect(fallbackRect);
 }
 
 function tableMenuAnchorRect(state) {
@@ -992,10 +1008,14 @@ class TiptapTableToolbarView {
 
     const addRow = state.commands.find((command) => command.id === "add-row-after");
     const addColumn = state.commands.find((command) => command.id === "add-column-after");
-    this.#addRowButton.style.left = `${rect.left + Math.max(0, rect.width ?? rect.right - rect.left) / 2 - TABLE_ADD_ROW_WIDTH / 2}px`;
-    this.#addRowButton.style.top = `${rect.bottom + 6}px`;
-    this.#addColumnButton.style.left = `${rect.right + 6}px`;
-    this.#addColumnButton.style.top = `${rect.top + Math.max(0, rect.height ?? rect.bottom - rect.top) / 2 - TABLE_ADD_COLUMN_HEIGHT / 2}px`;
+    const rowRect = lastTableRowRect(state.grid, rect);
+    const columnRect = lastTableColumnRect(state.grid, rect);
+    this.#addRowButton.style.left = `${rowRect.left + Math.max(0, rowRect.width) / 2 - TABLE_ADD_ROW_WIDTH / 2}px`;
+    this.#addRowButton.style.top = `${rowRect.bottom + 6}px`;
+    this.#addColumnButton.style.left = `${columnRect.right + 6}px`;
+    this.#addColumnButton.style.top = `${columnRect.top + Math.max(0, columnRect.height) / 2 - TABLE_ADD_COLUMN_HEIGHT / 2}px`;
+    this.#addRowButton.dataset.edge = "row";
+    this.#addColumnButton.dataset.edge = "column";
 
     this.#addRowButton._mnCommand = addRow;
     this.#addColumnButton._mnCommand = addColumn;

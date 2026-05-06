@@ -254,6 +254,7 @@ Tasks:
 - [x] Upgrade the Tiptap table toolbar into grouped column, row, cell, header, navigation, repair, and delete commands so table editing feels closer to mature document editors.
 - [x] Add table-edge quick add controls for inserting a row below and a column to the right without opening the full toolbar.
 - [x] Make table-edge quick add controls visually directional: the row inserter is horizontal, the column inserter is vertical, and both use CSS-drawn icons instead of font glyphs so hit targets stay stable.
+- [x] Anchor table-edge quick add controls to the actual last row and last column grid edges, so row/column insertion affordances stay aligned when table padding, captions, or uneven content change the outer table rectangle.
 - [x] Add row and column edge handles for tables: clicking the left row rail or top column rail selects the full row/column and reuses the table toolbar for follow-up operations.
 - [x] Add a top-left whole-table handle so one click selects the full table before delete, header, alignment, and cell-style operations.
 - [x] Replace the always-visible table command strip with a lighter Notion-like table surface: edge `+` controls stay visible for quick row/column insertion, while cell merge, alignment, and color actions live behind a current-cell context trigger.
