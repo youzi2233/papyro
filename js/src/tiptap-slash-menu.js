@@ -460,6 +460,7 @@ export class TiptapSlashMenuController {
   #maxItems;
   #view;
   #dismiss;
+  #externalContains = () => false;
   #state = {
     open: false,
     query: "",
@@ -492,7 +493,7 @@ export class TiptapSlashMenuController {
     this.#dismiss = createFloatingDismissController({
       document: documentRef,
       window: windowRef,
-      contains: (target) => this.contains(target),
+      contains: (target) => this.contains(target) || this.#externalContains(target),
       onDismiss: () => this.close(),
     });
   }
@@ -510,6 +511,10 @@ export class TiptapSlashMenuController {
     this.#entry = entry ?? null;
     this.#view.mount?.(root);
     this.refresh(editor);
+  }
+
+  setExternalContains(contains) {
+    this.#externalContains = typeof contains === "function" ? contains : () => false;
   }
 
   refresh(editor = this.#editor) {

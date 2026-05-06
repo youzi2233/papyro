@@ -1522,6 +1522,7 @@
     align-items: center;
     gap: 4px;
     height: 28px;
+    padding-right: 8px;
     user-select: none;
 }
 
@@ -1546,6 +1547,14 @@
     cursor: grabbing;
     border-color: var(--mn-accent);
     color: var(--mn-accent);
+}
+
+.mn-tiptap-block-handle[data-menu-open="true"] .mn-tiptap-block-handle-action,
+.mn-tiptap-block-handle[data-insert-open="true"] .mn-tiptap-block-handle-insert {
+    border-color: color-mix(in srgb, var(--mn-accent) 46%, var(--mn-border));
+    background: color-mix(in srgb, var(--mn-accent) 10%, var(--mn-surface-raised));
+    color: var(--mn-accent);
+    box-shadow: var(--mn-shadow-sm);
 }
 
 .mn-tiptap-block-handle-insert {

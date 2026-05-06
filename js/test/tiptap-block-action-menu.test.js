@@ -565,3 +565,22 @@ test("Tiptap block action menu stays open for the selected block bridge", () => 
   assert.equal(controller.state.open, true);
   assert.notDeepEqual(view.calls.at(-1), ["hide"]);
 });
+
+test("Tiptap block action menu treats registered external targets as internal", () => {
+  const { editor } = createEditor();
+  const view = createViewSpy();
+  const documentRef = createDismissDocument();
+  const safeTarget = { id: "safe-handle" };
+  const controller = createTiptapBlockActionMenuController({
+    dom: { document: documentRef },
+    view,
+  });
+  controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
+  controller.setExternalContains((target) => target === safeTarget);
+  controller.open(createTarget());
+
+  documentRef.emit("pointerdown", { target: safeTarget });
+
+  assert.equal(controller.state.open, true);
+  assert.notDeepEqual(view.calls.at(-1), ["hide"]);
+});

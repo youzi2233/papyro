@@ -700,3 +700,21 @@ test("Tiptap slash menu stays open for pointer events inside the menu", () => {
   assert.equal(controller.state.open, true);
   assert.notDeepEqual(view.calls.at(-1), ["hide"]);
 });
+
+test("Tiptap slash menu treats registered external targets as internal", () => {
+  const { editor } = createEditor("/table");
+  const view = createViewSpy();
+  const documentRef = createDismissDocument();
+  const safeTarget = { id: "safe-handle" };
+  const controller = createTiptapSlashMenuController({
+    dom: { document: documentRef },
+    view,
+  });
+  controller.attach({ editor, root: {} });
+  controller.setExternalContains((target) => target === safeTarget);
+
+  documentRef.emit("pointerdown", { target: safeTarget });
+
+  assert.equal(controller.state.open, true);
+  assert.notDeepEqual(view.calls.at(-1), ["hide"]);
+});

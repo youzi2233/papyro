@@ -95,15 +95,18 @@ function createViewSpy() {
   const calls = [];
   let hovered = false;
   let bridgePointer = false;
+  const states = [];
   let actionCount = 0;
   let insertCount = 0;
   return {
     calls,
+    states,
     mount(root) {
       calls.push(["mount", root?.className ?? ""]);
     },
     update(state) {
       calls.push(["update", state.target.kind, state.target.pos]);
+      states.push(state);
       this.openActions = state.openActions;
       this.openInsert = state.openInsert;
       this.startDrag = state.startDrag;
@@ -146,6 +149,7 @@ function createMenuSpy() {
   const calls = [];
   let open = false;
   let containedTarget = null;
+  let externalContains = () => false;
   return {
     calls,
     get state() {
@@ -169,6 +173,12 @@ function createMenuSpy() {
     contains(target) {
       return target === containedTarget;
     },
+    setExternalContains(contains) {
+      externalContains = contains;
+    },
+    externalContains(target) {
+      return externalContains(target);
+    },
     setContainedTarget(target) {
       containedTarget = target;
     },
@@ -184,6 +194,7 @@ function createInsertMenuSpy() {
   const calls = [];
   let open = false;
   let containedTarget = null;
+  let externalContains = () => false;
   return {
     calls,
     get state() {
@@ -205,6 +216,12 @@ function createInsertMenuSpy() {
     },
     contains(target) {
       return target === containedTarget;
+    },
+    setExternalContains(contains) {
+      externalContains = contains;
+    },
+    externalContains(target) {
+      return externalContains(target);
     },
     setContainedTarget(target) {
       containedTarget = target;
@@ -369,6 +386,26 @@ test("Tiptap block handle keeps callbacks after repeated hover updates", () => {
   assert.equal(menu.calls.at(-1)[0], "open");
 });
 
+test("Tiptap block handle registers itself as a safe menu boundary", () => {
+  const { editor } = createEditor();
+  const handleTarget = { id: "handle-target" };
+  const insertMenu = createInsertMenuSpy();
+  const menu = createMenuSpy();
+  const view = {
+    ...createViewSpy(),
+    contains(target) {
+      return target === handleTarget;
+    },
+  };
+  const controller = createTiptapBlockHandleController({ insertMenu, menu, view });
+
+  controller.attach({ editor, root: editor.view.dom, entry: { viewMode: "hybrid" } });
+
+  assert.equal(menu.externalContains(handleTarget), true);
+  assert.equal(insertMenu.externalContains(handleTarget), true);
+  assert.equal(menu.externalContains({ id: "outside" }), false);
+});
+
 test("Tiptap block handle insert action works from pointerdown", () => {
   const { block, editor } = createEditor();
   const insertMenu = createInsertMenuSpy();
@@ -433,6 +470,27 @@ test("Tiptap block handle opens the insert menu from the plus action", () => {
     ["setNodeSelection", 7],
     ["focus"],
   ]);
+});
+
+test("Tiptap block handle exposes active menu state to the handle view", () => {
+  const { block, editor } = createEditor();
+  const insertMenu = createInsertMenuSpy();
+  const menu = createMenuSpy();
+  const view = createViewSpy();
+  const controller = createTiptapBlockHandleController({ insertMenu, menu, view });
+  controller.attach({ editor, root: editor.view.dom, entry: { viewMode: "hybrid" } });
+  controller.handlePointerMove({ target: block });
+
+  view.openActions();
+  controller.refresh();
+  assert.equal(view.states.at(-1).menuOpen, true);
+  assert.equal(view.states.at(-1).insertOpen, false);
+
+  menu.close();
+  view.openInsert();
+  controller.refresh();
+  assert.equal(view.states.at(-1).menuOpen, false);
+  assert.equal(view.states.at(-1).insertOpen, true);
 });
 
 test("Tiptap block handle treats a non-moving pointer gesture as an action click", () => {

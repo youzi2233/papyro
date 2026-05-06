@@ -439,6 +439,8 @@ class TiptapBlockHandleView {
 
     this.#root.dataset.blockKind = state.target.kind;
     this.#root.dataset.dragging = state.dragging ? "true" : "false";
+    this.#root.dataset.menuOpen = state.menuOpen ? "true" : "false";
+    this.#root.dataset.insertOpen = state.insertOpen ? "true" : "false";
     this.#insertButton.title = state.labels?.insert ?? "Insert block below";
     this.#insertButton.setAttribute(
       "aria-label",
@@ -582,6 +584,8 @@ export class TiptapBlockHandleController {
     this.#root = root ?? editor?.view?.dom ?? null;
     this.#view.mount?.(root);
     this.#menu?.attach?.({ editor, root, entry });
+    this.#menu?.setExternalContains?.((target) => this.#view.contains?.(target));
+    this.#insertMenu?.setExternalContains?.((target) => this.#view.contains?.(target));
     this.#bind();
   }
 
@@ -886,6 +890,8 @@ export class TiptapBlockHandleController {
           actions: blockHandleActionsLabel(language),
         },
         dragging: !!this.#drag,
+        menuOpen: this.#menu?.state?.open === true,
+        insertOpen: this.#insertMenu?.state?.open === true,
         openActions: () => this.openActions(),
         openInsert: () => this.openInsert(),
         startDrag: (event) => this.startDrag(event),

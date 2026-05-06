@@ -242,6 +242,7 @@ export class TiptapBlockActionMenuController {
   #commands;
   #view;
   #dismiss;
+  #externalContains = () => false;
   #editor = null;
   #entry = null;
   #state = {
@@ -270,7 +271,9 @@ export class TiptapBlockActionMenuController {
       document: documentRef,
       window: windowRef,
       contains: (target) =>
-        this.contains(target) || this.#state.target?.block?.contains?.(target),
+        this.contains(target) ||
+        this.#externalContains(target) ||
+        this.#state.target?.block?.contains?.(target),
       onDismiss: () => this.close(),
     });
   }
@@ -287,6 +290,10 @@ export class TiptapBlockActionMenuController {
     this.#editor = editor ?? null;
     this.#entry = entry ?? null;
     this.#view.mount?.(root);
+  }
+
+  setExternalContains(contains) {
+    this.#externalContains = typeof contains === "function" ? contains : () => false;
   }
 
   open(target, { anchorRect = null } = {}) {
