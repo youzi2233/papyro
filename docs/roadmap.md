@@ -261,6 +261,7 @@ Tasks:
 - [x] Make slash and `+` insertion command details follow pointer hover and focus, so advanced affordances like the table-size picker respond to the command under the cursor instead of requiring keyboard navigation first.
 - [x] Make block action menu hover and focus update the same selected command state as keyboard navigation, so mouse and keyboard interactions share one active-descendant model.
 - [x] Keep slash/`+` and block action panels from rebuilding their full DOM on hover or keyboard selection changes, so small pointer movement no longer creates WebView focus flicker or disappearing command panels.
+- [x] Keep pointer hover inside slash/`+` and block action panels from forcing active-item scroll, while keyboard and focus navigation still scrolls the selected command into view.
 - [x] Add a table-size picker to the slash/`+` insertion menu so users can insert 1x1 through 6x6 tables instead of only the fixed 3x2 default.
 - [x] Refine the slash/`+` insertion panel layout with wider command rows, calmer icon wells, bordered detail panels, focus-visible table cells, and a single-column callout picker so the menu reads like a designed document command surface.
 - [x] Add the first Tiptap table floating toolbar with row/column insertion and deletion, cell merge/split, header toggles, and table deletion.

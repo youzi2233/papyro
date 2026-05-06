@@ -235,14 +235,16 @@ function commandMenuItems(root) {
   return items;
 }
 
-function syncActiveCommand(root, ownerId, commands, selectedIndex) {
+function syncActiveCommand(root, ownerId, commands, selectedIndex, { scroll = true } = {}) {
   commandMenuItems(root).forEach((item) => {
     const active = Number(item.dataset?.commandIndex) === selectedIndex;
     item.classList?.toggle?.("active", active);
     item.setAttribute?.("aria-selected", String(active));
   });
   updateActiveDescendant(root, ownerId, commands, selectedIndex);
-  scrollActiveDescendantIntoView(root, ownerId, commands, selectedIndex);
+  if (scroll) {
+    scrollActiveDescendantIntoView(root, ownerId, commands, selectedIndex);
+  }
 }
 
 class TiptapSlashMenuView {
@@ -408,8 +410,12 @@ class TiptapSlashMenuView {
         copy.append(title, description);
 
         item.append(icon, copy);
-        item.addEventListener("pointerenter", () => state.activate(command.index));
-        item.addEventListener("focus", () => state.activate(command.index));
+        item.addEventListener("pointerenter", () =>
+          state.activate(command.index, { scroll: false }),
+        );
+        item.addEventListener("focus", () =>
+          state.activate(command.index, { scroll: true }),
+        );
         bindPointerActivation(item, () => state.choose(command.id));
         section.appendChild(item);
       });
@@ -424,9 +430,9 @@ class TiptapSlashMenuView {
     placeMenu(this.#root, editor, state.range, state.anchorRect, state.placement);
   }
 
-  updateSelection(state) {
+  updateSelection(state, options = {}) {
     if (!this.#root || !state.open) return false;
-    syncActiveCommand(this.#root, this.#ownerId, state.commands, state.selectedIndex);
+    syncActiveCommand(this.#root, this.#ownerId, state.commands, state.selectedIndex, options);
     this.#updateTablePicker(state);
     return true;
   }
@@ -573,7 +579,7 @@ export class TiptapSlashMenuController {
       ...this.#state,
       language: entryLanguage(this.#entry),
       choose: (commandId, options) => this.choose(commandId, options),
-      activate: (nextIndex) => this.setSelection(nextIndex),
+      activate: (nextIndex, options) => this.setSelection(nextIndex, options),
     };
   }
 
@@ -740,11 +746,11 @@ export class TiptapSlashMenuController {
       ...this.#state,
       selectedIndex: (this.#state.selectedIndex + delta + count) % count,
     };
-    this.#updateViewSelection();
+    this.#updateViewSelection({ scroll: true });
     return this.state;
   }
 
-  setSelection(index) {
+  setSelection(index, { scroll = true } = {}) {
     const selectedIndex = Number(index);
     if (
       !this.#state.open ||
@@ -760,13 +766,13 @@ export class TiptapSlashMenuController {
       ...this.#state,
       selectedIndex,
     };
-    this.#updateViewSelection();
+    this.#updateViewSelection({ scroll });
     return this.state;
   }
 
-  #updateViewSelection() {
+  #updateViewSelection({ scroll = true } = {}) {
     const viewState = this.#viewState();
-    if (this.#view.updateSelection?.(viewState, this.#editor) !== true) {
+    if (this.#view.updateSelection?.(viewState, { scroll }, this.#editor) !== true) {
       this.#view.update?.(
         viewState,
         this.#editor,

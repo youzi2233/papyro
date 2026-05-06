@@ -293,11 +293,13 @@ test("Tiptap block action menu activates hovered and focused commands", () => {
   const menu = documentRef.body.children[0];
   const copy = findCommandItem(menu, "copy-block");
   const duplicate = findCommandItem(menu, "duplicate-block");
+  const initialScrollCount = documentRef.scrollCalls.length;
 
   duplicate.onpointerenter?.({ preventDefault() {}, stopPropagation() {} });
   assert.equal(controller.state.selectedIndex, 1);
   assert.equal(findCommandItem(menu, "copy-block"), copy);
   assert.equal(findCommandItem(menu, "duplicate-block"), duplicate);
+  assert.equal(documentRef.scrollCalls.length, initialScrollCount);
   assert.equal(findCommandItem(menu, "duplicate-block").classList.values.has("active"), true);
   assert.equal(findCommandItem(menu, "copy-block").classList.values.has("active"), false);
   assert.equal(menu.attributes.get("aria-activedescendant"), "mn-tiptap-block-action-menu-item-1");
@@ -305,6 +307,7 @@ test("Tiptap block action menu activates hovered and focused commands", () => {
   const deleteBlock = findCommandItem(menu, "delete");
   deleteBlock.onfocus?.({ preventDefault() {}, stopPropagation() {} });
   assert.equal(controller.state.commands[controller.state.selectedIndex].id, "delete");
+  assert.equal(documentRef.scrollCalls.length, initialScrollCount + 1);
   assert.equal(findCommandItem(menu, "delete").classList.values.has("active"), true);
   assert.equal(findCommandItem(menu, "duplicate-block").classList.values.has("active"), false);
 });

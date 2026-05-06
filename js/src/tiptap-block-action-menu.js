@@ -106,14 +106,16 @@ function commandMenuItems(root) {
   return items;
 }
 
-function syncActiveCommand(root, ownerId, commands, selectedIndex) {
+function syncActiveCommand(root, ownerId, commands, selectedIndex, { scroll = true } = {}) {
   commandMenuItems(root).forEach((item) => {
     const active = Number(item.dataset?.commandIndex) === selectedIndex;
     item.classList?.toggle?.("active", active);
     item.tabIndex = active ? 0 : -1;
   });
   updateActiveDescendant(root, ownerId, commands, selectedIndex);
-  scrollActiveDescendantIntoView(root, ownerId, commands, selectedIndex);
+  if (scroll) {
+    scrollActiveDescendantIntoView(root, ownerId, commands, selectedIndex);
+  }
 }
 
 class TiptapBlockActionMenuView {
@@ -231,8 +233,12 @@ class TiptapBlockActionMenuView {
         shortcut.hidden = !command.shortcut;
         copy.append(title, description);
         item.append(icon, copy, shortcut);
-        item.addEventListener("pointerenter", () => state.activate(command.index));
-        item.addEventListener("focus", () => state.activate(command.index));
+        item.addEventListener("pointerenter", () =>
+          state.activate(command.index, { scroll: false }),
+        );
+        item.addEventListener("focus", () =>
+          state.activate(command.index, { scroll: true }),
+        );
         bindPointerActivation(item, () => state.run(command.id));
         section.appendChild(item);
       });
@@ -245,9 +251,9 @@ class TiptapBlockActionMenuView {
     placeMenu(this.#root, state.target, this.#window, state.anchorRect);
   }
 
-  updateSelection(state) {
+  updateSelection(state, options = {}) {
     if (!this.#root || !state.open) return false;
-    syncActiveCommand(this.#root, this.#ownerId, state.commands, state.selectedIndex);
+    syncActiveCommand(this.#root, this.#ownerId, state.commands, state.selectedIndex, options);
     return true;
   }
 
@@ -374,7 +380,7 @@ export class TiptapBlockActionMenuController {
       {
         ...this.#state,
         run: (commandId) => this.run(commandId),
-        activate: (nextIndex) => this.setSelection(nextIndex),
+        activate: (nextIndex, options) => this.setSelection(nextIndex, options),
       },
       this.#editor,
     );
@@ -393,7 +399,7 @@ export class TiptapBlockActionMenuController {
     return this.setSelection((this.#state.selectedIndex + delta + count) % count);
   }
 
-  setSelection(index) {
+  setSelection(index, { scroll = true } = {}) {
     const selectedIndex = Number(index);
     if (
       !this.#state.open ||
@@ -414,7 +420,7 @@ export class TiptapBlockActionMenuController {
       run: (commandId) => this.run(commandId),
       activate: (nextIndex) => this.setSelection(nextIndex),
     };
-    if (this.#view.updateSelection?.(viewState, this.#editor) !== true) {
+    if (this.#view.updateSelection?.(viewState, { scroll }, this.#editor) !== true) {
       this.#view.update?.(viewState, this.#editor);
     }
     return this.state;

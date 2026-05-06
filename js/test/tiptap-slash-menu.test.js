@@ -352,17 +352,20 @@ test("Tiptap slash menu activates command details on pointer hover", () => {
   const tableItem = slashMenuCommandItem(menu, "table");
   const tablePicker = findElementByClass(menu, "mn-tiptap-table-size-picker");
   assert.equal(tablePicker.hidden, true);
+  const initialScrollCount = documentRef.scrollCalls.length;
 
   tableItem.onpointerenter?.({ preventDefault() {}, stopPropagation() {} });
   assert.equal(controller.state.commands[controller.state.selectedIndex].id, "table");
   assert.equal(slashMenuCommandItem(menu, "paragraph"), paragraphItem);
   assert.equal(slashMenuCommandItem(menu, "table"), tableItem);
+  assert.equal(documentRef.scrollCalls.length, initialScrollCount);
   assert.equal(tablePicker.hidden, false);
   assert.equal(slashMenuCommandItem(menu, "table")["aria-selected"], "true");
   assert.equal(slashMenuCommandItem(menu, "paragraph")["aria-selected"], "false");
 
   slashMenuCommandItem(menu, "paragraph").onfocus?.({ preventDefault() {}, stopPropagation() {} });
   assert.equal(controller.state.selectedIndex, 0);
+  assert.equal(documentRef.scrollCalls.length, initialScrollCount + 1);
   assert.equal(tablePicker.hidden, true);
   assert.equal(slashMenuCommandItem(menu, "paragraph")["aria-selected"], "true");
   assert.equal(slashMenuCommandItem(menu, "table")["aria-selected"], "false");
