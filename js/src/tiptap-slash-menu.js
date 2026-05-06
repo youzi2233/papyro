@@ -222,6 +222,29 @@ function rangeEquals(left, right) {
     left.to === right?.to;
 }
 
+function commandMenuItems(root) {
+  const items = [];
+  const visit = (element) => {
+    if (!element) return;
+    if (element.dataset?.commandIndex != null) {
+      items.push(element);
+    }
+    Array.from(element.children ?? []).forEach(visit);
+  };
+  visit(root);
+  return items;
+}
+
+function syncActiveCommand(root, ownerId, commands, selectedIndex) {
+  commandMenuItems(root).forEach((item) => {
+    const active = Number(item.dataset?.commandIndex) === selectedIndex;
+    item.classList?.toggle?.("active", active);
+    item.setAttribute?.("aria-selected", String(active));
+  });
+  updateActiveDescendant(root, ownerId, commands, selectedIndex);
+  scrollActiveDescendantIntoView(root, ownerId, commands, selectedIndex);
+}
+
 class TiptapSlashMenuView {
   #document;
   #ownerId;
@@ -375,6 +398,7 @@ class TiptapSlashMenuView {
         item.setAttribute("aria-selected", String(command.index === state.selectedIndex));
         item.classList.toggle("active", command.index === state.selectedIndex);
         item.dataset.commandId = command.id;
+        item.dataset.commandIndex = String(command.index);
         item.dataset.group = command.group ?? "";
         item.tabIndex = -1;
         icon.setAttribute("aria-hidden", "true");
@@ -395,10 +419,16 @@ class TiptapSlashMenuView {
 
     this.#updateTablePicker(state);
     setHidden(this.#empty, state.commands.length > 0);
-    updateActiveDescendant(this.#root, this.#ownerId, state.commands, state.selectedIndex);
-    scrollActiveDescendantIntoView(this.#root, this.#ownerId, state.commands, state.selectedIndex);
+    syncActiveCommand(this.#root, this.#ownerId, state.commands, state.selectedIndex);
     setHidden(this.#root, false);
     placeMenu(this.#root, editor, state.range, state.anchorRect, state.placement);
+  }
+
+  updateSelection(state) {
+    if (!this.#root || !state.open) return false;
+    syncActiveCommand(this.#root, this.#ownerId, state.commands, state.selectedIndex);
+    this.#updateTablePicker(state);
+    return true;
   }
 
   hide() {
@@ -710,10 +740,7 @@ export class TiptapSlashMenuController {
       ...this.#state,
       selectedIndex: (this.#state.selectedIndex + delta + count) % count,
     };
-    this.#view.update?.(
-      this.#viewState(),
-      this.#editor,
-    );
+    this.#updateViewSelection();
     return this.state;
   }
 
@@ -733,11 +760,18 @@ export class TiptapSlashMenuController {
       ...this.#state,
       selectedIndex,
     };
-    this.#view.update?.(
-      this.#viewState(),
-      this.#editor,
-    );
+    this.#updateViewSelection();
     return this.state;
+  }
+
+  #updateViewSelection() {
+    const viewState = this.#viewState();
+    if (this.#view.updateSelection?.(viewState, this.#editor) !== true) {
+      this.#view.update?.(
+        viewState,
+        this.#editor,
+      );
+    }
   }
 
   choose(commandId = this.#state.commands[this.#state.selectedIndex]?.id, options = {}) {

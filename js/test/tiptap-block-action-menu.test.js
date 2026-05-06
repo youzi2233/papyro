@@ -291,10 +291,13 @@ test("Tiptap block action menu activates hovered and focused commands", () => {
   controller.open(createTarget());
 
   const menu = documentRef.body.children[0];
+  const copy = findCommandItem(menu, "copy-block");
   const duplicate = findCommandItem(menu, "duplicate-block");
 
   duplicate.onpointerenter?.({ preventDefault() {}, stopPropagation() {} });
   assert.equal(controller.state.selectedIndex, 1);
+  assert.equal(findCommandItem(menu, "copy-block"), copy);
+  assert.equal(findCommandItem(menu, "duplicate-block"), duplicate);
   assert.equal(findCommandItem(menu, "duplicate-block").classList.values.has("active"), true);
   assert.equal(findCommandItem(menu, "copy-block").classList.values.has("active"), false);
   assert.equal(menu.attributes.get("aria-activedescendant"), "mn-tiptap-block-action-menu-item-1");

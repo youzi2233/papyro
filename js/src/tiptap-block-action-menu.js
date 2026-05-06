@@ -93,6 +93,29 @@ function usableAnchorRect(rect) {
   return Math.abs(left) + Math.abs(top) > 0 || right > left || bottom > top;
 }
 
+function commandMenuItems(root) {
+  const items = [];
+  const visit = (element) => {
+    if (!element) return;
+    if (element.dataset?.commandIndex != null) {
+      items.push(element);
+    }
+    Array.from(element.children ?? []).forEach(visit);
+  };
+  visit(root);
+  return items;
+}
+
+function syncActiveCommand(root, ownerId, commands, selectedIndex) {
+  commandMenuItems(root).forEach((item) => {
+    const active = Number(item.dataset?.commandIndex) === selectedIndex;
+    item.classList?.toggle?.("active", active);
+    item.tabIndex = active ? 0 : -1;
+  });
+  updateActiveDescendant(root, ownerId, commands, selectedIndex);
+  scrollActiveDescendantIntoView(root, ownerId, commands, selectedIndex);
+}
+
 class TiptapBlockActionMenuView {
   #document;
   #window;
@@ -197,6 +220,7 @@ class TiptapBlockActionMenuView {
         item.id = commandElementId(this.#ownerId, command.index);
         item.role = "menuitem";
         item.dataset.commandId = command.id;
+        item.dataset.commandIndex = String(command.index);
         item.dataset.tone = command.tone;
         item.tabIndex = command.index === state.selectedIndex ? 0 : -1;
         item.classList.toggle("active", command.index === state.selectedIndex);
@@ -216,10 +240,15 @@ class TiptapBlockActionMenuView {
       this.#list.appendChild(section);
     });
 
-    updateActiveDescendant(this.#root, this.#ownerId, state.commands, state.selectedIndex);
-    scrollActiveDescendantIntoView(this.#root, this.#ownerId, state.commands, state.selectedIndex);
+    syncActiveCommand(this.#root, this.#ownerId, state.commands, state.selectedIndex);
     setHidden(this.#root, false);
     placeMenu(this.#root, state.target, this.#window, state.anchorRect);
+  }
+
+  updateSelection(state) {
+    if (!this.#root || !state.open) return false;
+    syncActiveCommand(this.#root, this.#ownerId, state.commands, state.selectedIndex);
+    return true;
   }
 
   hide() {
@@ -380,14 +409,14 @@ export class TiptapBlockActionMenuController {
       ...this.#state,
       selectedIndex,
     };
-    this.#view.update?.(
-      {
-        ...this.#state,
-        run: (commandId) => this.run(commandId),
-        activate: (nextIndex) => this.setSelection(nextIndex),
-      },
-      this.#editor,
-    );
+    const viewState = {
+      ...this.#state,
+      run: (commandId) => this.run(commandId),
+      activate: (nextIndex) => this.setSelection(nextIndex),
+    };
+    if (this.#view.updateSelection?.(viewState, this.#editor) !== true) {
+      this.#view.update?.(viewState, this.#editor);
+    }
     return this.state;
   }
 

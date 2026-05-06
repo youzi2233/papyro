@@ -355,6 +355,8 @@ test("Tiptap slash menu activates command details on pointer hover", () => {
 
   tableItem.onpointerenter?.({ preventDefault() {}, stopPropagation() {} });
   assert.equal(controller.state.commands[controller.state.selectedIndex].id, "table");
+  assert.equal(slashMenuCommandItem(menu, "paragraph"), paragraphItem);
+  assert.equal(slashMenuCommandItem(menu, "table"), tableItem);
   assert.equal(tablePicker.hidden, false);
   assert.equal(slashMenuCommandItem(menu, "table")["aria-selected"], "true");
   assert.equal(slashMenuCommandItem(menu, "paragraph")["aria-selected"], "false");
