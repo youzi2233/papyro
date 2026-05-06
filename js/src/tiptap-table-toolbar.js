@@ -1015,7 +1015,9 @@ class TiptapTableToolbarView {
     this.#addColumnButton.style.left = `${columnRect.right + 6}px`;
     this.#addColumnButton.style.top = `${columnRect.top + Math.max(0, columnRect.height) / 2 - TABLE_ADD_COLUMN_HEIGHT / 2}px`;
     this.#addRowButton.dataset.edge = "row";
+    this.#addRowButton.style.setProperty("--mn-table-quick-add-rail", `${Math.max(42, rowRect.width)}px`);
     this.#addColumnButton.dataset.edge = "column";
+    this.#addColumnButton.style.setProperty("--mn-table-quick-add-rail", `${Math.max(42, columnRect.height)}px`);
 
     this.#addRowButton._mnCommand = addRow;
     this.#addColumnButton._mnCommand = addColumn;

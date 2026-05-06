@@ -270,7 +270,12 @@ function createDocument() {
         className: "",
         dataset: {},
         hidden: false,
-        style: {},
+        style: {
+          properties: new Map(),
+          setProperty(name, value) {
+            this.properties.set(name, value);
+          },
+        },
         classList: {
           toggle(name, enabled) {
             element.hidden = enabled && name === "hidden";
@@ -734,8 +739,10 @@ test("Tiptap table toolbar quick add buttons run row and column insertion", () =
   assert.equal(columnButton.textContent ?? "", "");
   assert.equal(rowButton.style.left, "219px");
   assert.equal(rowButton.style.top, "164px");
+  assert.equal(rowButton.style.properties.get("--mn-table-quick-add-rail"), "240px");
   assert.equal(columnButton.style.left, "366px");
   assert.equal(columnButton.style.top, "103px");
+  assert.equal(columnButton.style.properties.get("--mn-table-quick-add-rail"), "68px");
 
   rowButton.onpointerdown({ preventDefault() {}, stopPropagation() {} });
   columnButton.onpointerdown({ preventDefault() {}, stopPropagation() {} });
@@ -776,9 +783,11 @@ test("Tiptap table toolbar anchors quick add buttons to the table grid edges", (
   assert.equal(rowButton.style.left, "219px");
   assert.equal(rowButton.style.top, "164px");
   assert.equal(rowButton.dataset.edge, "row");
+  assert.equal(rowButton.style.properties.get("--mn-table-quick-add-rail"), "240px");
   assert.equal(columnButton.style.left, "366px");
   assert.equal(columnButton.style.top, "103px");
   assert.equal(columnButton.dataset.edge, "column");
+  assert.equal(columnButton.style.properties.get("--mn-table-quick-add-rail"), "68px");
 });
 
 test("Tiptap table toolbar controls fall back to click events", () => {

@@ -1344,6 +1344,13 @@
     background: transparent;
 }
 
+.mn-tiptap-table-quick-add[data-edge="row"]::before,
+.mn-tiptap-table-quick-add[data-edge="column"]::before {
+    opacity: 0;
+    background: color-mix(in srgb, var(--mn-accent) 34%, transparent);
+    transition: opacity var(--mn-transition-fast);
+}
+
 .mn-tiptap-table-quick-add::before,
 .mn-tiptap-table-quick-add::after {
     content: "";
@@ -1358,8 +1365,11 @@
 }
 
 .mn-tiptap-table-quick-add::after {
-    width: 1.5px;
+    width: 12px;
     height: 12px;
+    background:
+        linear-gradient(currentColor, currentColor) 50% 50% / 12px 1.5px no-repeat,
+        linear-gradient(currentColor, currentColor) 50% 50% / 1.5px 12px no-repeat;
 }
 
 .mn-tiptap-table-add-row {
@@ -1367,9 +1377,24 @@
     height: 22px;
 }
 
+.mn-tiptap-table-add-row[data-edge="row"]::before {
+    width: var(--mn-table-quick-add-rail, 42px);
+    height: 2px;
+}
+
 .mn-tiptap-table-add-column {
     width: 22px;
     height: 42px;
+}
+
+.mn-tiptap-table-add-column[data-edge="column"]::before {
+    width: 2px;
+    height: var(--mn-table-quick-add-rail, 42px);
+}
+
+.mn-tiptap-table-add-row[data-edge="row"]::after,
+.mn-tiptap-table-add-column[data-edge="column"]::after {
+    z-index: 1;
 }
 
 .mn-tiptap-table-quick-add:hover,
@@ -1378,6 +1403,11 @@
     border-color: var(--mn-accent);
     background: var(--mn-accent-wash);
     box-shadow: var(--mn-focus-ring-sm);
+}
+
+.mn-tiptap-table-quick-add:hover::before,
+.mn-tiptap-table-quick-add:focus-visible::before {
+    opacity: 1;
 }
 
 .mn-tiptap-table-quick-add.hidden {
