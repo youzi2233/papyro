@@ -52,7 +52,7 @@ function BlockActionCommandItem({
       data-submenu=""
       data-tone={command.tone}
       tabIndex={selected ? 0 : -1}
-      onPointerEnter={() => activate(command.index, { scroll: false })}
+      onPointerMove={() => activate(command.index, { scroll: false })}
       onFocus={() => activate(command.index, { scroll: true })}
       {...activation}
     >
@@ -83,7 +83,7 @@ function SubmenuTrigger({
       data-command-index={String(group.trigger.index)}
       data-submenu-trigger={group.id}
       tabIndex={selected ? 0 : -1}
-      onPointerEnter={() => activate(group.trigger.index, { scroll: false })}
+      onPointerMove={() => activate(group.trigger.index, { scroll: false })}
       onFocus={() => activate(group.trigger.index, { scroll: true })}
     >
       <MenuIcon icon={group.id === "code-language" ? "code-language" : "turn-into"} />
@@ -115,7 +115,7 @@ function SubmenuPanelItem({
       data-submenu={groupId}
       data-active={command.active ? "true" : "false"}
       tabIndex={selected ? 0 : -1}
-      onPointerEnter={() => {
+      onPointerMove={() => {
         if (commandIndex >= 0) {
           activate(commandIndex, { scroll: false });
         }

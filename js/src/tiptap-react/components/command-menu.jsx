@@ -50,7 +50,7 @@ function CommandItem({ command, ownerId, selected, activate, choose }) {
       data-command-index={String(command.index)}
       data-group={command.group ?? ""}
       tabIndex={-1}
-      onPointerEnter={() => activate(command.index, { scroll: false })}
+      onPointerMove={() => activate(command.index, { scroll: false })}
       onFocus={() => activate(command.index, { scroll: true })}
       {...activation}
     >
