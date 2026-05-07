@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
+  commandMenuSidePanelId,
   commandMenuSidePanel,
   commandMenuSidePanelWidth,
   groupCommandsForMenu,
@@ -52,9 +53,12 @@ test("React command menu model exposes side panel contracts", () => {
   assert.equal(commandMenuSidePanel({ id: "paragraph" }), "none");
   assert.equal(commandMenuSidePanel(null), "none");
 
-  assert.equal(commandMenuSidePanelWidth("table"), 154);
+  assert.equal(commandMenuSidePanelWidth("table"), 166);
   assert.equal(commandMenuSidePanelWidth("callout"), 166);
   assert.equal(commandMenuSidePanelWidth("none"), 0);
+  assert.equal(commandMenuSidePanelId("menu", "table"), "menu-table-panel");
+  assert.equal(commandMenuSidePanelId("menu", "callout"), "menu-callout-panel");
+  assert.equal(commandMenuSidePanelId("menu", "none"), undefined);
 });
 
 test("React command menu model keeps command indexes stable across grouped full menus", () => {

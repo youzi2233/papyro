@@ -12,6 +12,10 @@ import {
 } from "./tiptap-i18n.js";
 import { insertSlashParagraphAfterBlock } from "./tiptap-block-handle.js";
 import {
+  commandMenuSidePanel,
+  commandMenuSidePanelId,
+} from "./tiptap-react/commands/command-menu-model.js";
+import {
   clamp,
   bindPointerActivation,
   commandElementId,
@@ -23,6 +27,7 @@ import {
   mountFloatingRoot,
   positionFloatingElement,
   setHidden,
+  menuCommandItems,
   syncMenuActiveDescendant,
   viewportSize,
 } from "./tiptap-ui-primitives.js";
@@ -140,8 +145,8 @@ function blockInsertMenuAnchorRect(slashRect, target, fallbackRect = null) {
 
 const MAIN_MENU_WIDTH = 224;
 const MAIN_MENU_HEIGHT = 360;
-const SIDE_PANEL_GAP = 6;
-const TABLE_PICKER_WIDTH = 154;
+const SIDE_PANEL_GAP = 8;
+const TABLE_PICKER_WIDTH = 166;
 const CALLOUT_PICKER_WIDTH = 166;
 const SIDE_PANEL_INTENT_DELAY_MS = 80;
 
@@ -229,10 +234,20 @@ function rangeEquals(left, right) {
 }
 
 function syncActiveCommand(root, ownerId, commands, selectedIndex, { scroll = true } = {}) {
-  return syncMenuActiveDescendant(root, ownerId, commands, selectedIndex, {
+  const didSync = syncMenuActiveDescendant(root, ownerId, commands, selectedIndex, {
     ariaSelected: true,
     scroll,
   });
+  menuCommandItems(root).forEach((item) => {
+    const itemIndex = Number(item.dataset?.commandIndex);
+    const command = commands.find((candidate) => candidate?.index === itemIndex);
+    const panel = commandMenuSidePanel(command);
+    if (panel !== "none") {
+      item.setAttribute?.("aria-expanded", String(command?.index === selectedIndex));
+      item.setAttribute?.("aria-controls", commandMenuSidePanelId(ownerId, panel));
+    }
+  });
+  return didSync;
 }
 
 function commandItemByIndex(root, index) {
@@ -294,6 +309,11 @@ class TiptapSlashMenuView {
     root.id = this.#ownerId;
     root.role = "listbox";
     root.setAttribute("aria-label", markdownCommandsLabel(this.#language));
+    tablePicker.id = commandMenuSidePanelId(this.#ownerId, "table");
+    tablePicker.role = "menu";
+    tablePicker.setAttribute("aria-label", tableSizeLabel(this.#language, 3, 2));
+    calloutPicker.id = commandMenuSidePanelId(this.#ownerId, "callout");
+    calloutPicker.role = "menu";
     eyebrow.textContent = markdownCommandsLabel(this.#language);
     title.textContent = insertBlockMenuTitleLabel(this.#language);
     empty.textContent = noCommandsLabel(this.#language);
@@ -409,9 +429,20 @@ class TiptapSlashMenuView {
         item.role = "option";
         item.setAttribute("aria-selected", String(command.index === state.selectedIndex));
         item.classList.toggle("active", command.index === state.selectedIndex);
+        const sidePanel = commandMenuSidePanel(command);
+        const hasSidePanel = sidePanel !== "none";
+        if (hasSidePanel) {
+          item.setAttribute("aria-haspopup", "menu");
+          item.setAttribute(
+            "aria-expanded",
+            String(command.index === state.selectedIndex),
+          );
+          item.setAttribute("aria-controls", commandMenuSidePanelId(this.#ownerId, sidePanel));
+        }
         item.dataset.commandId = command.id;
         item.dataset.commandIndex = String(command.index);
         item.dataset.group = command.group ?? "";
+        item.dataset.sidePanel = sidePanel;
         item.tabIndex = -1;
         icon.setAttribute("aria-hidden", "true");
         icon.dataset.icon = command.icon ?? "paragraph";
@@ -501,6 +532,10 @@ class TiptapSlashMenuView {
       this.#tablePicker._choose = null;
     }
     if (this.#calloutPicker) {
+      this.#calloutPicker.setAttribute(
+        "aria-label",
+        showCalloutPicker ? selectedCommand.title : "",
+      );
       this.#calloutPicker._choose = showCalloutPicker
         ? (kind) => state.choose("callout", { calloutKind: kind })
         : null;
@@ -575,7 +610,9 @@ class TiptapSlashMenuView {
 
   #updateTablePickerSize(rows, cols) {
     if (!this.#tablePicker || !this.#tablePickerLabel) return;
-    this.#tablePickerLabel.textContent = tableSizeLabel(this.#language, rows, cols);
+    const label = tableSizeLabel(this.#language, rows, cols);
+    this.#tablePicker.setAttribute("aria-label", label);
+    this.#tablePickerLabel.textContent = label;
     this.#tablePicker
       .querySelectorAll?.(".mn-tiptap-table-size-picker-cell")
       ?.forEach?.((cell) => {

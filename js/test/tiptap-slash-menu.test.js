@@ -221,6 +221,9 @@ function createDocument() {
       querySelector(selector) {
         return this.querySelectorAll(selector)[0] ?? null;
       },
+      getAttribute(name) {
+        return this[name];
+      },
       remove() {},
       scrollIntoView(options) {
         scrollCalls.push([this.id, options]);
@@ -463,7 +466,16 @@ test("Tiptap slash menu activates command details on pointer hover", () => {
   assert.equal(documentRef.scrollCalls.length, initialScrollCount);
   assert.equal(tablePicker.hidden, false);
   assert.equal(slashMenuCommandItem(menu, "table")["aria-selected"], "true");
+  assert.equal(slashMenuCommandItem(menu, "table")["aria-haspopup"], "menu");
+  assert.equal(slashMenuCommandItem(menu, "table")["aria-expanded"], "true");
+  assert.equal(slashMenuCommandItem(menu, "table")["aria-controls"], "mn-tiptap-slash-menu-table-panel");
+  assert.equal(slashMenuCommandItem(menu, "table").dataset.sidePanel, "table");
+  assert.equal(tablePicker.id, "mn-tiptap-slash-menu-table-panel");
+  assert.equal(tablePicker.role, "menu");
   assert.equal(slashMenuCommandItem(menu, "paragraph")["aria-selected"], "false");
+  assert.equal(slashMenuCommandItem(menu, "paragraph")["aria-haspopup"], undefined);
+  assert.equal(slashMenuCommandItem(menu, "paragraph")["aria-controls"], undefined);
+  assert.equal(slashMenuCommandItem(menu, "paragraph").dataset.sidePanel, "none");
 
   slashMenuCommandItem(menu, "paragraph").onfocus?.({ preventDefault() {}, stopPropagation() {} });
   assert.equal(controller.state.selectedIndex, 0);
@@ -471,6 +483,7 @@ test("Tiptap slash menu activates command details on pointer hover", () => {
   assert.equal(tablePicker.hidden, true);
   assert.equal(slashMenuCommandItem(menu, "paragraph")["aria-selected"], "true");
   assert.equal(slashMenuCommandItem(menu, "table")["aria-selected"], "false");
+  assert.equal(slashMenuCommandItem(menu, "table")["aria-expanded"], "false");
 });
 
 test("Tiptap slash menu runs selected command and removes trigger text", () => {

@@ -348,7 +348,10 @@ export class TiptapSlashCommandController {
       .filter((match) => match.score !== null)
       .sort((a, b) => a.score - b.score || a.command.priority - b.command.priority || a.index - b.index)
       .slice(0, Math.max(0, limit))
-      .map((match) => localizeSlashCommand(match.command, locale));
+      .map((match) => ({
+        ...localizeSlashCommand(match.command, locale),
+        index: match.index,
+      }));
   }
 
   run(commandId, context = {}) {

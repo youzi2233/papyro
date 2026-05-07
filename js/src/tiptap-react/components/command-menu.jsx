@@ -15,6 +15,7 @@ import {
   commandElementId,
 } from "../../tiptap-ui-primitives.js";
 import {
+  commandMenuSidePanelId,
   commandMenuSidePanel,
   groupCommandsForMenu,
 } from "../commands/command-menu-model.js";
@@ -36,8 +37,11 @@ function CommandIcon({ icon }) {
   );
 }
 
-function CommandItem({ command, ownerId, selected, activate, choose }) {
+function CommandItem({ command, ownerId, selected, activePanel, activate, choose }) {
   const activation = usePointerActivation(() => choose(command.id));
+  const panel = commandMenuSidePanel(command);
+  const hasSidePanel = panel !== "none";
+  const panelId = commandMenuSidePanelId(ownerId, panel);
 
   return (
     <button
@@ -46,9 +50,13 @@ function CommandItem({ command, ownerId, selected, activate, choose }) {
       className={`mn-tiptap-slash-menu-item${selected ? " active" : ""}`}
       role="option"
       aria-selected={String(selected)}
+      aria-haspopup={hasSidePanel ? "menu" : undefined}
+      aria-expanded={hasSidePanel ? String(activePanel === panel) : undefined}
+      aria-controls={hasSidePanel ? panelId : undefined}
       data-command-id={command.id}
       data-command-index={String(command.index)}
       data-group={command.group ?? ""}
+      data-side-panel={panel}
       tabIndex={-1}
       onPointerMove={() => activate(command.index, { scroll: false })}
       onFocus={() => activate(command.index, { scroll: true })}
@@ -65,11 +73,16 @@ function CommandItem({ command, ownerId, selected, activate, choose }) {
   );
 }
 
-function TableSizePicker({ language, choose }) {
+function TableSizePicker({ id, language, choose }) {
   const [size, setSize] = useState({ rows: 3, cols: 2 });
 
   return (
-    <div className="mn-tiptap-table-size-picker">
+    <div
+      id={id}
+      className="mn-tiptap-table-size-picker"
+      role="menu"
+      aria-label={tableSizeLabel(language, size.rows, size.cols)}
+    >
       <div className="mn-tiptap-table-size-picker-label">
         {tableSizeLabel(language, size.rows, size.cols)}
       </div>
@@ -117,9 +130,13 @@ function TableSizePickerCell({
   );
 }
 
-function CalloutKindPicker({ language, choose }) {
+function CalloutKindPicker({ id, language, choose }) {
   return (
-    <div className="mn-tiptap-callout-kind-picker">
+    <div
+      id={id}
+      className="mn-tiptap-callout-kind-picker"
+      role="menu"
+    >
       {PAPYRO_CALLOUT_KIND_OPTIONS.map((option) => (
         <CalloutKindOption
           key={option.kind}
@@ -168,6 +185,7 @@ export function PapyroSlashCommandMenu({
   const selectedIndex = state?.selectedIndex ?? 0;
   const selectedCommand = commands[selectedIndex] ?? null;
   const sidePanel = commandMenuSidePanel(selectedCommand);
+  const sidePanelId = commandMenuSidePanelId(ownerId, sidePanel);
   const groups = useMemo(() => groupCommandsForMenu(commands), [commands]);
   const title = state?.cleanupRangeOnClose
     ? insertBlockMenuTitleLabel(language)
@@ -198,6 +216,7 @@ export function PapyroSlashCommandMenu({
                 command={command}
                 ownerId={ownerId}
                 selected={command.index === selectedIndex}
+                activePanel={sidePanel}
                 activate={state.activate}
                 choose={state.choose}
               />
@@ -211,10 +230,10 @@ export function PapyroSlashCommandMenu({
         {noCommandsLabel(language)}
       </div>
       {sidePanel === "table" ? (
-        <TableSizePicker language={language} choose={state.choose} />
+        <TableSizePicker id={sidePanelId} language={language} choose={state.choose} />
       ) : null}
       {sidePanel === "callout" ? (
-        <CalloutKindPicker language={language} choose={state.choose} />
+        <CalloutKindPicker id={sidePanelId} language={language} choose={state.choose} />
       ) : null}
     </>
   );

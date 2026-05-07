@@ -124,6 +124,7 @@ test("Tiptap slash command query localizes visible command labels", () => {
     keywords: ["heading", "headline", "标题", "一级标题"],
     priority: 20,
     run: englishCommand.run,
+    index: 1,
   });
 
   assert.equal(controller.query("table", { language: "Chinese" })[0].group, "数据");

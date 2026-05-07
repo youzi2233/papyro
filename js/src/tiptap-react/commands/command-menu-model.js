@@ -49,7 +49,13 @@ export function commandMenuSidePanel(command) {
 }
 
 export function commandMenuSidePanelWidth(panel) {
-  if (panel === "table") return 154;
+  if (panel === "table") return 166;
   if (panel === "callout") return 166;
   return 0;
+}
+
+export function commandMenuSidePanelId(ownerId, panel) {
+  const sidePanel = String(panel ?? "none");
+  if (!ownerId || sidePanel === "none") return undefined;
+  return `${ownerId}-${sidePanel}-panel`;
 }
