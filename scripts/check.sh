@@ -52,6 +52,9 @@ node scripts/check-tiptap-release-smoke.js
 echo "=== Tiptap release smoke fixture check self-test ==="
 node scripts/check-tiptap-release-smoke.js --self-test
 
+echo "=== Tiptap runtime smoke check ==="
+node scripts/check-tiptap-runtime-smoke.js
+
 echo "=== performance fixture generator self-test ==="
 node scripts/generate-perf-fixtures.js --self-test
 

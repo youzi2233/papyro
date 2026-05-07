@@ -115,6 +115,15 @@ jobs:
       - name: Editor JS tests
         run: npm --prefix js test
 
+      - name: Markdown style smoke
+        run: node scripts/check-markdown-style-smoke.js
+
+      - name: Tiptap release smoke
+        run: node scripts/check-tiptap-release-smoke.js
+
+      - name: Tiptap runtime smoke
+        run: node scripts/check-tiptap-runtime-smoke.js
+
       - name: Editor bundle consistency
         run: |
           cmp assets/editor.js apps/desktop/assets/editor.js
