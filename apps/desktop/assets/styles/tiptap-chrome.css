@@ -1103,8 +1103,7 @@
 }
 
 .mn-tiptap-table-quick-add[data-edge="row"]::before,
-.mn-tiptap-table-quick-add[data-edge="column"]::before,
-.mn-tiptap-complex-block-insert::before {
+.mn-tiptap-table-quick-add[data-edge="column"]::before {
     opacity: .22;
     background: color-mix(in srgb, var(--mn-accent) 18%, var(--mn-surface-raised));
     transition: opacity var(--mn-transition-fast);
@@ -1182,22 +1181,45 @@
 }
 
 .mn-tiptap-complex-block-insert {
-    height: 9px;
+    height: 18px;
+    color: color-mix(in srgb, var(--mn-ink-3) 72%, var(--mn-accent));
 }
 
 .mn-tiptap-complex-block-insert::before {
     width: 100%;
-    height: 100%;
-    border-radius: 5px;
+    height: 1px;
+    border-radius: var(--mn-radius-round);
+    background:
+        linear-gradient(
+            90deg,
+            transparent 0,
+            transparent calc(50% - 21px),
+            color-mix(in srgb, var(--mn-accent) 22%, var(--mn-border)) calc(50% - 21px),
+            color-mix(in srgb, var(--mn-accent) 22%, var(--mn-border)) calc(50% - 10px),
+            transparent calc(50% - 10px),
+            transparent calc(50% + 10px),
+            color-mix(in srgb, var(--mn-accent) 22%, var(--mn-border)) calc(50% + 10px),
+            color-mix(in srgb, var(--mn-accent) 22%, var(--mn-border)) calc(50% + 21px),
+            transparent calc(50% + 21px),
+            transparent 100%
+        );
+    opacity: .72;
     transform: translate(-50%, -50%);
+    transition: opacity var(--mn-transition-fast);
 }
 
 .mn-tiptap-complex-block-insert::after {
-    width: 8px;
-    height: 8px;
+    width: 15px;
+    height: 15px;
+    border: 1px solid color-mix(in srgb, var(--mn-accent) 18%, var(--mn-border));
+    border-radius: var(--mn-radius-round);
     background:
-        linear-gradient(currentColor, currentColor) 50% 50% / 8px 1.2px no-repeat,
-        linear-gradient(currentColor, currentColor) 50% 50% / 1.2px 8px no-repeat;
+        linear-gradient(currentColor, currentColor) 50% 50% / 7px 1.2px no-repeat,
+        linear-gradient(currentColor, currentColor) 50% 50% / 1.2px 7px no-repeat,
+        color-mix(in srgb, var(--mn-surface-raised) 94%, var(--mn-editor-bg));
+    box-shadow:
+        0 1px 4px color-mix(in srgb, #000 6%, transparent),
+        0 0 0 2px color-mix(in srgb, var(--mn-editor-bg) 84%, transparent);
     transform: translate(-50%, -50%);
     z-index: 1;
 }
@@ -1209,7 +1231,20 @@
 
 .mn-tiptap-complex-block-insert:hover::before,
 .mn-tiptap-complex-block-insert:focus-visible::before {
-    opacity: .26;
+    opacity: 1;
+}
+
+.mn-tiptap-complex-block-insert:hover::after,
+.mn-tiptap-complex-block-insert:focus-visible::after {
+    border-color: color-mix(in srgb, var(--mn-accent) 42%, var(--mn-border));
+    color: var(--mn-accent);
+    background:
+        linear-gradient(currentColor, currentColor) 50% 50% / 7px 1.2px no-repeat,
+        linear-gradient(currentColor, currentColor) 50% 50% / 1.2px 7px no-repeat,
+        var(--mn-surface-raised);
+    box-shadow:
+        0 2px 8px color-mix(in srgb, #000 9%, transparent),
+        0 0 0 2px color-mix(in srgb, var(--mn-accent) 8%, transparent);
 }
 
 .mn-tiptap-complex-block-insert.hidden {
