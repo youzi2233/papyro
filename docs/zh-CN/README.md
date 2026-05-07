@@ -14,6 +14,7 @@
 | 修改 Markdown 编辑器 | [编辑器指南](editor.md) |
 | 演进 Tiptap React 编辑器 UI | [Tiptap React 运行时方案](tiptap-react-runtime-plan.md) |
 | 选择 Tiptap 官方优先方案 | [Tiptap 官方优先 React 策略](tiptap-official-react-strategy.md) |
+| 执行企业级 Tiptap 编辑器计划 | [Tiptap 企业级编辑器 TODO](tiptap-enterprise-editor-todo.md) |
 | 验收 Tiptap 编辑器运行时 | [Tiptap 发布候选 Smoke 检查清单](tiptap-release-smoke.md) |
 | 修改主题或 Markdown 样式 | [主题系统](theme-system.md) |
 | 选择 Markdown 样式参考 | [Markdown 样式参考调研](markdown-style-references.md) |

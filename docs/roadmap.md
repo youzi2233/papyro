@@ -202,6 +202,7 @@ Goal: use the `feat-tiptap` branch to migrate the interactive editor runtime fro
 
 See [Tiptap Migration Plan](tiptap-migration-plan.md) and [Tiptap React Runtime Plan](tiptap-react-runtime-plan.md).
 Use [Tiptap Official React Strategy](tiptap-official-react-strategy.md) when deciding whether to use public MIT components, official Tiptap packages, or licensed Start/Pro UI components.
+Use [Tiptap Enterprise Editor TODO](tiptap-enterprise-editor-todo.md) as the step-by-step execution checklist for reaching the official Notion-like quality bar, including the free/open-source wrapper path and product review checkpoints.
 
 Engineering bar:
 
@@ -222,6 +223,7 @@ Tasks:
 - [x] Add the official `@tiptap/react` island mount foundation while preserving the Rust/Dioxus editor facade.
 - [x] Document the React-based Tiptap runtime plan for command panels, drag handles, table chrome, and future node views.
 - [x] Document the official-first React strategy and license boundary for Tiptap UI Components.
+- [x] Add an executable enterprise editor TODO that separates licensed official integration from Papyro's free/open-source local wrapper path.
 - [ ] Migrate hand-written DOM editor chrome into reusable React components and official Tiptap React extension patterns.
 - [x] Extract the first runtime adapter facade contract and tests.
 - [x] Add runtime registry and injectable CodeMirror runtime factory modules.

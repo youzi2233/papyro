@@ -1,6 +1,6 @@
 ﻿# Tiptap Official React Strategy
 
-[简体中文](zh-CN/tiptap-official-react-strategy.md) | [Tiptap React runtime plan](tiptap-react-runtime-plan.md) | [Roadmap](roadmap.md)
+[简体中文](zh-CN/tiptap-official-react-strategy.md) | [Tiptap React runtime plan](tiptap-react-runtime-plan.md) | [Enterprise editor TODO](tiptap-enterprise-editor-todo.md) | [Roadmap](roadmap.md)
 
 This document records the official-first strategy for the `feat-tiptap` editor work. It exists because Papyro should stop growing one-off DOM overlays and move toward the same React/Tiptap composition model used by the official Tiptap examples.
 

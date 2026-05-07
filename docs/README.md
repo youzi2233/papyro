@@ -14,6 +14,7 @@ This directory is intentionally small. Older phase notes, duplicated design draf
 | Work on Markdown editing | [Editor guide](editor.md) |
 | Evolve the Tiptap React editor UI | [Tiptap React runtime plan](tiptap-react-runtime-plan.md) |
 | Choose the official-first Tiptap path | [Tiptap official React strategy](tiptap-official-react-strategy.md) |
+| Execute the enterprise Tiptap editor plan | [Tiptap enterprise editor TODO](tiptap-enterprise-editor-todo.md) |
 | Validate the Tiptap editor runtime | [Tiptap release smoke checklist](tiptap-release-smoke.md) |
 | Change themes or Markdown styles | [Theme system](theme-system.md) |
 | Choose Markdown style references | [Markdown style references](markdown-style-references.md) |

@@ -1,6 +1,6 @@
 ﻿# Tiptap 官方优先 React 策略
 
-[English](../tiptap-official-react-strategy.md) | [Tiptap React 运行时方案](tiptap-react-runtime-plan.md) | [路线图](roadmap.md)
+[English](../tiptap-official-react-strategy.md) | [Tiptap React 运行时方案](tiptap-react-runtime-plan.md) | [企业级编辑器 TODO](tiptap-enterprise-editor-todo.md) | [路线图](roadmap.md)
 
 这份文档记录 `feat-tiptap` 编辑器工作的官方优先策略。它的目的很直接：Papyro 不应该继续堆一次性的 DOM overlay，而应该迁到 Tiptap 官方示例同类的 React/Tiptap 组合模式。
 

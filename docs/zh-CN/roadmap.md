@@ -186,7 +186,7 @@ flowchart LR
 
 目标：在 `feat-tiptap` 分支把交互式编辑器从 CodeMirror runtime 迁移到 Tiptap/ProseMirror 文档模型，同时保持 Markdown 文件格式、Rust/Dioxus 协议和企业级可维护性。
 
-迁移计划见 [Tiptap 迁移计划](tiptap-migration-plan.md) 和 [Tiptap React 运行时方案](tiptap-react-runtime-plan.md)。决定使用公开 MIT 组件、官方 Tiptap package，还是授权后的 Start/Pro UI 组件时，先看 [Tiptap 官方优先 React 策略](tiptap-official-react-strategy.md)。
+迁移计划见 [Tiptap 迁移计划](tiptap-migration-plan.md) 和 [Tiptap React 运行时方案](tiptap-react-runtime-plan.md)。决定使用公开 MIT 组件、官方 Tiptap package，还是授权后的 Start/Pro UI 组件时，先看 [Tiptap 官方优先 React 策略](tiptap-official-react-strategy.md)。达到官方 Notion-like 体验标尺的逐步执行清单见 [Tiptap 企业级编辑器 TODO](tiptap-enterprise-editor-todo.md)，其中包含免费/开源能力封装路线和产品确认节点。
 
 企业级要求：
 
@@ -207,6 +207,7 @@ flowchart LR
 - [x] 接入官方 `@tiptap/react` island 挂载基座，同时保留 Rust/Dioxus 编辑器 facade。
 - [x] 文档化 React 版 Tiptap 运行时方案，作为命令面板、拖拽句柄、表格 chrome 和后续 node view 的演进依据。
 - [x] 文档化 Tiptap UI Components 的官方优先 React 策略和授权边界。
+- [x] 增加可执行的企业级编辑器 TODO，区分授权官方集成与 Papyro 基于免费/开源能力的本地封装路线。
 - [ ] 将手写 DOM 编辑器 chrome 逐步迁移为可复用 React 组件和官方 Tiptap React 扩展模式。
 - [x] 抽出第一版 runtime adapter facade 契约和测试。
 - [x] 增加 runtime registry 和可注入的 CodeMirror runtime 工厂模块。
