@@ -189,6 +189,51 @@ test("Papyro code block normalizes highlighted language classes", () => {
   assert.equal(view.contentDOM.className, "language-html hljs language-html");
 });
 
+test("Papyro code block node view does not read editor.view before mount", () => {
+  const documentRef = createElementFactory();
+  const editorDom = documentRef.createElement("div");
+  const node = {
+    type: { name: "codeBlock" },
+    attrs: { language: "rust" },
+    textContent: "fn main() {}",
+  };
+  const editor = {
+    get view() {
+      throw new Error("view is not available");
+    },
+    state: {
+      doc: {
+        nodeAt() {
+          return node;
+        },
+      },
+      tr: {
+        setNodeMarkup() {
+          return this;
+        },
+      },
+    },
+    commands: {
+      focus() {},
+    },
+  };
+
+  const view = createPapyroCodeBlockNodeView({
+    editor,
+    view: {
+      dom: editorDom,
+      dispatch() {},
+    },
+    node,
+    getPos: () => 4,
+    options: createPapyroCodeBlockOptions(),
+  });
+
+  assert.equal(view.dom.ownerDocument, documentRef);
+  assert.equal(view.dom.dataset.codeLanguage, "rust");
+  assert.equal(view.contentDOM.className, "language-rust hljs language-rust");
+});
+
 test("Papyro code blocks expose a conservative auto-detected language label", () => {
   assert.equal(inferCodeBlockLanguage("function greet(name) { return `hi ${name}` }"), "javascript");
   assert.equal(inferCodeBlockLanguage("fn main() { println!(\"hi\"); }"), null);

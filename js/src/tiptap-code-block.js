@@ -90,6 +90,15 @@ export function codeBlockLanguageOption(language) {
   ) ?? null;
 }
 
+function safeEditorView(editor) {
+  if (!editor) return null;
+  try {
+    return editor.view ?? null;
+  } catch (_error) {
+    return null;
+  }
+}
+
 function codeBlockHighlightLanguage(language) {
   const normalized = normalizeCodeBlockLanguage(language);
   if (normalized === "plaintext") return null;
@@ -117,12 +126,13 @@ export function codeBlockLanguageDisplayLabel(language, value, detectedLanguage 
   return option?.label ?? normalized;
 }
 
-function editorLanguage(editor) {
+function editorLanguage(editor, view = null) {
+  const dom = view?.dom ?? safeEditorView(editor)?.dom ?? null;
   const root =
-    editor?.view?.dom?.closest?.(".mn-tiptap-runtime") ??
-    editor?.view?.dom?.parentElement ??
+    dom?.closest?.(".mn-tiptap-runtime") ??
+    dom?.parentElement ??
     null;
-  return root?.dataset?.language ?? root?.ownerDocument?.documentElement?.lang ?? "english";
+  return root?.dataset?.language ?? dom?.ownerDocument?.documentElement?.lang ?? "english";
 }
 
 function codeLanguageMenuLabel(language) {
@@ -255,8 +265,8 @@ function languageMenuButton(documentRef, option, language) {
   return button;
 }
 
-export function createPapyroCodeBlockNodeView({ editor, node, getPos, options = {} } = {}) {
-  const documentRef = editor?.view?.dom?.ownerDocument ?? defaultDocument();
+export function createPapyroCodeBlockNodeView({ editor, node, getPos, view = null, options = {} } = {}) {
+  const documentRef = view?.dom?.ownerDocument ?? safeEditorView(editor)?.dom?.ownerDocument ?? defaultDocument();
   const windowRef = defaultWindow(documentRef);
   const pre = documentRef?.createElement?.("pre") ?? null;
   const code = documentRef?.createElement?.("code") ?? null;
@@ -271,7 +281,7 @@ export function createPapyroCodeBlockNodeView({ editor, node, getPos, options = 
   const className = options.HTMLAttributes?.class ?? "mn-tiptap-code-block";
   const languagePrefix = options.languageClassPrefix ?? LANGUAGE_CLASS_PREFIX;
   let currentNode = node;
-  let currentLanguage = editorLanguage(editor);
+  let currentLanguage = editorLanguage(editor, view);
   let codePointerHandled = false;
   let languageCommands = [];
   let selectedLanguageIndex = 0;
@@ -310,7 +320,7 @@ export function createPapyroCodeBlockNodeView({ editor, node, getPos, options = 
   });
 
   const syncMenu = () => {
-    currentLanguage = editorLanguage(editor);
+    currentLanguage = editorLanguage(editor, view);
     const selected = normalizeCodeBlockLanguage(currentNode?.attrs?.language);
     languageCommands = [];
     menu.setAttribute("aria-label", codeLanguageMenuLabel(currentLanguage));
@@ -520,7 +530,7 @@ export function createPapyroCodeBlockNodeView({ editor, node, getPos, options = 
 
   function sync(nextNode = currentNode) {
     currentNode = nextNode;
-    currentLanguage = editorLanguage(editor);
+    currentLanguage = editorLanguage(editor, view);
     const language = normalizeCodeBlockLanguage(currentNode?.attrs?.language);
     const detectedLanguage = language ? null : inferCodeBlockLanguage(currentNode?.textContent);
     const label = codeBlockLanguageDisplayLabel(currentLanguage, language, detectedLanguage);
@@ -596,7 +606,8 @@ function selectedCodeBlockPosition(state, typeName, explicitPos = null) {
 export function setCodeBlockLanguage(editor, language, pos = null) {
   const state = editor?.state;
   const match = selectedCodeBlockPosition(state, "codeBlock", pos);
-  if (!state?.tr || !match || typeof editor?.view?.dispatch !== "function") {
+  const view = safeEditorView(editor);
+  if (!state?.tr || !match || typeof view?.dispatch !== "function") {
     return false;
   }
 
@@ -605,7 +616,7 @@ export function setCodeBlockLanguage(editor, language, pos = null) {
     ...match.node.attrs,
     language: nextLanguage,
   });
-  editor.view.dispatch(tr);
+  view.dispatch(tr);
   editor.commands?.focus?.();
   return true;
 }
@@ -625,11 +636,12 @@ export function createPapyroCodeBlockOptions() {
 
 export const PapyroCodeBlock = CodeBlockLowlight.extend({
   addNodeView() {
-    return ({ editor, node, getPos }) =>
+    return ({ editor, node, getPos, view }) =>
       createPapyroCodeBlockNodeView({
         editor,
         node,
         getPos,
+        view,
         options: this.options,
       });
   },
