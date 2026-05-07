@@ -200,7 +200,7 @@ See [editor.md](editor.md).
 
 Goal: use the `feat-tiptap` branch to migrate the interactive editor runtime from CodeMirror to Tiptap/ProseMirror while preserving Markdown files, the Rust/Dioxus protocol, and enterprise-grade maintainability.
 
-See [Tiptap Migration Plan](tiptap-migration-plan.md).
+See [Tiptap Migration Plan](tiptap-migration-plan.md) and [Tiptap React Runtime Plan](tiptap-react-runtime-plan.md).
 
 Engineering bar:
 
@@ -209,6 +209,7 @@ Engineering bar:
 - Every complex block needs a Markdown round-trip strategy and tests.
 - Preserve the `window.papyroEditor` facade during migration so Rust/Dioxus stay independent from editor internals.
 - Use the official Tiptap Notion-like editor template as an interaction benchmark for slash commands, floating toolbars, block insertion, and responsive editor chrome, while keeping Papyro local-first and Markdown-first.
+- React editor UI must be layered as a reusable island: runtime mount shell, headless command model, shared React primitives, extension/node-view modules, and tests. Do not move complexity into one large React component.
 - Generated bundles, desktop/mobile assets, CSS line budgets, a11y, contrast, primitive usage, and Rust/JS tests must keep passing.
 
 Tasks:
@@ -216,6 +217,9 @@ Tasks:
 - [x] Create the dedicated `feat-tiptap` migration branch.
 - [x] Document the Tiptap migration architecture, risks, phases, and definition of done.
 - [x] Commit and push the migration plan.
+- [x] Add the official `@tiptap/react` island mount foundation while preserving the Rust/Dioxus editor facade.
+- [x] Document the React-based Tiptap runtime plan for command panels, drag handles, table chrome, and future node views.
+- [ ] Migrate hand-written DOM editor chrome into reusable React components and official Tiptap React extension patterns.
 - [x] Extract the first runtime adapter facade contract and tests.
 - [x] Add runtime registry and injectable CodeMirror runtime factory modules.
 - [x] Split the JS editor runtime into a stable facade, registry, and adapter contract.

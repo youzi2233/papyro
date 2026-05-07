@@ -7,3 +7,6 @@
 
 # JS build artifacts
 js/node_modules/
+
+# Local reference repositories for implementation research
+.reference/

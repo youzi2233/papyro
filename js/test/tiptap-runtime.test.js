@@ -40,6 +40,7 @@ function createRuntimeHarness({
   sourcePaneControllerFactory,
   slashMenuControllerFactory,
   tableToolbarControllerFactory,
+  mountControllerFactory,
   layout,
   document: documentOverride,
 } = {}) {
@@ -239,6 +240,7 @@ function createRuntimeHarness({
     ...(sourcePaneControllerFactory ? { sourcePaneControllerFactory } : {}),
     slashMenuControllerFactory: createSlashMenu,
     tableToolbarControllerFactory: createTableToolbar,
+    ...(mountControllerFactory ? { mountControllerFactory } : {}),
     ...(layout ? { layout } : {}),
     navigation: {
       attachPreviewScroll: () => "preview-scroll",
@@ -363,6 +365,89 @@ test("Tiptap runtime reattaches existing editors without rebuilding", () => {
     ["blockHandleRefresh"],
     ["formatToolbarRefresh"],
     ["tableToolbarRefresh"],
+  ]);
+});
+
+test("Tiptap runtime can mount through a React island controller", () => {
+  const mountCalls = [];
+  const mountControllerFactory = () => ({
+    createEditorElement: ({ root }) => {
+      mountCalls.push(["createEditorElement", root.className]);
+      return {
+        className: "mn-tiptap-react-seed",
+      };
+    },
+    mount: ({ root, editor }) => {
+      mountCalls.push(["reactMount", root.className, editor.markdown]);
+      return {
+        refresh: () => mountCalls.push(["reactRefresh"]),
+        destroy: () => mountCalls.push(["reactDestroy"]),
+      };
+    },
+  });
+  const { calls, runtime } = createRuntimeHarness({ mountControllerFactory });
+
+  runtime.ensureEditor({
+    tabId: "tab-a",
+    containerId: "editor-root",
+    instanceId: "host-a",
+    initialContent: "# React",
+    viewMode: "hybrid",
+  });
+  runtime.ensureEditor({
+    tabId: "tab-a",
+    containerId: "editor-root",
+    instanceId: "host-b",
+    viewMode: "source",
+  });
+  runtime.handleRustMessage("tab-a", { type: "destroy", instance_id: "host-b" });
+
+  assert.deepEqual(mountCalls, [
+    ["createEditorElement", "mn-tiptap-runtime"],
+    ["reactMount", "mn-tiptap-runtime", "# React"],
+    ["reactRefresh"],
+    ["reactDestroy"],
+  ]);
+  assert.deepEqual(
+    calls.filter((call) => call[0] === "mount"),
+    [],
+  );
+});
+
+test("Tiptap runtime passes the root into injectable mount controllers", () => {
+  const mountCalls = [];
+  const mountControllerFactory = ({ root }) => {
+    mountCalls.push(["factory", root.className, root.dataset.tabId]);
+    return {
+      createEditorElement: () => null,
+      mount: ({ root, editor }) => {
+        mountCalls.push(["mount", root.className, editor.markdown]);
+        return {
+          refresh: () => mountCalls.push(["refresh"]),
+          destroy: () => mountCalls.push(["destroy"]),
+        };
+      },
+    };
+  };
+  const { runtime } = createRuntimeHarness({ mountControllerFactory });
+
+  runtime.ensureEditor({
+    tabId: "tab-a",
+    containerId: "editor-root",
+    initialContent: "# Island",
+  });
+  runtime.ensureEditor({
+    tabId: "tab-a",
+    containerId: "editor-root",
+    viewMode: "preview",
+  });
+  runtime.handleRustMessage("tab-a", { type: "destroy" });
+
+  assert.deepEqual(mountCalls, [
+    ["factory", "mn-tiptap-runtime", "tab-a"],
+    ["mount", "mn-tiptap-runtime", "# Island"],
+    ["refresh"],
+    ["destroy"],
   ]);
 });
 

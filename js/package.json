@@ -9,17 +9,25 @@
   },
   "dependencies": {
     "@tiptap/core": "3.22.5",
-    "@tiptap/extension-code-block-lowlight": "^3.22.5",
-    "@tiptap/extension-highlight": "^3.22.5",
+    "@tiptap/extension-code-block-lowlight": "3.22.5",
+    "@tiptap/extension-drag-handle": "3.22.5",
+    "@tiptap/extension-drag-handle-react": "3.22.5",
+    "@tiptap/extension-highlight": "3.22.5",
     "@tiptap/extension-list": "3.22.5",
+    "@tiptap/extension-node-range": "3.22.5",
+    "@tiptap/extension-placeholder": "3.22.5",
     "@tiptap/extension-table": "3.22.5",
-    "@tiptap/extension-text-style": "^3.22.5",
+    "@tiptap/extension-text-style": "3.22.5",
     "@tiptap/markdown": "3.22.5",
     "@tiptap/pm": "3.22.5",
+    "@tiptap/react": "3.22.5",
     "@tiptap/starter-kit": "3.22.5",
+    "@tiptap/suggestion": "3.22.5",
     "katex": "^0.16.45",
     "lowlight": "^3.3.0",
-    "mermaid": "^11.14.0"
+    "mermaid": "^11.14.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
   },
   "devDependencies": {
     "esbuild": "^0.24.2"

@@ -175,7 +175,7 @@ flowchart LR
 
 目标：在 `feat-tiptap` 分支把交互式编辑器从 CodeMirror runtime 迁移到 Tiptap/ProseMirror 文档模型，同时保持 Markdown 文件格式、Rust/Dioxus 协议和企业级可维护性。
 
-迁移计划见 [Tiptap 迁移计划](tiptap-migration-plan.md)。
+迁移计划见 [Tiptap 迁移计划](tiptap-migration-plan.md) 和 [Tiptap React 运行时方案](tiptap-react-runtime-plan.md)。
 
 企业级要求：
 
@@ -184,6 +184,7 @@ flowchart LR
 - 所有复杂 block 必须有 Markdown round-trip 策略和测试。
 - 迁移期间保留 `window.papyroEditor` facade，避免 Rust/Dioxus 侧被编辑器实现细节污染。
 - 以 Tiptap 官方 Notion-like editor template 作为交互参考，重点借鉴 slash command、浮动格式栏、块插入和响应式编辑器 chrome，但保持 Papyro local-first 和 Markdown-first。
+- React 编辑器 UI 必须按可复用 island 分层：runtime mount shell、headless command model、共享 React primitives、extension/node-view 模块和测试。不要把复杂度搬进一个巨型 React 组件。
 - 生成 bundle、桌面/mobile asset、CSS 行数预算、a11y、contrast、primitive usage 和 Rust/JS 测试必须持续通过。
 
 任务：
@@ -191,6 +192,9 @@ flowchart LR
 - [x] 创建专用迁移分支 `feat-tiptap`。
 - [x] 写清 Tiptap 迁移架构、风险、分阶段计划和完成定义。
 - [x] 提交并推送迁移计划。
+- [x] 接入官方 `@tiptap/react` island 挂载基座，同时保留 Rust/Dioxus 编辑器 facade。
+- [x] 文档化 React 版 Tiptap 运行时方案，作为命令面板、拖拽句柄、表格 chrome 和后续 node view 的演进依据。
+- [ ] 将手写 DOM 编辑器 chrome 逐步迁移为可复用 React 组件和官方 Tiptap React 扩展模式。
 - [x] 抽出第一版 runtime adapter facade 契约和测试。
 - [x] 增加 runtime registry 和可注入的 CodeMirror runtime 工厂模块。
 - [x] 把 JS 编辑器 runtime 拆出稳定 facade、registry 和 adapter 契约。

@@ -216,6 +216,18 @@
     color: var(--mn-editor-ink);
 }
 
+.mn-tiptap-react-root {
+    display: contents;
+}
+
+.mn-tiptap-react-content {
+    display: contents;
+}
+
+.mn-tiptap-react-seed {
+    display: none;
+}
+
 .mn-tiptap-editor {
     box-sizing: border-box;
     flex: 0 0 auto;

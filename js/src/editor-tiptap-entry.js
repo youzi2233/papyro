@@ -1,6 +1,7 @@
 import { createEditorRuntimeRegistry } from "./editor-registry.js";
 import { createEditorHostRuntime } from "./editor-host-runtime.js";
 import { installPapyroEditorRuntime } from "./editor-runtime-bootstrap.js";
+import { createTiptapReactMountController } from "./tiptap-react-island.jsx";
 import { createTiptapEditorRuntime } from "./tiptap-runtime.js";
 
 const editorRegistry = createEditorRuntimeRegistry();
@@ -14,6 +15,7 @@ const tiptapRuntimeAdapter = createTiptapEditorRuntime({
     detachLayoutObserver: hostRuntime.detachLayoutObserver,
     restoreEditorScrollSnapshot: hostRuntime.restoreEditorScrollSnapshot,
   },
+  mountControllerFactory: createTiptapReactMountController,
   navigation: hostRuntime.navigation,
 });
 

@@ -85,6 +85,8 @@ Implementation rules for this reference:
 - Keep all Notion-like UI pieces optional and local. Collaboration, AI, comments, uploads, and JWT flows are out of scope for the migration branch unless a separate product decision adds them.
 - Keep command labels and groups stable enough for i18n and future Dioxus chrome integration.
 
+The post-migration editor UI now follows the [Tiptap React Runtime Plan](tiptap-react-runtime-plan.md). That plan keeps the existing Rust/Dioxus facade stable while moving advanced editor UI into a composable React island using official Tiptap React APIs.
+
 ## Engineering Standards
 
 - **Stable facade**: Rust depends only on `window.papyroEditor`, not on Tiptap internals.
@@ -106,6 +108,7 @@ flowchart TD
     facade["runtime facade<br/>window.papyroEditor"]
     registry["RuntimeRegistry"]
     adapter["TiptapRuntimeAdapter"]
+    react["React island<br/>Tiptap.Content + UI slots"]
     tiptap["Tiptap Editor"]
     markdown["MarkdownSyncController"]
     source["SourcePaneController"]
@@ -115,6 +118,8 @@ flowchart TD
     host --> facade
     facade --> registry
     registry --> adapter
+    adapter --> react
+    react --> tiptap
     adapter --> tiptap
     adapter --> markdown
     adapter --> source
@@ -155,6 +160,9 @@ flowchart TD
 
 - [x] Hybrid uses Tiptap rich-text editing by default on the migration branch.
 - [x] Hybrid interaction design references the official Notion-like template while staying local-first, Markdown-first, and Papyro-token based.
+- [x] Add the React island mount foundation using `@tiptap/react` and the official `Tiptap.Content` lifecycle, without changing the Rust/Dioxus facade.
+- [x] Document the official React-based runtime plan for future command panels, drag handles, table chrome, and React node views. See [Tiptap React Runtime Plan](tiptap-react-runtime-plan.md).
+- [ ] Gradually move hand-written DOM editor chrome into reusable React components, official Tiptap React extensions, and focused node views.
 - [x] Add a Tiptap mode controller that normalizes Source, Hybrid, and Preview and keeps non-Hybrid modes non-editable in the rich-text editor.
 - [x] Add a reusable Tiptap slash command controller for headings, lists, quotes, code, dividers, tables, math, and Mermaid.
 - [x] Add a Papyro slash command menu controller with keyboard navigation and token-based styling for common Markdown block insertion.

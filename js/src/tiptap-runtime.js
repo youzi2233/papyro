@@ -46,6 +46,19 @@ function defaultDocument() {
   return typeof document === "undefined" ? null : document;
 }
 
+function createLegacyMountController() {
+  return {
+    createEditorElement: () => null,
+    mount({ root, editor } = {}) {
+      editor?.mount?.(root);
+      return {
+        refresh: () => {},
+        destroy: () => {},
+      };
+    },
+  };
+}
+
 function isSaveShortcut(event) {
   if (!event || event.altKey) return false;
   const key = String(event.key ?? "").toLowerCase();
@@ -98,9 +111,10 @@ function defaultEditorOptions({
   registry,
   transferImage,
   sendImageRequest,
+  element = null,
 }) {
   return {
-    element: null,
+    element,
     extensions: [...extensions, Markdown],
     content: initialContent ?? "",
     contentType: "markdown",
@@ -171,6 +185,7 @@ function createEntry({
   slashCommands,
   slashMenu,
   tableToolbar,
+  reactMount,
 }) {
   return {
     editor,
@@ -195,6 +210,7 @@ function createEntry({
     slashCommands,
     slashMenu,
     tableToolbar,
+    reactMount,
   };
 }
 
@@ -220,6 +236,7 @@ export function createTiptapEditorRuntime({
   slashCommandControllerFactory = createTiptapSlashCommandController,
   slashMenuControllerFactory = createTiptapSlashMenuController,
   tableToolbarControllerFactory = createTiptapTableToolbarController,
+  mountControllerFactory = createLegacyMountController,
   clipboard = {},
   layout = {},
   navigation,
@@ -294,6 +311,10 @@ export function createTiptapEditorRuntime({
     tableToolbarControllerFactory,
     "tableToolbarControllerFactory",
   );
+  const createMountController = requireFunction(
+    mountControllerFactory,
+    "mountControllerFactory",
+  );
   const transferImage = requireFunction(
     clipboard.imageFileFromTransfer ?? imageFileFromTransfer,
     "clipboard.imageFileFromTransfer",
@@ -348,6 +369,7 @@ export function createTiptapEditorRuntime({
       existing.instanceId = instanceId;
       existing.modeController.apply(existing, viewMode ?? existing.viewMode);
       existing.sourcePane.applyMode(existing);
+      existing.reactMount?.refresh?.();
       existing.blockHandle.refresh();
       existing.formatToolbar.refresh(existing.editor);
       existing.tableToolbar.refresh(existing.editor);
@@ -359,6 +381,7 @@ export function createTiptapEditorRuntime({
     root.className = "mn-tiptap-runtime";
     root.dataset.tabId = tabId;
     container.replaceChildren(root);
+    const mountController = createMountController({ document: documentRef, root });
 
     const extensions = createExtensions();
     const markdownManager = createMarkdownManager({ extensions });
@@ -419,6 +442,10 @@ export function createTiptapEditorRuntime({
         registry: runtimeRegistry,
         transferImage,
         sendImageRequest,
+        element:
+          typeof mountController?.createEditorElement === "function"
+            ? mountController.createEditorElement({ root })
+            : null,
       }),
     );
     if (typeof editor.on === "function") {
@@ -471,7 +498,7 @@ export function createTiptapEditorRuntime({
         }
       });
     }
-    editor.mount?.(root);
+    const reactMount = mountController.mount?.({ root, editor }) ?? null;
 
     const entry = createEntry({
       editor,
@@ -491,6 +518,7 @@ export function createTiptapEditorRuntime({
       slashCommands,
       slashMenu,
       tableToolbar,
+      reactMount,
     });
     modeController.apply(entry, modeController.mode);
     blockHintsController.attach(entry);
@@ -641,6 +669,7 @@ export function createTiptapEditorRuntime({
         released?.sourcePane?.destroy?.();
         released?.slashMenu?.destroy?.();
         released?.tableToolbar?.destroy?.();
+        released?.reactMount?.destroy?.();
         released?.editor?.destroy?.();
         return "destroyed";
       }
