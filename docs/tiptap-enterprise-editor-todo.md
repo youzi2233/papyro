@@ -304,6 +304,7 @@ Tasks:
 - [ ] Show language label with a language switcher.
 - [ ] Add copy button, wrap toggle, and optional filename/title metadata if Markdown strategy is defined.
 - [ ] Use a real highlighter theme for light and dark modes.
+  - Current coverage: Hybrid code blocks use lowlight `.hljs-*` classes with theme-scoped token palettes and smoke coverage for the core syntax groups.
 - [ ] Preserve fenced code language through Markdown round-trip.
 - [ ] Add insertion affordance before and after code blocks, especially when adjacent to tables.
 

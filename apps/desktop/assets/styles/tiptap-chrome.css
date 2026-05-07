@@ -172,23 +172,74 @@
     color: var(--mn-accent);
 }
 
-.mn-tiptap-code-block .hljs-comment, .mn-tiptap-code-block .hljs-quote { color: var(--mn-code-token-comment, color-mix(in srgb, var(--mn-code-ink) 54%, transparent)); font-style: italic; }
-.mn-tiptap-code-block .hljs-keyword, .mn-tiptap-code-block .hljs-selector-tag, .mn-tiptap-code-block .hljs-built_in, .mn-tiptap-code-block .hljs-name, .mn-tiptap-code-block .hljs-doctag { color: var(--mn-code-token-keyword, color-mix(in srgb, var(--mn-accent-strong) 74%, var(--mn-code-ink))); font-weight: var(--mn-weight-semibold); }
-.mn-tiptap-code-block .hljs-string, .mn-tiptap-code-block .hljs-regexp, .mn-tiptap-code-block .hljs-symbol, .mn-tiptap-code-block .hljs-bullet, .mn-tiptap-code-block .hljs-link { color: var(--mn-code-token-string, color-mix(in srgb, var(--mn-success) 80%, var(--mn-code-ink))); }
-.mn-tiptap-code-block .hljs-number, .mn-tiptap-code-block .hljs-literal, .mn-tiptap-code-block .hljs-variable, .mn-tiptap-code-block .hljs-template-variable, .mn-tiptap-code-block .hljs-deletion { color: var(--mn-code-token-number, color-mix(in srgb, var(--mn-warning) 80%, var(--mn-code-ink))); }
-.mn-tiptap-code-block .hljs-title, .mn-tiptap-code-block .hljs-title.function_, .mn-tiptap-code-block .hljs-title.class_, .mn-tiptap-code-block .hljs-section, .mn-tiptap-code-block .hljs-function { color: var(--mn-code-token-title, color-mix(in srgb, var(--mn-accent) 72%, var(--mn-code-ink))); }
-.mn-tiptap-code-block .hljs-attr, .mn-tiptap-code-block .hljs-attribute, .mn-tiptap-code-block .hljs-property, .mn-tiptap-code-block .hljs-meta, .mn-tiptap-code-block .hljs-params, .mn-tiptap-code-block .hljs-subst, .mn-tiptap-code-block .hljs-selector-attr, .mn-tiptap-code-block .hljs-selector-pseudo { color: var(--mn-code-token-attribute, color-mix(in srgb, var(--mn-danger) 72%, var(--mn-code-ink))); }
-.mn-tiptap-code-block .hljs-type, .mn-tiptap-code-block .hljs-class .hljs-title, .mn-tiptap-code-block .hljs-tag, .mn-tiptap-code-block .hljs-selector-id, .mn-tiptap-code-block .hljs-selector-class { color: var(--mn-code-token-type, color-mix(in srgb, var(--mn-code-token-title) 84%, var(--mn-code-ink))); }
-.mn-tiptap-code-block .hljs-operator, .mn-tiptap-code-block .hljs-punctuation { color: var(--mn-code-token-operator, color-mix(in srgb, var(--mn-code-ink) 78%, transparent)); }
+.mn-tiptap-code-block .hljs-comment,
+.mn-tiptap-code-block .hljs-quote {
+    color: var(--mn-code-token-comment, color-mix(in srgb, var(--mn-code-ink) 54%, transparent));
+    font-style: italic;
+}
+.mn-tiptap-code-block .hljs-keyword,
+.mn-tiptap-code-block .hljs-selector-tag,
+.mn-tiptap-code-block .hljs-doctag {
+    color: var(--mn-code-token-keyword, color-mix(in srgb, var(--mn-accent-strong) 74%, var(--mn-code-ink)));
+    font-weight: var(--mn-weight-semibold);
+}
+.mn-tiptap-code-block .hljs-string,
+.mn-tiptap-code-block .hljs-regexp,
+.mn-tiptap-code-block .hljs-symbol,
+.mn-tiptap-code-block .hljs-bullet,
+.mn-tiptap-code-block .hljs-link {
+    color: var(--mn-code-token-string, color-mix(in srgb, var(--mn-success) 80%, var(--mn-code-ink)));
+}
+.mn-tiptap-code-block .hljs-number,
+.mn-tiptap-code-block .hljs-literal,
+.mn-tiptap-code-block .hljs-variable.constant_,
+.mn-tiptap-code-block .hljs-deletion {
+    color: var(--mn-code-token-number, color-mix(in srgb, var(--mn-warning) 80%, var(--mn-code-ink)));
+}
+.mn-tiptap-code-block .hljs-title,
+.mn-tiptap-code-block .hljs-title.function_,
+.mn-tiptap-code-block .hljs-title.class_,
+.mn-tiptap-code-block .hljs-section,
+.mn-tiptap-code-block .hljs-function {
+    color: var(--mn-code-token-title, color-mix(in srgb, var(--mn-accent) 72%, var(--mn-code-ink)));
+}
+.mn-tiptap-code-block .hljs-attr,
+.mn-tiptap-code-block .hljs-attribute,
+.mn-tiptap-code-block .hljs-property,
+.mn-tiptap-code-block .hljs-meta,
+.mn-tiptap-code-block .hljs-params,
+.mn-tiptap-code-block .hljs-subst,
+.mn-tiptap-code-block .hljs-selector-attr,
+.mn-tiptap-code-block .hljs-selector-pseudo {
+    color: var(--mn-code-token-attribute, color-mix(in srgb, var(--mn-danger) 72%, var(--mn-code-ink)));
+}
+.mn-tiptap-code-block .hljs-type,
+.mn-tiptap-code-block .hljs-class .hljs-title,
+.mn-tiptap-code-block .hljs-tag,
+.mn-tiptap-code-block .hljs-name,
+.mn-tiptap-code-block .hljs-built_in,
+.mn-tiptap-code-block .hljs-selector-id,
+.mn-tiptap-code-block .hljs-selector-class {
+    color: var(--mn-code-token-type, color-mix(in srgb, var(--mn-code-token-title) 84%, var(--mn-code-ink)));
+}
+.mn-tiptap-code-block .hljs-operator,
+.mn-tiptap-code-block .hljs-punctuation {
+    color: var(--mn-code-token-operator, color-mix(in srgb, var(--mn-code-ink) 78%, transparent));
+}
 .mn-tiptap-code-block .hljs-variable.language_,
-.mn-tiptap-code-block .hljs-built_in {
+.mn-tiptap-code-block .hljs-keyword.operator_ {
     color: var(--mn-code-token-keyword, color-mix(in srgb, var(--mn-accent-strong) 74%, var(--mn-code-ink)));
 }
 .mn-tiptap-code-block .hljs-template-tag,
 .mn-tiptap-code-block .hljs-template-variable {
     color: var(--mn-code-token-attribute, color-mix(in srgb, var(--mn-danger) 72%, var(--mn-code-ink)));
 }
-.mn-tiptap-code-block .hljs-addition { color: var(--mn-code-token-string, color-mix(in srgb, var(--mn-success) 80%, var(--mn-code-ink))); }
+.mn-tiptap-code-block .hljs-variable {
+    color: var(--mn-code-token-attribute, color-mix(in srgb, var(--mn-danger) 62%, var(--mn-code-ink)));
+}
+.mn-tiptap-code-block .hljs-addition {
+    color: var(--mn-code-token-string, color-mix(in srgb, var(--mn-success) 80%, var(--mn-code-ink)));
+}
 .mn-tiptap-code-block .hljs-emphasis { font-style: italic; }
 .mn-tiptap-code-block .hljs-strong { font-weight: var(--mn-weight-semibold); }
 

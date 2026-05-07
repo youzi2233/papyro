@@ -304,6 +304,7 @@ node scripts/check-tiptap-release-smoke.js
 - [ ] 显示语言标签，并支持切换语言。
 - [ ] 增加复制按钮、自动换行开关；如果定义了 Markdown 策略，再支持 filename/title metadata。
 - [ ] 亮色和暗色模式都使用真正的代码高亮主题。
+  - 当前覆盖：Hybrid 代码块使用 lowlight 的 `.hljs-*` class，并通过主题 token 与 smoke 检查覆盖核心语法分组。
 - [ ] fenced code language 通过 Markdown round-trip 保留。
 - [ ] 为代码块前后增加插入入口，尤其是表格紧挨代码块的场景。
 

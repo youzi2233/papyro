@@ -99,6 +99,17 @@ const TIPTAP_COMMAND_PANEL_REQUIREMENTS = [
   ["Tiptap complex insert button", ".mn-tiptap-complex-block-insert::after", "--mn-editor-bg"],
 ];
 
+const TIPTAP_CODE_HIGHLIGHT_REQUIREMENTS = [
+  ["comment", ".mn-tiptap-code-block .hljs-comment", "--mn-code-token-comment"],
+  ["keyword", ".mn-tiptap-code-block .hljs-keyword", "--mn-code-token-keyword"],
+  ["string", ".mn-tiptap-code-block .hljs-string", "--mn-code-token-string"],
+  ["number", ".mn-tiptap-code-block .hljs-number", "--mn-code-token-number"],
+  ["title", ".mn-tiptap-code-block .hljs-title", "--mn-code-token-title"],
+  ["attribute", ".mn-tiptap-code-block .hljs-attribute", "--mn-code-token-attribute"],
+  ["type", ".mn-tiptap-code-block .hljs-type", "--mn-code-token-type"],
+  ["operator", ".mn-tiptap-code-block .hljs-operator", "--mn-code-token-operator"],
+];
+
 function main() {
   const args = process.argv.slice(2);
 
@@ -185,6 +196,14 @@ function checkCssText(source) {
       failures.push(`${label} missing declaration ${declaration}`);
     }
   }
+  for (const [label, selector, token] of TIPTAP_CODE_HIGHLIGHT_REQUIREMENTS) {
+    if (!source.includes(selector)) {
+      failures.push(`Tiptap code highlight ${label} missing selector ${selector}`);
+    }
+    if (!source.includes(token)) {
+      failures.push(`Tiptap code highlight ${label} missing token ${token}`);
+    }
+  }
   return failures;
 }
 
@@ -211,6 +230,9 @@ ${TIPTAP_REQUIREMENTS.map(
 ${TIPTAP_COMMAND_PANEL_REQUIREMENTS.map(
   ([, selector, declaration]) => `${selector} { ${declaration}; }`,
 ).join("\n")}
+${TIPTAP_CODE_HIGHLIGHT_REQUIREMENTS.map(
+  ([, selector, token]) => `${selector} { color: var(${token}); }`,
+).join("\n")}
 `;
 
   assert(checkCssText(css).length === 0);
@@ -232,6 +254,13 @@ ${TIPTAP_COMMAND_PANEL_REQUIREMENTS.map(
   assert(
     checkCssText(missingTablePanel).some((failure) =>
       failure.includes("Tiptap table command rows"),
+    ),
+  );
+
+  const missingHighlight = css.replaceAll(".mn-tiptap-code-block .hljs-keyword", ".mn-tiptap-code-block .token-keyword");
+  assert(
+    checkCssText(missingHighlight).some((failure) =>
+      failure.includes("Tiptap code highlight keyword"),
     ),
   );
 

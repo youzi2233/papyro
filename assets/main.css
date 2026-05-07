@@ -153,14 +153,14 @@
     --mn-code-block-surface:     var(--mn-markdown-code-block-bg);
     --mn-code-ink:               var(--mn-markdown-code-color);
     --mn-code-border:            var(--mn-border-subtle);
-    --mn-code-token-comment:     #64748b;
-    --mn-code-token-keyword:     #b42318;
-    --mn-code-token-string:      #16703a;
-    --mn-code-token-number:      #a15c07;
-    --mn-code-token-title:       #155eef;
-    --mn-code-token-attribute:   #7c3aed;
-    --mn-code-token-type:        #0e766e;
-    --mn-code-token-operator:    #475467;
+    --mn-code-token-comment:     #6e7781;
+    --mn-code-token-keyword:     #cf222e;
+    --mn-code-token-string:      #116329;
+    --mn-code-token-number:      #8250df;
+    --mn-code-token-title:       #0550ae;
+    --mn-code-token-attribute:   #953800;
+    --mn-code-token-type:        #0a7f72;
+    --mn-code-token-operator:    #57606a;
     --mn-selection-bg:           var(--mn-selection);
     --mn-selection-ink:          var(--mn-ink);
     --mn-focus-ring:             var(--mn-ring-focus);
@@ -334,14 +334,14 @@
     --mn-caret-composing:    var(--mn-warning);
     --mn-composition-halo:   rgba(211, 154, 96, 0.22);
     --mn-composition-line:   rgba(211, 154, 96, 0.11);
-    --mn-code-token-comment:     #94a3b8;
-    --mn-code-token-keyword:     #f472b6;
-    --mn-code-token-string:      #86efac;
-    --mn-code-token-number:      #fbbf24;
-    --mn-code-token-title:       #93c5fd;
-    --mn-code-token-attribute:   #c4b5fd;
-    --mn-code-token-type:        #5eead4;
-    --mn-code-token-operator:    #cbd5e1;
+    --mn-code-token-comment:     #8b949e;
+    --mn-code-token-keyword:     #ff7b72;
+    --mn-code-token-string:      #a5d6ff;
+    --mn-code-token-number:      #79c0ff;
+    --mn-code-token-title:       #d2a8ff;
+    --mn-code-token-attribute:   #ffa657;
+    --mn-code-token-type:        #7ee787;
+    --mn-code-token-operator:    #c9d1d9;
 }
 
 :root[data-theme="github_light"] {
@@ -429,6 +429,8 @@
     --mn-code-token-number: #79c0ff;
     --mn-code-token-title: #d2a8ff;
     --mn-code-token-attribute: #ffa657;
+    --mn-code-token-type: #7ee787;
+    --mn-code-token-operator: #c9d1d9;
 }
 
 :root[data-theme="high_contrast"] {
@@ -569,14 +571,14 @@
         --mn-caret-composing:    var(--mn-warning);
         --mn-composition-halo:   rgba(211, 154, 96, 0.22);
         --mn-composition-line:   rgba(211, 154, 96, 0.11);
-        --mn-code-token-comment:     #94a3b8;
-        --mn-code-token-keyword:     #f472b6;
-        --mn-code-token-string:      #86efac;
-        --mn-code-token-number:      #fbbf24;
-        --mn-code-token-title:       #93c5fd;
-        --mn-code-token-attribute:   #c4b5fd;
-        --mn-code-token-type:        #5eead4;
-        --mn-code-token-operator:    #cbd5e1;
+        --mn-code-token-comment:     #8b949e;
+        --mn-code-token-keyword:     #ff7b72;
+        --mn-code-token-string:      #a5d6ff;
+        --mn-code-token-number:      #79c0ff;
+        --mn-code-token-title:       #d2a8ff;
+        --mn-code-token-attribute:   #ffa657;
+        --mn-code-token-type:        #7ee787;
+        --mn-code-token-operator:    #c9d1d9;
     }
 }
 
