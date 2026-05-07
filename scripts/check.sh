@@ -55,6 +55,9 @@ node scripts/check-tiptap-release-smoke.js --self-test
 echo "=== Tiptap runtime smoke check ==="
 node scripts/check-tiptap-runtime-smoke.js
 
+echo "=== editor Markdown gate ==="
+node scripts/check-editor-markdown-gate.js
+
 echo "=== performance fixture generator self-test ==="
 node scripts/generate-perf-fixtures.js --self-test
 

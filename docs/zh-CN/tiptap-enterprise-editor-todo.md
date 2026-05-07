@@ -192,11 +192,7 @@ node scripts/report-file-lines.js
 验证：
 
 ```powershell
-npm --prefix js test -- --runInBand
-npm --prefix js run build
-node scripts/check-markdown-style-smoke.js
-node scripts/check-tiptap-release-smoke.js
-node scripts/check-tiptap-runtime-smoke.js
+node scripts/check-editor-markdown-gate.js
 ```
 
 手工 smoke：
@@ -504,7 +500,7 @@ git diff --check
 3. 增加或更新聚焦的 React component、hook、command 或 extension module。
 4. 先补单元/契约测试，再做大范围视觉打磨。
 5. JS 改动后重新构建生成 bundle。
-6. 运行对应验证命令；涉及编辑器时必须包含 Markdown 渲染和 round-trip smoke。
+6. 运行对应验证命令；涉及编辑器时必须包含 `node scripts/check-editor-markdown-gate.js`。
 7. 行为、架构或已知限制发生变化时同步更新文档。
 8. 使用英文 Conventional Commit 提交。
 
@@ -512,7 +508,7 @@ git diff --check
 
 - Tiptap/editor 代码如果导致 Markdown fixture 渲染或 round-trip smoke 失败，不能提交。
 - 这个闸门同样适用于编辑器 CSS、生成的 editor bundle、Markdown 解析、Markdown 渲染、Preview 一致性和 node-view 改动。
-- 编辑器 runtime 改动提交前至少运行 `npm --prefix js test`、`npm --prefix js run build`、`node scripts/check-markdown-style-smoke.js`、`node scripts/check-tiptap-release-smoke.js` 和 `node scripts/check-tiptap-runtime-smoke.js`。
+- 编辑器 runtime 改动提交前至少运行 `node scripts/check-editor-markdown-gate.js`。它会运行 JS 测试、重建生成 bundle、检查 Markdown 样式、验证 release round-trip、真实挂载 Tiptap runtime，并检查生成 bundle 同步。
 - 如果改动影响 Markdown 解析、序列化、Preview 一致性或 node view，提交前必须新增或更新 fixture。
 
 提交示例：

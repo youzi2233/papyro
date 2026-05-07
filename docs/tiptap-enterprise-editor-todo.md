@@ -192,11 +192,7 @@ Acceptance criteria:
 Verification:
 
 ```powershell
-npm --prefix js test -- --runInBand
-npm --prefix js run build
-node scripts/check-markdown-style-smoke.js
-node scripts/check-tiptap-release-smoke.js
-node scripts/check-tiptap-runtime-smoke.js
+node scripts/check-editor-markdown-gate.js
 ```
 
 Manual smoke:
@@ -504,7 +500,7 @@ Use this loop for every checked item:
 3. Add or update a focused React component, hook, command, or extension module.
 4. Add unit/contract tests before broad visual polish.
 5. Rebuild generated bundles after JS changes.
-6. Run the relevant verification commands, including Markdown rendering and round-trip smoke for editor changes.
+6. Run the relevant verification commands, including `node scripts/check-editor-markdown-gate.js` for editor changes.
 7. Update docs when behavior, architecture, or known limitations change.
 8. Commit with an English Conventional Commit message.
 
@@ -512,7 +508,7 @@ Editor-change commit gate:
 
 - Do not commit Tiptap/editor code if Markdown fixture rendering or round-trip smoke fails.
 - This gate also applies to editor CSS, generated editor bundles, Markdown parsing, Markdown rendering, Preview parity, and node-view changes.
-- At minimum run `npm --prefix js test`, `npm --prefix js run build`, `node scripts/check-markdown-style-smoke.js`, `node scripts/check-tiptap-release-smoke.js`, and `node scripts/check-tiptap-runtime-smoke.js` before committing editor runtime changes.
+- At minimum run `node scripts/check-editor-markdown-gate.js` before committing editor runtime changes. It runs JS tests, rebuilds generated bundles, checks Markdown styling, verifies release round-trip behavior, mounts the real Tiptap runtime, and checks generated bundle sync.
 - If a change touches Markdown parsing, serialization, Preview parity, or node views, add or update a fixture before committing.
 
 Example commit scopes:

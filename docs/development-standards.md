@@ -65,11 +65,7 @@ points are:
 Then run:
 
 ```bash
-npm --prefix js run build
-npm --prefix js test
-node scripts/check-markdown-style-smoke.js
-node scripts/check-tiptap-release-smoke.js
-node scripts/check-tiptap-runtime-smoke.js
+node scripts/check-editor-markdown-gate.js
 ```
 
 Every commit that touches Tiptap, editor runtime, editor CSS, generated editor
@@ -77,6 +73,9 @@ bundles, Markdown parsing, Markdown rendering, Preview parity, or node views mus
 prove that Markdown files still render. Do not commit if any Markdown smoke
 check fails. `check-tiptap-runtime-smoke.js` mounts a real Tiptap editor and
 must keep rendering the Markdown fixture without runtime errors.
+The dedicated editor gate runs JS tests, rebuilds the editor bundle, checks
+Markdown styling, verifies Markdown round-trip behavior, mounts the real Tiptap
+runtime, and confirms desktop/mobile `editor.js` copies are synchronized.
 
 Generated files must be committed with the source change:
 
@@ -133,6 +132,7 @@ node scripts/generate-perf-fixtures.js --self-test
 node scripts/check-tiptap-release-smoke.js
 node scripts/check-tiptap-release-smoke.js --self-test
 node scripts/check-tiptap-runtime-smoke.js
+node scripts/check-editor-markdown-gate.js
 node scripts/check-perf-smoke.js --self-test
 node scripts/check-perf-docs.js
 node scripts/check-perf-docs.js --self-test
