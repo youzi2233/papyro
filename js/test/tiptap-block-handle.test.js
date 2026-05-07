@@ -477,6 +477,54 @@ test("Tiptap block handle keeps open menus anchored during official hover change
   assert.deepEqual(view.calls.at(-1), ["update", "paragraph", 7]);
 });
 
+test("Tiptap block handle lets official hover tracking own legacy mousemove targets", () => {
+  const { block, editor, root } = createEditor();
+  const outside = createElement({ tagName: "SECTION", parent: root });
+  editor.view.nodeDOM = (pos) => (pos === 7 ? block : null);
+  const view = createViewSpy();
+  const controller = createTiptapBlockHandleController({ view });
+  controller.attach({ editor, root: editor.view.dom, entry: { viewMode: "hybrid" } });
+
+  controller.handleOfficialNodeChange({
+    node: { nodeSize: 6, type: { name: "paragraph" } },
+    pos: 7,
+  });
+  controller.handlePointerMove({ target: outside });
+
+  assert.equal(controller.state.open, true);
+  assert.equal(controller.state.target.block, block);
+  assert.deepEqual(view.calls.at(-1), ["update", "paragraph", 7]);
+});
+
+test("Tiptap block handle retargets from official node changes after legacy hover noise", () => {
+  const { block, editor, root } = createEditor();
+  const nextBlock = createElement({ tagName: "H2", parent: root });
+  const outside = createElement({ tagName: "SECTION", parent: root });
+  editor.view.nodeDOM = (pos) => {
+    if (pos === 7) return block;
+    if (pos === 17) return nextBlock;
+    return null;
+  };
+  const view = createViewSpy();
+  const controller = createTiptapBlockHandleController({ view });
+  controller.attach({ editor, root: editor.view.dom, entry: { viewMode: "hybrid" } });
+
+  controller.handleOfficialNodeChange({
+    node: { nodeSize: 6, type: { name: "paragraph" } },
+    pos: 7,
+  });
+  controller.handlePointerMove({ target: outside });
+  controller.handleOfficialNodeChange({
+    node: { nodeSize: 5, type: { name: "heading" } },
+    pos: 17,
+  });
+
+  assert.equal(controller.state.open, true);
+  assert.equal(controller.state.target.block, nextBlock);
+  assert.equal(controller.state.target.kind, "heading");
+  assert.deepEqual(view.calls.at(-1), ["update", "heading", 17]);
+});
+
 test("Tiptap block handle closes outside Hybrid mode", () => {
   const { block, editor } = createEditor();
   const view = createViewSpy();

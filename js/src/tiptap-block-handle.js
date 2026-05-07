@@ -677,6 +677,7 @@ export class TiptapBlockHandleController {
   #removeListeners = [];
   #drag = null;
   #selectedBlock = null;
+  #officialTrackingActive = false;
   #state = {
     open: false,
     target: null,
@@ -727,6 +728,7 @@ export class TiptapBlockHandleController {
     this.#editor = editor ?? null;
     this.#entry = entry ?? null;
     this.#root = root ?? editor?.view?.dom ?? null;
+    this.#officialTrackingActive = false;
     this.#view.mount?.(root);
     this.#menu?.attach?.({ editor, root, entry });
     this.#menu?.setExternalContains?.((target) => this.#view.contains?.(target));
@@ -803,6 +805,17 @@ export class TiptapBlockHandleController {
       return this.state;
     }
 
+    if (this.#officialTrackingActive) {
+      if (
+        this.#state.open &&
+        (this.#view.contains?.(event?.target) ||
+          this.#view.containsPointer?.(event, this.#state.target))
+      ) {
+        this.#updateView();
+      }
+      return this.state;
+    }
+
     if (this.#hasOpenFloatingMenu()) {
       const liveTarget = refreshTargetFromPosition(this.#state.target, this.#editor);
       if (liveTarget) {
@@ -850,6 +863,8 @@ export class TiptapBlockHandleController {
     if (this.#drag) {
       return this.state;
     }
+
+    this.#officialTrackingActive = true;
 
     if (!this.#editor || this.#entry?.viewMode !== "hybrid") {
       this.close();
