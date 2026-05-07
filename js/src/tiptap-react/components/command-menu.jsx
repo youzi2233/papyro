@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 
 import {
   PAPYRO_CODE_LANGUAGE_OPTIONS,
+  codeBlockLanguageOptionToken,
   codeBlockLanguageUiLabel,
 } from "../../tiptap-code-block.js";
 import { PAPYRO_CALLOUT_KIND_OPTIONS } from "../../tiptap-markdown-snippets.js";
@@ -227,7 +228,7 @@ function CodeLanguageOption({ option, language, choose }) {
       {...activation}
     >
       <span className="mn-tiptap-code-language-option-token" aria-hidden="true">
-        {(option.language ?? "auto").slice(0, 2).toUpperCase()}
+        {codeBlockLanguageOptionToken(option)}
       </span>
       <span className="mn-tiptap-code-language-option-title">{title}</span>
     </button>

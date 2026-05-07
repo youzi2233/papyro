@@ -1,6 +1,7 @@
 import { createTiptapSlashCommandController } from "./tiptap-slash-commands.js";
 import {
   PAPYRO_CODE_LANGUAGE_OPTIONS,
+  codeBlockLanguageOptionToken,
   codeBlockLanguageUiLabel,
 } from "./tiptap-code-block.js";
 import { PAPYRO_CALLOUT_KIND_OPTIONS } from "./tiptap-markdown-snippets.js";
@@ -383,7 +384,7 @@ class TiptapSlashMenuView {
       item.dataset.languageId = option.id;
       item.dataset.languageValue = option.language ?? "";
       token.setAttribute("aria-hidden", "true");
-      token.textContent = (option.language ?? "auto").slice(0, 2).toUpperCase();
+      token.textContent = codeBlockLanguageOptionToken(option);
       title.textContent = codeBlockLanguageUiLabel(this.#language, option.language);
       item.setAttribute("aria-label", title.textContent);
       item.append(token, title);

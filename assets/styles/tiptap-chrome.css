@@ -1,7 +1,7 @@
 /* Papyro Tiptap runtime chrome: command panels, handles, table controls, and code-block controls. */
 
 .mn-tiptap-code-block[data-has-language-control="true"] {
-    padding-top: calc(var(--mn-markdown-code-block-pad-y) + 30px);
+    padding-top: calc(var(--mn-markdown-code-block-pad-y) + 34px);
 }
 
 .mn-tiptap-code-block::before {
@@ -38,23 +38,29 @@
     position: absolute;
     top: 9px;
     left: 12px;
-    display: inline-flex;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
     align-items: center;
-    gap: 7px;
-    max-width: min(184px, calc(100% - 24px));
-    height: 23px;
-    border: 1px solid color-mix(in srgb, var(--mn-code-token-comment) 16%, transparent);
-    border-radius: 5px;
-    background: color-mix(in srgb, var(--mn-code-block-surface) 90%, var(--mn-surface-raised));
-    color: color-mix(in srgb, var(--mn-code-ink) 70%, transparent);
-    padding: 0 8px 0 7px;
+    gap: 6px;
+    max-width: min(218px, calc(100% - 122px));
+    min-width: 88px;
+    height: 26px;
+    border: 1px solid color-mix(in srgb, var(--mn-code-token-comment) 18%, var(--mn-border));
+    border-radius: 6px;
+    background:
+        linear-gradient(
+            180deg,
+            color-mix(in srgb, var(--mn-code-block-surface) 84%, var(--mn-surface-raised)),
+            color-mix(in srgb, var(--mn-code-block-surface) 94%, var(--mn-surface-sunken))
+        );
+    color: color-mix(in srgb, var(--mn-code-ink) 76%, transparent);
+    padding: 0 8px 0 5px;
     overflow: hidden;
     font-family: var(--mn-font-ui);
-    font-size: 10px;
+    font-size: 10.5px;
     font-weight: var(--mn-weight-medium);
     line-height: 1;
     text-overflow: ellipsis;
-    text-transform: uppercase;
     white-space: nowrap;
     user-select: none;
     transition:
@@ -62,6 +68,21 @@
         border-color var(--mn-transition-fast),
         color var(--mn-transition-fast),
         box-shadow var(--mn-transition-fast);
+}
+
+.mn-tiptap-code-language-button::before {
+    content: attr(data-language-badge);
+    display: inline-grid;
+    place-items: center;
+    min-width: 31px;
+    height: 18px;
+    border-radius: 4px;
+    background: color-mix(in srgb, var(--mn-accent) 8%, var(--mn-surface-raised));
+    color: color-mix(in srgb, var(--mn-accent) 82%, var(--mn-code-ink));
+    font-size: 9px;
+    font-weight: var(--mn-weight-semibold);
+    line-height: 1;
+    text-transform: uppercase;
 }
 
 .mn-tiptap-code-language-button::after {
@@ -72,7 +93,7 @@
     border-bottom: 1.5px solid currentColor;
     transform: translateY(-1px) rotate(45deg);
     opacity: .62;
-    flex: 0 0 auto;
+    justify-self: end;
 }
 
 .mn-tiptap-code-language-button:hover,
@@ -80,7 +101,12 @@
 .mn-tiptap-code-language-button[aria-expanded="true"] {
     outline: 0;
     border-color: color-mix(in srgb, var(--mn-accent) 30%, var(--mn-border));
-    background: color-mix(in srgb, var(--mn-surface-raised) 90%, var(--mn-accent) 5%);
+    background:
+        linear-gradient(
+            180deg,
+            color-mix(in srgb, var(--mn-surface-raised) 92%, var(--mn-accent) 8%),
+            color-mix(in srgb, var(--mn-code-block-surface) 86%, var(--mn-accent) 6%)
+        );
     color: color-mix(in srgb, var(--mn-accent) 82%, var(--mn-code-ink));
     box-shadow: 0 2px 8px color-mix(in srgb, #000 7%, transparent);
 }
@@ -212,9 +238,9 @@
     grid-template-rows: auto minmax(0, 1fr);
     width: 176px;
     max-height: min(286px, calc(100vh - 20px));
-    padding: 5px;
+    padding: 6px;
     border: var(--mn-border-default);
-    border-radius: 8px;
+    border-radius: 10px;
     background: var(--mn-surface-raised);
     color: var(--mn-ink);
     box-shadow: 0 18px 38px color-mix(in srgb, #000 13%, transparent), var(--mn-shadow-lg);
@@ -243,24 +269,41 @@
 
 .mn-tiptap-code-language-menu-list {
     display: grid;
-    gap: 2px;
+    gap: 3px;
     overflow-y: auto;
     scrollbar-gutter: stable;
 }
 
 .mn-tiptap-code-language-menu-item {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 14px;
+    grid-template-columns: 31px minmax(0, 1fr) 14px;
     align-items: center;
-    min-height: 26px;
-    border: 0;
-    border-radius: 6px;
+    gap: 7px;
+    min-height: 30px;
+    border: 1px solid transparent;
+    border-radius: 7px;
     background: transparent;
     color: var(--mn-ink-2);
-    padding: 4px 7px;
+    padding: 4px 7px 4px 5px;
     text-align: left;
     font: inherit;
     font-size: var(--mn-type-caption);
+}
+
+.mn-tiptap-code-language-menu-item::before {
+    content: attr(data-language-token);
+    display: inline-grid;
+    place-items: center;
+    width: 31px;
+    height: 20px;
+    border: var(--mn-border-subtle);
+    border-radius: 5px;
+    background: color-mix(in srgb, var(--mn-surface-sunken) 82%, transparent);
+    color: color-mix(in srgb, var(--mn-ink-3) 88%, transparent);
+    font-size: 8.5px;
+    font-weight: var(--mn-weight-semibold);
+    letter-spacing: 0;
+    line-height: 1;
 }
 
 .mn-tiptap-code-language-menu-item::after {
@@ -279,13 +322,22 @@
 .mn-tiptap-code-language-menu-item.keyboard-active,
 .mn-tiptap-code-language-menu-item[data-active="true"] {
     outline: 0;
-    background: color-mix(in srgb, var(--mn-accent) 9%, transparent);
+    border-color: color-mix(in srgb, var(--mn-accent) 14%, transparent);
+    background: color-mix(in srgb, var(--mn-accent) 7%, transparent);
     color: var(--mn-ink);
 }
 
 .mn-tiptap-code-language-menu-item[data-active="true"]::after {
     opacity: 1;
     color: var(--mn-accent);
+}
+
+.mn-tiptap-code-language-menu-item[data-active="true"]::before,
+.mn-tiptap-code-language-menu-item:hover::before,
+.mn-tiptap-code-language-menu-item.keyboard-active::before {
+    border-color: color-mix(in srgb, var(--mn-accent) 28%, var(--mn-border));
+    background: color-mix(in srgb, var(--mn-accent) 10%, var(--mn-surface-raised));
+    color: color-mix(in srgb, var(--mn-accent) 78%, var(--mn-ink));
 }
 
 .mn-tiptap-code-block .hljs-comment,
@@ -906,9 +958,9 @@
 
 .mn-tiptap-code-language-option {
     display: grid;
-    grid-template-columns: 28px minmax(0, 1fr);
+    grid-template-columns: 31px minmax(0, 1fr);
     align-items: center;
-    gap: 8px;
+    gap: 7px;
     min-width: 0;
     min-height: 30px;
     border: 1px solid transparent;
@@ -930,15 +982,23 @@
 .mn-tiptap-code-language-option-token {
     display: grid;
     place-items: center;
-    width: 28px;
+    width: 31px;
     height: 20px;
     border: var(--mn-border-subtle);
-    border-radius: 6px;
+    border-radius: 5px;
     background: color-mix(in srgb, var(--mn-surface-sunken) 80%, transparent);
     color: color-mix(in srgb, var(--mn-ink-3) 86%, transparent);
-    font-size: 9px;
+    font-size: 8.5px;
     font-weight: var(--mn-weight-semibold);
+    letter-spacing: 0;
     line-height: 1;
+}
+
+.mn-tiptap-code-language-option:hover .mn-tiptap-code-language-option-token,
+.mn-tiptap-code-language-option:focus-visible .mn-tiptap-code-language-option-token {
+    border-color: color-mix(in srgb, var(--mn-accent) 28%, var(--mn-border));
+    background: color-mix(in srgb, var(--mn-accent) 10%, var(--mn-surface-raised));
+    color: color-mix(in srgb, var(--mn-accent) 78%, var(--mn-ink));
 }
 
 .mn-tiptap-code-language-option-title {

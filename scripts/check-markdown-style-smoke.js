@@ -82,6 +82,7 @@ const TIPTAP_REQUIREMENTS = [
   ["Tiptap image radius", ".mn-tiptap-image", "--mn-markdown-image-radius"],
   ["Tiptap code block padding", ".mn-tiptap-code-block", "--mn-markdown-code-block-pad-y"],
   ["Tiptap code block mono font", ".mn-tiptap-code-block", "--mn-markdown-mono-font"],
+  ["Tiptap code block caret", ".mn-tiptap-code-block", "caret-color: var(--mn-caret)"],
   ["Tiptap code block toolbar", ".mn-tiptap-code-toolbar", "data-action=\"copy\""],
   ["Tiptap code block wrap state", ".mn-tiptap-code-block[data-code-wrap=\"true\"] code", "white-space: pre-wrap"],
 ];
@@ -101,6 +102,8 @@ const TIPTAP_COMMAND_PANEL_REQUIREMENTS = [
   ["Tiptap table merge icon", ".mn-tiptap-table-toolbar-button[data-icon=\"merge\"]", ".mn-tiptap-table-toolbar-button[data-icon=\"split\"]"],
   ["Tiptap complex insert breakpoint", ".mn-tiptap-complex-block-insert::before", "calc(50% - 28px)"],
   ["Tiptap complex insert button", ".mn-tiptap-complex-block-insert::after", "--mn-editor-bg"],
+  ["Tiptap code language badge", ".mn-tiptap-code-language-button::before", "data-language-badge"],
+  ["Tiptap code language option token", ".mn-tiptap-code-language-menu-item::before", "data-language-token"],
 ];
 
 const TIPTAP_CODE_HIGHLIGHT_REQUIREMENTS = [

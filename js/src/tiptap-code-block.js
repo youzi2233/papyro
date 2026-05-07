@@ -91,6 +91,27 @@ export function codeBlockLanguageOption(language) {
   ) ?? null;
 }
 
+export function codeBlockLanguageOptionToken(optionOrLanguage) {
+  const option =
+    typeof optionOrLanguage === "object" && optionOrLanguage
+      ? optionOrLanguage
+      : codeBlockLanguageOption(optionOrLanguage);
+  const normalized = normalizeCodeBlockLanguage(option?.language ?? optionOrLanguage);
+  const id = String(option?.id ?? normalized ?? "auto").trim().toLowerCase();
+  const tokens = {
+    auto: "AU",
+    plaintext: "TXT",
+    javascript: "JS",
+    typescript: "TS",
+    markdown: "MD",
+    python: "PY",
+    rust: "RS",
+    bash: "SH",
+    yaml: "YML",
+  };
+  return tokens[id] ?? tokens[normalized] ?? String(normalized ?? id).slice(0, 3).toUpperCase();
+}
+
 function safeEditorView(editor) {
   if (!editor) return null;
   try {
@@ -142,6 +163,10 @@ function codeLanguageMenuLabel(language) {
 
 function codeLanguageButtonAriaLabel(language) {
   return localizedText(language, "Change code language", "修改代码语言");
+}
+
+function codeLanguageButtonBadge(language) {
+  return localizedText(language, "Lang", "语言");
 }
 
 function codeBlockCopyLabel(language) {
@@ -276,6 +301,7 @@ function languageMenuButton(documentRef, option, language) {
   button.className = "mn-tiptap-code-language-menu-item";
   button.dataset.languageId = option.id;
   button.dataset.languageValue = option.language ?? "";
+  button.dataset.languageToken = codeBlockLanguageOptionToken(option);
   button.role = "menuitemradio";
   button.textContent =
     option.id === "auto"
@@ -669,6 +695,10 @@ export function createPapyroCodeBlockNodeView({ editor, node, getPos, view = nul
       .filter(Boolean)
       .join(" ");
     languageButton.textContent = label;
+    languageButton.dataset.languageBadge = codeLanguageButtonBadge(currentLanguage);
+    languageButton.dataset.languageValue = language ?? detectedLanguage ?? "auto";
+    languageButton.dataset.languageMode = language ? "explicit" : "auto";
+    languageButton.dataset.languageDetected = detectedLanguage ?? "";
     languageButton.title = codeLanguageButtonAriaLabel(currentLanguage);
     languageButton.setAttribute("aria-label", `${codeLanguageButtonAriaLabel(currentLanguage)}: ${label}`);
     if (copyButton.dataset.state !== "copied" && copyButton.dataset.state !== "failed") {

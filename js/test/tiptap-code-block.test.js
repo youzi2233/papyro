@@ -5,6 +5,7 @@ import {
   PAPYRO_CODE_LANGUAGE_OPTIONS,
   codeBlockLanguageLabel,
   codeBlockLanguageOption,
+  codeBlockLanguageOptionToken,
   codeBlockLanguageUiLabel,
   createCodeHighlightDecorations,
   createPapyroCodeBlockNodeView,
@@ -142,6 +143,9 @@ test("Papyro code block language options are stable and label empty fences", () 
   assert.equal(codeBlockLanguageLabel("Rust"), "rust");
   assert.equal(codeBlockLanguageUiLabel("Chinese", null), "自动");
   assert.equal(codeBlockLanguageUiLabel("Chinese", "plaintext"), "纯文本");
+  assert.equal(codeBlockLanguageOptionToken("javascript"), "JS");
+  assert.equal(codeBlockLanguageOptionToken("typescript"), "TS");
+  assert.equal(codeBlockLanguageOptionToken("plaintext"), "TXT");
   assert.equal(codeBlockLanguageOption("ts-node"), null);
   assert.deepEqual(
     PAPYRO_CODE_LANGUAGE_OPTIONS.slice(0, 4).map((option) => option.id),
@@ -298,6 +302,9 @@ test("Papyro code block node view exposes an editable language menu", () => {
   assert.equal(view.dom.dataset.codeLanguageMode, "explicit");
   assert.equal(view.dom.dataset.hasLanguageControl, "true");
   assert.equal(languageButton.textContent, "Rust");
+  assert.equal(languageButton.dataset.languageBadge, "语言");
+  assert.equal(languageButton.dataset.languageMode, "explicit");
+  assert.equal(languageButton.dataset.languageValue, "rust");
   assert.equal(languageButton["aria-haspopup"], "menu");
   assert.equal(view.dom.children[1].className, "mn-tiptap-code-toolbar");
   assert.equal(code.className, "language-rust hljs language-rust");
@@ -308,6 +315,10 @@ test("Papyro code block node view exposes an editable language menu", () => {
   assert.equal(
     menu.children[1].children.find((child) => child.dataset.languageId === "auto").textContent,
     "自动检测",
+  );
+  assert.equal(
+    menu.children[1].children.find((child) => child.dataset.languageId === "plaintext").dataset.languageToken,
+    "TXT",
   );
 
   const plaintext = menu.children[1].children.find((child) => child.dataset.languageId === "plaintext");
@@ -644,6 +655,9 @@ test("Papyro code block node view labels automatic syntax detection when reliabl
   assert.equal(view.dom.dataset.codeLanguageDetected, "javascript");
   assert.equal(view.dom.dataset.codeLanguageHighlighted, "javascript");
   assert.equal(view.dom.dataset.codeLanguageLabel, "自动 · JavaScript");
+  assert.equal(view.dom.children[0].dataset.languageBadge, "语言");
+  assert.equal(view.dom.children[0].dataset.languageMode, "auto");
+  assert.equal(view.dom.children[0].dataset.languageDetected, "javascript");
   assert.equal(view.contentDOM.className, "language-javascript hljs language-javascript");
 });
 
