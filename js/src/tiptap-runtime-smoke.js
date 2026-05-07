@@ -34,6 +34,7 @@ export function checkTiptapRuntimeSmoke(markdown) {
 
     checkMountedEditor(failures, editor);
     checkRenderedDom(failures, editor.view?.dom);
+    checkCodeBlockChrome(failures, editor.view?.dom);
     checkRoundTrip(failures, editor, markdownManager);
   } catch (error) {
     failures.push(error instanceof Error ? error.message : String(error));
@@ -115,6 +116,36 @@ function checkRenderedDom(failures, dom) {
     if (!dom.querySelector?.(selector)) {
       failures.push(`rendered DOM is missing ${label}`);
     }
+  }
+}
+
+function checkCodeBlockChrome(failures, dom) {
+  if (!dom) return;
+
+  const codeBlock = dom.querySelector?.(".mn-tiptap-code-block, pre");
+  if (!codeBlock) return;
+
+  const languageButton = codeBlock.querySelector?.(".mn-tiptap-code-language-button");
+  if (!languageButton) {
+    failures.push("code block language control did not mount");
+  }
+
+  if (codeBlock.dataset?.codeLanguage !== "rust") {
+    failures.push("code block language chrome did not expose rust");
+  }
+
+  if (codeBlock.dataset?.codeLanguageHighlighted !== "rust") {
+    failures.push("code block highlighted language did not expose rust");
+  }
+
+  const code = codeBlock.querySelector?.("code");
+  const className = String(code?.className ?? "");
+  if (!className.includes("hljs") || !className.includes("language-rust")) {
+    failures.push("code block DOM is missing lowlight language classes");
+  }
+
+  if ((codeBlock.querySelectorAll?.("[class*='hljs-']")?.length ?? 0) === 0) {
+    failures.push("code block DOM is missing highlighted token spans");
   }
 }
 
