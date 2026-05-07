@@ -210,6 +210,7 @@ node scripts/check-editor-markdown-gate.js
 - [ ] 评估用 `@tiptap/extension-drag-handle-react` 和 `@tiptap/extension-node-range` 替换本地句柄代码。
   - 决策已写入 [Tiptap 官方优先 React 策略](tiptap-official-react-strategy.md)：官方 DragHandle 负责节点跟踪/拖拽，Papyro React handle 继续负责动作和插入控件，表格仍归 table overlay 管理。
   - 基础已接入：`@tiptap/extension-node-range` 已加入编辑器 extension 链，使用 `Mod` 鼠标范围选择，并补齐 Papyro 主题化的 range-selection CSS。
+  - 基础已接入：官方 DragHandle adapter 配置和 Papyro 排除规则已在 `js/src/tiptap-official-drag-handle.js` 中测试覆盖；运行时行为仍需从兼容 controller 切到官方 plugin。
 - [ ] 用 React 渲染句柄，明确分成拖拽/操作句柄和插入 `+` 两个控件。
   - 视觉 view 已完成：桌面端/移动端 bundle 入口现在注入 React block-handle view，现有 controller 仍负责行为。
   - 仍需继续：把行为迁移到官方 `DragHandle`/`NodeRange` 集成。

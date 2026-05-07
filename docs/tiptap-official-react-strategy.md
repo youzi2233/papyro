@@ -84,6 +84,7 @@ The free official path is viable for the next block-handle migration:
 
 - Use `@tiptap/extension-drag-handle-react` for hover tracking, plugin lifecycle, drag start/end, and ProseMirror-safe node positioning.
 - Enable nested drag targeting with official defaults. The official default rules already avoid dragging table rows/cells/headers, avoid inline/text nodes, and target list items instead of their first child paragraph.
+  - Foundation added: `js/src/tiptap-official-drag-handle.js` centralizes the official DragHandle plugin key, nested targeting options, and Papyro rules that keep complex blocks as outer owners while leaving table internals to table overlay controls.
 - Keep Papyro's React block handle as the rendered children so the UI still has two separate controls: drag/action handle and insert `+`.
 - Use Papyro's action menu for click/right-click actions. The official drag handle owns drag behavior; Papyro owns contextual actions, copy/delete/turn-into/color, and the insert menu.
 - Use `@tiptap/extension-node-range` for block-range selection and keyboard range behavior where it does not fight Markdown persistence.

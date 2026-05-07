@@ -210,6 +210,7 @@ Tasks:
 - [ ] Evaluate replacing local handle code with `@tiptap/extension-drag-handle-react` and `@tiptap/extension-node-range`.
   - Decision recorded in [Tiptap official React strategy](tiptap-official-react-strategy.md): use official DragHandle for node tracking/dragging, keep Papyro React handle for action and insert controls, and keep tables under table overlay ownership.
   - Foundation added: `@tiptap/extension-node-range` is now in the editor extension chain with `Mod` pointer selection and Papyro-themed range-selection CSS.
+  - Foundation added: official DragHandle adapter options and Papyro exclusion rules are now tested in `js/src/tiptap-official-drag-handle.js`; runtime behavior still needs to switch from the compatibility controller to the official plugin.
 - [ ] React-render the handle with two distinct controls: drag/action handle and insert `+`.
   - Done for the visual view: desktop/mobile bundle entry now injects a React block-handle view while the existing controller still owns behavior.
   - Still required: move behavior to the official `DragHandle`/`NodeRange` integration.
