@@ -14,8 +14,10 @@ import { extname, join, relative, sep } from "node:path";
 const DEFAULT_PATHS = [
   "assets/main.css",
   "assets/styles/markdown.css",
+  "assets/styles/tiptap-chrome.css",
   "apps/desktop/assets/main.css",
   "apps/desktop/assets/styles/markdown.css",
+  "apps/desktop/assets/styles/tiptap-chrome.css",
   "apps/mobile/assets/main.css",
   "js/src/tiptap-runtime.js",
   "js/src/tiptap-ui-primitives.js",

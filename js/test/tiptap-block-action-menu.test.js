@@ -32,6 +32,18 @@ function createCalloutTarget() {
   };
 }
 
+function createCodeBlockTarget() {
+  return {
+    ...createTarget(),
+    kind: "code_block",
+    node: {
+      type: { name: "codeBlock" },
+      attrs: { language: "rust" },
+      nodeSize: 8,
+    },
+  };
+}
+
 function createEditor() {
   const calls = [];
   const marks = {
@@ -219,11 +231,14 @@ test("Tiptap block action menu opens for Hybrid block targets", () => {
 
   assert.equal(controller.state.open, true);
   assert.deepEqual(
-    controller.state.commands.map((command) => command.id),
+    controller.state.commands
+      .filter((command) => !command.submenu || Array.isArray(command.children))
+      .map((command) => command.id),
     [
       "copy-block",
       "duplicate-block",
       "reset-formatting",
+      "turn-into",
       "text-color-ink",
       "text-color-muted",
       "text-color-accent",
@@ -235,6 +250,7 @@ test("Tiptap block action menu opens for Hybrid block targets", () => {
       "delete",
     ],
   );
+  assert.ok(controller.state.commands.some((command) => command.id === "heading-2" && command.submenu === "turn-into"));
   assert.deepEqual(view.calls[0], ["mount", "root"]);
   assert.equal(view.calls[1][0], "update");
 });
@@ -346,6 +362,7 @@ test("Tiptap block action menu runs the selected command", () => {
   controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
   controller.open(createTarget());
 
+  controller.setSelection(1);
   assert.equal(controller.handleKeyDown({ key: "Enter", preventDefault() {} }), true);
 
   assert.equal(controller.state.open, false);
@@ -577,6 +594,105 @@ test("Tiptap block action menu renders callout kind sections for callout blocks"
   );
 });
 
+test("Tiptap block action menu renders nested turn-into commands", () => {
+  const { editor } = createEditor();
+  const documentRef = createDocument();
+  const controller = createTiptapBlockActionMenuController({
+    dom: { document: documentRef },
+  });
+  controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
+
+  controller.open(createTarget());
+
+  const menu = documentRef.body.children[0];
+  const trigger = findCommandItem(menu, "turn-into");
+  assert.equal(trigger.dataset.submenuTrigger, "turn-into");
+  assert.equal(trigger.classList.values.has("active"), false);
+  assert.equal(findCommandItem(menu, "heading-2").dataset.submenu, "turn-into");
+
+  trigger.onpointerenter?.({ preventDefault() {}, stopPropagation() {} });
+  assert.equal(controller.state.commands[controller.state.selectedIndex].id, "turn-into");
+  assert.equal(trigger.classList.values.has("active"), true);
+});
+
+test("Tiptap block action menu supports keyboard submenu entry and return", () => {
+  const { editor } = createEditor();
+  const documentRef = createDocument();
+  const controller = createTiptapBlockActionMenuController({
+    dom: { document: documentRef },
+  });
+  const prevented = [];
+  const event = (key) => ({
+    key,
+    preventDefault() {
+      prevented.push(key);
+    },
+  });
+  controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
+  controller.open(createTarget());
+
+  controller.setSelection(controller.state.commands.findIndex((command) => command.id === "turn-into"));
+  assert.equal(controller.handleKeyDown(event("ArrowRight")), true);
+  assert.equal(controller.state.commands[controller.state.selectedIndex].id, "paragraph");
+  assert.equal(findCommandItem(documentRef.body.children[0], "paragraph").classList.values.has("active"), true);
+
+  assert.equal(controller.handleKeyDown(event("ArrowRight")), true);
+  assert.equal(controller.state.commands[controller.state.selectedIndex].id, "heading-1");
+
+  assert.equal(controller.handleKeyDown(event("ArrowLeft")), true);
+  assert.equal(controller.state.commands[controller.state.selectedIndex].id, "turn-into");
+
+  assert.equal(controller.handleKeyDown(event("End")), true);
+  assert.equal(controller.state.commands[controller.state.selectedIndex].id, "delete");
+
+  assert.equal(controller.handleKeyDown(event("ArrowLeft")), false);
+  assert.equal(controller.state.commands[controller.state.selectedIndex].id, "delete");
+  assert.equal(controller.handleKeyDown(event("Home")), true);
+  assert.equal(controller.state.commands[controller.state.selectedIndex].id, "copy-block");
+  assert.equal(controller.handleKeyDown(event("End")), true);
+  assert.equal(controller.state.commands[controller.state.selectedIndex].id, "delete");
+
+  controller.setSelection(controller.state.commands.findIndex((command) => command.id === "heading-1"));
+  assert.equal(controller.handleKeyDown(event("End")), true);
+  assert.equal(controller.state.commands[controller.state.selectedIndex].id, "callout");
+  assert.equal(controller.handleKeyDown(event("ArrowLeft")), true);
+  assert.equal(controller.state.commands[controller.state.selectedIndex].id, "turn-into");
+
+  assert.deepEqual(prevented, ["ArrowRight", "ArrowRight", "ArrowLeft", "End", "Home", "End", "End", "ArrowLeft"]);
+});
+
+test("Tiptap block action menu keyboard path reaches code language submenu items", () => {
+  const { editor } = createEditor();
+  const documentRef = createDocument();
+  const controller = createTiptapBlockActionMenuController({
+    dom: { document: documentRef },
+  });
+  const prevented = [];
+  const event = (key) => ({
+    key,
+    preventDefault() {
+      prevented.push(key);
+    },
+  });
+  controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
+  controller.open(createCodeBlockTarget());
+
+  controller.setSelection(controller.state.commands.findIndex((command) => command.id === "code-language"));
+
+  assert.equal(controller.handleKeyDown(event("ArrowRight")), true);
+  assert.equal(controller.state.commands[controller.state.selectedIndex].id, "code-language-auto");
+  assert.equal(
+    findCommandItem(documentRef.body.children[0], "code-language-auto").classList.values.has("active"),
+    true,
+  );
+
+  assert.equal(controller.handleKeyDown(event("End")), true);
+  assert.equal(controller.state.commands[controller.state.selectedIndex].id, "code-language-toml");
+  assert.equal(controller.handleKeyDown(event("ArrowLeft")), true);
+  assert.equal(controller.state.commands[controller.state.selectedIndex].id, "code-language");
+  assert.deepEqual(prevented, ["ArrowRight", "End", "ArrowLeft"]);
+});
+
 test("Tiptap block action menu closes on Escape", () => {
   const { editor } = createEditor();
   const view = createViewSpy();
@@ -601,7 +717,7 @@ test("Tiptap block action menu closes on outside pointer events", () => {
   controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
   controller.open(createTarget());
 
-  documentRef.emit("pointerdown", { target: { id: "outside" } });
+  documentRef.emit("pointerup", { target: { id: "outside" } });
 
   assert.equal(controller.state.open, false);
   assert.deepEqual(view.calls.at(-1), ["hide"]);
@@ -618,7 +734,7 @@ test("Tiptap block action menu stays open for the selected block bridge", () => 
   controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
   controller.open(createTarget());
 
-  documentRef.emit("pointerdown", { target: { id: "target-block-child" } });
+  documentRef.emit("pointerup", { target: { id: "target-block-child" } });
 
   assert.equal(controller.state.open, true);
   assert.notDeepEqual(view.calls.at(-1), ["hide"]);
@@ -637,7 +753,7 @@ test("Tiptap block action menu treats registered external targets as internal", 
   controller.setExternalContains((target) => target === safeTarget);
   controller.open(createTarget());
 
-  documentRef.emit("pointerdown", { target: safeTarget });
+  documentRef.emit("pointerup", { target: safeTarget });
 
   assert.equal(controller.state.open, true);
   assert.notDeepEqual(view.calls.at(-1), ["hide"]);

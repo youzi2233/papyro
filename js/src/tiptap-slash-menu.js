@@ -138,13 +138,20 @@ function blockInsertMenuAnchorRect(slashRect, target, fallbackRect = null) {
   return fallback;
 }
 
+const MAIN_MENU_WIDTH = 168;
+const MAIN_MENU_HEIGHT = 360;
+const SIDE_PANEL_GAP = 6;
+const TABLE_PICKER_WIDTH = 158;
+const CALLOUT_PICKER_WIDTH = 164;
+const SIDE_PANEL_INTENT_DELAY_MS = 80;
+
 function placeMenu(element, editor, range, anchorRect = null, placement = "bottom") {
   if (element && usableAnchorRect(anchorRect)) {
     positionFloatingElement(element, anchorRect, {
       viewport: viewportSize(editor?.view?.dom, defaultWindow(editor?.view?.dom?.ownerDocument)),
       size: {
-        width: 320,
-        height: 220,
+        width: MAIN_MENU_WIDTH,
+        height: MAIN_MENU_HEIGHT,
         margin: 10,
       },
       placement,
@@ -164,8 +171,8 @@ function placeMenu(element, editor, range, anchorRect = null, placement = "botto
   positionFloatingElement(element, fallbackRect, {
     viewport: viewportSize(view.dom, defaultWindow(view.dom?.ownerDocument)),
     size: {
-      width: 320,
-      height: 220,
+      width: MAIN_MENU_WIDTH,
+      height: MAIN_MENU_HEIGHT,
       margin: 10,
     },
     placement: "bottom",
@@ -241,6 +248,7 @@ class TiptapSlashMenuView {
   #tablePickerLabel = null;
   #calloutPicker = null;
   #language = "english";
+  #hoverTimer = null;
 
   constructor({ document = defaultDocument(), ownerId = "mn-tiptap-slash-menu" } = {}) {
     this.#document = document;
@@ -392,7 +400,7 @@ class TiptapSlashMenuView {
 
         item.append(icon, copy);
         item.addEventListener("pointerenter", () =>
-          state.activate(command.index, { scroll: false }),
+          this.#activateWithIntent(() => state.activate(command.index, { scroll: false })),
         );
         item.addEventListener("focus", () =>
           state.activate(command.index, { scroll: true }),
@@ -409,6 +417,7 @@ class TiptapSlashMenuView {
     syncActiveCommand(this.#root, this.#ownerId, state.commands, state.selectedIndex);
     setHidden(this.#root, false);
     placeMenu(this.#root, editor, state.range, state.anchorRect, state.placement);
+    this.#syncSidePanelPlacement(state, editor);
   }
 
   updateSelection(state, options = {}) {
@@ -418,7 +427,20 @@ class TiptapSlashMenuView {
     return true;
   }
 
+  #activateWithIntent(run) {
+    defaultWindow(this.#document)?.clearTimeout?.(this.#hoverTimer);
+    const windowRef = defaultWindow(this.#document);
+    this.#hoverTimer = windowRef?.setTimeout
+      ? windowRef.setTimeout(run, SIDE_PANEL_INTENT_DELAY_MS)
+      : null;
+    if (this.#hoverTimer == null) {
+      run();
+    }
+  }
+
   hide() {
+    defaultWindow(this.#document)?.clearTimeout?.(this.#hoverTimer);
+    this.#hoverTimer = null;
     setHidden(this.#root, true);
   }
 
@@ -427,6 +449,7 @@ class TiptapSlashMenuView {
   }
 
   destroy() {
+    defaultWindow(this.#document)?.clearTimeout?.(this.#hoverTimer);
     this.#root?.remove?.();
     this.#root = null;
     this.#header = null;
@@ -444,6 +467,9 @@ class TiptapSlashMenuView {
     const selectedCommand = state.commands[state.selectedIndex];
     const showPicker = selectedCommand?.id === "table";
     const showCalloutPicker = selectedCommand?.id === "callout";
+    if (this.#root) {
+      this.#root.dataset.sidePanel = showPicker ? "table" : showCalloutPicker ? "callout" : "none";
+    }
     setHidden(this.#tablePicker, !showPicker);
     setHidden(this.#calloutPicker, !showCalloutPicker);
     if (showPicker) {
@@ -457,6 +483,33 @@ class TiptapSlashMenuView {
         ? (kind) => state.choose("callout", { calloutKind: kind })
         : null;
     }
+  }
+
+  #syncSidePanelPlacement(state, editor) {
+    if (!this.#root) return;
+    const selectedCommand = state.commands[state.selectedIndex];
+    const panelWidth =
+      selectedCommand?.id === "table"
+        ? TABLE_PICKER_WIDTH
+        : selectedCommand?.id === "callout"
+          ? CALLOUT_PICKER_WIDTH
+          : 0;
+    if (!panelWidth) {
+      this.#root.dataset.sidePlacement = "right";
+      return;
+    }
+
+    const rect = this.#root.getBoundingClientRect?.();
+    const viewport = viewportSize(
+      editor?.view?.dom,
+      defaultWindow(editor?.view?.dom?.ownerDocument),
+    );
+    const neededWidth = panelWidth + SIDE_PANEL_GAP + 10;
+    const shouldFlip =
+      rect &&
+      rect.right + neededWidth > viewport.width &&
+      rect.left - neededWidth > 10;
+    this.#root.dataset.sidePlacement = shouldFlip ? "left" : "right";
   }
 
   #updateCalloutOptionLabels() {
@@ -533,6 +586,7 @@ export class TiptapSlashMenuController {
       shouldDismiss: (event) => this.#shouldDismiss(event),
       shouldDismissOnScroll: (event) => this.#shouldDismissOnScroll(event),
       onDismiss: () => this.close(),
+      pointerDismissEvent: "pointerup",
     });
   }
 

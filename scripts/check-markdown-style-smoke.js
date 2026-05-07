@@ -2,8 +2,12 @@
 import { readFileSync } from "node:fs";
 
 const DEFAULT_CSS_GROUPS = [
-  ["assets/main.css", "assets/styles/markdown.css"],
-  ["apps/desktop/assets/main.css", "apps/desktop/assets/styles/markdown.css"],
+  ["assets/main.css", "assets/styles/markdown.css", "assets/styles/tiptap-chrome.css"],
+  [
+    "apps/desktop/assets/main.css",
+    "apps/desktop/assets/styles/markdown.css",
+    "apps/desktop/assets/styles/tiptap-chrome.css",
+  ],
 ];
 
 const REQUIRED_MARKDOWN_TOKENS = [
@@ -39,6 +43,14 @@ const REQUIRED_MARKDOWN_TOKENS = [
   "--mn-markdown-table-head-pad",
   "--mn-markdown-inline-math-font",
   "--mn-markdown-inline-math-pad",
+  "--mn-code-token-comment",
+  "--mn-code-token-keyword",
+  "--mn-code-token-string",
+  "--mn-code-token-number",
+  "--mn-code-token-title",
+  "--mn-code-token-attribute",
+  "--mn-code-token-type",
+  "--mn-code-token-operator",
   "--mn-code-surface",
   "--mn-code-block-surface",
   "--mn-code-ink",
@@ -74,13 +86,13 @@ const TIPTAP_REQUIREMENTS = [
 
 const TIPTAP_COMMAND_PANEL_REQUIREMENTS = [
   ["Tiptap slash command panel", ".mn-tiptap-slash-menu", "user-select: none"],
-  ["Tiptap slash command active rhythm", ".mn-tiptap-slash-menu-item.active", "box-shadow: inset 2px 0 0"],
+  ["Tiptap slash command active rhythm", ".mn-tiptap-slash-menu-item.active", "border-color: color-mix"],
   ["Tiptap slash command list scrolling", ".mn-tiptap-slash-menu-list", "scrollbar-gutter: stable"],
   ["Tiptap block action panel", ".mn-tiptap-block-action-menu", "user-select: none"],
-  ["Tiptap block action active rhythm", ".mn-tiptap-block-action-menu-item.active", "box-shadow: inset 2px 0 0"],
+  ["Tiptap block action active rhythm", ".mn-tiptap-block-action-menu-item.active", "border-color: color-mix"],
   ["Tiptap block action list scrolling", ".mn-tiptap-block-action-menu-list", "scrollbar-gutter: stable"],
   ["Tiptap table command panel", ".mn-tiptap-table-toolbar[data-mode=\"context\"]", "scrollbar-gutter: stable"],
-  ["Tiptap table command rows", ".mn-tiptap-table-toolbar-button-label", "box-shadow: inset 2px 0 0"],
+  ["Tiptap table command rows", ".mn-tiptap-table-toolbar-button-label", "border-color: color-mix"],
   ["Tiptap table command icons", ".mn-tiptap-table-toolbar-button[data-icon=\"row-below\"]", "mn-tiptap-table-toolbar-button-visual::after"],
   ["Tiptap table merge icon", ".mn-tiptap-table-toolbar-button[data-icon=\"merge\"]", ".mn-tiptap-table-toolbar-button[data-icon=\"split\"]"],
 ];

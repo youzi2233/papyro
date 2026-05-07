@@ -63,6 +63,11 @@ function requestSave(entry, tabId, event) {
   return true;
 }
 
+function syncRuntimeLanguage(entry) {
+  if (!entry?.dom) return;
+  entry.dom.dataset.language = entry.preferences?.language ?? "english";
+}
+
 function placeCursorAtDrop(editor, view, event) {
   const position = view?.posAtCoords?.({
     left: event?.clientX ?? 0,
@@ -393,6 +398,7 @@ export function createTiptapEditorRuntime({
       },
     });
     const tableToolbar = createTableToolbarController({
+      insertMenu: slashMenu,
       dom: {
         document: documentRef,
       },
@@ -489,6 +495,7 @@ export function createTiptapEditorRuntime({
     modeController.apply(entry, modeController.mode);
     blockHintsController.attach(entry);
     preferencesController.attach(entry);
+    syncRuntimeLanguage(entry);
     sourcePane.attach({ editor, root, entry });
     modeSnapshots.capture(entry, entry.viewMode);
     blockHandle.attach({ editor, root, entry });
@@ -561,6 +568,7 @@ export function createTiptapEditorRuntime({
         });
       } else if (message.type === "set_preferences") {
         entry.preferencesController.apply(entry, message);
+        syncRuntimeLanguage(entry);
       } else if (message.type === "set_block_hints") {
         entry.blockHintsController.apply(entry, message.hints);
       } else if (message.type === "run_slash_command") {

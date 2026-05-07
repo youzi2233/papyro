@@ -192,6 +192,7 @@ test("Tiptap block actions expose stable command ids", () => {
       "code-language-typescript",
       "code-language-rust",
       "code-language-python",
+      "code-language-go",
       "code-language-json",
       "code-language-bash",
       "code-language-markdown",
@@ -199,6 +200,7 @@ test("Tiptap block actions expose stable command ids", () => {
       "code-language-css",
       "code-language-sql",
       "code-language-yaml",
+      "code-language-toml",
       "code-block",
       "divider",
       "table",
@@ -305,6 +307,7 @@ test("Tiptap block actions expose menu metadata in priority order", () => {
       "copy-block",
       "duplicate-block",
       "reset-formatting",
+      "turn-into",
       "text-color-ink",
       "text-color-muted",
       "text-color-accent",
@@ -314,6 +317,21 @@ test("Tiptap block actions expose menu metadata in priority order", () => {
       "highlight-blue",
       "highlight-green",
       "delete",
+    ],
+  );
+  const turnInto = commands.find((command) => command.id === "turn-into");
+  assert.deepEqual(
+    turnInto.children.map((command) => command.id),
+    [
+      "paragraph",
+      "heading-1",
+      "heading-2",
+      "heading-3",
+      "bullet-list",
+      "ordered-list",
+      "task-list",
+      "blockquote",
+      "callout",
     ],
   );
   assert.deepEqual(commands.find((command) => command.id === "copy-block"), {
@@ -381,6 +399,7 @@ test("Tiptap block action menu keeps content insertion in the slash menu", () =>
   assert.equal(commandIds.includes("math-block"), false);
   assert.equal(commandIds.includes("mermaid"), false);
   assert.equal(commandIds.includes("image"), false);
+  assert.equal(commandIds.includes("turn-into"), true);
 });
 
 test("Tiptap block actions localize menu labels from editor preferences", () => {
@@ -498,17 +517,16 @@ test("Tiptap block actions show code language actions only for code blocks", () 
       .some((command) => command.id === "code-language-rust"),
     false,
   );
+  const languageMenu = controller
+    .list({
+      target: {
+        kind: "code_block",
+        node: { type: { name: "codeBlock" }, nodeSize: 6 },
+      },
+    })
+    .find((command) => command.id === "code-language");
   assert.deepEqual(
-    controller
-      .list({
-        target: {
-          kind: "code_block",
-          node: { type: { name: "codeBlock" }, nodeSize: 6 },
-        },
-      })
-      .filter((command) => command.group === "Code language")
-      .map((command) => command.id)
-      .slice(0, 5),
+    languageMenu.children.map((command) => command.id).slice(0, 5),
     [
       "code-language-auto",
       "code-language-plaintext",

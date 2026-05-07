@@ -1,770 +1,76 @@
+﻿import { localizeTableCommand } from "./tiptap-i18n.js";
 import {
-  addColumnRightLabel,
-  addRowBelowLabel,
-  localizeTableCommand,
-  selectTableColumnLabel,
-  selectTableLabel,
-  selectTableRowLabel,
-  tableContextEyebrowLabel,
-  tableContextSubtitleLabel,
-  tableContextTitleLabel,
-  tableCellActionsLabel,
-  tableSelectionActionsLabel,
-  tableToolsLabel,
-} from "./tiptap-i18n.js";
+  activeCellFromEditor,
+  activeTableContext,
+  cellPosition,
+  closestComplexBlockElement,
+  closestTableCellElement,
+  closestTableElement,
+  complexBlockTarget,
+  complexBlockHoverContext,
+  hoverIsNearComplexBlockBottom,
+  insertParagraphAfterComplexBlock,
+  normalizedRect,
+  pointerAnchorRect,
+  sameTableHover,
+  tableHoverContext,
+  tableHoverWithIntent,
+  tableSelectionState,
+} from "./tiptap-table-geometry.js";
 import {
-  bindPointerActivation,
-  commandElementId,
-  createElement,
+  TABLE_COMMANDS,
+  canRunTableEditorCommand,
+  enabledTableCommandIds,
+  firstEnabledTableCommandId,
+  nextEnabledTableCommandId,
+  normalizeTableCellAttributeValue,
+  runTableEditorCommand,
+  tableCellAttributeValue,
+  tableCommandLayoutGroup,
+  tableCommandVariant,
+  visibleTableCommands,
+} from "./tiptap-table-commands.js";
+import {
   createFloatingDismissController,
   defaultDocument,
   defaultWindow,
-  menuCommandItems,
-  mountFloatingRoot,
-  positionFloatingElement,
-  setHidden,
-  syncMenuActiveDescendant,
-  viewportSize,
 } from "./tiptap-ui-primitives.js";
+import {
+  TABLE_COLUMN_HANDLE_HEIGHT,
+  TABLE_ROW_HANDLE_WIDTH,
+  TiptapTableToolbarView,
+} from "./tiptap-table-toolbar-view.js";
 
-export const TABLE_COMMANDS = Object.freeze([
-  {
-    id: "add-column-before",
-    group: "Columns",
-    title: "Insert column left",
-    label: "Left",
-    command: "addColumnBefore",
-    icon: "column-left",
-  },
-  {
-    id: "add-column-after",
-    group: "Columns",
-    title: "Insert column right",
-    label: "Right",
-    command: "addColumnAfter",
-    icon: "column-right",
-  },
-  {
-    id: "delete-column",
-    group: "Columns",
-    title: "Delete current column",
-    label: "Delete",
-    command: "deleteColumn",
-    icon: "delete-column",
-    tone: "danger",
-  },
-  {
-    id: "add-row-before",
-    group: "Rows",
-    title: "Insert row above",
-    label: "Above",
-    command: "addRowBefore",
-    icon: "row-above",
-  },
-  {
-    id: "add-row-after",
-    group: "Rows",
-    title: "Insert row below",
-    label: "Below",
-    command: "addRowAfter",
-    icon: "row-below",
-  },
-  {
-    id: "delete-row",
-    group: "Rows",
-    title: "Delete current row",
-    label: "Delete",
-    command: "deleteRow",
-    icon: "delete-row",
-    tone: "danger",
-  },
-  {
-    id: "merge-cells",
-    group: "Cells",
-    title: "Merge selected cells",
-    label: "Merge",
-    command: "mergeCells",
-    icon: "merge",
-  },
-  {
-    id: "split-cell",
-    group: "Cells",
-    title: "Split current cell",
-    label: "Split",
-    command: "splitCell",
-    icon: "split",
-  },
-  {
-    id: "merge-or-split",
-    group: "Cells",
-    title: "Merge or split cells",
-    label: "Auto",
-    command: "mergeOrSplit",
-    icon: "merge",
-  },
-  {
-    id: "toggle-header-row",
-    group: "Headers",
-    title: "Toggle header row",
-    label: "Row",
-    command: "toggleHeaderRow",
-    icon: "header-row",
-  },
-  {
-    id: "toggle-header-column",
-    group: "Headers",
-    title: "Toggle header column",
-    label: "Column",
-    command: "toggleHeaderColumn",
-    icon: "header-column",
-  },
-  {
-    id: "toggle-header-cell",
-    group: "Headers",
-    title: "Toggle header cell",
-    label: "Cell",
-    command: "toggleHeaderCell",
-    icon: "header-cell",
-  },
-  {
-    id: "align-left",
-    group: "Align",
-    title: "Align current cells left",
-    label: "Left",
-    command: "setCellAttribute",
-    args: ["align", null],
-    icon: "align-left",
-    variant: "icon",
-  },
-  {
-    id: "align-center",
-    group: "Align",
-    title: "Align current cells center",
-    label: "Center",
-    command: "setCellAttribute",
-    args: ["align", "center"],
-    icon: "align-center",
-    variant: "icon",
-  },
-  {
-    id: "align-right",
-    group: "Align",
-    title: "Align current cells right",
-    label: "Right",
-    command: "setCellAttribute",
-    args: ["align", "right"],
-    icon: "align-right",
-    variant: "icon",
-  },
-  {
-    id: "cell-bg-clear",
-    group: "Cell color",
-    title: "Clear cell background",
-    label: "Clear",
-    command: "setCellAttribute",
-    args: ["backgroundColor", null],
-    icon: "color-clear",
-    variant: "swatch",
-  },
-  {
-    id: "cell-bg-yellow",
-    group: "Cell color",
-    title: "Use a soft yellow cell background",
-    label: "Yellow",
-    command: "setCellAttribute",
-    args: ["backgroundColor", "rgba(245, 158, 11, 0.16)"],
-    icon: "color-yellow",
-    variant: "swatch",
-  },
-  {
-    id: "cell-bg-blue",
-    group: "Cell color",
-    title: "Use a soft blue cell background",
-    label: "Blue",
-    command: "setCellAttribute",
-    args: ["backgroundColor", "rgba(59, 130, 246, 0.14)"],
-    icon: "color-blue",
-    variant: "swatch",
-  },
-  {
-    id: "cell-bg-green",
-    group: "Cell color",
-    title: "Use a soft green cell background",
-    label: "Green",
-    command: "setCellAttribute",
-    args: ["backgroundColor", "rgba(16, 185, 129, 0.14)"],
-    icon: "color-green",
-    variant: "swatch",
-  },
-  {
-    id: "previous-cell",
-    group: "Navigate",
-    title: "Move to previous cell",
-    label: "Prev",
-    command: "goToPreviousCell",
-    icon: "previous",
-  },
-  {
-    id: "next-cell",
-    group: "Navigate",
-    title: "Move to next cell",
-    label: "Next",
-    command: "goToNextCell",
-    icon: "next",
-  },
-  {
-    id: "fix-table",
-    group: "Table",
-    title: "Repair table structure",
-    label: "Repair",
-    command: "fixTables",
-    icon: "repair",
-  },
-  {
-    id: "delete-table",
-    group: "Table",
-    title: "Delete table",
-    label: "Delete",
-    command: "deleteTable",
-    icon: "delete-table",
-    tone: "danger",
-  },
-]);
-
-const TABLE_AXIS_HANDLE_SIZE = 22;
-const TABLE_ADD_ROW_WIDTH = 42;
-const TABLE_ADD_ROW_HEIGHT = 22;
-const TABLE_ADD_COLUMN_WIDTH = 22;
-const TABLE_ADD_COLUMN_HEIGHT = 42;
-const TABLE_CONTEXT_MENU_WIDTH = 276;
-const TABLE_KEYBOARD_MENU_WIDTH = 520;
-const TABLE_TOOLBAR_OWNER_ID = "mn-tiptap-table-toolbar";
-const TABLE_MENU_COMMAND_SCOPE = Object.freeze({
-  cell: new Set([
-    "split-cell",
-    "align-left",
-    "align-center",
-    "align-right",
-    "cell-bg-clear",
-    "cell-bg-yellow",
-    "cell-bg-blue",
-    "cell-bg-green",
-  ]),
-  cells: new Set([
-    "merge-cells",
-    "align-left",
-    "align-center",
-    "align-right",
-    "cell-bg-clear",
-    "cell-bg-yellow",
-    "cell-bg-blue",
-    "cell-bg-green",
-  ]),
-  row: new Set([
-    "add-row-before",
-    "add-row-after",
-    "delete-row",
-    "toggle-header-row",
-  ]),
-  column: new Set([
-    "add-column-before",
-    "add-column-after",
-    "delete-column",
-    "toggle-header-column",
-  ]),
-  table: new Set([
-    "toggle-header-row",
-    "toggle-header-column",
-    "fix-table",
-    "delete-table",
-  ]),
-});
-const TABLE_COMMAND_CONTEXT_ORDER = Object.freeze({
-  row: [
-    "add-row-after",
-    "add-row-before",
-    "toggle-header-row",
-    "delete-row",
-  ],
-  column: [
-    "add-column-after",
-    "add-column-before",
-    "toggle-header-column",
-    "delete-column",
-  ],
-  table: [
-    "toggle-header-row",
-    "toggle-header-column",
-    "fix-table",
-    "delete-table",
-  ],
-});
-const CONTEXTUAL_TABLE_COMMAND_IDS = TABLE_MENU_COMMAND_SCOPE.cell;
-const SELECTION_TABLE_COMMAND_IDS = new Set([
-  "merge-cells",
-  "split-cell",
-  "align-left",
-  "align-center",
-  "align-right",
-  "cell-bg-clear",
-  "cell-bg-yellow",
-  "cell-bg-blue",
-  "cell-bg-green",
-]);
-const KEYBOARD_TABLE_COMMAND_IDS = new Set([
-  "add-column-before",
-  "add-column-after",
-  "delete-column",
-  "add-row-before",
-  "add-row-after",
-  "delete-row",
-  "merge-cells",
-  "split-cell",
-  "toggle-header-row",
-  "toggle-header-column",
-  "toggle-header-cell",
-  "align-left",
-  "align-center",
-  "align-right",
-  "cell-bg-clear",
-  "cell-bg-yellow",
-  "cell-bg-blue",
-  "cell-bg-green",
-  "fix-table",
-  "delete-table",
-]);
+function emptyTableToolbarState(language = "english") {
+  return {
+    open: false,
+    menuOpen: false,
+    mode: "context",
+    table: null,
+    rect: null,
+    cell: null,
+    cellRect: null,
+    selectionRect: null,
+    menuAnchorRect: null,
+    grid: [],
+    selection: tableSelectionState(null, []),
+    commands: [],
+    activeCommandId: null,
+    keyboardActive: false,
+    hover: null,
+    complexBlock: null,
+    complexRect: null,
+    language,
+  };
+}
 
 function isTableToolbarActivation(event) {
   const key = String(event?.key ?? "").toLowerCase();
   return key === "f10" && event?.shiftKey && !event?.altKey && !event?.ctrlKey && !event?.metaKey;
 }
 
-function closestTableElement(target, editorDom) {
-  if (!target?.closest || !editorDom?.contains) return null;
-  const table = target.closest(".mn-tiptap-table, table");
-  return table && editorDom.contains(table) ? table : null;
-}
-
-function closestTableCellElement(target) {
-  const tagName = String(target?.tagName ?? "").toLowerCase();
-  if (tagName === "td" || tagName === "th") return target;
-  return target?.closest?.("th,td") ?? null;
-}
-
-function tableRows(table) {
-  return Array.from(table?.querySelectorAll?.("tr") ?? []);
-}
-
-function tableCells(row) {
-  return Array.from(row?.querySelectorAll?.("th,td") ?? []);
-}
-
-function normalizedRect(rect) {
-  if (!rect) return null;
-  const left = Number(rect.left);
-  const top = Number(rect.top);
-  const right = Number(rect.right ?? left + Number(rect.width ?? 0));
-  const bottom = Number(rect.bottom ?? top + Number(rect.height ?? 0));
-  if (![left, top, right, bottom].every(Number.isFinite)) return null;
-  return {
-    left,
-    top,
-    right,
-    bottom,
-    width: Math.max(0, right - left),
-    height: Math.max(0, bottom - top),
-  };
-}
-
-function unionRects(rects) {
-  const normalized = (rects ?? []).map(normalizedRect).filter(Boolean);
-  if (normalized.length === 0) return null;
-
-  const left = Math.min(...normalized.map((rect) => rect.left));
-  const top = Math.min(...normalized.map((rect) => rect.top));
-  const right = Math.max(...normalized.map((rect) => rect.right));
-  const bottom = Math.max(...normalized.map((rect) => rect.bottom));
-  return normalizedRect({ left, top, right, bottom });
-}
-
-function tableSelectionGrid(table, view) {
-  if (!table || typeof view?.posAtDOM !== "function") return [];
-
-  return tableRows(table)
-    .map((row, rowIndex) => ({
-      row,
-      rowIndex,
-      cells: tableCells(row)
-        .map((cell, columnIndex) => {
-          try {
-            const pos = view.posAtDOM(cell, 0);
-            return Number.isFinite(pos)
-              ? {
-                  cell,
-                  columnIndex,
-                  pos,
-                  rect: cell.getBoundingClientRect?.(),
-                }
-              : null;
-          } catch (_error) {
-            return null;
-          }
-        })
-        .filter(Boolean),
-      rect: row.getBoundingClientRect?.(),
-    }))
-    .filter((row) => row.cells.length > 0);
-}
-
-function firstRowCells(grid) {
-  return (grid ?? []).find((row) => row.cells.length > 0)?.cells ?? [];
-}
-
-function selectionCellPositions(selection) {
-  const positions = [];
-  if (typeof selection?.forEachCell === "function") {
-    try {
-      selection.forEachCell((_node, pos) => {
-        if (Number.isFinite(pos) && !positions.includes(pos)) {
-          positions.push(pos);
-        }
-      });
-    } catch (_error) {
-      // Some lightweight test doubles expose only anchor/head positions.
-    }
-  }
-
-  [selection?.$anchorCell?.pos, selection?.$headCell?.pos].forEach((pos) => {
-    if (Number.isFinite(pos) && !positions.includes(pos)) {
-      positions.push(pos);
-    }
-  });
-  return positions;
-}
-
-function cellByPosition(grid, pos) {
-  if (!Number.isFinite(pos)) return null;
-  return (grid ?? [])
-    .flatMap((row) => row.cells)
-    .find((cell) => cell.pos === pos) ?? null;
-}
-
-function cellPosition(grid, element) {
-  if (!element) return null;
-  const cell = (grid ?? [])
-    .flatMap((row) => row.cells)
-    .find((item) => item.cell === element);
-  return Number.isFinite(cell?.pos) ? cell.pos : null;
-}
-
-function tableSelectionState(selection, grid) {
-  const positions = new Set(selectionCellPositions(selection));
-  const rows = [];
-  const columns = [];
-  const totalCellCount = (grid ?? []).reduce((count, row) => count + row.cells.length, 0);
-
-  (grid ?? []).forEach((row, rowIndex) => {
-    if (row.cells.length > 0 && row.cells.every((cell) => positions.has(cell.pos))) {
-      rows.push(rowIndex);
-    }
-  });
-
-  firstRowCells(grid).forEach((_cell, columnIndex) => {
-    const columnCells = (grid ?? [])
-      .map((row) => row.cells.find((item) => item.columnIndex === columnIndex))
-      .filter(Boolean);
-    if (columnCells.length > 0 && columnCells.every((cell) => positions.has(cell.pos))) {
-      columns.push(columnIndex);
-    }
-  });
-
-  const selectedCount = positions.size;
-  const tableSelected = totalCellCount > 0 && selectedCount === totalCellCount;
-  const kind = tableSelected
-    ? "table"
-    : rows.length > 0
-      ? "row"
-      : columns.length > 0
-        ? "column"
-        : selectedCount > 1
-          ? "cells"
-          : "cell";
-
-  return {
-    kind,
-    positions,
-    rows,
-    columns,
-    table: tableSelected,
-  };
-}
-
-function tableSelectionRect(grid, selection, tableRect) {
-  if (selection?.table) return normalizedRect(tableRect);
-
-  if (selection?.rows?.length > 0) {
-    return unionRects(
-      selection.rows
-        .map((rowIndex) => grid?.[rowIndex]?.rect)
-        .filter(Boolean),
-    );
-  }
-
-  if (selection?.columns?.length > 0) {
-    return unionRects(
-      selection.columns.flatMap((columnIndex) =>
-        (grid ?? [])
-          .map((row) => row.cells.find((cell) => cell.columnIndex === columnIndex)?.rect)
-          .filter(Boolean),
-      ),
-    );
-  }
-
-  const positions = selection?.positions ?? new Set();
-  if (positions.size > 0) {
-    return unionRects(
-      (grid ?? [])
-        .flatMap((row) => row.cells)
-        .filter((cell) => positions.has(cell.pos))
-        .map((cell) => cell.rect),
-    );
-  }
-
-  return null;
-}
-
-function lastTableRowRect(grid, fallbackRect = null) {
-  const lastRow = [...(grid ?? [])].reverse().find((row) => row?.rect);
-  return normalizedRect(lastRow?.rect) ?? normalizedRect(fallbackRect);
-}
-
-function lastTableColumnRect(grid, fallbackRect = null) {
-  const firstRow = firstRowCells(grid);
-  const lastColumnIndex = firstRow.at(-1)?.columnIndex;
-  if (!Number.isInteger(lastColumnIndex)) return normalizedRect(fallbackRect);
-  return unionRects(
-    (grid ?? [])
-      .map((row) => row.cells.find((cell) => cell.columnIndex === lastColumnIndex)?.rect)
-      .filter(Boolean),
-  ) ?? normalizedRect(fallbackRect);
-}
-
-function tableMenuAnchorRect(state) {
-  if (state?.menuAnchorRect) return state.menuAnchorRect;
-  if (state?.mode === "keyboard") return state?.rect ?? null;
-
-  const selectionKind = state?.selection?.kind ?? "cell";
-  if (selectionKind === "cell" || selectionKind === "cells") {
-    return state?.cellRect ?? state?.selectionRect ?? state?.rect ?? null;
-  }
-
-  return state?.selectionRect ?? state?.cellRect ?? state?.rect ?? null;
-}
-
-function pointerAnchorRect(event, fallbackRect = null) {
-  const x = Number(event?.clientX);
-  const y = Number(event?.clientY);
-  if (Number.isFinite(x) && Number.isFinite(y)) {
-    return normalizedRect({ left: x, top: y, right: x, bottom: y });
-  }
-  return normalizedRect(fallbackRect);
-}
-
-function activeCellFromEditor(editor, grid = []) {
-  const selection = editor?.state?.selection;
-  const selectedHeadCell = cellByPosition(grid, selection?.$headCell?.pos);
-  if (selectedHeadCell?.cell) return selectedHeadCell.cell;
-
-  const view = editor?.view;
-  const domAtPos = typeof view?.domAtPos === "function" && Number.isFinite(selection?.from)
-    ? view.domAtPos(selection.from)
-    : null;
-  const node = domAtPos?.node?.nodeType === 1 ? domAtPos.node : domAtPos?.node?.parentElement;
-  return node?.tagName === "TH" || node?.tagName === "TD"
-    ? node
-    : node?.closest?.("th,td") ?? null;
-}
-
-function activeTableContext(editor) {
-  const selection = editor?.state?.selection;
-  const view = editor?.view;
-  const domAtPos = typeof view?.domAtPos === "function" && Number.isFinite(selection?.from)
-    ? view.domAtPos(selection.from)
-    : null;
-  const node = domAtPos?.node?.nodeType === 1 ? domAtPos.node : domAtPos?.node?.parentElement;
-  const table = closestTableElement(node, view?.dom);
-  if (!table) return null;
-  const grid = tableSelectionGrid(table, view);
-  const rect = normalizedRect(table.getBoundingClientRect?.());
-  const tableSelection = tableSelectionState(selection, grid);
-
-  return {
-    table,
-    rect,
-    grid,
-    selection: tableSelection,
-    selectionRect: tableSelectionRect(grid, tableSelection, rect),
-    cell: activeCellFromEditor(editor, grid),
-  };
-}
-
-function runEditorCommand(editor, commandName, args = []) {
-  const command = editor?.commands?.[commandName];
-  if (typeof command !== "function") return false;
-  const ok = command(...args) !== false;
-  if (ok) editor?.commands?.focus?.();
-  return ok;
-}
-
-function canRunEditorCommand(editor, commandName, args = []) {
-  if (typeof editor?.commands?.[commandName] !== "function") return false;
-  const canCommands = typeof editor?.can === "function" ? editor.can() : null;
-  const canCommand = canCommands?.[commandName];
-  if (typeof canCommand !== "function") return true;
-
-  try {
-    return canCommand(...args) !== false;
-  } catch (_error) {
-    return false;
-  }
-}
-
-function cellValue(editor, name, grid = []) {
-  const cell = activeCellFromEditor(editor, grid);
-  if (!cell) return null;
-
-  if (name === "backgroundColor") {
-    return cell.getAttribute?.("data-cell-background") || cell.style?.backgroundColor || null;
-  }
-
-  if (name === "align") {
-    return cell.style?.textAlign || cell.getAttribute?.("align") || null;
-  }
-
-  return null;
-}
-
-function normalizeCellAttributeValue(name, value) {
-  if (name === "align") {
-    const align = String(value ?? "").trim().toLowerCase();
-    return align === "left" ? null : align || null;
-  }
-  return value ?? null;
-}
-
-function enabledCommandIds(commands) {
-  return (commands ?? [])
-    .filter((command) => !command.disabled)
-    .map((command) => command.id);
-}
-
-function tableCommandVariant(command) {
-  if (command?.variant) return command.variant;
-  const groupKey = command?.groupKey ?? command?.group;
-  if (groupKey === "Align") return "icon";
-  if (groupKey === "Cell color") return "swatch";
-  return "text";
-}
-
-function tableCommandLayoutGroup(command) {
-  const variant = tableCommandVariant(command);
-  if (variant === "icon") return "align";
-  if (variant === "swatch") return "cell-color";
-  if (command?.tone === "danger") return "danger";
-  return "actions";
-}
-
-function visibleCommands(commands, mode = "context", selectionKind = "cell") {
-  const allowed = mode === "keyboard"
-    ? KEYBOARD_TABLE_COMMAND_IDS
-    : TABLE_MENU_COMMAND_SCOPE[selectionKind] ?? SELECTION_TABLE_COMMAND_IDS;
-  const visible = (commands ?? []).filter((command) => allowed.has(command.id));
-  const order = mode === "context" ? TABLE_COMMAND_CONTEXT_ORDER[selectionKind] : null;
-  if (!order) return visible;
-  return [...visible].sort((left, right) => {
-    const leftIndex = order.indexOf(left.id);
-    const rightIndex = order.indexOf(right.id);
-    return (leftIndex < 0 ? Number.MAX_SAFE_INTEGER : leftIndex) -
-      (rightIndex < 0 ? Number.MAX_SAFE_INTEGER : rightIndex);
-  });
-}
-
-function firstEnabledCommandId(commands, mode = "context", selectionKind = "cell") {
-  return enabledCommandIds(visibleCommands(commands, mode, selectionKind))[0] ?? null;
-}
-
 function entryLanguage(entry) {
   return entry?.preferences?.language ?? "english";
-}
-
-function nextEnabledCommandId(commands, currentId, direction) {
-  const ids = enabledCommandIds(commands);
-  if (ids.length === 0) return null;
-  const currentIndex = ids.indexOf(currentId);
-  const startIndex = currentIndex < 0 ? 0 : currentIndex;
-  return ids[(startIndex + direction + ids.length) % ids.length];
-}
-
-function commandButtonById(root, commandId) {
-  if (!root || !commandId) return null;
-  const selector = `[data-command-id="${commandId}"]`;
-  if (typeof root.querySelector === "function") {
-    try {
-      const found = root.querySelector(selector);
-      if (found) return found;
-    } catch (_error) {
-      // Fall through to the small tree walk used by tests and non-standard DOMs.
-    }
-  }
-
-  const children = Array.from(root.children ?? []);
-  for (const child of children) {
-    if (child?.dataset?.commandId === commandId) return child;
-    const found = commandButtonById(child, commandId);
-    if (found) return found;
-  }
-  return null;
-}
-
-function guardPointerEvent(event) {
-  event?.preventDefault?.();
-  event?.stopPropagation?.();
-}
-
-function bindPointerCommand(button, command, run) {
-  if (!button || typeof run !== "function") return;
-  const execute = () => {
-    if (command?.disabled) return false;
-    return run() !== false;
-  };
-
-  bindPointerActivation(button, execute);
-}
-
-function syncTableToolbarActiveCommand(
-  root,
-  ownerId,
-  commands,
-  activeCommandId,
-  { keyboardActive = true, scroll = true } = {},
-) {
-  if (!root) return false;
-
-  const selectedIndex = commands.findIndex(
-    (command) => command.id === activeCommandId && !command.disabled,
-  );
-  const hasSelection = selectedIndex >= 0;
-  const syncCommands = hasSelection ? commands : [];
-  syncMenuActiveDescendant(root, ownerId, syncCommands, selectedIndex, {
-    manageTabIndex: true,
-    scroll: hasSelection && scroll,
-  });
-  menuCommandItems(root).forEach((button) => {
-    const active = Number(button.dataset?.commandIndex) === selectedIndex;
-    button.dataset.keyboardActive = active ? "true" : "false";
-  });
-  root.dataset.keyboardActive = keyboardActive ? "true" : "false";
-  return hasSelection;
 }
 
 export function selectTableAxis(editor, grid, axis, index) {
@@ -794,541 +100,23 @@ export function selectTableAxis(editor, grid, axis, index) {
   if (ok) editor.commands?.focus?.();
   return ok;
 }
-
-class TiptapTableToolbarView {
-  #document;
-  #window;
-  #root = null;
-  #header = null;
-  #eyebrow = null;
-  #title = null;
-  #subtitle = null;
-  #list = null;
-  #addRowButton = null;
-  #addColumnButton = null;
-  #tableSelectButton = null;
-  #cellMenuButton = null;
-  #rowHandles = [];
-  #columnHandles = [];
-  #selectionBackdrop = null;
-  #lastTable = null;
-  #menuCommands = [];
-
-  constructor({ document = defaultDocument(), window = defaultWindow(document) } = {}) {
-    this.#document = document;
-    this.#window = window;
-  }
-
-  mount(container) {
-    if (this.#root || !this.#document) return;
-
-    const root = createElement(this.#document, "div", "mn-tiptap-table-toolbar hidden");
-    const header = createElement(this.#document, "div", "mn-tiptap-table-toolbar-header");
-    const eyebrow = createElement(this.#document, "div", "mn-tiptap-table-toolbar-eyebrow");
-    const title = createElement(this.#document, "div", "mn-tiptap-table-toolbar-title");
-    const subtitle = createElement(this.#document, "div", "mn-tiptap-table-toolbar-subtitle");
-    const list = createElement(this.#document, "div", "mn-tiptap-table-toolbar-list");
-    const addRowButton = createElement(
-      this.#document,
-      "button",
-      "mn-tiptap-table-quick-add mn-tiptap-table-add-row hidden",
-    );
-    const addColumnButton = createElement(
-      this.#document,
-      "button",
-      "mn-tiptap-table-quick-add mn-tiptap-table-add-column hidden",
-    );
-    const tableSelectButton = createElement(
-      this.#document,
-      "button",
-      "mn-tiptap-table-axis-handle table hidden",
-    );
-    const cellMenuButton = createElement(
-      this.#document,
-      "button",
-      "mn-tiptap-table-cell-menu-trigger hidden",
-    );
-    const selectionBackdrop = createElement(
-      this.#document,
-      "div",
-      "mn-tiptap-table-selection-backdrop hidden",
-    );
-    if (
-      !root ||
-      !header ||
-      !eyebrow ||
-      !title ||
-      !subtitle ||
-      !list ||
-      !addRowButton ||
-      !addColumnButton ||
-      !tableSelectButton ||
-      !cellMenuButton ||
-      !selectionBackdrop
-    ) return;
-
-    root.id = TABLE_TOOLBAR_OWNER_ID;
-    root.role = "toolbar";
-    header.append(eyebrow, title, subtitle);
-    addRowButton.type = "button";
-    addColumnButton.type = "button";
-    tableSelectButton.type = "button";
-    cellMenuButton.type = "button";
-    cellMenuButton.setAttribute("aria-hidden", "false");
-    cellMenuButton.setAttribute("aria-haspopup", "menu");
-    root.append(header, list);
-    mountFloatingRoot(root, container, this.#document);
-    mountFloatingRoot(addRowButton, container, this.#document);
-    mountFloatingRoot(addColumnButton, container, this.#document);
-    mountFloatingRoot(tableSelectButton, container, this.#document);
-    mountFloatingRoot(cellMenuButton, container, this.#document);
-    mountFloatingRoot(selectionBackdrop, container, this.#document);
-    this.#root = root;
-    this.#header = header;
-    this.#eyebrow = eyebrow;
-    this.#title = title;
-    this.#subtitle = subtitle;
-    this.#list = list;
-    this.#addRowButton = addRowButton;
-    this.#addColumnButton = addColumnButton;
-    this.#tableSelectButton = tableSelectButton;
-    this.#cellMenuButton = cellMenuButton;
-    this.#selectionBackdrop = selectionBackdrop;
-    setHidden(root, true);
-    setHidden(addRowButton, true);
-    setHidden(addColumnButton, true);
-    setHidden(tableSelectButton, true);
-    setHidden(cellMenuButton, true);
-    setHidden(selectionBackdrop, true);
-  }
-
-  update(state) {
-    if (!this.#root || !this.#list || !state.open) return;
-
-    this.#list.replaceChildren();
-    this.#root.setAttribute("aria-label", tableToolsLabel(state.language));
-    this.#root.dataset.mode = state.mode;
-    this.#root.dataset.open = state.menuOpen ? "true" : "false";
-    this.#root.dataset.selectionKind = state.selection?.kind ?? "cell";
-    this.#lastTable = state.table ?? null;
-    if (this.#header && this.#eyebrow && this.#title && this.#subtitle) {
-      this.#eyebrow.textContent = tableContextEyebrowLabel(state.language);
-      this.#title.textContent =
-        state.mode === "context"
-          ? tableContextTitleLabel(state.language, state.selection?.kind)
-          : tableToolsLabel(state.language);
-      this.#subtitle.textContent =
-        state.mode === "context"
-          ? tableContextSubtitleLabel(state.language, state.selection)
-          : "";
-    }
-    this.#addRowButton.title = addRowBelowLabel(state.language);
-    this.#addRowButton.setAttribute("aria-label", addRowBelowLabel(state.language));
-    this.#addColumnButton.title = addColumnRightLabel(state.language);
-    this.#addColumnButton.setAttribute("aria-label", addColumnRightLabel(state.language));
-    if (this.#cellMenuButton) {
-      const cellMenuLabel =
-        state.selection?.kind === "cells"
-          ? tableSelectionActionsLabel(state.language)
-          : tableCellActionsLabel(state.language);
-      this.#cellMenuButton.title = cellMenuLabel;
-      this.#cellMenuButton.setAttribute("aria-label", cellMenuLabel);
-      this.#cellMenuButton.dataset.open = state.menuOpen ? "true" : "false";
-      this.#cellMenuButton.dataset.selectionKind = state.selection?.kind ?? "cell";
-      this.#cellMenuButton.dataset.selectedCount = String(
-        state.selection?.positions?.size ?? 0,
-      );
-      this.#cellMenuButton.setAttribute("aria-expanded", state.menuOpen ? "true" : "false");
-      this.#cellMenuButton._mnRun = () =>
-        state.openCellMenu?.("context", {
-          anchorRect: this.#cellMenuButton?.getBoundingClientRect?.(),
-        }) !== false;
-      if (!this.#cellMenuButton._mnBound) {
-        bindPointerCommand(this.#cellMenuButton, null, () => this.#cellMenuButton?._mnRun?.());
-        this.#cellMenuButton._mnBound = true;
-      }
-    }
-    const menuCommands = state.menuOpen ? visibleCommands(state.commands, state.mode, state.selection?.kind) : [];
-    this.#menuCommands = menuCommands;
-    const commandGroups = [];
-    menuCommands.forEach((command, commandIndex) => {
-      const layoutGroup = command.layoutGroup ?? tableCommandLayoutGroup(command);
-      const groupKey = layoutGroup === "danger" ? "danger" : command.groupKey ?? command.group;
-      if (commandGroups.at(-1)?.dataset?.groupKey !== groupKey) {
-        const groupElement = createElement(this.#document, "div", "mn-tiptap-table-toolbar-group");
-        if (!groupElement) return;
-        groupElement.dataset.groupKey = groupKey;
-        groupElement.dataset.group = command.group;
-        groupElement.dataset.layoutGroup = layoutGroup;
-        const label =
-          layoutGroup === "danger"
-            ? null
-            : createElement(this.#document, "div", "mn-tiptap-table-toolbar-group-label");
-        if (label) {
-          label.textContent = command.group;
-          groupElement.appendChild(label);
-        }
-        commandGroups.push(groupElement);
-      }
-
-      const button = createElement(this.#document, "button", "mn-tiptap-table-toolbar-button");
-      if (!button) return;
-
-      button.type = "button";
-      button.id = commandElementId(TABLE_TOOLBAR_OWNER_ID, commandIndex);
-      button.role = state.mode === "context" ? "menuitem" : "button";
-      button.title = command.title;
-      button.setAttribute("aria-label", command.title);
-      button.textContent = state.mode === "context" ? command.title : command.label;
-      button.dataset.commandId = command.id;
-      button.dataset.commandIndex = String(commandIndex);
-      button.dataset.group = command.group;
-      button.dataset.icon = command.icon ?? command.id;
-      button.dataset.variant = command.variant ?? tableCommandVariant(command);
-      button.dataset.tone = command.tone ?? "default";
-      button.dataset.active = command.active ? "true" : "false";
-      button.dataset.keyboardActive = state.activeCommandId === command.id ? "true" : "false";
-      button.dataset.disabled = command.disabled ? "true" : "false";
-      button.tabIndex = state.activeCommandId === command.id ? 0 : -1;
-      button.disabled = !!command.disabled;
-      button.setAttribute("aria-disabled", command.disabled ? "true" : "false");
-      button.addEventListener("pointerenter", () =>
-        state.setActiveCommand?.(command.id, { keyboardActive: false }),
-      );
-      button.addEventListener("focus", () =>
-        state.setActiveCommand?.(command.id, { keyboardActive: true }),
-      );
-      bindPointerCommand(button, command, () => state.run(command.id));
-      const visual = createElement(
-        this.#document,
-        "span",
-        "mn-tiptap-table-toolbar-button-visual",
-      );
-      if (visual) {
-        visual.setAttribute("aria-hidden", "true");
-        visual.dataset.icon = command.icon ?? command.id;
-        if (command.variant === "icon" || command.variant === "swatch") {
-          button.replaceChildren(visual);
-        } else if (state.mode === "context") {
-          const label = createElement(
-            this.#document,
-            "span",
-            "mn-tiptap-table-toolbar-button-label",
-          );
-          if (label) {
-            label.textContent = command.title;
-            button.replaceChildren(visual, label);
-          }
-        }
-      }
-      commandGroups.at(-1)?.appendChild(button);
-    });
-    this.#list.append(...commandGroups);
-
-    setHidden(this.#root, !state.menuOpen || menuCommands.length === 0);
-    syncTableToolbarActiveCommand(
-      this.#root,
-      TABLE_TOOLBAR_OWNER_ID,
-      menuCommands,
-      state.activeCommandId,
-      {
-        keyboardActive: state.keyboardActive,
-        scroll: state.keyboardActive,
-      },
-    );
-    this.#root.onkeydown = (event) => state.handleKeyDown?.(event);
-    this.#applySelectionState(state);
-    this.#updateSelectionBackdrop(state);
-    this.#updateQuickAdd(state);
-    this.#updateTableHandle(state);
-    this.#updateCellMenuTrigger(state);
-    this.#updateAxisHandles(state);
-    const anchorRect = tableMenuAnchorRect(state);
-    positionFloatingElement(this.#root, anchorRect, {
-      viewport: viewportSize(state.table, this.#window),
-      size: {
-        width: state.mode === "keyboard" ? TABLE_KEYBOARD_MENU_WIDTH : TABLE_CONTEXT_MENU_WIDTH,
-        height: state.mode === "keyboard" ? 42 : 310,
-        margin: 10,
-      },
-      placement: state.mode === "keyboard" ? "top" : "bottom",
-    });
-  }
-
-  #updateQuickAdd(state) {
-    const rect = state.rect;
-    if (!rect || !this.#addRowButton || !this.#addColumnButton) return;
-
-    const addRow = state.commands.find((command) => command.id === "add-row-after");
-    const addColumn = state.commands.find((command) => command.id === "add-column-after");
-    const rowRect = lastTableRowRect(state.grid, rect);
-    const columnRect = lastTableColumnRect(state.grid, rect);
-    this.#addRowButton.style.left = `${rowRect.left + Math.max(0, rowRect.width) / 2 - TABLE_ADD_ROW_WIDTH / 2}px`;
-    this.#addRowButton.style.top = `${rowRect.bottom + 6}px`;
-    this.#addColumnButton.style.left = `${columnRect.right + 6}px`;
-    this.#addColumnButton.style.top = `${columnRect.top + Math.max(0, columnRect.height) / 2 - TABLE_ADD_COLUMN_HEIGHT / 2}px`;
-    this.#addRowButton.dataset.edge = "row";
-    this.#addRowButton.style.setProperty("--mn-table-quick-add-rail", `${Math.max(42, rowRect.width)}px`);
-    this.#addColumnButton.dataset.edge = "column";
-    this.#addColumnButton.style.setProperty("--mn-table-quick-add-rail", `${Math.max(42, columnRect.height)}px`);
-
-    this.#addRowButton._mnCommand = addRow;
-    this.#addColumnButton._mnCommand = addColumn;
-    this.#addRowButton._mnRun = () => state.run("add-row-after");
-    this.#addColumnButton._mnRun = () => state.run("add-column-after");
-    if (!this.#addRowButton._mnBound) {
-      bindPointerCommand(this.#addRowButton, null, () => {
-        if (this.#addRowButton?._mnCommand?.disabled) return false;
-        return this.#addRowButton?._mnRun?.() !== false;
-      });
-      this.#addRowButton._mnBound = true;
-    }
-    if (!this.#addColumnButton._mnBound) {
-      bindPointerCommand(this.#addColumnButton, null, () => {
-        if (this.#addColumnButton?._mnCommand?.disabled) return false;
-        return this.#addColumnButton?._mnRun?.() !== false;
-      });
-      this.#addColumnButton._mnBound = true;
-    }
-    this.#addRowButton.disabled = !!addRow?.disabled;
-    this.#addRowButton.dataset.disabled = addRow?.disabled ? "true" : "false";
-    this.#addRowButton.setAttribute("aria-disabled", addRow?.disabled ? "true" : "false");
-    this.#addColumnButton.disabled = !!addColumn?.disabled;
-    this.#addColumnButton.dataset.disabled = addColumn?.disabled ? "true" : "false";
-    this.#addColumnButton.setAttribute("aria-disabled", addColumn?.disabled ? "true" : "false");
-    setHidden(this.#addRowButton, !addRow);
-    setHidden(this.#addColumnButton, !addColumn);
-  }
-
-  #updateTableHandle(state) {
-    const rect = state.rect;
-    if (!rect || !this.#tableSelectButton) return;
-
-    this.#tableSelectButton.style.left = `${rect.left - TABLE_AXIS_HANDLE_SIZE - 6}px`;
-    this.#tableSelectButton.style.top = `${rect.top - TABLE_AXIS_HANDLE_SIZE - 6}px`;
-    this.#tableSelectButton.title = selectTableLabel(state.language);
-    this.#tableSelectButton.setAttribute("aria-label", selectTableLabel(state.language));
-    this.#tableSelectButton.dataset.active = state.selection?.table ? "true" : "false";
-    this.#tableSelectButton._mnRun = () => {
-      state.selectAxis("table", 0);
-      return state.toggleMenu("context", { open: true });
-    };
-    if (!this.#tableSelectButton._mnBound) {
-      bindPointerCommand(this.#tableSelectButton, null, () => this.#tableSelectButton?._mnRun?.());
-      this.#tableSelectButton._mnBound = true;
-    }
-    setHidden(this.#tableSelectButton, (state.grid ?? []).length === 0);
-  }
-
-  #updateCellMenuTrigger(state) {
-    const rect = tableMenuAnchorRect(state);
-    if (!this.#cellMenuButton) return;
-    if (!rect) {
-      setHidden(this.#cellMenuButton, true);
-      return;
-    }
-
-    const selectionKind = state.selection?.kind ?? "cell";
-    const triggerLeft = selectionKind === "cell" || selectionKind === "cells"
-      ? rect.left + Math.max(0, rect.width - 22) / 2
-      : rect.right - 11;
-    const triggerTop = selectionKind === "column"
-      ? rect.bottom - 11
-      : rect.top + Math.max(0, rect.height - 22) / 2;
-    this.#cellMenuButton.style.left = `${triggerLeft}px`;
-    this.#cellMenuButton.style.top = `${triggerTop}px`;
-    setHidden(this.#cellMenuButton, !rect);
-  }
-
-  #updateSelectionBackdrop(state) {
-    if (!this.#selectionBackdrop) return;
-    const rect = state.selectionRect;
-    const show =
-      rect &&
-      state.selection?.kind !== "cell" &&
-      state.selection?.positions?.size > 0;
-    if (!show) {
-      setHidden(this.#selectionBackdrop, true);
-      return;
-    }
-
-    this.#selectionBackdrop.style.left = `${rect.left}px`;
-    this.#selectionBackdrop.style.top = `${rect.top}px`;
-    this.#selectionBackdrop.style.width = `${Math.max(0, rect.width)}px`;
-    this.#selectionBackdrop.style.height = `${Math.max(0, rect.height)}px`;
-    setHidden(this.#selectionBackdrop, false);
-  }
-
-  #updateAxisHandles(state) {
-    this.#clearAxisHandles();
-    const tableRect = state.rect;
-    const grid = state.grid ?? [];
-    if (!tableRect || grid.length === 0) return;
-
-    grid.forEach((row, index) => {
-      const rect = row.rect;
-      if (!rect) return;
-      const button = createElement(this.#document, "button", "mn-tiptap-table-axis-handle row");
-      if (!button) return;
-      button.type = "button";
-      button.title = selectTableRowLabel(state.language, index);
-      button.setAttribute("aria-label", selectTableRowLabel(state.language, index));
-      button.dataset.active = state.selection?.rows?.includes?.(index) ? "true" : "false";
-      button.style.left = `${tableRect.left - TABLE_AXIS_HANDLE_SIZE - 6}px`;
-      button.style.top = `${rect.top + Math.max(0, rect.height - TABLE_AXIS_HANDLE_SIZE) / 2}px`;
-      bindPointerCommand(button, null, () => {
-        state.selectAxis("row", index);
-        return state.toggleMenu("context", { open: true });
-      });
-      mountFloatingRoot(button, state.table, this.#document);
-      this.#rowHandles.push(button);
-    });
-
-    firstRowCells(grid).forEach((cell, index) => {
-      const rect = cell.rect;
-      if (!rect) return;
-      const button = createElement(this.#document, "button", "mn-tiptap-table-axis-handle column");
-      if (!button) return;
-      button.type = "button";
-      button.title = selectTableColumnLabel(state.language, index);
-      button.setAttribute("aria-label", selectTableColumnLabel(state.language, index));
-      button.dataset.active = state.selection?.columns?.includes?.(index) ? "true" : "false";
-      button.style.left = `${rect.left + Math.max(0, rect.width - TABLE_AXIS_HANDLE_SIZE) / 2}px`;
-      button.style.top = `${tableRect.top - TABLE_AXIS_HANDLE_SIZE - 6}px`;
-      bindPointerCommand(button, null, () => {
-        state.selectAxis("column", index);
-        return state.toggleMenu("context", { open: true });
-      });
-      mountFloatingRoot(button, state.table, this.#document);
-      this.#columnHandles.push(button);
-    });
-  }
-
-  #clearAxisHandles() {
-    this.#rowHandles.forEach((button) => button.remove?.());
-    this.#columnHandles.forEach((button) => button.remove?.());
-    this.#rowHandles = [];
-    this.#columnHandles = [];
-  }
-
-  #applySelectionState(state) {
-    state.table
-      ?.querySelectorAll?.(".mn-tiptap-table-cell-selected")
-      ?.forEach?.((cell) => cell.classList?.remove?.("mn-tiptap-table-cell-selected"));
-
-    const selectedPositions = state.selection?.positions ?? new Set();
-    (state.grid ?? []).forEach((row) => {
-      row.cells.forEach((cell) => {
-        cell.cell?.classList?.toggle?.(
-          "mn-tiptap-table-cell-selected",
-          selectedPositions.has(cell.pos),
-        );
-      });
-    });
-  }
-
-  hide() {
-    setHidden(this.#root, true);
-    setHidden(this.#addRowButton, true);
-    setHidden(this.#addColumnButton, true);
-    setHidden(this.#tableSelectButton, true);
-    setHidden(this.#cellMenuButton, true);
-    setHidden(this.#selectionBackdrop, true);
-    this.#lastTable
-      ?.querySelectorAll?.(".mn-tiptap-table-cell-selected")
-      ?.forEach?.((cell) => cell.classList?.remove?.("mn-tiptap-table-cell-selected"));
-    this.#clearAxisHandles();
-    this.#lastTable = null;
-  }
-
-  contains(target) {
-    return (
-      this.#root?.contains?.(target) ||
-      this.#addRowButton?.contains?.(target) ||
-      this.#addColumnButton?.contains?.(target) ||
-      this.#tableSelectButton?.contains?.(target) ||
-      this.#cellMenuButton?.contains?.(target) ||
-      this.#selectionBackdrop?.contains?.(target) ||
-      this.#rowHandles.some((button) => button.contains?.(target)) ||
-      this.#columnHandles.some((button) => button.contains?.(target)) ||
-      false
-    );
-  }
-
-  setActiveCommand(commandId, keyboardActive = true) {
-    if (!this.#root) return false;
-
-    return syncTableToolbarActiveCommand(
-      this.#root,
-      TABLE_TOOLBAR_OWNER_ID,
-      this.#menuCommands,
-      commandId,
-      {
-        keyboardActive,
-        scroll: keyboardActive,
-      },
-    );
-  }
-
-  focusCommand(commandId) {
-    const button = commandButtonById(this.#root, commandId);
-    if (!button) return false;
-    button.focus?.();
-    return true;
-  }
-
-  destroy() {
-    this.#root?.remove?.();
-    this.#addRowButton?.remove?.();
-    this.#addColumnButton?.remove?.();
-    this.#tableSelectButton?.remove?.();
-    this.#cellMenuButton?.remove?.();
-    this.#selectionBackdrop?.remove?.();
-    this.#clearAxisHandles();
-    this.#root = null;
-    this.#header = null;
-    this.#eyebrow = null;
-    this.#title = null;
-    this.#subtitle = null;
-    this.#list = null;
-    this.#addRowButton = null;
-    this.#addColumnButton = null;
-    this.#tableSelectButton = null;
-    this.#cellMenuButton = null;
-    this.#selectionBackdrop = null;
-    this.#menuCommands = [];
-  }
-}
-
 export class TiptapTableToolbarController {
   #view;
   #dismiss;
   #document = null;
   #editor = null;
   #entry = null;
+  #insertMenu = null;
   #removeListeners = [];
   #state = {
-    open: false,
-    menuOpen: false,
-    mode: "context",
-    table: null,
-    rect: null,
-    cell: null,
-    cellRect: null,
-    selectionRect: null,
-    menuAnchorRect: null,
-    grid: [],
-    selection: tableSelectionState(null, []),
-    commands: [],
-    activeCommandId: null,
-    keyboardActive: false,
-    language: "english",
+    ...emptyTableToolbarState(),
   };
 
-  constructor({ view = null, dom = {} } = {}) {
+  constructor({ view = null, insertMenu = null, dom = {} } = {}) {
     const documentRef = dom.document ?? defaultDocument();
     const windowRef = dom.window ?? defaultWindow(documentRef);
     this.#document = documentRef;
+    this.#insertMenu = insertMenu ?? null;
     this.#view =
       view ??
       new TiptapTableToolbarView({
@@ -1343,6 +131,7 @@ export class TiptapTableToolbarController {
       shouldDismiss: (event) => this.#shouldDismiss(event),
       shouldDismissOnScroll: (event) => this.#shouldDismissOnScroll(event),
       onDismiss: () => this.close(),
+      pointerDismissEvent: "pointerup",
     });
   }
 
@@ -1371,6 +160,7 @@ export class TiptapTableToolbarController {
     return Boolean(
       this.#state.open &&
         (this.contains(activeElement) ||
+          this.#insertMenu?.contains?.(activeElement) ||
           this.#state.table?.contains?.(activeElement) ||
           activeElement == null ||
           activeElement === this.#document?.body),
@@ -1403,9 +193,18 @@ export class TiptapTableToolbarController {
     if (!target?.addEventListener) return;
 
     const onContextMenu = (event) => this.handleContextMenu(event);
+    const onPointerMove = (event) => this.handlePointerMove(event);
+    const onPointerLeave = (event) => this.handlePointerLeave(event);
+    const onDblClick = (event) => this.handleDoubleClick(event);
     target.addEventListener("contextmenu", onContextMenu, true);
+    target.addEventListener("pointermove", onPointerMove, true);
+    target.addEventListener("pointerleave", onPointerLeave, true);
+    target.addEventListener("dblclick", onDblClick, true);
     this.#removeListeners = [
       () => target.removeEventListener?.("contextmenu", onContextMenu, true),
+      () => target.removeEventListener?.("pointermove", onPointerMove, true),
+      () => target.removeEventListener?.("pointerleave", onPointerLeave, true),
+      () => target.removeEventListener?.("dblclick", onDblClick, true),
     ];
   }
 
@@ -1420,6 +219,7 @@ export class TiptapTableToolbarController {
       return this.state;
     }
 
+    const language = entryLanguage(this.#entry);
     const previousTable = this.#state.table;
     const previousKind = this.#state.selection.kind;
     const previousPositions = this.#state.selection.positions ?? new Set();
@@ -1429,7 +229,14 @@ export class TiptapTableToolbarController {
         ? this.#state.menuAnchorRect
         : null;
     if (!context?.rect) {
-      this.close();
+      if (this.#state.open) {
+        this.#state = emptyTableToolbarState(language);
+        this.#view.update?.({
+          ...this.#state,
+          insertParagraphAfterBlock: (block) => this.insertParagraphAfterBlock(block),
+        });
+        this.#dismiss.close();
+      }
       return this.state;
     }
     const selectionChanged =
@@ -1439,11 +246,11 @@ export class TiptapTableToolbarController {
         previousPositions.size !== (context.selection.positions?.size ?? 0) ||
         [...previousPositions].some((pos) => !context.selection.positions.has(pos)));
 
-    const language = entryLanguage(this.#entry);
     const commands = TABLE_COMMANDS.filter(
       (command) => typeof editor.commands?.[command.command] === "function",
     ).map((command) => {
-      const disabled = !canRunEditorCommand(editor, command.command, command.args);
+      const disabled = !canRunTableEditorCommand(editor, command.command, command.args);
+      const activeCell = activeCellFromEditor(editor, context.grid);
       return localizeTableCommand({
         ...command,
         disabled,
@@ -1452,20 +259,36 @@ export class TiptapTableToolbarController {
         active:
           command.command === "setCellAttribute" &&
           command.args?.length >= 2 &&
-          normalizeCellAttributeValue(command.args[0], cellValue(editor, command.args[0], context.grid)) ===
-            normalizeCellAttributeValue(command.args[0], command.args[1]),
+          normalizeTableCellAttributeValue(
+            command.args[0],
+            tableCellAttributeValue(activeCell, command.args[0]),
+          ) ===
+            normalizeTableCellAttributeValue(command.args[0], command.args[1]),
       }, language);
     });
-    const currentVisibleCommands = visibleCommands(
+    const currentVisibleCommands = visibleTableCommands(
       commands,
       this.#state.menuOpen ? this.#state.mode : "context",
       context.selection.kind,
     );
+    const currentHover = this.#state.hover;
+    let nextHover = null;
+    if (previousTable === context.table && currentHover) {
+      const refreshedHover = tableHoverContext(currentHover.cell, context.table, context.grid);
+      if (refreshedHover) {
+        nextHover = {
+          ...refreshedHover,
+          edge: currentHover.edge,
+          clientX: currentHover.clientX ?? null,
+          clientY: currentHover.clientY ?? null,
+        };
+      }
+    }
     const activeCommandId = currentVisibleCommands.some(
       (command) => command.id === this.#state.activeCommandId && !command.disabled,
     )
       ? this.#state.activeCommandId
-      : enabledCommandIds(currentVisibleCommands)[0] ?? null;
+      : enabledTableCommandIds(currentVisibleCommands)[0] ?? null;
 
     this.#state = {
       open: true,
@@ -1482,6 +305,9 @@ export class TiptapTableToolbarController {
       commands,
       activeCommandId,
       keyboardActive: this.#state.keyboardActive,
+      hover: nextHover,
+      complexBlock: context.table,
+      complexRect: context.rect,
       language,
     };
     if (selectionChanged) {
@@ -1489,11 +315,13 @@ export class TiptapTableToolbarController {
       this.#state.mode = "context";
       this.#state.keyboardActive = false;
       this.#state.menuAnchorRect = null;
+      this.#state.hover = null;
     }
     this.#view.update?.({
       ...this.#state,
       run: (commandId) => this.run(commandId),
       selectAxis: (axis, index) => this.selectAxis(axis, index),
+      insertParagraphAfterBlock: (block) => this.insertParagraphAfterBlock(block),
       toggleMenu: (mode, options) => this.toggleMenu(mode, options),
       openCellMenu: (mode, options) => this.openCellMenu(mode, options),
       setActiveCommand: (commandId, options) => this.setActiveCommand(commandId, options),
@@ -1505,7 +333,7 @@ export class TiptapTableToolbarController {
 
   setActiveCommand(commandId, { focus = false, keyboardActive = true } = {}) {
     if (!this.#state.open) return false;
-    const command = visibleCommands(this.#state.commands, this.#state.mode, this.#state.selection.kind).find(
+    const command = visibleTableCommands(this.#state.commands, this.#state.mode, this.#state.selection.kind).find(
       (item) => item.id === commandId && !item.disabled,
     );
     if (!command) return false;
@@ -1521,8 +349,8 @@ export class TiptapTableToolbarController {
   }
 
   #moveActiveCommand(direction, event) {
-    const nextId = nextEnabledCommandId(
-      visibleCommands(this.#state.commands, this.#state.mode, this.#state.selection.kind),
+    const nextId = nextEnabledTableCommandId(
+      visibleTableCommands(this.#state.commands, this.#state.mode, this.#state.selection.kind),
       this.#state.activeCommandId,
       direction,
     );
@@ -1551,12 +379,13 @@ export class TiptapTableToolbarController {
         ...this.#state,
         run: (commandId) => this.run(commandId),
         selectAxis: (axis, index) => this.selectAxis(axis, index),
+        insertParagraphAfterBlock: (block) => this.insertParagraphAfterBlock(block),
         toggleMenu: (mode, options) => this.toggleMenu(mode, options),
         openCellMenu: (mode, options) => this.openCellMenu(mode, options),
         setActiveCommand: (commandId, options) => this.setActiveCommand(commandId, options),
         handleKeyDown: (keyboardEvent) => this.handleKeyDown(keyboardEvent),
       });
-      const firstId = enabledCommandIds(visibleCommands(this.#state.commands, "keyboard", this.#state.selection.kind))[0] ?? null;
+      const firstId = enabledTableCommandIds(visibleTableCommands(this.#state.commands, "keyboard", this.#state.selection.kind))[0] ?? null;
       if (!firstId) return false;
       event?.preventDefault?.();
       event?.stopPropagation?.();
@@ -1575,6 +404,30 @@ export class TiptapTableToolbarController {
       return true;
     }
 
+    if (
+      key === "Enter" &&
+      event?.ctrlKey &&
+      !event?.altKey &&
+      !event?.shiftKey &&
+      !event?.metaKey
+    ) {
+      event?.preventDefault?.();
+      event?.stopPropagation?.();
+      return this.insertParagraphAfterTable();
+    }
+
+    if (
+      key === "Enter" &&
+      event?.altKey &&
+      !event?.ctrlKey &&
+      !event?.shiftKey &&
+      !event?.metaKey
+    ) {
+      event?.preventDefault?.();
+      event?.stopPropagation?.();
+      return this.insertParagraphAfterTable();
+    }
+
     const targetInsideToolbar = this.contains(event?.target);
     if (!targetInsideToolbar && !this.#state.keyboardActive) return false;
 
@@ -1585,20 +438,21 @@ export class TiptapTableToolbarController {
       return this.#moveActiveCommand(-1, event);
     }
     if (key === "Home") {
-      const firstId = enabledCommandIds(visibleCommands(this.#state.commands, this.#state.mode, this.#state.selection.kind))[0] ?? null;
+      const firstId = enabledTableCommandIds(visibleTableCommands(this.#state.commands, this.#state.mode, this.#state.selection.kind))[0] ?? null;
       if (!firstId) return false;
       event?.preventDefault?.();
       event?.stopPropagation?.();
       return this.setActiveCommand(firstId, { focus: true, keyboardActive: true });
     }
     if (key === "End") {
-      const ids = enabledCommandIds(visibleCommands(this.#state.commands, this.#state.mode, this.#state.selection.kind));
+      const ids = enabledTableCommandIds(visibleTableCommands(this.#state.commands, this.#state.mode, this.#state.selection.kind));
       const lastId = ids.at(-1) ?? null;
       if (!lastId) return false;
       event?.preventDefault?.();
       event?.stopPropagation?.();
       return this.setActiveCommand(lastId, { focus: true, keyboardActive: true });
     }
+
     if (key === "Enter" || key === " ") {
       const commandId = this.#state.activeCommandId;
       if (!commandId) return false;
@@ -1608,6 +462,108 @@ export class TiptapTableToolbarController {
     }
 
     return false;
+  }
+
+  handlePointerMove(event) {
+    if (!this.#editor || this.#entry?.viewMode !== "hybrid") return false;
+
+    const complexHover = complexBlockHoverContext(event?.target, this.#editor?.view?.dom);
+    if (complexHover && complexHover.block !== this.#state.table) {
+      const y = Number(event?.clientY);
+      const hover = hoverIsNearComplexBlockBottom(complexHover.rect, y)
+        ? {
+            table: false,
+            block: complexHover.block,
+            edge: "block-after",
+            clientX: Number.isFinite(Number(event?.clientX)) ? Number(event.clientX) : null,
+            clientY: Number.isFinite(y) ? y : null,
+          }
+        : null;
+      if (
+        this.#state.open &&
+        this.#state.table === null &&
+        this.#state.complexBlock === complexHover.block &&
+        sameTableHover(hover, this.#state.hover)
+      ) {
+        return false;
+      }
+      const language = entryLanguage(this.#entry);
+      this.#state = {
+        ...emptyTableToolbarState(language),
+        open: true,
+        hover,
+        complexBlock: complexHover.block,
+        complexRect: complexHover.rect,
+      };
+      this.#view.update?.({
+        ...this.#state,
+        insertParagraphAfterBlock: (block) => this.insertParagraphAfterBlock(block),
+      });
+      return true;
+    }
+
+    if (!this.#state.open || !this.#state.table) return false;
+    const hover = tableHoverWithIntent({
+      target: event?.target,
+      table: this.#state.table,
+      grid: this.#state.grid,
+      tableRect: this.#state.rect,
+      clientX: event?.clientX,
+      clientY: event?.clientY,
+      rowHandleWidth: TABLE_ROW_HANDLE_WIDTH,
+      columnHandleHeight: TABLE_COLUMN_HANDLE_HEIGHT,
+    });
+    if (sameTableHover(hover, this.#state.hover)) return false;
+    this.#state = {
+      ...this.#state,
+      hover,
+    };
+    this.#view.update?.({
+      ...this.#state,
+      run: (commandId) => this.run(commandId),
+      selectAxis: (axis, index) => this.selectAxis(axis, index),
+      insertParagraphAfterBlock: (block) => this.insertParagraphAfterBlock(block),
+      toggleMenu: (mode, options) => this.toggleMenu(mode, options),
+      openCellMenu: (mode, options) => this.openCellMenu(mode, options),
+      setActiveCommand: (commandId, options) => this.setActiveCommand(commandId, options),
+      handleKeyDown: (keyboardEvent) => this.handleKeyDown(keyboardEvent),
+    });
+    return true;
+  }
+
+  handlePointerLeave(event) {
+    if (!this.#state.open || !this.#state.hover) return false;
+    if (
+      this.contains(event?.relatedTarget) ||
+      this.#state.table?.contains?.(event?.relatedTarget) ||
+      this.#state.complexBlock?.contains?.(event?.relatedTarget)
+    ) {
+      return false;
+    }
+    if (this.#state.table) {
+      this.#state = {
+        ...this.#state,
+        hover: null,
+      };
+      this.#view.update?.({
+        ...this.#state,
+        run: (commandId) => this.run(commandId),
+        selectAxis: (axis, index) => this.selectAxis(axis, index),
+        insertParagraphAfterBlock: (block) => this.insertParagraphAfterBlock(block),
+        toggleMenu: (mode, options) => this.toggleMenu(mode, options),
+        openCellMenu: (mode, options) => this.openCellMenu(mode, options),
+        setActiveCommand: (commandId, options) => this.setActiveCommand(commandId, options),
+        handleKeyDown: (keyboardEvent) => this.handleKeyDown(keyboardEvent),
+      });
+      return true;
+    }
+
+    this.#state = emptyTableToolbarState(entryLanguage(this.#entry));
+    this.#view.update?.({
+      ...this.#state,
+      insertParagraphAfterBlock: (block) => this.insertParagraphAfterBlock(block),
+    });
+    return true;
   }
 
   handleContextMenu(event) {
@@ -1644,15 +600,30 @@ export class TiptapTableToolbarController {
     return this.toggleMenu("context", { open: true, anchorRect });
   }
 
+  handleDoubleClick(event) {
+    if (!this.#editor || this.#entry?.viewMode !== "hybrid") return false;
+    const block = closestComplexBlockElement(event?.target, this.#editor?.view?.dom);
+    if (!block) return false;
+
+    const rect = normalizedRect(block.getBoundingClientRect?.());
+    const y = Number(event?.clientY);
+    if (rect && Number.isFinite(y) && y >= rect.bottom - 18) {
+      event?.preventDefault?.();
+      event?.stopPropagation?.();
+      return this.insertParagraphAfterBlock(block, { useInsertMenu: false });
+    }
+    return false;
+  }
+
   run(commandId) {
     const command = TABLE_COMMANDS.find((item) => item.id === commandId);
     if (!command || !this.#editor) return false;
-    if (!canRunEditorCommand(this.#editor, command.command, command.args)) {
+    if (!canRunTableEditorCommand(this.#editor, command.command, command.args)) {
       this.refresh(this.#editor);
       return false;
     }
     const keepToolbarFocus = this.#state.keyboardActive && this.#state.menuOpen;
-    const ok = runEditorCommand(this.#editor, command.command, command.args);
+    const ok = runTableEditorCommand(this.#editor, command.command, command.args);
     this.refresh(this.#editor);
     if (keepToolbarFocus && this.#state.open && this.#state.activeCommandId) {
       this.#view.focusCommand?.(this.#state.activeCommandId);
@@ -1660,17 +631,53 @@ export class TiptapTableToolbarController {
     return ok;
   }
 
+  insertParagraphAfterBlock(block = null, { useInsertMenu = true } = {}) {
+    const targetBlock = block ?? this.#state.table;
+    const target = complexBlockTarget(this.#editor, targetBlock);
+    if (useInsertMenu && target && typeof this.#insertMenu?.openAtBlock === "function") {
+      this.#state = {
+        ...this.#state,
+        hover: null,
+      };
+      this.#view.update?.({
+        ...this.#state,
+        run: (commandId) => this.run(commandId),
+        selectAxis: (axis, index) => this.selectAxis(axis, index),
+        insertParagraphAfterBlock: (nextBlock) => this.insertParagraphAfterBlock(nextBlock),
+        toggleMenu: (mode, options) => this.toggleMenu(mode, options),
+        openCellMenu: (mode, options) => this.openCellMenu(mode, options),
+        setActiveCommand: (commandId, options) => this.setActiveCommand(commandId, options),
+        handleKeyDown: (event) => this.handleKeyDown(event),
+      });
+      const result = this.#insertMenu.openAtBlock(target, {
+        anchorRect: targetBlock?.getBoundingClientRect?.(),
+      });
+      if (result?.open === true) {
+        return true;
+      }
+    }
+
+    const ok = insertParagraphAfterComplexBlock(this.#editor, targetBlock);
+    if (!ok) return false;
+    this.refresh(this.#editor);
+    return true;
+  }
+
+  insertParagraphAfterTable() {
+    return this.insertParagraphAfterBlock(this.#state.table, { useInsertMenu: false });
+  }
+
   toggleMenu(mode = "context", { open = null, anchorRect = null } = {}) {
     if (!this.#state.open) return false;
     const nextMode = mode === "keyboard" ? "keyboard" : "context";
     const nextOpen = open === null ? !(this.#state.menuOpen && this.#state.mode === nextMode) : !!open;
-    const scopedCommands = visibleCommands(this.#state.commands, nextMode, this.#state.selection.kind);
+    const scopedCommands = visibleTableCommands(this.#state.commands, nextMode, this.#state.selection.kind);
     if (nextOpen && scopedCommands.length === 0) return false;
     const activeCommandId = scopedCommands.some(
       (command) => command.id === this.#state.activeCommandId && !command.disabled,
     )
       ? this.#state.activeCommandId
-      : enabledCommandIds(scopedCommands)[0] ?? null;
+      : enabledTableCommandIds(scopedCommands)[0] ?? null;
 
     this.#state = {
       ...this.#state,
@@ -1686,6 +693,7 @@ export class TiptapTableToolbarController {
       ...this.#state,
       run: (commandId) => this.run(commandId),
       selectAxis: (axis, index) => this.selectAxis(axis, index),
+      insertParagraphAfterBlock: (block) => this.insertParagraphAfterBlock(block),
       toggleMenu: (menuMode, options) => this.toggleMenu(menuMode, options),
       openCellMenu: (menuMode, options) => this.openCellMenu(menuMode, options),
       setActiveCommand: (commandId, options) => this.setActiveCommand(commandId, options),
@@ -1694,12 +702,14 @@ export class TiptapTableToolbarController {
     return true;
   }
 
-  openCellMenu(mode = "context", { open = null, anchorRect = null } = {}) {
+  openCellMenu(mode = "context", { open = null, anchorRect = null, cell = null } = {}) {
     if (!this.#state.open) return false;
     const isPlainCellContext =
       this.#state.selection?.kind === "cell" &&
       (this.#state.selection?.positions?.size ?? 0) === 0;
-    const pos = isPlainCellContext ? cellPosition(this.#state.grid, this.#state.cell) : null;
+    const pos = isPlainCellContext
+      ? cellPosition(this.#state.grid, cell ?? this.#state.hover?.cell ?? this.#state.cell)
+      : null;
     if (
       Number.isFinite(pos) &&
       typeof this.#editor?.commands?.setCellSelection === "function"
@@ -1724,14 +734,16 @@ export class TiptapTableToolbarController {
       ...this.#state,
       menuOpen: false,
       mode: "context",
-      activeCommandId: firstEnabledCommandId(this.#state.commands, "context", this.#state.selection.kind),
+      activeCommandId: firstEnabledTableCommandId(this.#state.commands, "context", this.#state.selection.kind),
       keyboardActive: false,
       menuAnchorRect: null,
+      hover: null,
     };
     this.#view.update?.({
       ...this.#state,
       run: (commandId) => this.run(commandId),
       selectAxis: (selectedAxis, selectedIndex) => this.selectAxis(selectedAxis, selectedIndex),
+      insertParagraphAfterBlock: (block) => this.insertParagraphAfterBlock(block),
       toggleMenu: (menuMode, options) => this.toggleMenu(menuMode, options),
       openCellMenu: (menuMode, options) => this.openCellMenu(menuMode, options),
       setActiveCommand: (commandId, options) => this.setActiveCommand(commandId, options),
@@ -1742,29 +754,17 @@ export class TiptapTableToolbarController {
 
   close() {
     if (!this.#state.open) return;
-    this.#state = {
-      open: false,
-      menuOpen: false,
-      mode: "context",
-      table: null,
-      rect: null,
-      cell: null,
-      cellRect: null,
-      selectionRect: null,
-      menuAnchorRect: null,
-      grid: [],
-      selection: tableSelectionState(null, []),
-      commands: [],
-      activeCommandId: null,
-      keyboardActive: false,
-      language: "english",
-    };
+    this.#state = emptyTableToolbarState(entryLanguage(this.#entry));
     this.#view.hide?.();
     this.#dismiss.close();
   }
 
   contains(target) {
-    return this.#view.contains?.(target) ?? false;
+    return (
+      this.#view.contains?.(target) ||
+      this.#insertMenu?.contains?.(target) ||
+      false
+    );
   }
 
   destroy() {

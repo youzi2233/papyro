@@ -805,7 +805,7 @@ test("Tiptap slash menu closes on outside pointer events", () => {
   });
   controller.attach({ editor, root: {} });
 
-  documentRef.emit("pointerdown", { target: { id: "outside" } });
+  documentRef.emit("pointerup", { target: { id: "outside" } });
 
   assert.equal(controller.state.open, false);
   assert.deepEqual(view.calls.at(-1), ["hide"]);
@@ -823,7 +823,7 @@ test("Tiptap slash menu stays open for pointer events inside the menu", () => {
   });
   controller.attach({ editor, root: {} });
 
-  documentRef.emit("pointerdown", { target: inside });
+  documentRef.emit("pointerup", { target: inside });
 
   assert.equal(controller.state.open, true);
   assert.notDeepEqual(view.calls.at(-1), ["hide"]);
@@ -841,7 +841,7 @@ test("Tiptap slash menu treats registered external targets as internal", () => {
   controller.attach({ editor, root: {} });
   controller.setExternalContains((target) => target === safeTarget);
 
-  documentRef.emit("pointerdown", { target: safeTarget });
+  documentRef.emit("pointerup", { target: safeTarget });
 
   assert.equal(controller.state.open, true);
   assert.notDeepEqual(view.calls.at(-1), ["hide"]);

@@ -36,7 +36,8 @@ flowchart TD
 - `apps/desktop/assets/main.css` mirrors the desktop runtime copy.
 - `assets/styles/modal.css` and `apps/desktop/assets/styles/modal.css` hold modal-specific styles.
 - `assets/styles/markdown.css` and `apps/desktop/assets/styles/markdown.css` hold the document surface, outline, Preview, and rendered Markdown rhythm.
-- Tiptap node views and runtime chrome consume the same tokens through CSS classes in `assets/styles/markdown.css` and focused `js/src/tiptap-*.js` modules.
+- `assets/styles/tiptap-chrome.css` and `apps/desktop/assets/styles/tiptap-chrome.css` hold Tiptap runtime controls such as command panels, block handles, table chrome, and code language menus.
+- Tiptap node views consume the same tokens through CSS classes in the markdown and Tiptap chrome styles plus focused `js/src/tiptap-*.js` modules.
 
 When changing a token that is mirrored in an app asset, update both copies in the same commit.
 

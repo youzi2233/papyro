@@ -48,6 +48,10 @@ export function createPapyroTableExtensions() {
           class: "mn-tiptap-table",
         },
         resizable: true,
+        handleWidth: 6,
+        cellMinWidth: 96,
+        lastColumnResizable: true,
+        allowTableNodeSelection: true,
       },
       tableRow: {
         HTMLAttributes: {

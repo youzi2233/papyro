@@ -42,9 +42,40 @@ function createElement({ tagName = "P", parent = null, rect = null } = {}) {
     getBoundingClientRect() {
       return rect ?? { left: 100, top: 40, width: 480, height: 32 };
     },
+    classList: {
+      values: new Set(),
+      add(value) {
+        this.values.add(value);
+      },
+      remove(value) {
+        this.values.delete(value);
+      },
+      contains(value) {
+        return this.values.has(value);
+      },
+    },
     ownerDocument: {
       documentElement: {
         clientWidth: 1000,
+      },
+      createRange() {
+        return {
+          selectedNode: null,
+          selectNodeContents(node) {
+            this.selectedNode = node;
+          },
+        };
+      },
+      getSelection() {
+        return {
+          ranges: [],
+          removeAllRanges() {
+            this.ranges = [];
+          },
+          addRange(range) {
+            this.ranges.push(range);
+          },
+        };
       },
     },
   };
@@ -451,6 +482,33 @@ test("Tiptap block handle opens the action menu from the handle action", () => {
   ]);
 });
 
+test("Tiptap block handle clears stale selected block highlights", () => {
+  const first = createElement({ tagName: "P" });
+  const second = createElement({ tagName: "P" });
+  const { editor } = createEditor({ block: first });
+  const menu = createMenuSpy();
+  const view = createViewSpy();
+  const controller = createTiptapBlockHandleController({ menu, view });
+  controller.attach({ editor, root: editor.view.dom, entry: { viewMode: "hybrid" } });
+
+  controller.handlePointerMove({ target: first });
+  view.openActions();
+  assert.equal(first.classList.contains("mn-tiptap-block-selected"), true);
+
+  menu.close();
+  second.parentNode = editor.view.dom;
+  editor.view.posAtDOM = (target) => (target === second ? 17 : 7);
+  editor.state.doc.nodeAt = (pos) => (pos === 17 ? { nodeSize: 5 } : { nodeSize: 6 });
+  controller.handlePointerMove({ target: second });
+  view.openActions();
+
+  assert.equal(first.classList.contains("mn-tiptap-block-selected"), false);
+  assert.equal(second.classList.contains("mn-tiptap-block-selected"), true);
+
+  controller.close();
+  assert.equal(second.classList.contains("mn-tiptap-block-selected"), false);
+});
+
 test("Tiptap block handle opens the insert menu from the plus action", () => {
   const { block, calls, editor } = createEditor();
   const insertMenu = createInsertMenuSpy();
@@ -467,7 +525,74 @@ test("Tiptap block handle opens the insert menu from the plus action", () => {
     ["keydown", "ArrowDown"],
   ]);
   assert.deepEqual(calls.slice(-2), [
-    ["setNodeSelection", 7],
+    ["setTextSelection", { from: 7, to: 13 }],
+    ["focus"],
+  ]);
+});
+
+test("Tiptap block handle selects the full textblock range before painting the DOM block", () => {
+  const block = createElement({ tagName: "P" });
+  const { calls, editor } = createEditor({ block });
+  editor.state.doc.nodeAt = () => ({
+    isTextblock: true,
+    nodeSize: 9,
+    content: { size: 7 },
+  });
+  editor.commands.setNodeSelection = (pos) => {
+    calls.push(["setNodeSelection", pos]);
+    return false;
+  };
+  editor.commands.setTextSelection = (range) => {
+    calls.push(["setTextSelection", range]);
+    return true;
+  };
+  const menu = createMenuSpy();
+  const view = createViewSpy();
+  const controller = createTiptapBlockHandleController({ menu, view });
+  controller.attach({ editor, root: editor.view.dom, entry: { viewMode: "hybrid" } });
+  controller.handlePointerMove({ target: block });
+
+  view.openActions();
+
+  assert.deepEqual(calls.slice(-3), [
+    ["posAtDOM", "P", 0],
+    ["setTextSelection", { from: 8, to: 15 }],
+    ["focus"],
+  ]);
+});
+
+test("Tiptap block handle falls back to the full textblock range without DOM selection", () => {
+  const block = createElement({ tagName: "P" });
+  block.ownerDocument = {
+    documentElement: {
+      clientWidth: 1000,
+    },
+  };
+  const { calls, editor } = createEditor({ block });
+  editor.state.doc.nodeAt = () => ({
+    isTextblock: true,
+    nodeSize: 9,
+    content: { size: 7 },
+  });
+  editor.commands.setNodeSelection = (pos) => {
+    calls.push(["setNodeSelection", pos]);
+    return false;
+  };
+  editor.commands.setTextSelection = (range) => {
+    calls.push(["setTextSelection", range]);
+    return true;
+  };
+  const menu = createMenuSpy();
+  const view = createViewSpy();
+  const controller = createTiptapBlockHandleController({ menu, view });
+  controller.attach({ editor, root: editor.view.dom, entry: { viewMode: "hybrid" } });
+  controller.handlePointerMove({ target: block });
+
+  view.openActions();
+
+  assert.deepEqual(calls.slice(-3), [
+    ["posAtDOM", "P", 0],
+    ["setTextSelection", { from: 8, to: 15 }],
     ["focus"],
   ]);
 });
@@ -505,6 +630,23 @@ test("Tiptap block handle prepares drag without opening actions on pointerdown",
   assert.equal(menu.state.open, false);
 
   assert.deepEqual(menu.calls, [["attach", "DIV"]]);
+});
+
+test("Tiptap block handle primary pointer opens actions immediately", () => {
+  const { block, editor } = createEditor();
+  const menu = createMenuSpy();
+  const view = createViewSpy();
+  const controller = createTiptapBlockHandleController({ menu, view });
+  controller.attach({ editor, root: editor.view.dom, entry: { viewMode: "hybrid" } });
+  controller.handlePointerMove({ target: block });
+
+  assert.equal(view.states.at(-1).clickAction({ clientX: 18, clientY: 24, preventDefault() {} }), true);
+
+  assert.equal(menu.state.open, true);
+  assert.deepEqual(menu.calls, [
+    ["attach", "DIV"],
+    ["open", "paragraph", 7, [18, 24]],
+  ]);
 });
 
 test("Tiptap block handle opens actions from a release callback", () => {

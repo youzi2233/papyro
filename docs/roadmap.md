@@ -262,6 +262,7 @@ Tasks:
 - [x] Keep open block action and `+` insertion panels alive when ProseMirror temporarily unmounts the source block during slash insertion or selection refresh; the handle chrome can hide, but the command panel stays open until an explicit outside dismissal.
 - [x] Make slash and `+` insertion command details follow pointer hover and focus, so advanced affordances like the table-size picker respond to the command under the cursor instead of requiring keyboard navigation first.
 - [x] Make block action menu hover and focus update the same selected command state as keyboard navigation, so mouse and keyboard interactions share one active-descendant model.
+- [x] Add keyboard semantics for nested block action submenus: Right enters the active submenu, Right cycles submenu children, Left returns to the submenu parent, and Home/End stay scoped to the current menu level.
 - [x] Keep slash/`+` and block action panels from rebuilding their full DOM on hover or keyboard selection changes, so small pointer movement no longer creates WebView focus flicker or disappearing command panels.
 - [x] Keep pointer hover inside slash/`+` and block action panels from forcing active-item scroll, while keyboard and focus navigation still scrolls the selected command into view.
 - [x] Preserve the active block-action command across selection/update refreshes, so hover or keyboard focus does not jump back to the first item while the menu is already open.
@@ -301,14 +302,28 @@ Tasks:
 - [x] Add shared floating dismiss lifecycle to the slash/`+` insertion menu, block action menu, floating format toolbar, and table toolbar so outside clicks, scrolling, and window changes close overlays while the current block/table bridge stays interactive.
 - [x] Keep slash and block action menu keyboard navigation scrolled to the active item so long Notion-like menus remain usable from the keyboard.
 - [x] Group the slash/`+` insertion menu into quiet Text/List/Block/Advanced sections and remove repeated right-side group tags, making insertion feel closer to mature document editors.
-- [ ] Redesign block handle and `+` insertion affordances so the icons align on one optical center, keep an 8px breathing gap, and never require long-press timing to open menus.
-- [ ] Replace oversized flat command panels with narrower Notion-like panels and nested hover submenus for secondary actions such as "Turn into" and code language changes.
-- [ ] Make block selection feedback cover the whole semantic block, including mixed text and inline-code ranges, instead of only the plain text glyph run.
-- [ ] Add an explicit insert-between affordance for adjacent complex blocks such as table followed by code block, so users can add a paragraph between them without knowing ProseMirror cursor edge cases.
-- [ ] Rework table chrome into a low-noise hover-revealed system: row/column handles show only near the active edge, cell action trigger starts as a tiny edge dot, and dense commands stay in scoped menus.
-- [ ] Polish table quick-add controls into full row/column edge rails with centered plus icons, matching mature document-editor affordances instead of isolated floating buttons.
-- [ ] Validate table column resizing affordances in Hybrid mode and document any Tiptap limitations before release.
+- [x] Redesign block handle and `+` insertion affordances so the icons align on one optical center, keep an 8px breathing gap, and never require long-press timing to open menus.
+- [x] Replace oversized flat command panels with narrower Notion-like panels and nested hover submenus for secondary actions such as "Turn into" and code language changes.
+- [x] Make block selection feedback cover the whole semantic block, including mixed text and inline-code ranges, instead of only the plain text glyph run.
+- [x] Add an explicit insert-between affordance for adjacent complex blocks such as table followed by code block, so users can add a paragraph between them without knowing ProseMirror cursor edge cases.
+- [x] Prefer the slash/`+` insertion menu from complex-block insert rails so users can insert headings, tables, formulas, and other structures between adjacent complex blocks; keep `Alt+Enter`/`Ctrl+Enter` as the fast plain-paragraph path.
+- [x] Rework table chrome into a low-noise hover-revealed system: row/column handles show only near the active edge, cell action trigger starts as a tiny edge dot, and dense commands stay in scoped menus.
+- [x] Polish table quick-add controls into full row/column edge rails with centered plus icons, matching mature document-editor affordances instead of isolated floating buttons.
+- [x] Validate table column resizing affordances in Hybrid mode and document any Tiptap limitations before release.
+- [x] Make block-handle selection use ProseMirror textblock content ranges while preserving semantic block highlighting, so mixed prose and inline-code blocks no longer select only the plain text run.
+- [x] Narrow the table current-cell action trigger to the right-edge vertical-center hot zone, and let that trigger win over first-row column selection only when pointer intent is clear.
+- [x] Give default code blocks independent highlight.js token colors for comments, keywords, strings, numbers, titles, attributes, types, and operators so light mode no longer collapses into accent-blue code.
 - [x] Give the block action menu explicit group layout metadata and a separated danger section so localized labels, swatch-style groups, and destructive actions do not depend on fragile CSS structure detection.
+- [x] Track the currently highlighted block explicitly in the block-handle controller so stale semantic highlights are cleared when users move between blocks or close the menu.
+- [x] Refine the block-handle and `+` affordance spacing into a quieter 8px dual-control rhythm, while keeping the hover bridge wide enough that menus do not collapse while moving through the gutter.
+- [x] Tighten table hover chrome further: edge quick-add rails, axis handles, and the cell action dot use smaller hot zones and lower-opacity surfaces so table controls appear only when pointer intent is clear.
+- [x] Improve table column-resize discoverability with a slightly stronger right-edge hover and resize-cursor state while keeping the handle invisible during normal reading and selected-cell work.
+- [x] Wire the code-block language menu into the shared active-descendant pattern: Arrow/Home/End move the active language, Enter/Space applies it, Escape restores focus, and pointer hover no longer leaves the menu as a mouse-only control.
+- [x] Split table command definitions, scope ordering, layout variants, and keyboard helpers into `js/src/tiptap-table-commands.js` with direct tests, so table UX can keep evolving without turning `tiptap-table-toolbar.js` into another giant runtime file.
+- [x] Move table quick-add rail, axis handle, cell-trigger, and hover-intent geometry into `js/src/tiptap-table-geometry.js` with direct tests, so Notion-like table chrome can be refined without hiding layout math inside the toolbar view.
+- [x] Refine table cell-action chrome into a quieter edge-dot-to-four-dot grip, and reduce row/column handle surface noise so table controls feel intentional instead of appearing as developer-only overlays.
+- [x] Split table chrome rendering into `js/src/tiptap-table-toolbar-view.js`, leaving `tiptap-table-toolbar.js` as the controller for state, commands, and selection coordination.
+- [x] Re-tune block handles, slash/`+` panels, block action panels, code-language controls, table edge rails, cell action dots, and column resize handles with tighter enterprise-style density and lower-noise hover states.
 - [x] Add advanced block action menus and responsive editor toolbar behavior.
 - [x] Fix Tiptap Hybrid scroll-container constraints so long documents scroll inside the editor host instead of being clipped by the outer shell.
 - [x] Preserve Tiptap `content_changed`, `insert_markdown`, and `set_view_mode` protocol behavior with runtime tests.

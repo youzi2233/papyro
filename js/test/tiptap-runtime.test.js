@@ -267,6 +267,7 @@ test("Tiptap runtime creates an editor instance and registry entry", () => {
   assert.equal(editor.root, container.children[0]);
   assert.equal(editor.root.dataset.tabId, "tab-a");
   assert.equal(editor.root.dataset.viewMode, "hybrid");
+  assert.equal(editor.root.dataset.language, "english");
   assert.equal(registry.get("tab-a").instanceId, "host-a");
   assert.equal(registry.get("tab-a").markdownSync.markdown, "# Note");
   assert.deepEqual(calls, [
@@ -746,7 +747,7 @@ test("Tiptap runtime applies preferences through the injected controller", () =>
       return { changed: true, preferences: entry.preferences };
     },
   });
-  const { registry, runtime } = createRuntimeHarness({ preferencesControllerFactory });
+  const { container, registry, runtime } = createRuntimeHarness({ preferencesControllerFactory });
   runtime.ensureEditor({
     tabId: "tab-a",
     containerId: "editor-root",
@@ -764,6 +765,7 @@ test("Tiptap runtime applies preferences through the injected controller", () =>
     autoLinkPaste: false,
     language: "Chinese",
   });
+  assert.equal(container.children[0].dataset.language, "Chinese");
 });
 
 test("Tiptap runtime reports parse failures without touching the editor", () => {

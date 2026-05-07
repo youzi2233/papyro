@@ -2,6 +2,8 @@
 
 /* Design tokens (Light / default) */
 @import url("/assets/styles/modal.css");
+@import url("/assets/styles/markdown.css");
+@import url("/assets/styles/tiptap-chrome.css");
 
 :root {
     color-scheme: light;
@@ -151,6 +153,14 @@
     --mn-code-block-surface:     var(--mn-markdown-code-block-bg);
     --mn-code-ink:               var(--mn-markdown-code-color);
     --mn-code-border:            var(--mn-border-subtle);
+    --mn-code-token-comment:     #64748b;
+    --mn-code-token-keyword:     #b42318;
+    --mn-code-token-string:      #16703a;
+    --mn-code-token-number:      #a15c07;
+    --mn-code-token-title:       #155eef;
+    --mn-code-token-attribute:   #7c3aed;
+    --mn-code-token-type:        #0e766e;
+    --mn-code-token-operator:    #475467;
     --mn-selection-bg:           var(--mn-selection);
     --mn-selection-ink:          var(--mn-ink);
     --mn-focus-ring:             var(--mn-ring-focus);
@@ -231,7 +241,7 @@
     --mn-markdown-quote-color:       var(--mn-ink-2);
     --mn-markdown-code-bg:           var(--mn-surface-sunken);
     --mn-markdown-code-block-bg:     var(--mn-surface-sunken);
-    --mn-markdown-code-color:        var(--mn-accent-strong);
+    --mn-markdown-code-color:        var(--mn-ink-2);
     --mn-markdown-code-radius:       var(--mn-radius-sm);
     --mn-markdown-inline-code-pad:   .1em .42em;
     --mn-markdown-code-block-pad-x:  18px;
@@ -324,6 +334,14 @@
     --mn-caret-composing:    var(--mn-warning);
     --mn-composition-halo:   rgba(211, 154, 96, 0.22);
     --mn-composition-line:   rgba(211, 154, 96, 0.11);
+    --mn-code-token-comment:     #94a3b8;
+    --mn-code-token-keyword:     #f472b6;
+    --mn-code-token-string:      #86efac;
+    --mn-code-token-number:      #fbbf24;
+    --mn-code-token-title:       #93c5fd;
+    --mn-code-token-attribute:   #c4b5fd;
+    --mn-code-token-type:        #5eead4;
+    --mn-code-token-operator:    #cbd5e1;
 }
 
 :root[data-theme="github_light"] {
@@ -358,6 +376,15 @@
     --mn-caret-halo:      rgba(9, 105, 218, 0.18);
     --mn-markdown-code-bg: #f6f8fa;
     --mn-markdown-code-block-bg: #f6f8fa;
+    --mn-markdown-code-color: #24292f;
+    --mn-code-token-comment: #57606a;
+    --mn-code-token-keyword: #b42318;
+    --mn-code-token-string: #116329;
+    --mn-code-token-number: #8250df;
+    --mn-code-token-title: #0550ae;
+    --mn-code-token-attribute: #953800;
+    --mn-code-token-type: #0a7f72;
+    --mn-code-token-operator: #57606a;
 }
 
 :root[data-theme="github_dark"] {
@@ -395,6 +422,13 @@
     --mn-caret-halo:      rgba(88, 166, 255, 0.22);
     --mn-markdown-code-bg: #161b22;
     --mn-markdown-code-block-bg: #161b22;
+    --mn-markdown-code-color: #c9d1d9;
+    --mn-code-token-comment: #8b949e;
+    --mn-code-token-keyword: #ff7b72;
+    --mn-code-token-string: #a5d6ff;
+    --mn-code-token-number: #79c0ff;
+    --mn-code-token-title: #d2a8ff;
+    --mn-code-token-attribute: #ffa657;
 }
 
 :root[data-theme="high_contrast"] {
@@ -434,6 +468,14 @@
     --mn-markdown-code-bg: #111111;
     --mn-markdown-code-block-bg: #111111;
     --mn-markdown-code-color: #fde047;
+    --mn-code-token-comment: #f8fafc;
+    --mn-code-token-keyword: #fde047;
+    --mn-code-token-string: #86efac;
+    --mn-code-token-number: #67e8f9;
+    --mn-code-token-title: #ffffff;
+    --mn-code-token-attribute: #f0abfc;
+    --mn-code-token-type: #5eead4;
+    --mn-code-token-operator: #ffffff;
 }
 
 :root[data-theme="warm_reading"] {
@@ -469,6 +511,14 @@
     --mn-markdown-code-bg: #eee9dd;
     --mn-markdown-code-block-bg: #eee9dd;
     --mn-markdown-code-color: #6f4e37;
+    --mn-code-token-comment: #8a8174;
+    --mn-code-token-keyword: #8f3d2c;
+    --mn-code-token-string: #356b3f;
+    --mn-code-token-number: #9a5b18;
+    --mn-code-token-title: #245f59;
+    --mn-code-token-attribute: #7c3f74;
+    --mn-code-token-type: #2f766d;
+    --mn-code-token-operator: #6f4e37;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -519,6 +569,14 @@
         --mn-caret-composing:    var(--mn-warning);
         --mn-composition-halo:   rgba(211, 154, 96, 0.22);
         --mn-composition-line:   rgba(211, 154, 96, 0.11);
+        --mn-code-token-comment:     #94a3b8;
+        --mn-code-token-keyword:     #f472b6;
+        --mn-code-token-string:      #86efac;
+        --mn-code-token-number:      #fbbf24;
+        --mn-code-token-title:       #93c5fd;
+        --mn-code-token-attribute:   #c4b5fd;
+        --mn-code-token-type:        #5eead4;
+        --mn-code-token-operator:    #cbd5e1;
     }
 }
 

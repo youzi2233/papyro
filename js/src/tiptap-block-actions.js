@@ -4,6 +4,8 @@ import {
 } from "./tiptap-markdown-snippets.js";
 import {
   PAPYRO_CODE_LANGUAGE_OPTIONS,
+  codeBlockLanguageDisplayLabel,
+  normalizeCodeBlockLanguage,
   setCodeBlockLanguage,
 } from "./tiptap-code-block.js";
 import {
@@ -11,7 +13,12 @@ import {
   PAPYRO_HIGHLIGHT_OPTIONS,
   PAPYRO_TEXT_COLOR_OPTIONS,
 } from "./tiptap-text-style.js";
-import { localizeBlockAction, normalizeTiptapLanguage } from "./tiptap-i18n.js";
+import {
+  blockActionSubmenuDescription,
+  blockActionSubmenuLabel,
+  localizeBlockAction,
+  normalizeTiptapLanguage,
+} from "./tiptap-i18n.js";
 
 function normalizeCommandId(value) {
   return String(value ?? "").trim().toLowerCase();
@@ -207,10 +214,12 @@ function createCommand({
   description,
   group,
   icon,
+  meta = null,
   visibleInBlockMenu = true,
   shortcut = "",
   priority = 100,
   tone = "default",
+  submenu = null,
   enabled = () => true,
   run,
 }) {
@@ -224,10 +233,12 @@ function createCommand({
     description,
     group,
     icon,
+    meta,
     visibleInBlockMenu,
     shortcut,
     priority,
     tone,
+    submenu,
     enabled,
     run,
   });
@@ -240,7 +251,7 @@ export const PAPYRO_TIPTAP_BLOCK_ACTIONS = Object.freeze([
     description: "Use plain body text",
     group: "Text",
     icon: "paragraph",
-    visibleInBlockMenu: false,
+    submenu: "turn-into",
     priority: 20,
     run: ({ editor }) => editorCommand(editor, "setParagraph"),
   }),
@@ -250,7 +261,7 @@ export const PAPYRO_TIPTAP_BLOCK_ACTIONS = Object.freeze([
     description: "Large section title",
     group: "Text",
     icon: "heading-1",
-    visibleInBlockMenu: false,
+    submenu: "turn-into",
     priority: 21,
     run: ({ editor }) => runEditorCommand(editor, "toggleHeading", [{ level: 1 }], "# "),
   }),
@@ -260,7 +271,7 @@ export const PAPYRO_TIPTAP_BLOCK_ACTIONS = Object.freeze([
     description: "Use a medium section title",
     group: "Text",
     icon: "heading-2",
-    visibleInBlockMenu: false,
+    submenu: "turn-into",
     priority: 22,
     run: ({ editor }) => runEditorCommand(editor, "toggleHeading", [{ level: 2 }], "## "),
   }),
@@ -270,7 +281,7 @@ export const PAPYRO_TIPTAP_BLOCK_ACTIONS = Object.freeze([
     description: "Small subsection title",
     group: "Text",
     icon: "heading-3",
-    visibleInBlockMenu: false,
+    submenu: "turn-into",
     priority: 23,
     run: ({ editor }) => runEditorCommand(editor, "toggleHeading", [{ level: 3 }], "### "),
   }),
@@ -280,7 +291,7 @@ export const PAPYRO_TIPTAP_BLOCK_ACTIONS = Object.freeze([
     description: "Turn this block into bullets",
     group: "Lists",
     icon: "bullet-list",
-    visibleInBlockMenu: false,
+    submenu: "turn-into",
     priority: 30,
     run: ({ editor }) => runEditorCommand(editor, "toggleBulletList", [], "- "),
   }),
@@ -290,7 +301,7 @@ export const PAPYRO_TIPTAP_BLOCK_ACTIONS = Object.freeze([
     description: "Turn this block into steps",
     group: "Lists",
     icon: "ordered-list",
-    visibleInBlockMenu: false,
+    submenu: "turn-into",
     priority: 31,
     run: ({ editor }) => runEditorCommand(editor, "toggleOrderedList", [], "1. "),
   }),
@@ -300,7 +311,7 @@ export const PAPYRO_TIPTAP_BLOCK_ACTIONS = Object.freeze([
     description: "Create Markdown checkboxes",
     group: "Lists",
     icon: "task-list",
-    visibleInBlockMenu: false,
+    submenu: "turn-into",
     priority: 32,
     run: ({ editor }) =>
       canRunEditorCommand(editor, "toggleTaskList")
@@ -313,7 +324,7 @@ export const PAPYRO_TIPTAP_BLOCK_ACTIONS = Object.freeze([
     description: "Highlight a quoted passage",
     group: "Blocks",
     icon: "quote",
-    visibleInBlockMenu: false,
+    submenu: "turn-into",
     priority: 40,
     run: ({ editor }) => runEditorCommand(editor, "toggleBlockquote", [], "> "),
   }),
@@ -323,7 +334,7 @@ export const PAPYRO_TIPTAP_BLOCK_ACTIONS = Object.freeze([
     description: "Insert a note callout",
     group: "Blocks",
     icon: "callout",
-    visibleInBlockMenu: false,
+    submenu: "turn-into",
     priority: 41,
     run: ({ editor }) =>
       runEditorCommand(
@@ -378,6 +389,8 @@ export const PAPYRO_TIPTAP_BLOCK_ACTIONS = Object.freeze([
         : "Let Papyro auto-detect this code block",
       group: "Code language",
       icon: "code-language",
+      meta: { codeLanguage: option.language ?? null },
+      submenu: "code-language",
       priority: 50 + index,
       enabled: ({ target }) => isCodeBlockTarget(target),
       run: ({ editor, target }) => setCodeBlockLanguage(editor, option.language, target?.pos),
@@ -539,8 +552,7 @@ export class TiptapBlockActionController {
 
   list(context = {}) {
     const language = normalizeTiptapLanguage(context.language ?? context.entry?.preferences?.language ?? this.#language);
-    return this.#commands
-      .filter((command) => command.visibleInBlockMenu !== false)
+    const commands = this.#commands
       .filter((command) => command.enabled(context) !== false)
       .sort((left, right) => left.priority - right.priority)
       .map((command) => ({
@@ -550,10 +562,72 @@ export class TiptapBlockActionController {
         group: command.group,
         groupKey: command.group,
         icon: command.icon,
+        meta: command.meta ?? null,
         shortcut: command.shortcut,
         tone: command.tone,
+        visibleInBlockMenu: command.visibleInBlockMenu,
+        submenu: command.submenu,
+        priority: command.priority,
       }))
       .map((command) => localizeBlockAction(command, language));
+    const topLevel = commands
+      .filter((command) => command.visibleInBlockMenu !== false && !command.submenu)
+      .map(({ visibleInBlockMenu, submenu, meta: _meta, ...command }) => command);
+    const targetLanguage = isCodeBlockTarget(context.target)
+      ? normalizeCodeBlockLanguage(context.target?.node?.attrs?.language ?? null)
+      : null;
+    const submenuCommands = (submenu) =>
+      commands
+        .filter((command) => command.submenu === submenu)
+        .map(({ visibleInBlockMenu, priority, ...command }) => {
+          if (
+            submenu === "code-language" &&
+            Object.prototype.hasOwnProperty.call(command.meta ?? {}, "codeLanguage")
+          ) {
+            const selectedLanguage = normalizeCodeBlockLanguage(command.meta.codeLanguage ?? null);
+            const active =
+              (targetLanguage ?? null) === (selectedLanguage ?? null) ||
+              (!targetLanguage && selectedLanguage === null);
+            const { meta: _meta, ...visibleCommand } = command;
+            return {
+              ...visibleCommand,
+              title: codeBlockLanguageDisplayLabel(language, selectedLanguage),
+              active,
+            };
+          }
+          const { meta: _meta, ...visibleCommand } = command;
+          return visibleCommand;
+        });
+    const submenuParents = [
+      {
+        id: "turn-into",
+        submenu: "turn-into",
+        priority: 12.5,
+        group: localizeBlockAction({ group: "Actions" }, language).group,
+        groupKey: "Actions",
+        icon: "turn-into",
+      },
+      {
+        id: "code-language",
+        submenu: "code-language",
+        priority: 13.5,
+        group: localizeBlockAction({ group: "Actions" }, language).group,
+        groupKey: "Actions",
+        icon: "code-language",
+      },
+    ]
+      .map((parent) => ({
+        ...parent,
+        title: blockActionSubmenuLabel(language, parent.submenu),
+        description: blockActionSubmenuDescription(language, parent.submenu),
+        shortcut: "",
+        tone: "default",
+        children: submenuCommands(parent.submenu),
+      }))
+      .filter((parent) => parent.children.length > 0);
+    return [...topLevel, ...submenuParents]
+      .sort((left, right) => (left.priority ?? 100) - (right.priority ?? 100))
+      .map(({ priority, ...command }) => command);
   }
 
   run(commandId, context = {}) {

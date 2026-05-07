@@ -14,6 +14,8 @@ const MAIN_CSS: &str = concat!(
     "\n",
     include_str!("../assets/styles/markdown.css"),
     "\n",
+    include_str!("../assets/styles/tiptap-chrome.css"),
+    "\n",
     include_str!("../assets/main.css")
 );
 const EDITOR_JS: &str = include_str!("../assets/editor.js");

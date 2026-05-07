@@ -2,10 +2,10 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
-  TABLE_COMMANDS,
   createTiptapTableToolbarController,
   selectTableAxis,
 } from "../src/tiptap-table-toolbar.js";
+import { TABLE_COMMANDS } from "../src/tiptap-table-commands.js";
 
 function createTableHarness(commandOverrides = {}) {
   const calls = [];
@@ -737,11 +737,11 @@ test("Tiptap table toolbar quick add buttons run row and column insertion", () =
 
   assert.equal(rowButton.textContent ?? "", "");
   assert.equal(columnButton.textContent ?? "", "");
-  assert.equal(rowButton.style.left, "219px");
-  assert.equal(rowButton.style.top, "164px");
+  assert.equal(rowButton.style.left, "120px");
+  assert.equal(rowButton.style.top, "160px");
   assert.equal(rowButton.style.properties.get("--mn-table-quick-add-rail"), "240px");
-  assert.equal(columnButton.style.left, "366px");
-  assert.equal(columnButton.style.top, "103px");
+  assert.equal(columnButton.style.left, "362px");
+  assert.equal(columnButton.style.top, "90px");
   assert.equal(columnButton.style.properties.get("--mn-table-quick-add-rail"), "68px");
 
   rowButton.onpointerdown({ preventDefault() {}, stopPropagation() {} });
@@ -751,6 +751,341 @@ test("Tiptap table toolbar quick add buttons run row and column insertion", () =
     ["addRowAfter"],
     ["focus"],
     ["addColumnAfter"],
+    ["focus"],
+  ]);
+});
+
+test("Tiptap table toolbar exposes an insert-between rail after complex blocks", () => {
+  const { created, documentRef } = createDocument();
+  const { calls, editor } = createTableHarness();
+  const node = { nodeSize: 9, type: { name: "table" } };
+  editor.state.doc = {
+    nodeAt(pos) {
+      return pos === 2 ? node : null;
+    },
+    resolve() {
+      return {
+        depth: 0,
+      };
+    },
+  };
+  let controller = null;
+  editor.view.posAtDOM = (target) => {
+    if (target === controller?.state?.table || String(target.className ?? "").includes("mn-tiptap-table")) return 2;
+    return 10;
+  };
+  editor.commands.insertContentAt = (position, content, options) => {
+    calls.push(["insertContentAt", position, content, options]);
+    return true;
+  };
+  editor.commands.setTextSelection = (position) => {
+    calls.push(["setTextSelection", position]);
+    return true;
+  };
+  controller = createTiptapTableToolbarController({
+    dom: { document: documentRef },
+  });
+
+  controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
+  let insertRail = created.find((element) =>
+    String(element.className).includes("mn-tiptap-complex-block-insert"),
+  );
+
+  assert.equal(insertRail.style.left, "120px");
+  assert.equal(insertRail.style.top, "160px");
+  assert.equal(insertRail.hidden, true);
+
+  editor.view.dom.listeners.get("pointermove")({
+    target: editor.view.domAtPos().node,
+    clientX: 160,
+    clientY: 154,
+  });
+  insertRail = created.find((element) =>
+    String(element.className).includes("mn-tiptap-complex-block-insert"),
+  );
+
+  assert.equal(insertRail.hidden, false);
+
+  assert.equal(controller.insertParagraphAfterTable(), true);
+
+  assert.deepEqual(calls, [
+    [
+      "insertContentAt",
+      11,
+      { type: "paragraph" },
+      { updateSelection: true },
+    ],
+    ["setTextSelection", 12],
+    ["focus"],
+  ]);
+});
+
+test("Tiptap table toolbar exposes the insert-between rail after code blocks", () => {
+  const { created, documentRef } = createDocument();
+  const calls = [];
+  const codeBlock = {
+    nodeType: 1,
+    tagName: "PRE",
+    className: "mn-tiptap-code-block",
+    ownerDocument: {
+      documentElement: {
+        clientWidth: 1000,
+        clientHeight: 800,
+      },
+    },
+    contains(target) {
+      return target === this;
+    },
+    closest(selector) {
+      if (selector.includes(".mn-tiptap-code-block") || selector.includes("pre")) return this;
+      return null;
+    },
+    getBoundingClientRect: () => ({
+      left: 160,
+      top: 140,
+      right: 520,
+      bottom: 220,
+      width: 360,
+      height: 80,
+    }),
+  };
+  const root = {
+    listeners: new Map(),
+    contains: (target) => target === codeBlock,
+    addEventListener(type, listener) {
+      this.listeners.set(type, listener);
+    },
+    removeEventListener(type, listener) {
+      if (this.listeners.get(type) === listener) this.listeners.delete(type);
+    },
+  };
+  codeBlock.parentElement = root;
+  const codeNode = { nodeSize: 12, type: { name: "codeBlock" } };
+  const editor = {
+    state: {
+      selection: { from: 4 },
+      doc: {
+        nodeAt(pos) {
+          return pos === 5 ? codeNode : null;
+        },
+        resolve() {
+          return { depth: 0 };
+        },
+      },
+    },
+    view: {
+      dom: root,
+      domAtPos() {
+        return { node: codeBlock };
+      },
+      posAtDOM(target) {
+        return target === codeBlock ? 5 : 9;
+      },
+    },
+    commands: {
+      insertContentAt(position, content, options) {
+        calls.push(["insertContentAt", position, content, options]);
+        return true;
+      },
+      setTextSelection(position) {
+        calls.push(["setTextSelection", position]);
+        return true;
+      },
+      focus() {
+        calls.push(["focus"]);
+      },
+    },
+  };
+  const controller = createTiptapTableToolbarController({
+    dom: { document: documentRef },
+  });
+
+  controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
+  root.listeners.get("pointermove")({
+    target: codeBlock,
+    clientX: 240,
+    clientY: 216,
+  });
+  const insertRail = created.find((element) =>
+    String(element.className).includes("mn-tiptap-complex-block-insert"),
+  );
+
+  assert.equal(controller.state.table, null);
+  assert.equal(controller.state.complexBlock, codeBlock);
+  assert.equal(insertRail.hidden, false);
+  assert.equal(insertRail.style.left, "160px");
+  assert.equal(insertRail.style.top, "222px");
+  assert.equal(insertRail.style.width, "360px");
+  assert.equal(insertRail.dataset.blockKind, "complex");
+
+  insertRail.onpointerdown({ preventDefault() {}, stopPropagation() {} });
+
+  assert.deepEqual(calls, [
+    [
+      "insertContentAt",
+      17,
+      { type: "paragraph" },
+      { updateSelection: true },
+    ],
+    ["setTextSelection", 18],
+    ["focus"],
+  ]);
+});
+
+test("Tiptap table toolbar opens the insert menu after complex blocks when available", () => {
+  const { created, documentRef } = createDocument();
+  const calls = [];
+  const codeBlock = {
+    nodeType: 1,
+    tagName: "PRE",
+    className: "mn-tiptap-code-block",
+    ownerDocument: {
+      documentElement: {
+        clientWidth: 1000,
+        clientHeight: 800,
+      },
+    },
+    contains(target) {
+      return target === this;
+    },
+    closest(selector) {
+      if (selector.includes(".mn-tiptap-code-block") || selector.includes("pre")) return this;
+      return null;
+    },
+    getBoundingClientRect: () => ({
+      left: 160,
+      top: 140,
+      right: 520,
+      bottom: 220,
+      width: 360,
+      height: 80,
+    }),
+  };
+  const root = {
+    listeners: new Map(),
+    contains: (target) => target === codeBlock,
+    addEventListener(type, listener) {
+      this.listeners.set(type, listener);
+    },
+    removeEventListener(type, listener) {
+      if (this.listeners.get(type) === listener) this.listeners.delete(type);
+    },
+  };
+  codeBlock.parentElement = root;
+  const codeNode = { nodeSize: 12, type: { name: "codeBlock" } };
+  const editor = {
+    state: {
+      selection: { from: 4 },
+      doc: {
+        nodeAt(pos) {
+          return pos === 5 ? codeNode : null;
+        },
+      },
+    },
+    view: {
+      dom: root,
+      domAtPos() {
+        return { node: codeBlock };
+      },
+      posAtDOM(target) {
+        return target === codeBlock ? 5 : 9;
+      },
+    },
+    commands: {
+      insertContentAt(position, content, options) {
+        calls.push(["insertContentAt", position, content, options]);
+        return true;
+      },
+      setTextSelection(position) {
+        calls.push(["setTextSelection", position]);
+        return true;
+      },
+      focus() {
+        calls.push(["focus"]);
+      },
+    },
+  };
+  const insertMenu = {
+    calls: [],
+    contains() {
+      return false;
+    },
+    openAtBlock(target, options = {}) {
+      this.calls.push([
+        "openAtBlock",
+        target.kind,
+        target.pos,
+        target.node?.nodeSize,
+        options.anchorRect?.bottom,
+      ]);
+      return { open: true };
+    },
+  };
+  const controller = createTiptapTableToolbarController({
+    dom: { document: documentRef },
+    insertMenu,
+  });
+
+  controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
+  root.listeners.get("pointermove")({
+    target: codeBlock,
+    clientX: 240,
+    clientY: 216,
+  });
+  const insertRail = created.find((element) =>
+    String(element.className).includes("mn-tiptap-complex-block-insert"),
+  );
+
+  insertRail.onpointerdown({ preventDefault() {}, stopPropagation() {} });
+
+  assert.deepEqual(insertMenu.calls, [["openAtBlock", "code_block", 5, 12, 220]]);
+  assert.deepEqual(calls, []);
+});
+
+test("Tiptap table toolbar supports Alt Enter to insert after adjacent complex blocks", () => {
+  const { calls, editor } = createTableHarness();
+  const node = { nodeSize: 9, type: { name: "table" } };
+  editor.state.doc = {
+    nodeAt(pos) {
+      return pos === 2 ? node : null;
+    },
+    resolve() {
+      return { depth: 0 };
+    },
+  };
+  let controller = null;
+  editor.view.posAtDOM = (target) => {
+    if (target === controller?.state?.table || String(target.className ?? "").includes("mn-tiptap-table")) return 2;
+    return 10;
+  };
+  editor.commands.insertContentAt = (position, content, options) => {
+    calls.push(["insertContentAt", position, content, options]);
+    return true;
+  };
+  editor.commands.setTextSelection = (position) => {
+    calls.push(["setTextSelection", position]);
+    return true;
+  };
+  controller = createTiptapTableToolbarController();
+  controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
+
+  const event = {
+    key: "Enter",
+    altKey: true,
+    preventDefault() {
+      calls.push(["preventDefault"]);
+    },
+    stopPropagation() {
+      calls.push(["stopPropagation"]);
+    },
+  };
+
+  assert.equal(controller.handleKeyDown(event), true);
+  assert.deepEqual(calls, [
+    ["preventDefault"],
+    ["stopPropagation"],
+    ["insertContentAt", 11, { type: "paragraph" }, { updateSelection: true }],
+    ["setTextSelection", 12],
     ["focus"],
   ]);
 });
@@ -780,14 +1115,52 @@ test("Tiptap table toolbar anchors quick add buttons to the table grid edges", (
     String(element.className).includes("mn-tiptap-table-add-column"),
   );
 
-  assert.equal(rowButton.style.left, "219px");
-  assert.equal(rowButton.style.top, "164px");
+  assert.equal(rowButton.style.left, "120px");
+  assert.equal(rowButton.style.top, "160px");
   assert.equal(rowButton.dataset.edge, "row");
   assert.equal(rowButton.style.properties.get("--mn-table-quick-add-rail"), "240px");
-  assert.equal(columnButton.style.left, "366px");
-  assert.equal(columnButton.style.top, "103px");
+  assert.equal(columnButton.style.left, "362px");
+  assert.equal(columnButton.style.top, "90px");
   assert.equal(columnButton.dataset.edge, "column");
   assert.equal(columnButton.style.properties.get("--mn-table-quick-add-rail"), "68px");
+});
+
+test("Tiptap table quick add rails appear only on the hovered table edge", () => {
+  const { created, documentRef } = createDocument();
+  const { cells, editor } = createTableHarness();
+  editor.commands.addRowAfter = () => true;
+  editor.commands.addColumnAfter = () => true;
+  const controller = createTiptapTableToolbarController({
+    dom: { document: documentRef },
+  });
+
+  controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
+  const rowButton = created.find((element) =>
+    String(element.className).includes("mn-tiptap-table-add-row"),
+  );
+  const columnButton = created.find((element) =>
+    String(element.className).includes("mn-tiptap-table-add-column"),
+  );
+
+  editor.view.dom.listeners.get("pointermove")({ target: cells[4], clientX: 235, clientY: 130 });
+  assert.equal(rowButton.hidden, true);
+  assert.equal(columnButton.hidden, true);
+
+  editor.view.dom.listeners.get("pointermove")({ target: cells[3], clientX: 160, clientY: 154 });
+  assert.equal(rowButton.hidden, false);
+  assert.equal(columnButton.hidden, true);
+
+  editor.view.dom.listeners.get("pointermove")({ target: cells[2], clientX: 350, clientY: 118 });
+  assert.equal(rowButton.hidden, true);
+  assert.equal(columnButton.hidden, false);
+
+  editor.view.dom.listeners.get("pointermove")({ target: cells[5], clientX: 359, clientY: 152 });
+  assert.equal(rowButton.hidden, true);
+  assert.equal(columnButton.hidden, false);
+
+  editor.view.dom.listeners.get("pointermove")({ target: cells[5], clientX: 318, clientY: 156 });
+  assert.equal(rowButton.hidden, false);
+  assert.equal(columnButton.hidden, true);
 });
 
 test("Tiptap table toolbar controls fall back to click events", () => {
@@ -923,7 +1296,7 @@ test("Tiptap table toolbar keeps complex command chrome hidden until requested",
     String(element.className).includes("mn-tiptap-table-cell-menu-trigger"),
   );
   assert.equal(root.hidden, true);
-  assert.equal(trigger.hidden, false);
+  assert.equal(trigger.hidden, true);
   assert.equal(created.some((element) => element.dataset.commandId === "merge-cells"), false);
 
   trigger.onpointerdown({ preventDefault() {}, stopPropagation() {} });
@@ -1161,6 +1534,34 @@ test("Tiptap table toolbar axis handles select tables rows and columns", () => {
   ]);
 });
 
+test("Tiptap table axis handles only reveal on the table row and column gutters", () => {
+  const { created, documentRef } = createDocument();
+  const { cells, editor } = createTableHarness();
+  const controller = createTiptapTableToolbarController({
+    dom: { document: documentRef },
+  });
+  const visibleAxisHandles = (axis) =>
+    created.filter((element) =>
+      String(element.className).includes(`mn-tiptap-table-axis-handle ${axis}`) &&
+      !element.removed &&
+      !element.hidden,
+    );
+
+  controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
+
+  editor.view.dom.listeners.get("pointermove")({ target: cells[4], clientX: 202, clientY: 128 });
+  assert.equal(visibleAxisHandles("row").length, 0);
+  assert.equal(visibleAxisHandles("column").length, 0);
+
+  editor.view.dom.listeners.get("pointermove")({ target: cells[3], clientX: 122, clientY: 128 });
+  assert.equal(visibleAxisHandles("row").length, 1);
+  assert.equal(visibleAxisHandles("column").length, 0);
+
+  editor.view.dom.listeners.get("pointermove")({ target: cells[1], clientX: 204, clientY: 92 });
+  assert.equal(visibleAxisHandles("row").length, 0);
+  assert.equal(visibleAxisHandles("column").length, 1);
+});
+
 test("Tiptap table toolbar reflects selected rows columns and cells in chrome", () => {
   const { cells, created, documentRef, editor } = (() => {
     const { created, documentRef } = createDocument();
@@ -1208,7 +1609,7 @@ test("Tiptap table toolbar reflects selected rows columns and cells in chrome", 
   assert.equal(cells.some((cell) => cell.classes.has("mn-tiptap-table-cell-selected")), false);
 });
 
-test("Tiptap table toolbar positions the cell menu trigger inside the selected cell", () => {
+test("Tiptap table toolbar keeps the cell menu trigger hidden until the edge is intentional", () => {
   const { created, documentRef } = createDocument();
   const { editor } = createTableHarness();
   editor.commands.mergeCells = () => true;
@@ -1221,12 +1622,83 @@ test("Tiptap table toolbar positions the cell menu trigger inside the selected c
   const trigger = created.find((element) =>
     String(element.className).includes("mn-tiptap-table-cell-menu-trigger"),
   );
-  assert.equal(trigger.style.left, "149px");
-  assert.equal(trigger.style.top, "96px");
+  assert.equal(trigger.hidden, true);
   assert.equal(trigger.textContent ?? "", "");
   assert.equal(trigger.dataset.selectionKind, "cell");
   assert.equal(trigger.dataset.selectedCount, "0");
   assert.equal(trigger["aria-expanded"], "false");
+});
+
+test("Tiptap table toolbar reveals the cell trigger only on the right edge hot zone", () => {
+  const { created, documentRef } = createDocument();
+  const { cells, editor } = createTableHarness({ setCellAttribute: () => true });
+  editor.commands.addColumnAfter = () => true;
+  const controller = createTiptapTableToolbarController({
+    dom: { document: documentRef },
+  });
+
+  controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
+  const trigger = created.find((element) =>
+    String(element.className).includes("mn-tiptap-table-cell-menu-trigger"),
+  );
+
+  editor.view.dom.listeners.get("pointermove")({
+    target: cells[0],
+    clientX: 181,
+    clientY: 112,
+  });
+  assert.equal(trigger.hidden, true);
+
+  editor.view.dom.listeners.get("pointermove")({
+    target: cells[0],
+    clientX: 195,
+    clientY: 107,
+  });
+  assert.equal(trigger.hidden, false);
+  assert.equal(trigger.style.left, "201px");
+  assert.equal(trigger.style.top, "99px");
+  assert.equal(controller.state.hover.edge, "cell-menu");
+});
+
+test("Tiptap table toolbar keeps the cell trigger quiet outside the vertical center zone", () => {
+  const { created, documentRef } = createDocument();
+  const { cells, editor } = createTableHarness({ setCellAttribute: () => true });
+  const controller = createTiptapTableToolbarController({
+    dom: { document: documentRef },
+  });
+
+  controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
+  const trigger = created.find((element) =>
+    String(element.className).includes("mn-tiptap-table-cell-menu-trigger"),
+  );
+
+  editor.view.dom.listeners.get("pointermove")({
+    target: cells[0],
+    clientX: 195,
+    clientY: 123,
+  });
+
+  assert.equal(trigger.hidden, true);
+  assert.notEqual(controller.state.hover.edge, "cell-menu");
+});
+
+test("Tiptap table toolbar does not expose split cell without a can command", () => {
+  const { created, documentRef } = createDocument();
+  const { editor } = createTableHarness({
+    splitCell: () => true,
+    setCellAttribute: () => true,
+  });
+  const controller = createTiptapTableToolbarController({
+    dom: { document: documentRef },
+  });
+
+  controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
+  const trigger = created.find((element) =>
+    String(element.className).includes("mn-tiptap-table-cell-menu-trigger"),
+  );
+  trigger.onpointerdown({ preventDefault() {}, stopPropagation() {} });
+
+  assert.equal(toolbarCommandIds(created).includes("split-cell"), false);
 });
 
 test("Tiptap table toolbar anchors multi-cell actions to the head cell", () => {
@@ -1255,25 +1727,26 @@ test("Tiptap table toolbar anchors multi-cell actions to the head cell", () => {
     String(element.className).includes("mn-tiptap-table-toolbar"),
   );
   assert.equal(controller.state.selection.kind, "cells");
-  assert.equal(trigger.style.left, "229px");
-  assert.equal(trigger.style.top, "96px");
+  assert.equal(trigger.style.left, "280px");
+  assert.equal(trigger.style.top, "99px");
   assert.equal(trigger.dataset.selectionKind, "cells");
+  assert.equal(trigger.dataset.placement, "center");
   assert.equal(trigger.dataset.selectedCount, "2");
   trigger.getBoundingClientRect = () => ({
-    left: 229,
-    top: 96,
-    right: 253,
-    bottom: 120,
-    width: 24,
-    height: 24,
+    left: 232,
+    top: 97,
+    right: 248,
+    bottom: 113,
+    width: 12,
+    height: 16,
   });
 
   trigger.onpointerdown({ preventDefault() {}, stopPropagation() {} });
 
   assert.equal(root.hidden, false);
   assert.equal(trigger["aria-expanded"], "true");
-  assert.equal(root.style.left, "103px");
-  assert.equal(root.style.top, "128px");
+  assert.equal(root.style.left, "162px");
+  assert.equal(root.style.top, "121px");
 });
 
 test("Tiptap table toolbar renders localized context headers for table selections", () => {
@@ -1352,12 +1825,9 @@ test("Tiptap table toolbar scopes context commands to row and column selections"
     ["add-row-after", "add-row-before", "toggle-header-row", "delete-row"],
   );
 
-  const columnHandle = created.find((element) =>
-    String(element.className).includes("mn-tiptap-table-axis-handle column") && !element.removed,
-  );
-  columnHandle.onpointerdown({ preventDefault() {}, stopPropagation() {} });
+  controller.selectAxis("column", 0);
   assert.equal(controller.state.selection.kind, "column");
-  assert.equal(controller.state.menuOpen, true);
+  assert.equal(controller.toggleMenu("context", { open: true }), true);
   assert.deepEqual(
     created
       .filter((element) => element.dataset.commandId && !element.removed)
@@ -1509,10 +1979,13 @@ test("Tiptap table toolbar keeps cell and axis context menus focused", () => {
     deleteColumn: () => true,
     toggleHeaderColumn: () => true,
     mergeCells: () => true,
-    splitCell: () => true,
+    splitCell: () => false,
     setCellAttribute: () => true,
     fixTables: () => true,
     deleteTable: () => true,
+  });
+  editor.can = () => ({
+    splitCell: () => false,
   });
   const controller = createTiptapTableToolbarController({
     dom: { document: documentRef },
@@ -1524,7 +1997,6 @@ test("Tiptap table toolbar keeps cell and axis context menus focused", () => {
   );
   trigger.onpointerdown({ preventDefault() {}, stopPropagation() {} });
   assert.deepEqual(toolbarCommandIds(created), [
-    "split-cell",
     "align-left",
     "align-center",
     "align-right",
@@ -1534,10 +2006,8 @@ test("Tiptap table toolbar keeps cell and axis context menus focused", () => {
     "cell-bg-green",
   ]);
 
-  const rowHandle = created.find((element) =>
-    String(element.className).includes("mn-tiptap-table-axis-handle row") && !element.removed,
-  );
-  rowHandle.onpointerdown({ preventDefault() {}, stopPropagation() {} });
+  controller.selectAxis("row", 0);
+  controller.toggleMenu("context", { open: true });
   assert.deepEqual(toolbarCommandIds(created).filter((id) => id.includes("row")), [
     "add-row-after",
     "add-row-before",
@@ -1546,10 +2016,8 @@ test("Tiptap table toolbar keeps cell and axis context menus focused", () => {
   ]);
   assert.equal(toolbarCommandIds(created).includes("cell-bg-yellow"), false);
 
-  const tableHandle = created.find((element) =>
-    String(element.className).includes("mn-tiptap-table-axis-handle table") && !element.removed,
-  );
-  tableHandle.onpointerdown({ preventDefault() {}, stopPropagation() {} });
+  controller.selectAxis("table", 0);
+  controller.toggleMenu("context", { open: true });
   assert.deepEqual(toolbarCommandIds(created), [
     "toggle-header-row",
     "toggle-header-column",
@@ -1590,22 +2058,20 @@ test("Tiptap table toolbar anchors row and column menus to the active selection"
   assert.equal(controller.state.selection.kind, "row");
   assert.equal(root.hidden, false);
   assert.equal(root.style.top, "132px");
-  assert.equal(trigger.style.left, "349px");
-  assert.equal(trigger.style.top, "96px");
+  assert.equal(trigger.style.left, "355px");
+  assert.equal(trigger.style.top, "99px");
   assert.equal(backdrop.hidden, false);
   assert.equal(backdrop.style.left, "120px");
   assert.equal(backdrop.style.width, "240px");
   assert.equal(backdrop.style.height, "34px");
 
-  const columnHandle = created.find((element) =>
-    String(element.className).includes("mn-tiptap-table-axis-handle column") && !element.removed,
-  );
-  columnHandle.onpointerdown({ preventDefault() {}, stopPropagation() {} });
+  controller.selectAxis("column", 0);
+  controller.toggleMenu("context", { open: true });
 
   assert.equal(controller.state.selection.kind, "column");
   assert.equal(root.style.top, "166px");
-  assert.equal(trigger.style.left, "189px");
-  assert.equal(trigger.style.top, "147px");
+  assert.equal(trigger.style.left, "195px");
+  assert.equal(trigger.style.top, "150px");
   assert.equal(backdrop.style.left, "120px");
   assert.equal(backdrop.style.width, "80px");
   assert.equal(backdrop.style.height, "68px");
@@ -1680,7 +2146,7 @@ test("Tiptap table toolbar replaces native context menus inside table cells", ()
   assert.equal(controller.state.menuOpen, true);
   assert.equal(root.hidden, false);
   assert.equal(root.dataset.selectionKind, "cell");
-  assert.equal(root.style.left, "102px");
+  assert.equal(root.style.left, "162px");
   assert.equal(root.style.top, "132px");
 
   controller.destroy();
@@ -1711,7 +2177,7 @@ test("Tiptap table toolbar anchors right-click menus to the pointer", () => {
   );
   assert.equal(controller.state.menuAnchorRect.left, 310);
   assert.equal(controller.state.menuAnchorRect.top, 240);
-  assert.equal(root.style.left, "172px");
+  assert.equal(root.style.left, "232px");
   assert.equal(root.style.top, "248px");
 });
 
@@ -1765,7 +2231,7 @@ test("Tiptap table toolbar closes on outside pointer events", () => {
   });
   controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
 
-  documentRef.emit("pointerdown", { target: { id: "outside" } });
+  documentRef.emit("pointerup", { target: { id: "outside" } });
 
   assert.equal(controller.state.open, false);
   assert.deepEqual(view.calls.at(-1), ["hide"]);
@@ -1782,7 +2248,7 @@ test("Tiptap table toolbar stays open for pointer events inside the active table
   });
   controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
 
-  documentRef.emit("pointerdown", { target: table });
+  documentRef.emit("pointerup", { target: table });
 
   assert.equal(controller.state.open, true);
   assert.notDeepEqual(view.calls.at(-1), ["hide"]);

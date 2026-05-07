@@ -22,6 +22,8 @@ const TOOL_WINDOW_CSS: &str = concat!(
     "\n",
     include_str!("../../../assets/styles/markdown.css"),
     "\n",
+    include_str!("../../../assets/styles/tiptap-chrome.css"),
+    "\n",
     include_str!("../../../assets/main.css")
 );
 const TOOL_WINDOW_FAVICON: &str = "/assets/favicon.ico";

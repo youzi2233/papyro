@@ -32,6 +32,7 @@ export function createFloatingDismissController({
   shouldDismiss = () => true,
   shouldDismissOnScroll = shouldDismiss,
   onDismiss = () => {},
+  pointerDismissEvent = "pointerdown",
 } = {}) {
   let removeListeners = [];
   let pointerEventHandled = false;
@@ -70,13 +71,13 @@ export function createFloatingDismissController({
       close();
       if (!documentRef?.addEventListener) return;
 
-      documentRef.addEventListener("pointerdown", dismissPointer, true);
+      documentRef.addEventListener(pointerDismissEvent, dismissPointer, true);
       documentRef.addEventListener("mousedown", dismissMouse, true);
       documentRef.addEventListener("focusin", dismissIfOutside, true);
       documentRef.addEventListener("scroll", dismissScroll, true);
       windowRef?.addEventListener?.("resize", dismissIfOutside);
       removeListeners = [
-        () => documentRef.removeEventListener?.("pointerdown", dismissPointer, true),
+        () => documentRef.removeEventListener?.(pointerDismissEvent, dismissPointer, true),
         () => documentRef.removeEventListener?.("mousedown", dismissMouse, true),
         () => documentRef.removeEventListener?.("focusin", dismissIfOutside, true),
         () => documentRef.removeEventListener?.("scroll", dismissScroll, true),

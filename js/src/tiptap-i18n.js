@@ -69,6 +69,7 @@ const BLOCK_ACTION_LABELS = Object.freeze({
   "code-language-typescript": ["TypeScript", "TypeScript", "Highlight this block as TypeScript", "将当前代码块按 TypeScript 高亮"],
   "code-language-rust": ["Rust", "Rust", "Highlight this block as Rust", "将当前代码块按 Rust 高亮"],
   "code-language-python": ["Python", "Python", "Highlight this block as Python", "将当前代码块按 Python 高亮"],
+  "code-language-go": ["Go", "Go", "Highlight this block as Go", "将当前代码块按 Go 高亮"],
   "code-language-json": ["JSON", "JSON", "Highlight this block as JSON", "将当前代码块按 JSON 高亮"],
   "code-language-bash": ["Bash", "Bash", "Highlight this block as Bash", "将当前代码块按 Bash 高亮"],
   "code-language-markdown": ["Markdown", "Markdown", "Highlight this block as Markdown", "将当前代码块按 Markdown 高亮"],
@@ -76,6 +77,7 @@ const BLOCK_ACTION_LABELS = Object.freeze({
   "code-language-css": ["CSS", "CSS", "Highlight this block as CSS", "将当前代码块按 CSS 高亮"],
   "code-language-sql": ["SQL", "SQL", "Highlight this block as SQL", "将当前代码块按 SQL 高亮"],
   "code-language-yaml": ["YAML", "YAML", "Highlight this block as YAML", "将当前代码块按 YAML 高亮"],
+  "code-language-toml": ["TOML", "TOML", "Highlight this block as TOML", "将当前代码块按 TOML 高亮"],
   "code-block": ["Code block", "代码块", "Use a fenced code block", "使用围栏代码块"],
   divider: ["Divider", "分割线", "Insert a horizontal rule", "插入水平分割线"],
   table: ["Table", "表格", "Insert a 3 by 2 table", "插入 3 x 2 表格"],
@@ -252,6 +254,30 @@ export function blockActionTargetLabel(language, kind) {
   return fallback.charAt(0).toUpperCase() + fallback.slice(1);
 }
 
+export function blockActionSubmenuLabel(language, submenu) {
+  const labels = {
+    "turn-into": ["Turn into", "\u8f6c\u6362\u4e3a"],
+    "code-language": ["Code language", "\u4ee3\u7801\u8bed\u8a00"],
+  };
+  const label = labels[submenu];
+  return label ? localizedText(language, label[0], label[1]) : String(submenu ?? "");
+}
+
+export function blockActionSubmenuDescription(language, submenu) {
+  const labels = {
+    "turn-into": [
+      "Change the current block type",
+      "\u66f4\u6539\u5f53\u524d\u5757\u7c7b\u578b",
+    ],
+    "code-language": [
+      "Set highlighting for this code block",
+      "\u8bbe\u7f6e\u4ee3\u7801\u5757\u9ad8\u4eae\u8bed\u8a00",
+    ],
+  };
+  const label = labels[submenu];
+  return label ? localizedText(language, label[0], label[1]) : "";
+}
+
 export function tableToolsLabel(language) {
   return localizedText(language, "Table tools", "表格工具");
 }
@@ -322,6 +348,10 @@ export function addRowBelowLabel(language) {
 
 export function addColumnRightLabel(language) {
   return localizedText(language, "Add column right", "在右侧添加列");
+}
+
+export function insertBlockAfterLabel(language) {
+  return localizedText(language, "Insert block after", "在下方插入内容块");
 }
 
 export function selectTableLabel(language) {

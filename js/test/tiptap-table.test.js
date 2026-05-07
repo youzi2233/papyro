@@ -13,6 +13,11 @@ test("Papyro table extensions expose the TableKit boundary", () => {
     extensions.map((extension) => extension.name),
     ["tableKit", "papyroTableCellBackground"],
   );
+  assert.equal(extensions[0].options.table.resizable, true);
+  assert.equal(extensions[0].options.table.handleWidth, 6);
+  assert.equal(extensions[0].options.table.cellMinWidth, 96);
+  assert.equal(extensions[0].options.table.lastColumnResizable, true);
+  assert.equal(extensions[0].options.table.allowTableNodeSelection, true);
 });
 
 test("Papyro table cell background extension adds cell attributes", () => {
