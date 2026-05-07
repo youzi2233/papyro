@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 
 import {
   createPapyroMarkdownManager,
+  createPapyroTiptapExtensions,
   parseTiptapMarkdown,
   roundTripTiptapMarkdown,
   serializeTiptapMarkdown,
@@ -290,6 +291,19 @@ test("Tiptap Markdown manager parses the baseline Markdown blocks", () => {
       text: "Ship the Tiptap migration in small, tested pieces.",
     },
   ]);
+});
+
+test("Tiptap extension chain includes official node range after StarterKit", () => {
+  const extensions = createPapyroTiptapExtensions();
+  const names = extensions.map((extension) => extension.name);
+
+  assert.equal(names[0], "starterKit");
+  assert.equal(names[1], "nodeRange");
+  assert.ok(names.includes("codeBlock"));
+  assert.ok(names.includes("tableKit"));
+
+  const nodeRange = extensions.find((extension) => extension.name === "nodeRange");
+  assert.equal(nodeRange.options?.key, "Mod");
 });
 
 test("Tiptap release smoke fixture preserves editor-critical block semantics", () => {

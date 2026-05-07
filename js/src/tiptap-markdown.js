@@ -1,4 +1,5 @@
 import { MarkdownManager } from "@tiptap/markdown";
+import { NodeRange } from "@tiptap/extension-node-range";
 import { StarterKit } from "@tiptap/starter-kit";
 
 import { createPapyroCalloutExtensions } from "./tiptap-callout.js";
@@ -22,6 +23,9 @@ export function createPapyroTiptapExtensions() {
         linkOnPaste: false,
       },
       codeBlock: false,
+    }),
+    NodeRange.configure({
+      key: "Mod",
     }),
     ...createPapyroCodeBlockExtensions(),
     ...createPapyroTaskListExtensions(),

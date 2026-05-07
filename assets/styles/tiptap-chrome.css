@@ -221,6 +221,32 @@
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--mn-accent) 14%, transparent);
 }
 
+.mn-tiptap-editor.ProseMirror-noderangeselection *::selection {
+    background: transparent;
+}
+
+.mn-tiptap-editor.ProseMirror-noderangeselection * {
+    caret-color: transparent;
+}
+
+.mn-tiptap-editor :where(.ProseMirror-selectednode, .ProseMirror-selectednoderange) {
+    position: relative;
+}
+
+.mn-tiptap-editor :where(.ProseMirror-selectednode, .ProseMirror-selectednoderange)::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: -4px -8px;
+    border-radius: 7px;
+    background: color-mix(in srgb, var(--mn-accent) 10%, transparent);
+    box-shadow:
+        inset 2px 0 0 color-mix(in srgb, var(--mn-accent) 42%, transparent),
+        0 0 0 1px color-mix(in srgb, var(--mn-accent) 14%, transparent),
+        0 0 0 3px color-mix(in srgb, var(--mn-accent) 5%, transparent);
+    pointer-events: none;
+}
+
 .mn-tiptap-block-dragging {
     cursor: grabbing;
 }

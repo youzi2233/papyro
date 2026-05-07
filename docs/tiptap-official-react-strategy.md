@@ -35,6 +35,7 @@ Before this decision, the local official sources were refreshed and reviewed:
 
 - `E:\tiptap\packages\react\src\Tiptap.tsx`
 - `E:\tiptap\packages\extension-drag-handle-react`
+- `E:\tiptap\packages\extension-node-range`
 - `E:\tiptap\packages\extension-table`
 - `.reference/tiptap-docs/src/content/guides/react-composable-api.mdx`
 - `.reference/tiptap-docs/src/content/editor/getting-started/install/react.mdx`
@@ -86,6 +87,7 @@ The free official path is viable for the next block-handle migration:
 - Keep Papyro's React block handle as the rendered children so the UI still has two separate controls: drag/action handle and insert `+`.
 - Use Papyro's action menu for click/right-click actions. The official drag handle owns drag behavior; Papyro owns contextual actions, copy/delete/turn-into/color, and the insert menu.
 - Use `@tiptap/extension-node-range` for block-range selection and keyboard range behavior where it does not fight Markdown persistence.
+  - Foundation added: Papyro now includes the official `NodeRange` extension with its conservative default `Mod` pointer key and Papyro-themed `.ProseMirror-selectednoderange` styling.
 - Do not let the generic block handle own table cell/row/column controls. Table cells, ranges, row handles, column handles, and resize affordances remain table overlay responsibilities.
 - Keep the current compatibility controller until the official plugin path covers click actions, menu stability, block highlight, drag reorder, and complex-node ownership with tests.
 
