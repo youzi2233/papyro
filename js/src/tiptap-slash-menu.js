@@ -138,11 +138,11 @@ function blockInsertMenuAnchorRect(slashRect, target, fallbackRect = null) {
   return fallback;
 }
 
-const MAIN_MENU_WIDTH = 168;
+const MAIN_MENU_WIDTH = 224;
 const MAIN_MENU_HEIGHT = 360;
 const SIDE_PANEL_GAP = 6;
-const TABLE_PICKER_WIDTH = 158;
-const CALLOUT_PICKER_WIDTH = 164;
+const TABLE_PICKER_WIDTH = 154;
+const CALLOUT_PICKER_WIDTH = 166;
 const SIDE_PANEL_INTENT_DELAY_MS = 80;
 
 function placeMenu(element, editor, range, anchorRect = null, placement = "bottom") {
@@ -527,7 +527,7 @@ class TiptapSlashMenuView {
     if (rootRect && itemRect) {
       const panelHeight =
         selectedCommand?.id === "table"
-          ? 164
+          ? 166
           : selectedCommand?.id === "callout"
             ? 188
             : 0;
@@ -898,6 +898,18 @@ export class TiptapSlashMenuController {
     if (event.key === "ArrowUp") {
       event.preventDefault();
       this.moveSelection(-1);
+      return true;
+    }
+
+    if (event.key === "Home") {
+      event.preventDefault();
+      this.setSelection(0);
+      return true;
+    }
+
+    if (event.key === "End") {
+      event.preventDefault();
+      this.setSelection(this.#state.commands.length - 1);
       return true;
     }
 

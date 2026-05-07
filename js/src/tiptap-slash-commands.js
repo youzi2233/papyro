@@ -247,7 +247,7 @@ export const PAPYRO_TIPTAP_SLASH_COMMANDS = Object.freeze([
     id: "table",
     title: "Table",
     description: "Insert a simple Markdown table",
-    group: "Advanced",
+    group: "Data",
     icon: "table",
     aliases: ["grid"],
     keywords: ["cells", "表格"],
@@ -268,6 +268,23 @@ export const PAPYRO_TIPTAP_SLASH_COMMANDS = Object.freeze([
     },
   }),
   createCommand({
+    id: "image",
+    title: "Image",
+    description: "Insert Markdown image syntax",
+    group: "Media",
+    icon: "image",
+    aliases: ["img", "picture"],
+    keywords: ["media", "asset", "图片", "图像"],
+    priority: 51,
+    run: ({ editor }) =>
+      runEditorCommand(
+        editor,
+        "setImage",
+        [{ src: "assets/image.png", alt: "alt text", title: "" }],
+        "![alt text](assets/image.png)",
+      ),
+  }),
+  createCommand({
     id: "math-block",
     title: "Math block",
     description: "Insert a display formula",
@@ -275,7 +292,7 @@ export const PAPYRO_TIPTAP_SLASH_COMMANDS = Object.freeze([
     icon: "math",
     aliases: ["math", "formula"],
     keywords: ["latex", "equation", "公式", "数学"],
-    priority: 51,
+    priority: 52,
     run: ({ editor }) =>
       runEditorCommand(editor, "setMathBlock", [{ source: "x^2 + y^2 = z^2" }], "\n$$\n\n$$\n"),
   }),
@@ -287,30 +304,13 @@ export const PAPYRO_TIPTAP_SLASH_COMMANDS = Object.freeze([
     icon: "mermaid",
     aliases: ["diagram", "flowchart"],
     keywords: ["chart", "graph", "图表", "流程图"],
-    priority: 52,
+    priority: 53,
     run: ({ editor }) =>
       runEditorCommand(
         editor,
         "setMermaidBlock",
         [{ source: "flowchart TD\n  A --> B" }],
         "\n```mermaid\nflowchart TD\n  A --> B\n```\n",
-      ),
-  }),
-  createCommand({
-    id: "image",
-    title: "Image",
-    description: "Insert Markdown image syntax",
-    group: "Advanced",
-    icon: "image",
-    aliases: ["img", "picture"],
-    keywords: ["media", "asset", "图片", "图像"],
-    priority: 53,
-    run: ({ editor }) =>
-      runEditorCommand(
-        editor,
-        "setImage",
-        [{ src: "assets/image.png", alt: "alt text", title: "" }],
-        "![alt text](assets/image.png)",
       ),
   }),
 ]);

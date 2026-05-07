@@ -28,10 +28,12 @@ const GROUP_LABELS = Object.freeze({
   Color: "文字颜色",
   "Code language": "代码语言",
   Danger: "危险",
+  Data: "数据",
   Headers: "表头",
   Highlight: "高亮",
   Insert: "插入",
   Lists: "列表",
+  Media: "媒体",
   Navigate: "导航",
   Rows: "行",
   Selection: "选择",
@@ -102,10 +104,10 @@ const SLASH_COMMAND_LABELS = Object.freeze({
   callout: ["Callout", "标注", "Insert a note callout", "插入提示标注", "Blocks", "块"],
   "code-block": ["Code block", "代码块", "Insert a fenced code block", "插入围栏代码块", "Blocks", "块"],
   divider: ["Divider", "分割线", "Insert a horizontal rule", "插入水平分割线", "Blocks", "块"],
-  table: ["Table", "表格", "Insert a simple Markdown table", "插入 Markdown 表格", "Advanced", "高级"],
+  table: ["Table", "表格", "Insert a simple Markdown table", "插入 Markdown 表格", "Data", "数据"],
+  image: ["Image", "图片", "Insert Markdown image syntax", "插入 Markdown 图片语法", "Media", "媒体"],
   "math-block": ["Math block", "公式块", "Insert a display formula", "插入独立公式", "Advanced", "高级"],
   mermaid: ["Mermaid diagram", "Mermaid 图表", "Insert a Mermaid code fence", "插入 Mermaid 代码围栏", "Advanced", "高级"],
-  image: ["Image", "图片", "Insert Markdown image syntax", "插入 Markdown 图片语法", "Advanced", "高级"],
 });
 
 const TABLE_COMMAND_LABELS = Object.freeze({

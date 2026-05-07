@@ -170,14 +170,17 @@ Goal: make `/` and `+` insertion feel like a professional document command surfa
 
 Tasks:
 
-- [ ] Replace the DOM slash menu with a React command menu.
-- [ ] Separate insert commands into groups: Text, Lists, Media, Data, Advanced, Recent.
+- [x] Replace the DOM slash menu with a React command menu.
+- [x] Separate core insert commands into Text, Lists, Blocks, Data, Media, and Advanced groups.
+- [ ] Add a Recent group after command usage history exists.
 - [ ] Support nested detail panels for table size, callout style, code language, and future diagram/math templates.
-- [ ] Fix keyboard navigation so ArrowDown can reach every command and never loops before the last item.
-- [ ] Position detail panels beside the selected command, not at awkward top-right coordinates.
-- [ ] Add localized labels, descriptions, search aliases, and empty states.
-- [ ] Add command filtering with stable active item and scroll-into-view only for keyboard navigation.
-- [ ] Keep `+` semantics distinct: insert below the current block, open the menu at the new caret, and clean temporary slash text on cancel.
+  - Current coverage: table size and callout style panels are implemented and anchored to the active command row.
+- [x] Fix keyboard navigation so ArrowDown can reach every command and never loops before the last item.
+- [x] Support Home and End navigation across the full insert command list.
+- [x] Position detail panels beside the selected command, not at awkward top-right coordinates.
+- [x] Add localized labels, descriptions, search aliases, and empty states for current commands.
+- [x] Add command filtering with stable active item and scroll-into-view only for keyboard navigation.
+- [x] Keep `+` semantics distinct: insert below the current block, open the menu at the new caret, and clean temporary slash text on cancel.
 
 Acceptance criteria:
 
@@ -191,6 +194,9 @@ Verification:
 ```powershell
 npm --prefix js test -- --runInBand
 npm --prefix js run build
+node scripts/check-markdown-style-smoke.js
+node scripts/check-tiptap-release-smoke.js
+node scripts/check-tiptap-runtime-smoke.js
 ```
 
 Manual smoke:

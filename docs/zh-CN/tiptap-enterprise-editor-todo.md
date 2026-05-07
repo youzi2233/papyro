@@ -170,14 +170,17 @@ node scripts/report-file-lines.js
 
 任务：
 
-- [ ] 用 React command menu 替换 DOM slash menu。
-- [ ] 插入命令按 Text、Lists、Media、Data、Advanced、Recent 分组。
+- [x] 用 React command menu 替换 DOM slash menu。
+- [x] 核心插入命令按 Text、Lists、Blocks、Data、Media、Advanced 分组。
+- [ ] 等命令使用历史存在后再增加 Recent 分组。
 - [ ] 支持表格尺寸、callout 样式、代码语言、未来 diagram/math 模板的二级详情面板。
-- [ ] 修复键盘导航，ArrowDown 必须能到达每一项，不能没到表格就回到第一项。
-- [ ] 详情面板跟随当前命令右侧定位，不要飘到右上角奇怪位置。
-- [ ] 增加本地化 title、description、搜索别名和空状态。
-- [ ] 命令过滤要保持稳定 active item；只有键盘导航时才强制 scroll into view。
-- [ ] 保持 `+` 语义独立：在当前 block 下方插入、在新光标处打开菜单、取消时清理临时 slash 文本。
+  - 当前覆盖：表格尺寸和 callout 样式面板已实现，并锚定到当前激活命令行。
+- [x] 修复键盘导航，ArrowDown 必须能到达每一项，不能没到表格就回到第一项。
+- [x] 支持 Home 和 End 在完整插入命令列表中跳转。
+- [x] 详情面板跟随当前命令右侧定位，不要飘到右上角奇怪位置。
+- [x] 为当前命令增加本地化 title、description、搜索别名和空状态。
+- [x] 命令过滤要保持稳定 active item；只有键盘导航时才强制 scroll into view。
+- [x] 保持 `+` 语义独立：在当前 block 下方插入、在新光标处打开菜单、取消时清理临时 slash 文本。
 
 验收标准：
 
@@ -191,6 +194,9 @@ node scripts/report-file-lines.js
 ```powershell
 npm --prefix js test -- --runInBand
 npm --prefix js run build
+node scripts/check-markdown-style-smoke.js
+node scripts/check-tiptap-release-smoke.js
+node scripts/check-tiptap-runtime-smoke.js
 ```
 
 手工 smoke：

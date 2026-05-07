@@ -1,3 +1,23 @@
+const COMMAND_GROUP_ORDER = Object.freeze([
+  "Text",
+  "文本",
+  "Lists",
+  "列表",
+  "Blocks",
+  "块",
+  "Data",
+  "数据",
+  "Media",
+  "媒体",
+  "Advanced",
+  "高级",
+]);
+
+function commandGroupRank(groupName) {
+  const index = COMMAND_GROUP_ORDER.indexOf(groupName);
+  return index < 0 ? COMMAND_GROUP_ORDER.length : index;
+}
+
 export function groupCommandsForMenu(commands = []) {
   const groups = [];
   const byName = new Map();
@@ -16,7 +36,10 @@ export function groupCommandsForMenu(commands = []) {
     group.commands.push({ ...command, index: command?.index ?? index });
   });
 
-  return groups;
+  return groups.sort(
+    (left, right) =>
+      commandGroupRank(left.name) - commandGroupRank(right.name),
+  );
 }
 
 export function commandMenuSidePanel(command) {
@@ -26,7 +49,7 @@ export function commandMenuSidePanel(command) {
 }
 
 export function commandMenuSidePanelWidth(panel) {
-  if (panel === "table") return 136;
-  if (panel === "callout") return 154;
+  if (panel === "table") return 154;
+  if (panel === "callout") return 166;
   return 0;
 }

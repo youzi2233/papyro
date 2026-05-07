@@ -18,7 +18,7 @@ import {
 } from "../tiptap-ui-primitives.js";
 import { markdownCommandsLabel } from "../tiptap-i18n.js";
 
-const MAIN_MENU_WIDTH = 216;
+const MAIN_MENU_WIDTH = 224;
 const MAIN_MENU_HEIGHT = 390;
 const SIDE_PANEL_GAP = 5;
 
@@ -76,7 +76,7 @@ function commandItemByIndex(root, index) {
 }
 
 function activePanelHeight(panel) {
-  if (panel === "table") return 150;
+  if (panel === "table") return 166;
   if (panel === "callout") return 188;
   return 0;
 }

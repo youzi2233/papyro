@@ -231,11 +231,11 @@
     z-index: 150;
     display: grid;
     grid-template-rows: auto minmax(0, 1fr) auto auto auto;
-    width: min(216px, calc(100vw - 20px));
+    width: min(224px, calc(100vw - 20px));
     max-height: min(390px, calc(100vh - 20px));
-    padding: 5px;
+    padding: 6px;
     border: var(--mn-border-default);
-    border-radius: 8px;
+    border-radius: 9px;
     background:
         linear-gradient(
             180deg,
@@ -243,7 +243,9 @@
             var(--mn-surface-raised)
         );
     color: var(--mn-ink);
-    box-shadow: 0 18px 42px color-mix(in srgb, #000 13%, transparent), var(--mn-shadow-lg);
+    box-shadow:
+        0 18px 40px color-mix(in srgb, #000 12%, transparent),
+        var(--mn-shadow-lg);
     overflow: visible;
     font-family: var(--mn-font-ui);
     user-select: none;
@@ -257,7 +259,7 @@
 .mn-tiptap-block-action-menu-header {
     display: grid;
     gap: 2px;
-    padding: 4px 7px;
+    padding: 5px 8px 4px;
     border-bottom: 0;
     background: transparent;
 }
@@ -288,7 +290,7 @@
     display: grid;
     align-content: start;
     gap: 1px;
-    padding: 2px 0;
+    padding: 3px 0;
     max-height: 326px;
     overflow-y: auto;
     scrollbar-gutter: stable;
@@ -300,7 +302,7 @@
 }
 
 .mn-tiptap-slash-menu-section-title {
-    padding: 4px 8px 2px;
+    padding: 5px 8px 2px;
     color: var(--mn-ink-3);
     font-size: 10px;
     font-weight: var(--mn-weight-semibold);
@@ -311,16 +313,16 @@
 
 .mn-tiptap-slash-menu-item {
     display: grid;
-    grid-template-columns: 18px minmax(0, 1fr);
+    grid-template-columns: 20px minmax(0, 1fr);
     align-items: center;
-    gap: 7px;
+    gap: 8px;
     width: 100%;
-    min-height: 30px;
+    min-height: 32px;
     border: 1px solid transparent;
-    border-radius: 6px;
+    border-radius: 7px;
     background: transparent;
     color: var(--mn-ink-2);
-    padding: 4px 8px 4px 6px;
+    padding: 5px 8px 5px 6px;
     text-align: left;
     font: inherit;
     transition:
@@ -349,12 +351,12 @@
     position: relative;
     display: grid;
     place-items: center;
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
     border: 1px solid transparent;
-    border-radius: 5px;
-    background: transparent;
-    color: color-mix(in srgb, var(--mn-ink-3) 84%, transparent);
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--mn-surface-sunken) 70%, transparent);
+    color: color-mix(in srgb, var(--mn-ink-3) 88%, transparent);
     font-size: 10px;
     font-weight: var(--mn-weight-semibold);
     line-height: 1;
@@ -369,13 +371,13 @@
 
 .mn-tiptap-command-icon-svg {
     display: block;
-    width: 15px;
-    height: 15px;
+    width: 14px;
+    height: 14px;
 }
 
 .mn-tiptap-command-icon-text {
     display: block;
-    font-size: 10px;
+    font-size: 9.5px;
     font-weight: var(--mn-weight-bold);
     letter-spacing: 0;
     line-height: 1;
@@ -452,16 +454,18 @@
 .mn-tiptap-table-size-picker {
     position: absolute;
     top: var(--mn-slash-side-panel-top, 4px);
-    left: calc(100% + 5px);
+    left: calc(100% + 6px);
     display: grid;
-    gap: 7px;
-    width: 136px;
+    gap: 8px;
+    width: 154px;
     margin: 0;
-    padding: 7px;
+    padding: 8px;
     border: var(--mn-border-default);
-    border-radius: 8px;
+    border-radius: 9px;
     background: var(--mn-surface-raised);
-    box-shadow: 0 16px 34px color-mix(in srgb, #000 11%, transparent), var(--mn-shadow-lg);
+    box-shadow:
+        0 16px 34px color-mix(in srgb, #000 10%, transparent),
+        var(--mn-shadow-lg);
 }
 
 .mn-tiptap-table-size-picker::before,
@@ -475,7 +479,7 @@
 }
 
 .mn-tiptap-slash-menu[data-side-placement="left"] .mn-tiptap-table-size-picker {
-    right: calc(100% + 5px);
+    right: calc(100% + 6px);
     left: auto;
 }
 
@@ -498,17 +502,21 @@
 
 .mn-tiptap-table-size-picker-grid {
     display: grid;
-    grid-template-columns: repeat(6, 12px);
-    gap: 3px;
+    grid-template-columns: repeat(6, 14px);
+    gap: 4px;
 }
 
 .mn-tiptap-table-size-picker-cell {
-    width: 12px;
-    height: 12px;
+    width: 14px;
+    height: 14px;
     border: var(--mn-border-default);
-    border-radius: 3px;
+    border-radius: 4px;
     background: var(--mn-surface);
     padding: 0;
+    transition:
+        background-color var(--mn-transition-fast),
+        border-color var(--mn-transition-fast),
+        box-shadow var(--mn-transition-fast);
 }
 
 .mn-tiptap-table-size-picker-cell:hover,
@@ -522,26 +530,27 @@
             color-mix(in srgb, var(--mn-accent) 10%, transparent)
         ),
         var(--mn-surface-raised);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--mn-accent) 10%, transparent);
 }
 
 .mn-tiptap-callout-kind-picker {
     position: absolute;
     top: var(--mn-slash-side-panel-top, 4px);
-    left: calc(100% + 5px);
+    left: calc(100% + 6px);
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: 5px;
-    width: 154px;
+    width: 166px;
     margin: 0;
     padding: 7px;
     border: var(--mn-border-default);
-    border-radius: 8px;
+    border-radius: 9px;
     background: var(--mn-surface-raised);
     box-shadow: 0 18px 38px color-mix(in srgb, #000 12%, transparent), var(--mn-shadow-lg);
 }
 
 .mn-tiptap-slash-menu[data-side-placement="left"] .mn-tiptap-callout-kind-picker {
-    right: calc(100% + 5px);
+    right: calc(100% + 6px);
     left: auto;
 }
 

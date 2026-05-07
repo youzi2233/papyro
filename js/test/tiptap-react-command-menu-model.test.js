@@ -34,14 +34,26 @@ test("React command menu model groups commands in first-seen order", () => {
   );
 });
 
+test("React command menu model applies the canonical command group order", () => {
+  assert.deepEqual(
+    groupCommandsForMenu([
+      { id: "math-block", group: "Advanced", index: 12 },
+      { id: "paragraph", group: "Text", index: 0 },
+      { id: "image", group: "Media", index: 13 },
+      { id: "table", group: "Data", index: 11 },
+    ]).map((group) => group.name),
+    ["Text", "Data", "Media", "Advanced"],
+  );
+});
+
 test("React command menu model exposes side panel contracts", () => {
   assert.equal(commandMenuSidePanel({ id: "table" }), "table");
   assert.equal(commandMenuSidePanel({ id: "callout" }), "callout");
   assert.equal(commandMenuSidePanel({ id: "paragraph" }), "none");
   assert.equal(commandMenuSidePanel(null), "none");
 
-  assert.equal(commandMenuSidePanelWidth("table"), 136);
-  assert.equal(commandMenuSidePanelWidth("callout"), 154);
+  assert.equal(commandMenuSidePanelWidth("table"), 154);
+  assert.equal(commandMenuSidePanelWidth("callout"), 166);
   assert.equal(commandMenuSidePanelWidth("none"), 0);
 });
 

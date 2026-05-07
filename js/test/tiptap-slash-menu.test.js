@@ -342,17 +342,17 @@ test("Tiptap slash menu keyboard selection can reach table without wrapping", ()
       "code-block",
       "divider",
       "table",
+      "image",
       "math-block",
       "mermaid",
-      "image",
     ],
   );
   while (controller.state.selectedIndex < controller.state.commands.length - 1) {
     controller.moveSelection(1);
   }
-  assert.equal(controller.state.commands.at(-1).id, "image");
+  assert.equal(controller.state.commands.at(-1).id, "mermaid");
   controller.moveSelection(1);
-  assert.equal(controller.state.commands[controller.state.selectedIndex].id, "image");
+  assert.equal(controller.state.commands[controller.state.selectedIndex].id, "mermaid");
 });
 
 test("Tiptap slash menu renders command icons for block insertion", () => {
@@ -371,12 +371,24 @@ test("Tiptap slash menu renders command icons for block insertion", () => {
   const icon = firstItem.children[0];
   const copy = firstItem.children[1];
   assert.equal(String(firstSection.className).includes("mn-tiptap-slash-menu-section"), true);
-  assert.equal(firstSection.children[0].textContent, "Advanced");
+  assert.equal(firstSection.children[0].textContent, "Data");
   assert.equal(firstItem.dataset.commandId, "table");
-  assert.equal(firstItem.dataset.group, "Advanced");
+  assert.equal(firstItem.dataset.group, "Data");
   assert.equal(icon.dataset.icon, "table");
   assert.equal(String(icon.className).includes("mn-tiptap-slash-menu-icon table"), true);
   assert.equal(copy.children[0].textContent, "Table");
+});
+
+test("Tiptap slash menu Home and End jump across the full command list", () => {
+  const { editor } = createEditor("/");
+  const view = createViewSpy();
+  const controller = createTiptapSlashMenuController({ view });
+  controller.attach({ editor, root: {} });
+
+  assert.equal(controller.handleKeyDown({ key: "End", preventDefault() {} }), true);
+  assert.equal(controller.state.commands[controller.state.selectedIndex].id, "mermaid");
+  assert.equal(controller.handleKeyDown({ key: "Home", preventDefault() {} }), true);
+  assert.equal(controller.state.commands[controller.state.selectedIndex].id, "paragraph");
 });
 
 test("Tiptap slash menu scrolls keyboard selections into view", () => {
@@ -426,7 +438,7 @@ test("Tiptap slash menu anchors side panels beside the active command row", () =
     controller.state.commands.findIndex((command) => command.id === "table"),
   );
 
-  assert.equal(menu.style.properties.get("--mn-slash-side-panel-top") ?? menu.style["--mn-slash-side-panel-top"], "192px");
+  assert.equal(menu.style.properties.get("--mn-slash-side-panel-top") ?? menu.style["--mn-slash-side-panel-top"], "190px");
 });
 
 test("Tiptap slash menu activates command details on pointer hover", () => {

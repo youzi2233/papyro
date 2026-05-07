@@ -87,9 +87,9 @@ test("Tiptap slash commands expose stable command ids", () => {
     "code-block",
     "divider",
     "table",
+    "image",
     "math-block",
     "mermaid",
-    "image",
   ]);
 });
 
@@ -125,6 +125,9 @@ test("Tiptap slash command query localizes visible command labels", () => {
     priority: 20,
     run: englishCommand.run,
   });
+
+  assert.equal(controller.query("table", { language: "Chinese" })[0].group, "数据");
+  assert.equal(controller.query("image", { language: "Chinese" })[0].group, "媒体");
 });
 
 test("Tiptap slash commands call rich editor commands when available", () => {
