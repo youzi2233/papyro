@@ -67,12 +67,15 @@ Then run:
 ```bash
 npm --prefix js run build
 npm --prefix js test
+node scripts/check-markdown-style-smoke.js
 node scripts/check-tiptap-release-smoke.js
 node scripts/check-tiptap-runtime-smoke.js
 ```
 
-Do not commit Tiptap or editor runtime changes unless the Markdown smoke
-checks pass. `check-tiptap-runtime-smoke.js` mounts a real Tiptap editor and
+Every commit that touches Tiptap, editor runtime, editor CSS, generated editor
+bundles, Markdown parsing, Markdown rendering, Preview parity, or node views must
+prove that Markdown files still render. Do not commit if any Markdown smoke
+check fails. `check-tiptap-runtime-smoke.js` mounts a real Tiptap editor and
 must keep rendering the Markdown fixture without runtime errors.
 
 Generated files must be committed with the source change:

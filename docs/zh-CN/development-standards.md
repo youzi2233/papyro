@@ -66,11 +66,14 @@ node scripts/check-workspace-deps.js
 ```bash
 npm --prefix js run build
 npm --prefix js test
+node scripts/check-markdown-style-smoke.js
 node scripts/check-tiptap-release-smoke.js
 node scripts/check-tiptap-runtime-smoke.js
 ```
 
-Tiptap 或编辑器 runtime 改动如果没有通过 Markdown smoke 检查，不得提交。
+凡是改动 Tiptap、编辑器 runtime、编辑器 CSS、生成的 editor bundle、Markdown
+解析、Markdown 渲染、Preview 一致性或 node view 的提交，都必须证明 Markdown
+文件仍能正常渲染。任何 Markdown smoke 检查失败时不得提交。
 `check-tiptap-runtime-smoke.js` 会真实挂载 Tiptap 编辑器，并确认 Markdown fixture
 可以正常渲染且不会触发 runtime 错误。
 

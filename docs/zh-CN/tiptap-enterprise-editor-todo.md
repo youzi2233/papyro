@@ -505,7 +505,8 @@ git diff --check
 编辑器代码提交闸门：
 
 - Tiptap/editor 代码如果导致 Markdown fixture 渲染或 round-trip smoke 失败，不能提交。
-- 编辑器 runtime 改动提交前至少运行 `npm --prefix js test`、`npm --prefix js run build`、`node scripts/check-tiptap-release-smoke.js` 和 `node scripts/check-tiptap-runtime-smoke.js`。
+- 这个闸门同样适用于编辑器 CSS、生成的 editor bundle、Markdown 解析、Markdown 渲染、Preview 一致性和 node-view 改动。
+- 编辑器 runtime 改动提交前至少运行 `npm --prefix js test`、`npm --prefix js run build`、`node scripts/check-markdown-style-smoke.js`、`node scripts/check-tiptap-release-smoke.js` 和 `node scripts/check-tiptap-runtime-smoke.js`。
 - 如果改动影响 Markdown 解析、序列化、Preview 一致性或 node view，提交前必须新增或更新 fixture。
 
 提交示例：

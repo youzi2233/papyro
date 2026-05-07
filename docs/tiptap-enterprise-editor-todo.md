@@ -505,7 +505,8 @@ Use this loop for every checked item:
 Editor-change commit gate:
 
 - Do not commit Tiptap/editor code if Markdown fixture rendering or round-trip smoke fails.
-- At minimum run `npm --prefix js test`, `npm --prefix js run build`, `node scripts/check-tiptap-release-smoke.js`, and `node scripts/check-tiptap-runtime-smoke.js` before committing editor runtime changes.
+- This gate also applies to editor CSS, generated editor bundles, Markdown parsing, Markdown rendering, Preview parity, and node-view changes.
+- At minimum run `npm --prefix js test`, `npm --prefix js run build`, `node scripts/check-markdown-style-smoke.js`, `node scripts/check-tiptap-release-smoke.js`, and `node scripts/check-tiptap-runtime-smoke.js` before committing editor runtime changes.
 - If a change touches Markdown parsing, serialization, Preview parity, or node views, add or update a fixture before committing.
 
 Example commit scopes:
