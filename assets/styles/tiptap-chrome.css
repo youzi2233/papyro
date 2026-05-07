@@ -999,12 +999,12 @@
     z-index: 164;
     display: grid;
     place-items: center;
-    width: 11px;
-    height: 18px;
+    width: 12px;
+    height: 20px;
     border: 1px solid transparent;
     border-radius: var(--mn-radius-round);
     background: transparent;
-    color: color-mix(in srgb, var(--mn-accent) 66%, var(--mn-ink-3));
+    color: color-mix(in srgb, var(--mn-accent) 72%, var(--mn-ink-3));
     box-shadow: none;
     padding: 0;
     font-family: var(--mn-font-ui);
@@ -1012,24 +1012,25 @@
     font-weight: var(--mn-weight-semibold);
     line-height: 1;
     transform: translate(-50%, -50%);
-    opacity: .82;
+    opacity: .78;
 }
 
 .mn-tiptap-table-cell-menu-trigger[data-placement="center"] {
-    width: 11px;
-    height: 18px;
-    color: color-mix(in srgb, var(--mn-accent) 56%, var(--mn-ink-3));
-    opacity: .62;
+    width: 12px;
+    height: 20px;
+    color: color-mix(in srgb, var(--mn-accent) 66%, var(--mn-ink-3));
+    opacity: .72;
 }
 
 .mn-tiptap-table-cell-menu-trigger::before {
     content: "";
     display: block;
-    width: 3px;
-    height: 3px;
+    width: 4px;
+    height: 4px;
     border-radius: var(--mn-radius-round);
     background: currentColor;
-    opacity: .78;
+    opacity: .86;
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--mn-surface-raised) 86%, transparent);
     transition:
         box-shadow var(--mn-transition-fast),
         opacity var(--mn-transition-fast),
@@ -1058,11 +1059,13 @@
 .mn-tiptap-table-cell-menu-trigger[data-open="true"] {
     outline: 0;
     width: 18px;
-    height: 18px;
+    height: 20px;
     border-color: color-mix(in srgb, var(--mn-accent) 24%, var(--mn-border));
     background: color-mix(in srgb, var(--mn-surface-raised) 92%, transparent);
     color: var(--mn-accent);
-    box-shadow: 0 3px 8px color-mix(in srgb, #000 6%, transparent);
+    box-shadow:
+        0 4px 10px color-mix(in srgb, #000 7%, transparent),
+        0 0 0 2px color-mix(in srgb, var(--mn-accent) 8%, transparent);
     opacity: 1;
 }
 
@@ -1070,10 +1073,10 @@
 .mn-tiptap-table-cell-menu-trigger:focus-visible::before,
 .mn-tiptap-table-cell-menu-trigger[data-open="true"]::before {
     opacity: 1;
-    transform: scale(.78);
+    transform: scale(.72);
     box-shadow:
-        0 -4px 0 currentColor,
-        0 4px 0 currentColor;
+        0 -4.5px 0 currentColor,
+        0 4.5px 0 currentColor;
 }
 
 .mn-tiptap-table-quick-add,
@@ -1086,7 +1089,7 @@
     border: 0;
     border-radius: 6px;
     background: transparent;
-    color: color-mix(in srgb, var(--mn-accent) 72%, var(--mn-ink-2));
+    color: color-mix(in srgb, var(--mn-accent) 82%, var(--mn-ink-2));
     box-shadow: none;
     padding: 0;
     transition:
@@ -1104,9 +1107,17 @@
 
 .mn-tiptap-table-quick-add[data-edge="row"]::before,
 .mn-tiptap-table-quick-add[data-edge="column"]::before {
-    opacity: .22;
-    background: color-mix(in srgb, var(--mn-accent) 18%, var(--mn-surface-raised));
-    transition: opacity var(--mn-transition-fast);
+    border: 1px solid color-mix(in srgb, var(--mn-accent) 16%, var(--mn-border));
+    opacity: .58;
+    background: color-mix(in srgb, var(--mn-surface-raised) 88%, var(--mn-accent) 12%);
+    box-shadow:
+        0 1px 4px color-mix(in srgb, #000 5%, transparent),
+        0 0 0 1px color-mix(in srgb, var(--mn-editor-bg) 72%, transparent);
+    transition:
+        background-color var(--mn-transition-fast),
+        border-color var(--mn-transition-fast),
+        box-shadow var(--mn-transition-fast),
+        opacity var(--mn-transition-fast);
 }
 
 .mn-tiptap-table-quick-add::before,
@@ -1173,7 +1184,12 @@
 
 .mn-tiptap-table-quick-add:hover::before,
 .mn-tiptap-table-quick-add:focus-visible::before {
-    opacity: .42;
+    border-color: color-mix(in srgb, var(--mn-accent) 34%, var(--mn-border));
+    background: color-mix(in srgb, var(--mn-surface-raised) 78%, var(--mn-accent) 22%);
+    box-shadow:
+        0 3px 10px color-mix(in srgb, #000 8%, transparent),
+        0 0 0 2px color-mix(in srgb, var(--mn-accent) 8%, transparent);
+    opacity: .9;
 }
 
 .mn-tiptap-table-quick-add.hidden {
@@ -1261,12 +1277,12 @@
     z-index: 161;
     display: grid;
     place-items: center;
-    width: 18px;
-    height: 18px;
+    width: 17px;
+    height: 17px;
     border: 1px solid transparent;
-    border-radius: 5px;
+    border-radius: 7px;
     background: transparent;
-    color: color-mix(in srgb, var(--mn-ink-3) 54%, transparent);
+    color: color-mix(in srgb, var(--mn-ink-3) 66%, transparent);
     box-shadow: none;
     padding: 0;
 }
@@ -1295,29 +1311,31 @@
 .mn-tiptap-table-axis-handle:focus-visible,
 .mn-tiptap-table-axis-handle[data-active="true"] {
     outline: 0;
-    border-color: color-mix(in srgb, var(--mn-accent) 24%, var(--mn-border));
-    background: color-mix(in srgb, var(--mn-surface-raised) 88%, transparent);
+    border-color: color-mix(in srgb, var(--mn-accent) 32%, var(--mn-border));
+    background: color-mix(in srgb, var(--mn-surface-raised) 84%, var(--mn-accent) 8%);
     color: var(--mn-accent);
-    box-shadow: var(--mn-shadow-xs);
+    box-shadow:
+        0 3px 9px color-mix(in srgb, #000 7%, transparent),
+        0 0 0 2px color-mix(in srgb, var(--mn-accent) 8%, transparent);
 }
 
 .mn-tiptap-table-axis-handle.row,
 .mn-tiptap-table-axis-handle.column {
-    border-color: color-mix(in srgb, var(--mn-border) 34%, transparent);
-    background: color-mix(in srgb, var(--mn-surface-raised) 92%, transparent);
-    color: color-mix(in srgb, var(--mn-ink-3) 64%, transparent);
-    opacity: .96;
+    border-color: color-mix(in srgb, var(--mn-border) 46%, transparent);
+    background: color-mix(in srgb, var(--mn-surface-raised) 94%, transparent);
+    color: color-mix(in srgb, var(--mn-ink-3) 72%, transparent);
+    opacity: .98;
     backdrop-filter: blur(10px);
     box-shadow: 0 2px 6px color-mix(in srgb, #000 5%, transparent);
 }
 
 .mn-tiptap-table-axis-handle.row {
-    width: 18px;
+    width: 17px;
     border-radius: 999px;
 }
 
 .mn-tiptap-table-axis-handle.column {
-    height: 18px;
+    height: 17px;
     border-radius: 999px;
 }
 
