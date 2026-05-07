@@ -225,6 +225,7 @@ export function createTiptapEditorRuntime({
   modeSnapshotControllerFactory = createTiptapModeSnapshotController,
   blockActionControllerFactory = createTiptapBlockActionController,
   blockActionMenuControllerFactory = createTiptapBlockActionMenuController,
+  blockActionMenuViewFactory = null,
   blockHintsControllerFactory = createTiptapBlockHintsController,
   blockHandleControllerFactory = createTiptapBlockHandleController,
   formatCommandControllerFactory = createTiptapFormatCommandController,
@@ -396,6 +397,10 @@ export function createTiptapEditorRuntime({
     const blockActions = createBlockActionController();
     const blockActionMenu = createBlockActionMenuController({
       commandController: blockActions,
+      view:
+        typeof blockActionMenuViewFactory === "function"
+          ? blockActionMenuViewFactory({ document: documentRef })
+          : null,
       dom: {
         document: documentRef,
       },

@@ -22,3 +22,7 @@ export {
   createTiptapReactSlashMenuView,
   TiptapReactSlashMenuView,
 } from "./slash-menu-view.jsx";
+export {
+  createTiptapReactBlockActionMenuView,
+  TiptapReactBlockActionMenuView,
+} from "./block-action-menu-view.jsx";

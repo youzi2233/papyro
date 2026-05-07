@@ -2,6 +2,7 @@ import { createEditorRuntimeRegistry } from "./editor-registry.js";
 import { createEditorHostRuntime } from "./editor-host-runtime.js";
 import { installPapyroEditorRuntime } from "./editor-runtime-bootstrap.js";
 import {
+  createTiptapReactBlockActionMenuView,
   createTiptapReactMountController,
   createTiptapReactSlashMenuView,
 } from "./tiptap-react/index.js";
@@ -18,6 +19,7 @@ const tiptapRuntimeAdapter = createTiptapEditorRuntime({
     detachLayoutObserver: hostRuntime.detachLayoutObserver,
     restoreEditorScrollSnapshot: hostRuntime.restoreEditorScrollSnapshot,
   },
+  blockActionMenuViewFactory: createTiptapReactBlockActionMenuView,
   mountControllerFactory: createTiptapReactMountController,
   slashMenuViewFactory: createTiptapReactSlashMenuView,
   navigation: hostRuntime.navigation,

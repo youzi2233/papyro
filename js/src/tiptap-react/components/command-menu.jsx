@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from "react";
+import React, { useMemo, useState } from "react";
 
 import { PAPYRO_CALLOUT_KIND_OPTIONS } from "../../tiptap-markdown-snippets.js";
 import {
@@ -18,43 +18,10 @@ import {
   commandMenuSidePanel,
   groupCommandsForMenu,
 } from "../commands/command-menu-model.js";
+import { usePointerActivation } from "../hooks/use-pointer-activation.js";
 
 const TABLE_GRID_ROWS = 6;
 const TABLE_GRID_COLS = 6;
-
-function preventMenuPointer(event) {
-  event.preventDefault();
-  event.stopPropagation();
-}
-
-function usePointerActivation(run) {
-  const pointerHandled = useRef(false);
-
-  return {
-    onPointerDown(event) {
-      preventMenuPointer(event);
-      pointerHandled.current = run() !== false;
-    },
-    onClick(event) {
-      preventMenuPointer(event);
-      if (!pointerHandled.current) {
-        run();
-      }
-      pointerHandled.current = false;
-    },
-    onMouseDown(event) {
-      event.preventDefault();
-    },
-    onAuxClick(event) {
-      preventMenuPointer(event);
-      pointerHandled.current = false;
-    },
-    onContextMenu(event) {
-      preventMenuPointer(event);
-      pointerHandled.current = false;
-    },
-  };
-}
 
 function CommandIcon({ icon }) {
   return (
