@@ -5,9 +5,11 @@ import { StarterKit } from "@tiptap/starter-kit";
 import { Window } from "happy-dom";
 
 import {
+  PAPYRO_TABLE_CELL_RESET_ATTRS,
   PapyroTableCellBackground,
   PapyroTableCellContentActions,
   createPapyroTableExtensions,
+  resetSelectedTableCellAttrs,
 } from "../src/tiptap-table.js";
 
 function installDomGlobals(windowRef) {
@@ -88,6 +90,10 @@ test("Papyro table cell background extension adds cell attributes", () => {
   assert.deepEqual(background.renderHTML({ backgroundColor: null }), {});
 });
 
+test("Papyro table content actions expose resettable style attributes", () => {
+  assert.deepEqual(PAPYRO_TABLE_CELL_RESET_ATTRS, ["align", "backgroundColor"]);
+});
+
 test("Papyro table content actions clear selected cell contents through ProseMirror tables", () => {
   const windowRef = new Window({ url: "http://localhost/" });
   const previousGlobals = installDomGlobals(windowRef);
@@ -122,8 +128,79 @@ test("Papyro table content actions clear selected cell contents through ProseMir
   }
 });
 
+test("Papyro table content actions can reset selected cell attributes while clearing contents", () => {
+  const windowRef = new Window({ url: "http://localhost/" });
+  const previousGlobals = installDomGlobals(windowRef);
+  const root = windowRef.document.createElement("div");
+  windowRef.document.body.appendChild(root);
+  let editor = null;
+
+  try {
+    editor = new Editor({
+      element: root,
+      extensions: [StarterKit, ...createPapyroTableExtensions()],
+      content:
+        "<table><tbody><tr><td style=\"text-align: right; background-color: rgba(245, 158, 11, 0.16)\">Alpha</td><td>Beta</td></tr></tbody></table>",
+      injectCSS: false,
+    });
+    const [anchorCell] = tableCellPositions(editor.state.doc);
+
+    assert.equal(
+      editor.commands.setCellSelection({ anchorCell, headCell: anchorCell }),
+      true,
+    );
+    assert.equal(editor.commands.clearSelectedTableCells({ resetAttrs: true }), true);
+
+    const [firstCell, secondCell] = editor.getJSON().content[0].content[0].content;
+    assert.equal(firstCell.content[0].content, undefined);
+    assert.equal(firstCell.attrs.align, null);
+    assert.equal(firstCell.attrs.backgroundColor, null);
+    assert.equal(secondCell.content[0].content[0].text, "Beta");
+  } finally {
+    editor?.destroy?.();
+    restoreDomGlobals(previousGlobals);
+    windowRef.close?.();
+  }
+});
+
+test("Papyro table content actions reset selected styles without clearing text", () => {
+  const windowRef = new Window({ url: "http://localhost/" });
+  const previousGlobals = installDomGlobals(windowRef);
+  const root = windowRef.document.createElement("div");
+  windowRef.document.body.appendChild(root);
+  let editor = null;
+
+  try {
+    editor = new Editor({
+      element: root,
+      extensions: [StarterKit, ...createPapyroTableExtensions()],
+      content:
+        "<table><tbody><tr><td style=\"text-align: center; background-color: rgba(59, 130, 246, 0.14)\">Alpha</td></tr></tbody></table>",
+      injectCSS: false,
+    });
+    const [anchorCell] = tableCellPositions(editor.state.doc);
+
+    editor.commands.setCellSelection({ anchorCell, headCell: anchorCell });
+    assert.equal(editor.commands.resetSelectedTableCellAttrs(), true);
+
+    const [firstCell] = editor.getJSON().content[0].content[0].content;
+    assert.equal(firstCell.content[0].content[0].text, "Alpha");
+    assert.equal(firstCell.attrs.align, null);
+    assert.equal(firstCell.attrs.backgroundColor, null);
+  } finally {
+    editor?.destroy?.();
+    restoreDomGlobals(previousGlobals);
+    windowRef.close?.();
+  }
+});
+
 test("Papyro table content actions expose the expected command name", () => {
   const commands = PapyroTableCellContentActions.config.addCommands();
 
   assert.equal(typeof commands.clearSelectedTableCells, "function");
+  assert.equal(typeof commands.resetSelectedTableCellAttrs, "function");
+});
+
+test("Papyro table content actions reject non-cell selections when resetting attributes", () => {
+  assert.equal(resetSelectedTableCellAttrs(null, null), false);
 });

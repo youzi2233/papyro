@@ -511,6 +511,7 @@ test("Tiptap table toolbar exposes grouped enterprise table commands", () => {
       ["Cells", "merge-cells", "mergeCells"],
       ["Cells", "split-cell", "splitCell"],
       ["Cells", "clear-cell-content", "clearSelectedTableCells"],
+      ["Cells", "clear-cell-style", "resetSelectedTableCellAttrs"],
       ["Cells", "merge-or-split", "mergeOrSplit"],
       ["Headers", "toggle-header-row", "toggleHeaderRow"],
       ["Headers", "toggle-header-column", "toggleHeaderColumn"],
@@ -651,6 +652,21 @@ test("Tiptap table toolbar clears selected cell content through the official tab
   assert.equal(controller.run("clear-cell-content"), true);
 
   assert.deepEqual(calls, [["clearSelectedTableCells"], ["focus"]]);
+});
+
+test("Tiptap table toolbar clears selected cell style attributes", () => {
+  const { calls, editor } = createTableHarness();
+  editor.commands.resetSelectedTableCellAttrs = () => {
+    calls.push(["resetSelectedTableCellAttrs"]);
+    return true;
+  };
+  const view = createViewSpy();
+  const controller = createTiptapTableToolbarController({ view });
+  controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
+
+  assert.equal(controller.run("clear-cell-style"), true);
+
+  assert.deepEqual(calls, [["resetSelectedTableCellAttrs"], ["focus"]]);
 });
 
 test("Tiptap table toolbar marks active cell background commands", () => {

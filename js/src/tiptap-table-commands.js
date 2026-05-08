@@ -1,6 +1,7 @@
 export const TABLE_CELL_MENU_COMMAND_IDS = new Set([
   "split-cell",
   "clear-cell-content",
+  "clear-cell-style",
   "align-left",
   "align-center",
   "align-right",
@@ -84,6 +85,14 @@ export const TABLE_COMMANDS = Object.freeze([
     label: "Clear content",
     command: "clearSelectedTableCells",
     icon: "clear-content",
+  },
+  {
+    id: "clear-cell-style",
+    group: "Cells",
+    title: "Clear cell style",
+    label: "Clear style",
+    command: "resetSelectedTableCellAttrs",
+    icon: "clear-style",
   },
   {
     id: "merge-or-split",
@@ -230,6 +239,7 @@ export const TABLE_MENU_COMMAND_SCOPE = Object.freeze({
     "align-center",
     "align-right",
     "clear-cell-content",
+    "clear-cell-style",
     "cell-bg-clear",
     "cell-bg-yellow",
     "cell-bg-blue",
@@ -286,6 +296,7 @@ export const SELECTION_TABLE_COMMAND_IDS = new Set([
   "merge-cells",
   "split-cell",
   "clear-cell-content",
+  "clear-cell-style",
   "align-left",
   "align-center",
   "align-right",
@@ -305,6 +316,7 @@ export const KEYBOARD_TABLE_COMMAND_IDS = new Set([
   "merge-cells",
   "split-cell",
   "clear-cell-content",
+  "clear-cell-style",
   "toggle-header-row",
   "toggle-header-column",
   "toggle-header-cell",
@@ -382,6 +394,7 @@ export function tableCommandVariant(command) {
 export function tableCommandLayoutGroup(command) {
   if (command?.id === "split-cell") return "actions";
   if (command?.id === "clear-cell-content") return "actions";
+  if (command?.id === "clear-cell-style") return "actions";
   if (TABLE_CONTEXT_HEADER_COMMAND_IDS.has(command?.id)) return "actions";
   const variant = tableCommandVariant(command);
   if (variant === "icon") return "align";
