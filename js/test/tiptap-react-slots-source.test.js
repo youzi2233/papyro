@@ -101,8 +101,9 @@ test("React command chrome uses shared menu primitives", () => {
   assert.match(primitivesSource, /export function Kbd/u);
   assert.match(primitivesSource, /export function VisuallyHidden/u);
   assert.match(commandMenuSource, /from "\.\/primitives\.jsx"/u);
-  assert.match(commandMenuSource, /<CommandRow/u);
-  assert.match(commandMenuSource, /<CommandText/u);
+  assert.match(commandMenuSource, /CommandItem as PrimitiveCommandItem/u);
+  assert.match(commandMenuSource, /<PrimitiveCommandItem/u);
+  assert.match(commandMenuSource, /<CommandSection/u);
   assert.match(blockActionMenuSource, /from "\.\/primitives\.jsx"/u);
   assert.match(blockActionMenuSource, /<CommandRow/u);
   assert.match(blockActionMenuSource, /<CommandText/u);

@@ -24,7 +24,11 @@ import {
 } from "../commands/command-menu-model.js";
 import { usePointerActivation } from "../hooks/use-pointer-activation.js";
 import { CommandMenuIcon } from "./command-icons.jsx";
-import { CommandIconFrame, CommandRow, CommandText } from "./primitives.jsx";
+import {
+  CommandIconFrame,
+  CommandItem as PrimitiveCommandItem,
+  CommandSection,
+} from "./primitives.jsx";
 
 const TABLE_GRID_ROWS = 6;
 const TABLE_GRID_COLS = 6;
@@ -46,16 +50,16 @@ function CommandIcon({ command }) {
   );
 }
 
-function CommandItem({ command, ownerId, selected, activePanel, activate, choose }) {
+function SlashCommandItem({ command, ownerId, selected, activePanel, activate, choose }) {
   const activation = usePointerActivation(() => choose(command.id));
   const panel = commandMenuSidePanel(command);
   const hasSidePanel = panel !== "none";
   const panelId = commandMenuSidePanelId(ownerId, panel);
 
   return (
-    <CommandRow
+    <PrimitiveCommandItem
+      command={command}
       ownerId={ownerId}
-      index={command.index}
       selected={selected}
       className="mn-tiptap-slash-menu-item"
       role="option"
@@ -75,16 +79,11 @@ function CommandItem({ command, ownerId, selected, activePanel, activate, choose
       onPointerMove={() => activate(command.index, { scroll: false })}
       onFocus={() => activate(command.index, { scroll: true })}
       activation={activation}
-    >
-      <CommandIcon command={command} />
-      <CommandText
-        className="mn-tiptap-slash-menu-copy"
-        titleClassName="mn-tiptap-slash-menu-title"
-        descriptionClassName="mn-tiptap-slash-menu-description"
-        title={command.title}
-        description={command.description}
-      />
-    </CommandRow>
+      icon={<CommandIcon command={command} />}
+      textClassName="mn-tiptap-slash-menu-copy"
+      titleClassName="mn-tiptap-slash-menu-title"
+      descriptionClassName="mn-tiptap-slash-menu-description"
+    />
   );
 }
 
@@ -260,17 +259,15 @@ export function PapyroSlashCommandMenu({
       </div>
       <div className="mn-tiptap-slash-menu-list">
         {groups.map((group) => (
-          <section
+          <CommandSection
             key={group.name}
             className="mn-tiptap-slash-menu-section"
-            role="group"
-            aria-label={group.name}
+            titleClassName="mn-tiptap-slash-menu-section-title"
+            title={group.name}
+            label={group.name}
           >
-            <div className="mn-tiptap-slash-menu-section-title">
-              {group.name}
-            </div>
             {group.commands.map((command) => (
-              <CommandItem
+              <SlashCommandItem
                 key={command.id}
                 command={command}
                 ownerId={ownerId}
@@ -280,7 +277,7 @@ export function PapyroSlashCommandMenu({
                 choose={state.choose}
               />
             ))}
-          </section>
+          </CommandSection>
         ))}
       </div>
       <div
