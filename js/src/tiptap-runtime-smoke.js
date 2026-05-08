@@ -36,6 +36,7 @@ export function checkTiptapRuntimeSmoke(markdown) {
     checkRenderedDom(failures, editor.view?.dom);
     checkCodeBlockChrome(failures, editor.view?.dom);
     checkRoundTrip(failures, editor, markdownManager);
+    checkComplexTableRuntime(failures, root);
   } catch (error) {
     failures.push(error instanceof Error ? error.message : String(error));
   } finally {
@@ -167,6 +168,7 @@ function checkRoundTrip(failures, editor, markdownManager) {
   if (!table) {
     failures.push("table did not survive mounted parse");
   }
+
 }
 
 function stableStringify(value) {
@@ -209,4 +211,50 @@ function findNode(node, type) {
     if (found) return found;
   }
   return null;
+}
+
+function findComplexTable(node) {
+  let found = null;
+  walkJson(node, (child) => {
+    if (found || child?.type !== "table") return;
+    const rows = child.content ?? [];
+    const complex = rows.some((row) =>
+      (row.content ?? []).some((cell) => {
+        const attrs = cell.attrs ?? {};
+        return attrs.backgroundColor || Number(attrs.colspan ?? 1) > 1;
+      }),
+    );
+    if (complex) found = child;
+  });
+  return found;
+}
+
+function checkComplexTableRuntime(failures, root) {
+  let editor = null;
+
+  try {
+    editor = new Editor({
+      element: root.ownerDocument.createElement("div"),
+      extensions: createPapyroTiptapExtensions(),
+      content:
+        '<table><tbody><tr><th data-cell-background="rgba(245, 158, 11, 0.16)" style="text-align: center; background-color: rgba(245, 158, 11, 0.16)">Feature</th><th>Status</th></tr><tr><td style="text-align: right">Source</td><td data-cell-background="rgba(59, 130, 246, 0.14)" colspan="2" style="background-color: rgba(59, 130, 246, 0.14)">Done</td></tr></tbody></table>',
+      injectCSS: false,
+    });
+    const complexTable = findComplexTable(editor.getJSON());
+    if (!complexTable) {
+      failures.push("complex table attributes did not survive mounted HTML parse");
+    }
+  } catch (error) {
+    failures.push(`complex table runtime smoke failed: ${error instanceof Error ? error.message : String(error)}`);
+  } finally {
+    editor?.destroy?.();
+  }
+}
+
+function walkJson(node, visit) {
+  if (!node || typeof node !== "object") return;
+  visit(node);
+  for (const child of node.content ?? []) {
+    walkJson(child, visit);
+  }
 }

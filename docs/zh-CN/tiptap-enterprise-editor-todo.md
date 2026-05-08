@@ -297,7 +297,8 @@ node scripts/check-tiptap-release-smoke.js
   - 当前覆盖：快捷新增轨道已贴着真实表格网格边缘，使用 12px 的紧凑 chrome，在亮色/暗色主题下保持对比度，但不再像调试 overlay。
 - [ ] 表格控件不能出现在相邻代码块或其它非表格内容下面。
   - 当前覆盖：快捷新增行/列轨道现在要求 target 属于表格自身，或是明确的 editor rail 目标；相邻代码块和其它复杂块不能再借用表格坐标误显示表格新增 chrome。
-- [ ] 为对齐、表头、合并单元格 fallback、单元格背景 metadata 补 Markdown round-trip fixtures。
+- [x] 为对齐、表头、合并单元格 fallback、单元格背景 metadata 补 Markdown round-trip fixtures。
+  - 当前覆盖：release smoke 同时检查主无损 pipe-table fixture，以及带背景色、colspan metadata 的独立 HTML fallback 表格；真实挂载 runtime smoke 会验证复杂表格属性能够通过 HTML parse 保留。
   - 当前覆盖：无损表格仍序列化为可读的 pipe table；带单元格背景、单元格级差异对齐、colspan/rowspan、列宽或非首行表头的表格会序列化为 HTML table，保存/重开时保留 Tiptap 表格属性，避免静默丢失语义。
 
 验收标准：

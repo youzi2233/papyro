@@ -1,7 +1,12 @@
 #!/usr/bin/env node
 import { readFileSync } from "node:fs";
+import { Window } from "../js/node_modules/happy-dom/lib/index.js";
 
-import { roundTripTiptapMarkdown } from "../js/src/tiptap-markdown.js";
+import {
+  parseTiptapMarkdown,
+  roundTripTiptapMarkdown,
+  serializeTiptapMarkdown,
+} from "../js/src/tiptap-markdown.js";
 
 const DEFAULT_FIXTURE = "js/test/fixtures/tiptap-release-smoke.md";
 
@@ -114,6 +119,7 @@ function checkReleaseFixture(markdown) {
     { kind: "NOTE", text: "Callout content should round-trip through Markdown." },
   ]);
   expectEqual(failures, "round-trip document JSON", reparsed, parsed);
+  checkComplexTableFallback(failures);
 
   return failures;
 }
@@ -167,6 +173,182 @@ function tableAlignments(node) {
     );
   });
   return tables[0] ?? [];
+}
+
+function complexTableCells(node) {
+  const complexTables = [];
+  walk(node, (child) => {
+    if (child.type !== "table") return;
+    const rows = (child.content ?? []).map((row) =>
+      (row.content ?? []).map((cell) => ({
+        type: cell.type,
+        align: cell.attrs?.align ?? null,
+        backgroundColor: cell.attrs?.backgroundColor ?? null,
+        colspan: cell.attrs?.colspan ?? 1,
+        text: plainText(cell),
+      })),
+    );
+    if (
+      rows.some((row) =>
+        row.some((cell) => cell.backgroundColor || cell.colspan > 1),
+      )
+    ) {
+      complexTables.push(rows);
+    }
+  });
+  return complexTables[0] ?? [];
+}
+
+function complexTableFixtureDoc() {
+  return {
+    type: "doc",
+    content: [
+      {
+        type: "table",
+        content: [
+          {
+            type: "tableRow",
+            content: [
+              {
+                type: "tableHeader",
+                attrs: {
+                  align: "center",
+                  backgroundColor: "rgba(245, 158, 11, 0.16)",
+                  colspan: 1,
+                  rowspan: 1,
+                  colwidth: null,
+                },
+                content: [{ type: "paragraph", content: [{ type: "text", text: "Feature" }] }],
+              },
+              {
+                type: "tableHeader",
+                attrs: {
+                  align: null,
+                  backgroundColor: null,
+                  colspan: 1,
+                  rowspan: 1,
+                  colwidth: null,
+                },
+                content: [{ type: "paragraph", content: [{ type: "text", text: "Status" }] }],
+              },
+            ],
+          },
+          {
+            type: "tableRow",
+            content: [
+              {
+                type: "tableCell",
+                attrs: {
+                  align: "right",
+                  backgroundColor: null,
+                  colspan: 1,
+                  rowspan: 1,
+                  colwidth: null,
+                },
+                content: [{ type: "paragraph", content: [{ type: "text", text: "Source" }] }],
+              },
+              {
+                type: "tableCell",
+                attrs: {
+                  align: null,
+                  backgroundColor: "rgba(59, 130, 246, 0.14)",
+                  colspan: 2,
+                  rowspan: 1,
+                  colwidth: null,
+                },
+                content: [{ type: "paragraph", content: [{ type: "text", text: "Done" }] }],
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  };
+}
+
+function checkComplexTableFallback(failures) {
+  const windowRef = new Window({ url: "http://localhost/" });
+  const previousGlobals = installDomGlobals(windowRef);
+
+  try {
+    const serialized = serializeTiptapMarkdown(complexTableFixtureDoc());
+    expectIncludes(
+      failures,
+      "complex table fallback background",
+      serialized,
+      'data-cell-background="rgba(245, 158, 11, 0.16)"',
+    );
+    expectIncludes(failures, "complex table fallback colspan", serialized, 'colspan="2"');
+    expectEqual(failures, "complex table fallback cells", complexTableCells(parseTiptapMarkdown(serialized)), [
+      [
+        {
+          type: "tableHeader",
+          align: "center",
+          backgroundColor: "rgba(245, 158, 11, 0.16)",
+          colspan: 1,
+          text: "Feature",
+        },
+        {
+          type: "tableHeader",
+          align: null,
+          backgroundColor: null,
+          colspan: 1,
+          text: "Status",
+        },
+      ],
+      [
+        {
+          type: "tableCell",
+          align: "right",
+          backgroundColor: null,
+          colspan: 1,
+          text: "Source",
+        },
+        {
+          type: "tableCell",
+          align: null,
+          backgroundColor: "rgba(59, 130, 246, 0.14)",
+          colspan: 2,
+          text: "Done",
+        },
+      ],
+    ]);
+  } finally {
+    restoreDomGlobals(previousGlobals);
+    windowRef.close?.();
+  }
+}
+
+function installDomGlobals(windowRef) {
+  const previous = new Map();
+  for (const [name, value] of Object.entries({
+    window: windowRef,
+    document: windowRef.document,
+    navigator: windowRef.navigator,
+    HTMLElement: windowRef.HTMLElement,
+    Element: windowRef.Element,
+    Document: windowRef.Document,
+    Node: windowRef.Node,
+    DOMParser: windowRef.DOMParser,
+    getComputedStyle: windowRef.getComputedStyle.bind(windowRef),
+  })) {
+    previous.set(name, {
+      exists: Object.prototype.hasOwnProperty.call(globalThis, name),
+      value: globalThis[name],
+    });
+    globalThis[name] = value;
+  }
+  return previous;
+}
+
+function restoreDomGlobals(previous) {
+  for (const [name, record] of previous.entries()) {
+    if (record.exists) {
+      globalThis[name] = record.value;
+    } else {
+      delete globalThis[name];
+    }
+  }
 }
 
 function collectMath(node) {

@@ -302,7 +302,8 @@ Tasks:
   - Current polish: quick-add rails keep the same slim visual rail but now use a larger 18px pointer hit area and treat the table's real bottom/right edge as part of the affordance, so users do not need to hunt for an off-by-one outside gap.
 - [ ] Keep table controls hidden for adjacent code blocks or other non-table content.
   - Current coverage: quick-add row/column rails now require a table-owned target or explicit editor rail target, so adjacent code blocks and other complex blocks cannot accidentally display table insertion chrome.
-- [ ] Add Markdown round-trip fixtures for alignment, header rows, merged-cell fallback, and cell background metadata if supported.
+- [x] Add Markdown round-trip fixtures for alignment, header rows, merged-cell fallback, and cell background metadata if supported.
+  - Current coverage: release smoke now checks both the main lossless pipe-table fixture and a dedicated HTML fallback table with background colors and colspan metadata; the mounted runtime smoke verifies complex table attrs survive HTML parse.
   - Current coverage: lossless tables still serialize as readable pipe tables, while tables with cell background, per-cell alignment, colspan/rowspan, column widths, or non-leading header cells serialize as HTML tables so Markdown save/reopen preserves the Tiptap table attributes instead of silently dropping them.
 
 Acceptance criteria:
