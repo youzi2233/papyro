@@ -228,6 +228,7 @@ Tasks:
   - Current coverage: desktop/mobile bundle entry injects the React block-handle view for migration fallback, and the official `DragHandle` React bridge now renders the same Papyro `+` and action controls directly inside the official drag-handle element. Official hover tracking and positioning therefore own the visible handle in Hybrid mode, while the old floating view is kept only for menu anchoring, drop indicators, and fallback paths.
   - Current coverage: the official React bridge now treats `floatingViewHidden` as a legacy-view concern only, so the official DragHandle controls stay visible while block action or insert menus lock the plugin.
   - Current polish: the `+` and action handle spacing, hit boxes, and idle/active styling are quieter and more separated, avoiding the cramped two-icon cluster that previously made their responsibilities feel ambiguous.
+  - Current polish: official native drag state now flows into the shared React handle visual state, so the cursor and active affordance stay consistent while the official drag path is running.
   - Still required: move drag reorder execution fully onto the official drag/drop path and reduce the compatibility controller further.
 - [ ] Open the block action menu on normal click beside the pointer, not after long press.
   - Current coverage: the official React DragHandle bridge now tracks pointer down/up distance, opens the block action menu immediately for short primary clicks, suppresses click fallback after drag-like movement, and keeps real drag gestures on the official drag path.

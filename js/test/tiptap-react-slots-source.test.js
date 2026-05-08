@@ -176,6 +176,8 @@ test("official drag handle bridge keeps Tiptap callbacks stable across renders",
   assert.match(officialDragHandleBridgeSource, /clickAction\?\.\(event\)/u);
   assert.match(blockHandleComponentSource, /mn-tiptap-block-handle-controls/u);
   assert.match(blockHandleComponentSource, /rootProps/u);
+  assert.match(blockHandleComponentSource, /officialDragging/u);
+  assert.match(blockHandleComponentSource, /data-official-dragging/u);
 });
 
 test("React command chrome uses shared menu primitives", () => {

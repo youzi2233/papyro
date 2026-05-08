@@ -6,6 +6,7 @@ export function PapyroBlockHandle({ state = {} }) {
   const actionLabel = labels.actions ?? "Block actions";
   const rootProps = state.rootProps ?? {};
   const hidden = state.hidden === true;
+  const dragging = state.dragging === true || state.officialDragging === true;
 
   return (
     <div
@@ -18,7 +19,8 @@ export function PapyroBlockHandle({ state = {} }) {
         .filter(Boolean)
         .join(" ")}
       data-block-kind={state.target?.kind ?? undefined}
-      data-dragging={state.dragging ? "true" : "false"}
+      data-dragging={dragging ? "true" : "false"}
+      data-official-dragging={state.officialDragging ? "true" : "false"}
       data-menu-open={state.menuOpen ? "true" : "false"}
       data-insert-open={state.insertOpen ? "true" : "false"}
     >
@@ -39,7 +41,7 @@ export function PapyroBlockHandle({ state = {} }) {
         className="mn-tiptap-block-handle-button mn-tiptap-block-handle-action"
         title={actionLabel}
         aria-label={actionLabel}
-        style={{ cursor: state.dragging ? "grabbing" : "grab" }}
+        style={{ cursor: dragging ? "grabbing" : "grab" }}
         onPointerDown={state.onActionPointerDown}
         onPointerUp={state.onActionPointerUp}
         onClick={state.onActionClick}
