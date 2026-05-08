@@ -127,7 +127,7 @@ const TABLE_COMMAND_LABELS = Object.freeze({
   "move-row-up": ["Move row up", "向上移动行", "Up", "上移"],
   "move-row-down": ["Move row down", "向下移动行", "Down", "下移"],
   "merge-cells": ["Merge selected cells", "合并选中单元格", "Merge", "合并"],
-  "split-cell": ["Split current cell", "拆分当前单元格", "Split", "拆分"],
+  "split-cell": ["Split merged cell", "拆分合并单元格", "Split", "拆分"],
   "copy-cell-content": ["Copy cell content", "复制单元格内容", "Copy", "复制"],
   "clear-cell-content": ["Clear cell content", "清空单元格内容", "Clear content", "清空内容"],
   "clear-cell-style": ["Clear cell style", "清除单元格样式", "Clear style", "清除样式"],

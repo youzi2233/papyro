@@ -2218,6 +2218,31 @@ test("Tiptap table toolbar does not expose split cell without a can command", ()
   assert.equal(toolbarCommandIds(created).includes("split-cell"), false);
 });
 
+test("Tiptap table toolbar exposes split only when a merged cell can be split", () => {
+  const { created, documentRef } = createDocument();
+  const { editor } = createTableHarness({
+    splitCell: () => true,
+    setCellAttribute: () => true,
+  });
+  editor.can = () => ({
+    splitCell: () => true,
+    setCellAttribute: () => true,
+  });
+  const controller = createTiptapTableToolbarController({
+    dom: { document: documentRef },
+  });
+
+  controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
+  const trigger = created.find((element) =>
+    String(element.className).includes("mn-tiptap-table-cell-menu-trigger"),
+  );
+  trigger.onpointerdown({ preventDefault() {}, stopPropagation() {} });
+
+  const split = toolbarCommandButton(created, "split-cell");
+  assert.ok(split, "expected split command for a splittable merged cell");
+  assert.equal(split.title, "Split merged cell");
+});
+
 test("Tiptap table toolbar anchors multi-cell actions to the head cell", () => {
   const { created, documentRef } = createDocument();
   const { editor } = createTableHarness();

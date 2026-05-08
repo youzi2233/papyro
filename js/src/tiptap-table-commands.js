@@ -144,7 +144,7 @@ export const TABLE_COMMANDS = Object.freeze([
   {
     id: "split-cell",
     group: "Cells",
-    title: "Split current cell",
+    title: "Split merged cell",
     label: "Split",
     command: "splitCell",
     icon: "split",
