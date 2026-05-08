@@ -75,6 +75,24 @@ export const TABLE_COMMANDS = Object.freeze([
     icon: "move-column-right",
   },
   {
+    id: "sort-rows-asc",
+    group: "Arrange",
+    title: "Sort rows A to Z",
+    label: "A to Z",
+    command: "sortSelectedTableRows",
+    args: ["asc"],
+    icon: "sort-asc",
+  },
+  {
+    id: "sort-rows-desc",
+    group: "Arrange",
+    title: "Sort rows Z to A",
+    label: "Z to A",
+    command: "sortSelectedTableRows",
+    args: ["desc"],
+    icon: "sort-desc",
+  },
+  {
     id: "duplicate-column",
     group: "Columns",
     title: "Duplicate current column",
@@ -124,6 +142,24 @@ export const TABLE_COMMANDS = Object.freeze([
     command: "moveSelectedTableRow",
     args: ["down"],
     icon: "move-row-down",
+  },
+  {
+    id: "sort-columns-asc",
+    group: "Arrange",
+    title: "Sort columns A to Z",
+    label: "A to Z",
+    command: "sortSelectedTableColumns",
+    args: ["asc"],
+    icon: "sort-asc",
+  },
+  {
+    id: "sort-columns-desc",
+    group: "Arrange",
+    title: "Sort columns Z to A",
+    label: "Z to A",
+    command: "sortSelectedTableColumns",
+    args: ["desc"],
+    icon: "sort-desc",
   },
   {
     id: "duplicate-row",
@@ -375,6 +411,8 @@ export const TABLE_MENU_COMMAND_SCOPE = Object.freeze({
     "add-row-before",
     "add-row-after",
     "duplicate-row",
+    "sort-columns-asc",
+    "sort-columns-desc",
     "copy-cell-content",
     "clear-cell-content",
     "clear-cell-style",
@@ -388,6 +426,8 @@ export const TABLE_MENU_COMMAND_SCOPE = Object.freeze({
     "add-column-before",
     "add-column-after",
     "duplicate-column",
+    "sort-rows-asc",
+    "sort-rows-desc",
     "copy-cell-content",
     "clear-cell-content",
     "clear-cell-style",
@@ -407,6 +447,8 @@ export const TABLE_COMMAND_CONTEXT_ORDER = Object.freeze({
   row: [
     "move-row-up",
     "move-row-down",
+    "sort-columns-asc",
+    "sort-columns-desc",
     "add-row-after",
     "add-row-before",
     "duplicate-row",
@@ -420,6 +462,8 @@ export const TABLE_COMMAND_CONTEXT_ORDER = Object.freeze({
   column: [
     "move-column-left",
     "move-column-right",
+    "sort-rows-asc",
+    "sort-rows-desc",
     "add-column-after",
     "add-column-before",
     "duplicate-column",
@@ -469,12 +513,16 @@ export const KEYBOARD_TABLE_COMMAND_IDS = new Set([
   "move-column-left",
   "move-column-right",
   "duplicate-column",
+  "sort-rows-asc",
+  "sort-rows-desc",
   "delete-column",
   "add-row-before",
   "add-row-after",
   "move-row-up",
   "move-row-down",
   "duplicate-row",
+  "sort-columns-asc",
+  "sort-columns-desc",
   "delete-row",
   "merge-cells",
   "split-cell",
@@ -567,6 +615,10 @@ export function tableCommandLayoutGroup(command) {
   if (command?.id === "clear-cell-style") return "actions";
   if (command?.id === "duplicate-row") return "actions";
   if (command?.id === "duplicate-column") return "actions";
+  if (command?.id === "sort-rows-asc") return "sort";
+  if (command?.id === "sort-rows-desc") return "sort";
+  if (command?.id === "sort-columns-asc") return "sort";
+  if (command?.id === "sort-columns-desc") return "sort";
   if (TABLE_CONTEXT_HEADER_COMMAND_IDS.has(command?.id)) return "actions";
   const variant = tableCommandVariant(command);
   if (variant === "icon") return "align";

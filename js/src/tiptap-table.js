@@ -4,8 +4,10 @@ import {
   renderTableToMarkdown,
 } from "@tiptap/extension-table";
 import { Extension } from "@tiptap/core";
+import { Fragment } from "@tiptap/pm/model";
 import {
   CellSelection,
+  TableMap,
   deleteCellSelection,
   moveTableColumn,
   moveTableRow,
@@ -183,6 +185,28 @@ function tableCellClipboardText(cell) {
     .trim();
 }
 
+function tableSortText(cell) {
+  return tableCellClipboardText(cell).toLocaleLowerCase();
+}
+
+function compareTableSortEntries(left, right, direction = "asc") {
+  const leftEmpty = left.value.length === 0;
+  const rightEmpty = right.value.length === 0;
+  if (leftEmpty || rightEmpty) {
+    if (leftEmpty && rightEmpty) return left.index - right.index;
+    return leftEmpty ? 1 : -1;
+  }
+
+  const compared = left.value.localeCompare(right.value, undefined, {
+    numeric: true,
+    sensitivity: "base",
+  });
+  if (compared !== 0) {
+    return direction === "desc" ? -compared : compared;
+  }
+  return left.index - right.index;
+}
+
 function currentSelectedTableRect(state) {
   try {
     return selectedRect(state);
@@ -343,6 +367,134 @@ export function duplicateSelectedTableColumns(state, dispatch) {
     "column",
   );
   return dispatchChangedTransaction(tr, dispatch);
+}
+
+function isHeaderRow(table, rowIndex) {
+  const row = table?.child?.(rowIndex);
+  if (!row || row.childCount === 0) return false;
+  for (let columnIndex = 0; columnIndex < row.childCount; columnIndex += 1) {
+    if (row.child(columnIndex)?.type?.name !== "tableHeader") return false;
+  }
+  return true;
+}
+
+function isHeaderColumn(table, columnIndex) {
+  if (!table || table.childCount === 0) return false;
+  for (let rowIndex = 0; rowIndex < table.childCount; rowIndex += 1) {
+    const row = table.child(rowIndex);
+    if (!row?.child || columnIndex >= row.childCount) return false;
+    if (row.child(columnIndex)?.type?.name !== "tableHeader") return false;
+  }
+  return true;
+}
+
+function normalizedSortDirection(direction) {
+  return String(direction ?? "").toLowerCase() === "desc" ? "desc" : "asc";
+}
+
+export function sortSelectedTableRows(state, dispatch, direction = "asc") {
+  const rect = currentSelectedTableRect(state);
+  const table = rect?.table;
+  if (!table || !rect?.map || rect.top !== 0 || rect.bottom !== rect.map.height) {
+    return false;
+  }
+  if (tableHasSpanningCells(table)) return false;
+
+  const sortColumn = rect.left;
+  if (!Number.isInteger(sortColumn) || sortColumn < 0 || sortColumn >= rect.map.width) {
+    return false;
+  }
+
+  const fixedHeaderRows = isHeaderRow(table, 0) ? 1 : 0;
+  const sortable = [];
+  for (let rowIndex = fixedHeaderRows; rowIndex < table.childCount; rowIndex += 1) {
+    const row = table.child(rowIndex);
+    if (sortColumn >= row.childCount) return false;
+    sortable.push({
+      index: rowIndex,
+      node: row,
+      value: tableSortText(row.child(sortColumn)),
+    });
+  }
+  if (sortable.length < 2) return true;
+
+  const sorted = [...sortable].sort((left, right) =>
+    compareTableSortEntries(left, right, normalizedSortDirection(direction)),
+  );
+  if (!dispatch) return true;
+
+  const rows = [];
+  for (let rowIndex = 0; rowIndex < fixedHeaderRows; rowIndex += 1) {
+    rows.push(table.child(rowIndex));
+  }
+  rows.push(...sorted.map((entry) => entry.node));
+
+  const nextTable = table.copy(Fragment.fromArray(rows));
+  const tr = state.tr;
+  const tablePos = rect.tableStart - 1;
+  tr.replaceWith(tablePos, tablePos + table.nodeSize, nextTable);
+  const nextMap = TableMap.get(nextTable);
+  selectRegularTableRect(tr, rect.tableStart, nextMap, {
+    ...rect,
+    top: 0,
+    bottom: nextMap.height,
+  }, "column");
+  dispatch(tr.scrollIntoView());
+  return true;
+}
+
+export function sortSelectedTableColumns(state, dispatch, direction = "asc") {
+  const rect = currentSelectedTableRect(state);
+  const table = rect?.table;
+  if (!table || !rect?.map || rect.left !== 0 || rect.right !== rect.map.width) {
+    return false;
+  }
+  if (tableHasSpanningCells(table)) return false;
+
+  const sortRow = rect.top;
+  if (!Number.isInteger(sortRow) || sortRow < 0 || sortRow >= table.childCount) {
+    return false;
+  }
+  const sourceRow = table.child(sortRow);
+  const fixedHeaderColumns = isHeaderColumn(table, 0) ? 1 : 0;
+  const sortable = [];
+  for (let columnIndex = fixedHeaderColumns; columnIndex < rect.map.width; columnIndex += 1) {
+    if (columnIndex >= sourceRow.childCount) return false;
+    sortable.push({
+      index: columnIndex,
+      value: tableSortText(sourceRow.child(columnIndex)),
+    });
+  }
+  if (sortable.length < 2) return true;
+
+  const sorted = [...sortable].sort((left, right) =>
+    compareTableSortEntries(left, right, normalizedSortDirection(direction)),
+  );
+  const columnOrder = [
+    ...Array.from({ length: fixedHeaderColumns }, (_, index) => index),
+    ...sorted.map((entry) => entry.index),
+  ];
+  if (!dispatch) return true;
+
+  const nextRows = [];
+  for (let rowIndex = 0; rowIndex < table.childCount; rowIndex += 1) {
+    const row = table.child(rowIndex);
+    if (columnOrder.some((columnIndex) => columnIndex >= row.childCount)) return false;
+    nextRows.push(row.copy(Fragment.fromArray(columnOrder.map((columnIndex) => row.child(columnIndex)))));
+  }
+
+  const nextTable = table.copy(Fragment.fromArray(nextRows));
+  const tr = state.tr;
+  const tablePos = rect.tableStart - 1;
+  tr.replaceWith(tablePos, tablePos + table.nodeSize, nextTable);
+  const nextMap = TableMap.get(nextTable);
+  selectRegularTableRect(tr, rect.tableStart, nextMap, {
+    ...rect,
+    left: 0,
+    right: nextMap.width,
+  }, "row");
+  dispatch(tr.scrollIntoView());
+  return true;
 }
 
 function selectedTableCellTextRanges(selection) {
@@ -544,6 +696,14 @@ export const PapyroTableCellContentActions = Extension.create({
         () =>
         ({ state, dispatch }) =>
           duplicateSelectedTableColumns(state, dispatch),
+      sortSelectedTableRows:
+        (direction = "asc") =>
+        ({ state, dispatch }) =>
+          sortSelectedTableRows(state, dispatch, direction),
+      sortSelectedTableColumns:
+        (direction = "asc") =>
+        ({ state, dispatch }) =>
+          sortSelectedTableColumns(state, dispatch, direction),
     };
   },
 });

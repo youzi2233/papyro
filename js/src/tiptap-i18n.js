@@ -153,6 +153,30 @@ const TABLE_COMMAND_LABELS = Object.freeze({
 });
 
 const PAPYRO_TABLE_COMMAND_LABELS = Object.freeze({
+  "sort-rows-asc": [
+    "Sort rows A to Z",
+    "\u6309\u5f53\u524d\u5217\u5347\u5e8f\u6392\u5217",
+    "A to Z",
+    "\u5347\u5e8f",
+  ],
+  "sort-rows-desc": [
+    "Sort rows Z to A",
+    "\u6309\u5f53\u524d\u5217\u964d\u5e8f\u6392\u5217",
+    "Z to A",
+    "\u964d\u5e8f",
+  ],
+  "sort-columns-asc": [
+    "Sort columns A to Z",
+    "\u6309\u5f53\u524d\u884c\u5347\u5e8f\u6392\u5217",
+    "A to Z",
+    "\u5347\u5e8f",
+  ],
+  "sort-columns-desc": [
+    "Sort columns Z to A",
+    "\u6309\u5f53\u524d\u884c\u964d\u5e8f\u6392\u5217",
+    "Z to A",
+    "\u964d\u5e8f",
+  ],
   "duplicate-column": [
     "Duplicate current column",
     "\u590d\u5236\u5f53\u524d\u5217",

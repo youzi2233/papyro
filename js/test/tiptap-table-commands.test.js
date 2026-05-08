@@ -28,12 +28,16 @@ test("Tiptap table commands expose stable enterprise command metadata", () => {
       ["Columns", "delete-column", "deleteColumn"],
       ["Arrange", "move-column-left", "moveSelectedTableColumn"],
       ["Arrange", "move-column-right", "moveSelectedTableColumn"],
+      ["Arrange", "sort-rows-asc", "sortSelectedTableRows"],
+      ["Arrange", "sort-rows-desc", "sortSelectedTableRows"],
       ["Columns", "duplicate-column", "duplicateSelectedTableColumn"],
       ["Rows", "add-row-before", "addRowBefore"],
       ["Rows", "add-row-after", "addRowAfter"],
       ["Rows", "delete-row", "deleteRow"],
       ["Arrange", "move-row-up", "moveSelectedTableRow"],
       ["Arrange", "move-row-down", "moveSelectedTableRow"],
+      ["Arrange", "sort-columns-asc", "sortSelectedTableColumns"],
+      ["Arrange", "sort-columns-desc", "sortSelectedTableColumns"],
       ["Rows", "duplicate-row", "duplicateSelectedTableRow"],
       ["Cells", "merge-cells", "mergeCells"],
       ["Cells", "split-cell", "splitCell"],
@@ -108,6 +112,8 @@ test("Tiptap table command scope orders row column and table menus by intent", (
   assert.deepEqual(commandIds(visibleTableCommands(TABLE_COMMANDS, "context", "row")), [
     "move-row-up",
     "move-row-down",
+    "sort-columns-asc",
+    "sort-columns-desc",
     "add-row-after",
     "add-row-before",
     "duplicate-row",
@@ -131,6 +137,8 @@ test("Tiptap table command scope orders row column and table menus by intent", (
   assert.deepEqual(commandIds(visibleTableCommands(TABLE_COMMANDS, "context", "column")), [
     "move-column-left",
     "move-column-right",
+    "sort-rows-asc",
+    "sort-rows-desc",
     "add-column-after",
     "add-column-before",
     "duplicate-column",
@@ -168,6 +176,8 @@ test("Tiptap table commands expose layout groups and keyboard helpers", () => {
   assert.equal(tableCommandLayoutGroup({ id: "cell-text-accent", group: "Text color" }), "text-color");
   assert.equal(tableCommandLayoutGroup({ id: "cell-bg-blue", group: "Cell color" }), "cell-color");
   assert.equal(tableCommandLayoutGroup({ id: "delete-row", group: "Rows", tone: "danger" }), "danger");
+  assert.equal(tableCommandLayoutGroup({ id: "sort-rows-asc", group: "Arrange" }), "sort");
+  assert.equal(tableCommandLayoutGroup({ id: "sort-columns-desc", group: "Arrange" }), "sort");
   assert.equal(tableCommandLayoutGroup({ id: "toggle-header-row", group: "Headers" }), "actions");
   assert.equal(tableCommandLayoutGroup({ id: "copy-cell-content", group: "Cells" }), "actions");
   assert.equal(tableCommandLayoutGroup({ id: "clear-cell-content", group: "Cells" }), "actions");

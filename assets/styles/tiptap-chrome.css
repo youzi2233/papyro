@@ -1585,6 +1585,38 @@
     background: var(--mn-table-icon-grid), color-mix(in srgb, currentColor 8%, transparent);
 }
 
+.mn-tiptap-table-toolbar-button[data-icon="sort-asc"] .mn-tiptap-table-toolbar-button-visual::before,
+.mn-tiptap-table-toolbar-button[data-icon="sort-desc"] .mn-tiptap-table-toolbar-button-visual::before {
+    width: 14px;
+    height: 13px;
+    border-radius: 0;
+    background:
+        linear-gradient(currentColor, currentColor) 6px 1px / 8px 1.4px no-repeat,
+        linear-gradient(currentColor, currentColor) 6px 6px / 6px 1.4px no-repeat,
+        linear-gradient(currentColor, currentColor) 6px 11px / 4px 1.4px no-repeat;
+}
+
+.mn-tiptap-table-toolbar-button[data-icon="sort-asc"] .mn-tiptap-table-toolbar-button-visual::after,
+.mn-tiptap-table-toolbar-button[data-icon="sort-desc"] .mn-tiptap-table-toolbar-button-visual::after {
+    content: "";
+    position: absolute;
+    left: 3px;
+    width: 6px;
+    height: 6px;
+    border-top: 1.5px solid currentColor;
+    border-left: 1.5px solid currentColor;
+}
+
+.mn-tiptap-table-toolbar-button[data-icon="sort-asc"] .mn-tiptap-table-toolbar-button-visual::after {
+    top: 4px;
+    transform: rotate(45deg);
+}
+
+.mn-tiptap-table-toolbar-button[data-icon="sort-desc"] .mn-tiptap-table-toolbar-button-visual::after {
+    bottom: 4px;
+    transform: rotate(225deg);
+}
+
 .mn-tiptap-table-toolbar-button[data-icon="row-above"] .mn-tiptap-table-toolbar-button-visual::after,
 .mn-tiptap-table-toolbar-button[data-icon="row-below"] .mn-tiptap-table-toolbar-button-visual::after,
 .mn-tiptap-table-toolbar-button[data-icon="column-left"] .mn-tiptap-table-toolbar-button-visual::after,
