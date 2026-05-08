@@ -42,6 +42,10 @@ const commandMenuSource = readFileSync(
   new URL("../src/tiptap-react/components/command-menu.jsx", import.meta.url),
   "utf8",
 );
+const hoverIntentHookSource = readFileSync(
+  new URL("../src/tiptap-react/hooks/use-hover-intent-activation.js", import.meta.url),
+  "utf8",
+);
 const blockActionMenuSource = readFileSync(
   new URL("../src/tiptap-react/components/block-action-menu.jsx", import.meta.url),
   "utf8",
@@ -190,6 +194,15 @@ test("React slash table picker uses an anchored secondary panel", () => {
   assert.match(commandMenuSource, /sidePanel === "table"/u);
   assert.match(commandMenuSource, /data-layout/u);
   assert.doesNotMatch(commandMenuSource, /inlinePanel\s*=\s*command\?\.id === "table"/u);
+});
+
+test("React slash menu uses hover intent for secondary panels without slowing keyboard focus", () => {
+  assert.match(commandMenuSource, /useHoverIntentActivation/u);
+  assert.match(commandMenuSource, /hoverIntent\.schedule\(index,\s*options\)/u);
+  assert.match(commandMenuSource, /focusActivate=\{hoverIntent\.runNow\}/u);
+  assert.match(hoverIntentHookSource, /DEFAULT_HOVER_INTENT_DELAY_MS\s*=\s*80/u);
+  assert.match(hoverIntentHookSource, /globalThis\.setTimeout/u);
+  assert.match(hoverIntentHookSource, /globalThis\.clearTimeout/u);
 });
 
 test("React floating chrome shares positioning utilities", () => {

@@ -17,6 +17,7 @@ import {
   commandMenuGroupTone,
   groupCommandsForMenu,
 } from "../commands/command-menu-model.js";
+import { useHoverIntentActivation } from "../hooks/use-hover-intent-activation.js";
 import {
   codeBlockLanguagePickerLabel,
   createCodeBlockLanguageCommands,
@@ -56,6 +57,7 @@ function SlashCommandItem({
   activePanel,
   language,
   activate,
+  focusActivate,
   choose,
 }) {
   const activation = usePointerActivation(() => choose(command.id));
@@ -89,7 +91,7 @@ function SlashCommandItem({
           "side-panel": panel,
         }}
         onPointerMove={() => activate(command.index, { scroll: false })}
-        onFocus={() => activate(command.index, { scroll: true })}
+        onFocus={() => focusActivate(command.index, { scroll: true })}
         activation={activation}
         icon={<CommandIcon command={command} />}
         textClassName="mn-tiptap-slash-menu-copy"
@@ -266,6 +268,7 @@ export function PapyroSlashCommandMenu({
 }) {
   const commands = state?.commands ?? [];
   const selectedIndex = state?.selectedIndex ?? 0;
+  const hoverIntent = useHoverIntentActivation({ activate: state?.activate });
   const selectedCommand = commands[selectedIndex] ?? null;
   const sidePanel = commandMenuSidePanel(selectedCommand);
   const sidePanelId = commandMenuSidePanelId(ownerId, sidePanel);
@@ -299,7 +302,8 @@ export function PapyroSlashCommandMenu({
                 selected={command.index === selectedIndex}
                 activePanel={sidePanel}
                 language={language}
-                activate={state.activate}
+                activate={(index, options) => hoverIntent.schedule(index, options)}
+                focusActivate={hoverIntent.runNow}
                 choose={state.choose}
               />
             ))}

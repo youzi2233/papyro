@@ -189,6 +189,7 @@ Tasks:
 - [x] Replace ad hoc slash-menu glyphs with a shared Lucide-backed React icon system and semantic command-group tones.
   - Current polish: slash and `+` menus now use quieter neutral icon frames, and the table size detail panel is narrower with matching positioning contracts. The React path uses Lucide icons, while the migration DOM fallback now has the same semantic line-icon vocabulary and Recent tone so rendering paths do not split visually.
   - Current polish: the insert menu width, item rhythm, and compact table-size secondary panel have been tightened so table insertion reads as one focused nested choice instead of a bulky overlay that blocks scanning lower commands.
+  - Current polish: the React insert menu now uses the same hover-intent delay as the DOM fallback for side panels, so table/callout/code detail panels do not jump open while users move toward lower commands; keyboard focus remains immediate.
 
 Acceptance criteria:
 
