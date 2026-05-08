@@ -691,3 +691,28 @@ export function createTableCommandMenuState(
       : enabledCommandIds[0] ?? null,
   };
 }
+
+export function groupTableCommandMenuCommands(commands = []) {
+  const groups = [];
+
+  (commands ?? []).forEach((command, commandIndex) => {
+    const indexedCommand = {
+      ...command,
+      index: Number.isInteger(command?.index) ? command.index : commandIndex,
+    };
+    const layoutGroup = command?.layoutGroup ?? tableCommandLayoutGroup(command);
+    const groupKey = layoutGroup === "danger" ? "danger" : command?.groupKey ?? command?.group;
+    const previous = groups.at(-1);
+    if (previous?.groupKey !== groupKey) {
+      groups.push({
+        groupKey,
+        group: command?.group,
+        layoutGroup,
+        commands: [],
+      });
+    }
+    groups.at(-1).commands.push(indexedCommand);
+  });
+
+  return groups;
+}

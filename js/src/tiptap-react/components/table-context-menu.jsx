@@ -7,34 +7,11 @@ import {
   tableToolsLabel,
 } from "../../tiptap-i18n.js";
 import {
-  tableCommandLayoutGroup,
+  groupTableCommandMenuCommands,
   tableCommandVariant,
 } from "../../tiptap-table-commands.js";
 import { usePointerActivation } from "../hooks/use-pointer-activation.js";
 import { CommandIconFrame, CommandRow, CommandText } from "./primitives.jsx";
-
-function groupTableCommands(commands) {
-  const groups = [];
-  (commands ?? []).forEach((command, commandIndex) => {
-    const indexedCommand = {
-      ...command,
-      index: commandIndex,
-    };
-    const layoutGroup = command.layoutGroup ?? tableCommandLayoutGroup(command);
-    const groupKey = layoutGroup === "danger" ? "danger" : command.groupKey ?? command.group;
-    const previous = groups.at(-1);
-    if (previous?.groupKey !== groupKey) {
-      groups.push({
-        groupKey,
-        group: command.group,
-        layoutGroup,
-        commands: [],
-      });
-    }
-    groups.at(-1).commands.push(indexedCommand);
-  });
-  return groups;
-}
 
 function TableCommandVisual({ command }) {
   const icon = command.icon ?? command.id;
@@ -128,7 +105,7 @@ export function PapyroTableContextMenu({
   commands = [],
   language = "english",
 }) {
-  const groups = useMemo(() => groupTableCommands(commands), [commands]);
+  const groups = useMemo(() => groupTableCommandMenuCommands(commands), [commands]);
   const mode = state?.mode === "keyboard" ? "keyboard" : "context";
   const selectionKind = state?.selection?.kind ?? "cell";
 

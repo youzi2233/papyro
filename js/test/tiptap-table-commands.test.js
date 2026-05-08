@@ -7,6 +7,7 @@ import {
   createTableCommandMenuState,
   enabledTableCommandIds,
   firstEnabledTableCommandId,
+  groupTableCommandMenuCommands,
   nextEnabledTableCommandId,
   normalizeTableMenuMode,
   normalizeTableCellAttributeValue,
@@ -234,6 +235,44 @@ test("Tiptap table command menu state centralizes scope and active command fallb
   assert.equal(keyboard.commands[0].id, "add-column-before");
   assert.equal(keyboard.activeCommandId, "add-column-before");
   assert.equal(keyboard.enabledCommandIds.includes("delete-table"), false);
+});
+
+test("Tiptap table command menu grouping is shared by React and fallback renderers", () => {
+  const commands = [
+    { id: "align-left", group: "Align", variant: "icon" },
+    { id: "align-right", group: "Align", variant: "icon", index: 8 },
+    { id: "cell-bg-blue", group: "Cell color", variant: "swatch" },
+    { id: "delete-row", group: "Rows", tone: "danger" },
+  ];
+
+  assert.deepEqual(
+    groupTableCommandMenuCommands(commands).map((group) => ({
+      groupKey: group.groupKey,
+      group: group.group,
+      layoutGroup: group.layoutGroup,
+      commands: group.commands.map((command) => [command.id, command.index]),
+    })),
+    [
+      {
+        groupKey: "Align",
+        group: "Align",
+        layoutGroup: "align",
+        commands: [["align-left", 0], ["align-right", 8]],
+      },
+      {
+        groupKey: "Cell color",
+        group: "Cell color",
+        layoutGroup: "cell-color",
+        commands: [["cell-bg-blue", 2]],
+      },
+      {
+        groupKey: "danger",
+        group: "Rows",
+        layoutGroup: "danger",
+        commands: [["delete-row", 3]],
+      },
+    ],
+  );
 });
 
 test("Tiptap table commands centralize editor capability and cell attribute helpers", () => {

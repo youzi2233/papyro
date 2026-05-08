@@ -20,7 +20,7 @@ import {
   tableQuickAddGeometry,
 } from "./tiptap-table-geometry.js";
 import {
-  tableCommandLayoutGroup,
+  groupTableCommandMenuCommands,
   tableCommandVariant,
   visibleTableCommands,
 } from "./tiptap-table-commands.js";
@@ -378,102 +378,103 @@ export class TiptapTableToolbarView {
   #renderLegacyMenu(state, menuCommands) {
     if (!this.#list) return;
     const commandGroups = [];
-    menuCommands.forEach((command, commandIndex) => {
-      const layoutGroup = command.layoutGroup ?? tableCommandLayoutGroup(command);
-      const groupKey = layoutGroup === "danger" ? "danger" : command.groupKey ?? command.group;
-      if (commandGroups.at(-1)?.dataset?.groupKey !== groupKey) {
-        const groupElement = createElement(this.#document, "div", "mn-tiptap-table-toolbar-group");
-        if (!groupElement) return;
-        groupElement.dataset.groupKey = groupKey;
-        groupElement.dataset.group = command.group;
-        groupElement.dataset.layoutGroup = layoutGroup;
-        const label =
-          layoutGroup === "danger"
-            ? null
-            : createElement(this.#document, "div", "mn-tiptap-table-toolbar-group-label");
-        if (label) {
-          label.textContent = command.group;
-          groupElement.appendChild(label);
-        }
-        commandGroups.push(groupElement);
+    groupTableCommandMenuCommands(menuCommands).forEach((group) => {
+      const layoutGroup = group.layoutGroup;
+      const groupKey = group.groupKey;
+      const groupElement = createElement(this.#document, "div", "mn-tiptap-table-toolbar-group");
+      if (!groupElement) return;
+      groupElement.dataset.groupKey = groupKey;
+      groupElement.dataset.group = group.group;
+      groupElement.dataset.layoutGroup = layoutGroup;
+      const label =
+        layoutGroup === "danger"
+          ? null
+          : createElement(this.#document, "div", "mn-tiptap-table-toolbar-group-label");
+      if (label) {
+        label.textContent = group.group;
+        groupElement.appendChild(label);
       }
+      commandGroups.push(groupElement);
 
-      const button = createElement(this.#document, "button", "mn-tiptap-table-toolbar-button");
-      if (!button) return;
+      group.commands.forEach((command) => {
+        const commandIndex = command.index;
+        const button = createElement(this.#document, "button", "mn-tiptap-table-toolbar-button");
+        if (!button) return;
 
-      button.type = "button";
-      button.id = commandElementId(TABLE_TOOLBAR_OWNER_ID, commandIndex);
-      button.role = state.mode === "context" ? "menuitem" : "button";
-      button.title = command.title;
-      button.setAttribute(
-        "aria-label",
-        command.description ? `${command.title}. ${command.description}` : command.title,
-      );
-      button.textContent = state.mode === "context" ? command.title : command.label;
-      button.dataset.commandId = command.id;
-      button.dataset.commandIndex = String(commandIndex);
-      button.dataset.group = command.group;
-      button.dataset.icon = command.icon ?? command.id;
-      button.dataset.variant = command.variant ?? tableCommandVariant(command);
-      button.dataset.tone = command.tone ?? "default";
-      button.dataset.active = command.active ? "true" : "false";
-      button.dataset.keyboardActive = state.activeCommandId === command.id ? "true" : "false";
-      button.dataset.disabled = command.disabled ? "true" : "false";
-      button.tabIndex = state.activeCommandId === command.id ? 0 : -1;
-      button.disabled = !!command.disabled;
-      button.setAttribute("aria-disabled", command.disabled ? "true" : "false");
-      button.addEventListener("pointerenter", () =>
-        state.setActiveCommand?.(command.id, { keyboardActive: false }),
-      );
-      button.addEventListener("focus", () =>
-        state.setActiveCommand?.(command.id, { keyboardActive: true }),
-      );
-      bindPointerCommand(button, command, () => state.run(command.id));
-      const visual = createElement(
-        this.#document,
-        "span",
-        "mn-tiptap-table-toolbar-button-visual",
-      );
-      if (visual) {
-        visual.setAttribute("aria-hidden", "true");
-        visual.dataset.icon = command.icon ?? command.id;
-        visual.dataset.variant = command.variant ?? tableCommandVariant(command);
-        if (
-          command.variant === "icon" ||
-          command.variant === "swatch" ||
-          command.variant === "text-swatch"
-        ) {
-          button.replaceChildren(visual);
-        } else if (state.mode === "context") {
-          const copy = createElement(
-            this.#document,
-            "span",
-            "mn-tiptap-table-toolbar-button-copy",
-          );
-          const label = createElement(
-            this.#document,
-            "span",
-            "mn-tiptap-table-toolbar-button-label",
-          );
-          const description = command.description
-            ? createElement(
-                this.#document,
-                "span",
-                "mn-tiptap-table-toolbar-button-description",
-              )
-            : null;
-          if (copy && label) {
-            label.textContent = command.title;
-            copy.appendChild(label);
-            if (description) {
-              description.textContent = command.description;
-              copy.appendChild(description);
+        button.type = "button";
+        button.id = commandElementId(TABLE_TOOLBAR_OWNER_ID, commandIndex);
+        button.role = state.mode === "context" ? "menuitem" : "button";
+        button.title = command.title;
+        button.setAttribute(
+          "aria-label",
+          command.description ? `${command.title}. ${command.description}` : command.title,
+        );
+        button.textContent = state.mode === "context" ? command.title : command.label;
+        button.dataset.commandId = command.id;
+        button.dataset.commandIndex = String(commandIndex);
+        button.dataset.group = command.group;
+        button.dataset.icon = command.icon ?? command.id;
+        button.dataset.variant = command.variant ?? tableCommandVariant(command);
+        button.dataset.tone = command.tone ?? "default";
+        button.dataset.active = command.active ? "true" : "false";
+        button.dataset.keyboardActive = state.activeCommandId === command.id ? "true" : "false";
+        button.dataset.disabled = command.disabled ? "true" : "false";
+        button.tabIndex = state.activeCommandId === command.id ? 0 : -1;
+        button.disabled = !!command.disabled;
+        button.setAttribute("aria-disabled", command.disabled ? "true" : "false");
+        button.addEventListener("pointerenter", () =>
+          state.setActiveCommand?.(command.id, { keyboardActive: false }),
+        );
+        button.addEventListener("focus", () =>
+          state.setActiveCommand?.(command.id, { keyboardActive: true }),
+        );
+        bindPointerCommand(button, command, () => state.run(command.id));
+        const visual = createElement(
+          this.#document,
+          "span",
+          "mn-tiptap-table-toolbar-button-visual",
+        );
+        if (visual) {
+          visual.setAttribute("aria-hidden", "true");
+          visual.dataset.icon = command.icon ?? command.id;
+          visual.dataset.variant = command.variant ?? tableCommandVariant(command);
+          if (
+            command.variant === "icon" ||
+            command.variant === "swatch" ||
+            command.variant === "text-swatch"
+          ) {
+            button.replaceChildren(visual);
+          } else if (state.mode === "context") {
+            const copy = createElement(
+              this.#document,
+              "span",
+              "mn-tiptap-table-toolbar-button-copy",
+            );
+            const label = createElement(
+              this.#document,
+              "span",
+              "mn-tiptap-table-toolbar-button-label",
+            );
+            const description = command.description
+              ? createElement(
+                  this.#document,
+                  "span",
+                  "mn-tiptap-table-toolbar-button-description",
+                )
+              : null;
+            if (copy && label) {
+              label.textContent = command.title;
+              copy.appendChild(label);
+              if (description) {
+                description.textContent = command.description;
+                copy.appendChild(description);
+              }
+              button.replaceChildren(visual, copy);
             }
-            button.replaceChildren(visual, copy);
           }
         }
-      }
-      commandGroups.at(-1)?.appendChild(button);
+        groupElement.appendChild(button);
+      });
     });
     this.#list.append(...commandGroups);
   }
