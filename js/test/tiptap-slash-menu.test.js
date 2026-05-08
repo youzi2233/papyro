@@ -5,6 +5,9 @@ import {
   createTiptapSlashMenuController,
   findSlashTrigger,
 } from "../src/tiptap-slash-menu.js";
+import {
+  createTiptapSlashCommandController,
+} from "../src/tiptap-slash-commands.js";
 
 function createDoc(text) {
   return {
@@ -363,6 +366,46 @@ test("Tiptap slash menu keyboard selection can reach table without wrapping", ()
   assert.equal(controller.state.commands.at(-1).id, "mermaid");
   controller.moveSelection(1);
   assert.equal(controller.state.commands[controller.state.selectedIndex].id, "mermaid");
+});
+
+test("Tiptap block insert menu keyboard selection can reach table after recent commands", () => {
+  const { calls, editor } = createEditor("plain");
+  const commandController = createTiptapSlashCommandController();
+  const view = createViewSpy();
+  const controller = createTiptapSlashMenuController({
+    commandController,
+    view,
+  });
+  commandController.run("table", { editor });
+  controller.attach({ editor, root: {} });
+
+  controller.openAtBlock({
+    pos: 3,
+    node: {
+      nodeSize: 5,
+    },
+  });
+
+  assert.deepEqual(
+    controller.state.commands.slice(0, 4).map((command) => ({
+      id: command.id,
+      group: command.group,
+      recent: command.recent,
+    })),
+    [
+      { id: "table", group: "Recent", recent: true },
+      { id: "paragraph", group: "Text", recent: false },
+      { id: "heading-1", group: "Text", recent: false },
+      { id: "heading-2", group: "Text", recent: false },
+    ],
+  );
+  assert.equal(controller.state.commands[controller.state.selectedIndex].id, "table");
+  assert.equal(controller.handleKeyDown({ key: "Enter", preventDefault() {} }), true);
+  assert.deepEqual(calls.slice(-3), [
+    ["deleteRange", 9, 10],
+    ["insertTable", 3, 2, true],
+    ["focus"],
+  ]);
 });
 
 test("Tiptap slash menu keyboard controls the nested table size panel", () => {

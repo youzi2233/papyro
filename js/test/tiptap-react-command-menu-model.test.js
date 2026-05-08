@@ -58,18 +58,18 @@ test("React command menu model exposes side panel contracts", () => {
   assert.equal(commandMenuSidePanel({ id: "paragraph" }), "none");
   assert.equal(commandMenuSidePanel(null), "none");
 
-  assert.deepEqual(commandMenuSidePanelSize("table"), { width: 158, height: 172 });
+  assert.deepEqual(commandMenuSidePanelSize("table"), { width: 168, height: 172 });
   assert.deepEqual(commandMenuSidePanelSize("callout"), { width: 166, height: 188 });
-  assert.deepEqual(commandMenuSidePanelSize("code-language"), { width: 176, height: 286 });
+  assert.deepEqual(commandMenuSidePanelSize("code-language"), { width: 238, height: 326 });
   assert.deepEqual(commandMenuSidePanelSize("none"), { width: 0, height: 0 });
   assert.deepEqual(commandMenuSidePanelSize("unknown"), { width: 0, height: 0 });
-  assert.equal(commandMenuSidePanelWidth("table"), 158);
+  assert.equal(commandMenuSidePanelWidth("table"), 168);
   assert.equal(commandMenuSidePanelWidth("callout"), 166);
-  assert.equal(commandMenuSidePanelWidth("code-language"), 176);
+  assert.equal(commandMenuSidePanelWidth("code-language"), 238);
   assert.equal(commandMenuSidePanelWidth("none"), 0);
   assert.equal(commandMenuSidePanelHeight("table"), 172);
   assert.equal(commandMenuSidePanelHeight("callout"), 188);
-  assert.equal(commandMenuSidePanelHeight("code-language"), 286);
+  assert.equal(commandMenuSidePanelHeight("code-language"), 326);
   assert.equal(commandMenuSidePanelHeight("none"), 0);
   assert.equal(commandMenuSidePanelId("menu", "table"), "menu-table-panel");
   assert.equal(commandMenuSidePanelId("menu", "callout"), "menu-callout-panel");

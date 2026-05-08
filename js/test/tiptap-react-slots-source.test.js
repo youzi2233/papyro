@@ -227,6 +227,7 @@ test("React slash menu uses hover intent for secondary panels without slowing ke
   assert.match(commandMenuSource, /useHoverIntentActivation/u);
   assert.match(commandMenuSource, /hoverIntent\.schedule\(index,\s*options\)/u);
   assert.match(commandMenuSource, /focusActivate=\{hoverIntent\.runNow\}/u);
+  assert.match(commandMenuSource, /hoverIntent\.cancel\(\)/u);
   assert.match(hoverIntentHookSource, /DEFAULT_HOVER_INTENT_DELAY_MS\s*=\s*80/u);
   assert.match(hoverIntentHookSource, /globalThis\.setTimeout/u);
   assert.match(hoverIntentHookSource, /globalThis\.clearTimeout/u);

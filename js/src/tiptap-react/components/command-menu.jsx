@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 import { PAPYRO_CALLOUT_KIND_OPTIONS } from "../../tiptap-markdown-snippets.js";
 import {
@@ -281,6 +281,12 @@ export function PapyroSlashCommandMenu({
   const commands = state?.commands ?? [];
   const selectedIndex = state?.selectedIndex ?? 0;
   const hoverIntent = useHoverIntentActivation({ activate: state?.activate });
+  useEffect(
+    () => {
+      hoverIntent.cancel();
+    },
+    [hoverIntent, selectedIndex],
+  );
   const selectedCommand = commands[selectedIndex] ?? null;
   const sidePanel = commandMenuSidePanel(selectedCommand);
   const sidePanelId = commandMenuSidePanelId(ownerId, sidePanel);

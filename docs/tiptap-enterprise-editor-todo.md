@@ -214,6 +214,7 @@ Manual smoke:
 - Type `/`, navigate from first item to table using ArrowDown, insert a table.
 - Click `+` beside a paragraph, insert heading, table, code block, math, Mermaid, and callout.
 - Switch language between English and Chinese and repeat.
+- Use the keyboard after opening the `+` insert menu, including the case where recent commands are shown, and verify Table can still be selected and inserted.
 
 ## Milestone 3 - Drag Handle And Block Action Menu
 

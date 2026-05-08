@@ -89,9 +89,9 @@ export function commandMenuSidePanel(command) {
 }
 
 const SIDE_PANEL_LAYOUTS = Object.freeze({
-  table: Object.freeze({ width: 158, height: 172 }),
+  table: Object.freeze({ width: 168, height: 172 }),
   callout: Object.freeze({ width: 166, height: 188 }),
-  "code-language": Object.freeze({ width: 176, height: 286 }),
+  "code-language": Object.freeze({ width: 238, height: 326 }),
   none: Object.freeze({ width: 0, height: 0 }),
 });
 

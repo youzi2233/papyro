@@ -1,19 +1,21 @@
 import React from "react";
 import {
   Code2,
+  FileText,
   Heading1,
   Heading2,
   Heading3,
-  Image,
+  ImagePlus,
   List,
   ListOrdered,
-  ListTodo,
+  ListChecks,
   MessageSquareText,
-  Minus,
+  Pilcrow,
   Quote,
+  SeparatorHorizontal,
   Sigma,
-  Table2,
-  Type,
+  SquareCode,
+  TableProperties,
   Workflow,
 } from "lucide-react";
 
@@ -31,21 +33,23 @@ function LucideCommandIcon({ as: Icon }) {
 }
 
 const COMMAND_ICONS = Object.freeze({
-  paragraph: <LucideCommandIcon as={Type} />,
+  paragraph: <LucideCommandIcon as={Pilcrow} />,
   "heading-1": <LucideCommandIcon as={Heading1} />,
   "heading-2": <LucideCommandIcon as={Heading2} />,
   "heading-3": <LucideCommandIcon as={Heading3} />,
   "bullet-list": <LucideCommandIcon as={List} />,
   "ordered-list": <LucideCommandIcon as={ListOrdered} />,
-  "task-list": <LucideCommandIcon as={ListTodo} />,
+  "task-list": <LucideCommandIcon as={ListChecks} />,
   quote: <LucideCommandIcon as={Quote} />,
   callout: <LucideCommandIcon as={MessageSquareText} />,
-  "code-block": <LucideCommandIcon as={Code2} />,
-  divider: <LucideCommandIcon as={Minus} />,
-  table: <LucideCommandIcon as={Table2} />,
+  "code-block": <LucideCommandIcon as={SquareCode} />,
+  divider: <LucideCommandIcon as={SeparatorHorizontal} />,
+  table: <LucideCommandIcon as={TableProperties} />,
   math: <LucideCommandIcon as={Sigma} />,
   mermaid: <LucideCommandIcon as={Workflow} />,
-  image: <LucideCommandIcon as={Image} />,
+  image: <LucideCommandIcon as={ImagePlus} />,
+  "code-language": <LucideCommandIcon as={Code2} />,
+  file: <LucideCommandIcon as={FileText} />,
 });
 
 export function CommandMenuIcon({ icon }) {
