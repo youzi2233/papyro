@@ -2397,6 +2397,7 @@ test("Tiptap table toolbar keeps cell and axis context menus focused", () => {
     copySelectedTableCells: () => true,
     splitCell: () => false,
     setCellAttribute: () => true,
+    setSelectedTableCellTextColor: () => true,
     fixTables: () => true,
     deleteTable: () => true,
   });
@@ -2417,6 +2418,10 @@ test("Tiptap table toolbar keeps cell and axis context menus focused", () => {
     "align-left",
     "align-center",
     "align-right",
+    "cell-text-clear",
+    "cell-text-muted",
+    "cell-text-accent",
+    "cell-text-danger",
     "cell-bg-clear",
     "cell-bg-yellow",
     "cell-bg-blue",
@@ -2425,7 +2430,8 @@ test("Tiptap table toolbar keeps cell and axis context menus focused", () => {
 
   controller.selectAxis("row", 0);
   controller.toggleMenu("context", { open: true });
-  assert.deepEqual(toolbarCommandIds(created).filter((id) => id.includes("row")), [
+  const rowCommandIds = toolbarCommandIds(created);
+  assert.deepEqual(rowCommandIds.filter((id) => id.includes("row")), [
     "move-row-up",
     "move-row-down",
     "add-row-after",
@@ -2433,11 +2439,31 @@ test("Tiptap table toolbar keeps cell and axis context menus focused", () => {
     "toggle-header-row",
     "delete-row",
   ]);
-  assert.equal(toolbarCommandIds(created).includes("cell-bg-yellow"), false);
+  assert.deepEqual(
+    rowCommandIds.filter((id) =>
+      id.startsWith("align-") ||
+      id.startsWith("cell-text-") ||
+      id.startsWith("cell-bg-")
+    ),
+    [
+      "align-left",
+      "align-center",
+      "align-right",
+      "cell-text-clear",
+      "cell-text-muted",
+      "cell-text-accent",
+      "cell-text-danger",
+      "cell-bg-clear",
+      "cell-bg-yellow",
+      "cell-bg-blue",
+      "cell-bg-green",
+    ],
+  );
 
   controller.selectAxis("column", 0);
   controller.toggleMenu("context", { open: true });
-  assert.deepEqual(toolbarCommandIds(created).filter((id) => id.includes("column")), [
+  const columnCommandIds = toolbarCommandIds(created);
+  assert.deepEqual(columnCommandIds.filter((id) => id.includes("column")), [
     "move-column-left",
     "move-column-right",
     "add-column-after",
@@ -2445,6 +2471,26 @@ test("Tiptap table toolbar keeps cell and axis context menus focused", () => {
     "toggle-header-column",
     "delete-column",
   ]);
+  assert.deepEqual(
+    columnCommandIds.filter((id) =>
+      id.startsWith("align-") ||
+      id.startsWith("cell-text-") ||
+      id.startsWith("cell-bg-")
+    ),
+    [
+      "align-left",
+      "align-center",
+      "align-right",
+      "cell-text-clear",
+      "cell-text-muted",
+      "cell-text-accent",
+      "cell-text-danger",
+      "cell-bg-clear",
+      "cell-bg-yellow",
+      "cell-bg-blue",
+      "cell-bg-green",
+    ],
+  );
 
   controller.selectAxis("table", 0);
   controller.toggleMenu("context", { open: true });

@@ -16,6 +16,20 @@ export const TABLE_CELL_MENU_COMMAND_IDS = new Set([
   "cell-bg-green",
 ]);
 
+const TABLE_AXIS_STYLE_COMMAND_IDS = Object.freeze([
+  "align-left",
+  "align-center",
+  "align-right",
+  "cell-text-clear",
+  "cell-text-muted",
+  "cell-text-accent",
+  "cell-text-danger",
+  "cell-bg-clear",
+  "cell-bg-yellow",
+  "cell-bg-blue",
+  "cell-bg-green",
+]);
+
 export const TABLE_COMMANDS = Object.freeze([
   {
     id: "add-column-before",
@@ -347,6 +361,7 @@ export const TABLE_MENU_COMMAND_SCOPE = Object.freeze({
     "copy-cell-content",
     "clear-cell-content",
     "clear-cell-style",
+    ...TABLE_AXIS_STYLE_COMMAND_IDS,
     "delete-row",
     "toggle-header-row",
   ]),
@@ -358,6 +373,7 @@ export const TABLE_MENU_COMMAND_SCOPE = Object.freeze({
     "copy-cell-content",
     "clear-cell-content",
     "clear-cell-style",
+    ...TABLE_AXIS_STYLE_COMMAND_IDS,
     "delete-column",
     "toggle-header-column",
   ]),
@@ -378,6 +394,7 @@ export const TABLE_COMMAND_CONTEXT_ORDER = Object.freeze({
     "copy-cell-content",
     "clear-cell-content",
     "clear-cell-style",
+    ...TABLE_AXIS_STYLE_COMMAND_IDS,
     "toggle-header-row",
     "delete-row",
   ],
@@ -389,6 +406,7 @@ export const TABLE_COMMAND_CONTEXT_ORDER = Object.freeze({
     "copy-cell-content",
     "clear-cell-content",
     "clear-cell-style",
+    ...TABLE_AXIS_STYLE_COMMAND_IDS,
     "toggle-header-column",
     "delete-column",
   ],

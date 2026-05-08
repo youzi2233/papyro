@@ -61,6 +61,10 @@ function tableCellPositions(doc) {
   return positions;
 }
 
+function tableJsonCells(editor) {
+  return editor.getJSON().content[0].content.flatMap((row) => row.content);
+}
+
 test("Papyro table extensions expose the TableKit boundary", () => {
   const extensions = createPapyroTableExtensions();
 
@@ -287,6 +291,63 @@ test("Papyro table content actions move selected rows and columns through ProseM
       Array.from(editor.view.dom.querySelectorAll("td,th")).map((cell) => cell.textContent),
       ["B2", "B1", "A2", "A1", "C2", "C1"],
     );
+  } finally {
+    editor?.destroy?.();
+    restoreDomGlobals(previousGlobals);
+    windowRef.close?.();
+  }
+});
+
+test("Papyro table content actions style selected rows and columns", () => {
+  const windowRef = new Window({ url: "http://localhost/" });
+  const previousGlobals = installDomGlobals(windowRef);
+  const root = windowRef.document.createElement("div");
+  windowRef.document.body.appendChild(root);
+  let editor = null;
+
+  try {
+    editor = new Editor({
+      element: root,
+      extensions: [
+        StarterKit,
+        ...createPapyroTextStyleExtensions(),
+        ...createPapyroTableExtensions(),
+      ],
+      content:
+        "<table><tbody><tr><td>A1</td><td>A2</td></tr><tr><td>B1</td><td>B2</td></tr></tbody></table>",
+      injectCSS: false,
+    });
+    const [rowStart, rowEnd, , secondColumnEnd] = tableCellPositions(editor.state.doc);
+
+    editor.commands.setCellSelection({ anchorCell: rowStart, headCell: rowEnd });
+    assert.equal(editor.commands.setCellAttribute("backgroundColor", "rgba(16, 185, 129, 0.14)"), true);
+
+    let [firstRowFirstCell, firstRowSecondCell, secondRowFirstCell, secondRowSecondCell] =
+      tableJsonCells(editor);
+    assert.equal(firstRowFirstCell.attrs.backgroundColor, "rgba(16, 185, 129, 0.14)");
+    assert.equal(firstRowSecondCell.attrs.backgroundColor, "rgba(16, 185, 129, 0.14)");
+    assert.equal(secondRowFirstCell.attrs.backgroundColor, null);
+    assert.equal(secondRowSecondCell.attrs.backgroundColor, null);
+
+    editor.commands.setCellSelection({ anchorCell: rowEnd, headCell: secondColumnEnd });
+    assert.equal(editor.commands.setSelectedTableCellTextColor("var(--mn-danger)"), true);
+
+    [firstRowFirstCell, firstRowSecondCell, secondRowFirstCell, secondRowSecondCell] =
+      tableJsonCells(editor);
+    assert.equal(firstRowFirstCell.content[0].content[0].marks, undefined);
+    assert.deepEqual(firstRowSecondCell.content[0].content[0].marks, [
+      {
+        type: "textStyle",
+        attrs: Object.assign(Object.create(null), { color: "var(--mn-danger)" }),
+      },
+    ]);
+    assert.equal(secondRowFirstCell.content[0].content[0].marks, undefined);
+    assert.deepEqual(secondRowSecondCell.content[0].content[0].marks, [
+      {
+        type: "textStyle",
+        attrs: Object.assign(Object.create(null), { color: "var(--mn-danger)" }),
+      },
+    ]);
   } finally {
     editor?.destroy?.();
     restoreDomGlobals(previousGlobals);
