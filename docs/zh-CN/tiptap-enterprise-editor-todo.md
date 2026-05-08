@@ -230,6 +230,7 @@ node scripts/check-editor-markdown-gate.js
   - 当前覆盖：官方 React DragHandle bridge 现在会记录 pointer down/up 距离，短按主键会立即打开块操作菜单；发生拖拽倾向后会抑制 click fallback，真实拖拽继续交给官方 drag path。
 - [ ] 右键阻止 WebView 原生菜单，只展示 Papyro 动作。
 - [ ] 高亮完整语义 block，包括行内代码和混合 mark。
+  - 当前覆盖：块句柄动作现在优先使用 Tiptap 官方 `setNodeSelection` 选中语义块；只有节点选中不可用时才回退到完整 textblock range，因此混合行内 mark 和行内代码不再决定用户感知到的选区边界。
 - [ ] 实现可靠拖拽排序、drop indicator 和 transaction 级测试。
 - [ ] 复杂节点只显示 block 级句柄：表格、代码块、图片、公式、Mermaid 不出现每个子元素的句柄。
   - 兼容句柄路径已覆盖：表格、代码块、图片 node view、独立公式和 Mermaid 的内部元素会归属到外层复杂 block。

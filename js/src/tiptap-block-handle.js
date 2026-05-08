@@ -1229,17 +1229,11 @@ export class TiptapBlockHandleController {
     const range = visibleBlockRange(target);
     if (Number.isFinite(from)) {
       let selected = false;
-      if (
-        target?.node?.isAtom === true &&
-        typeof this.#editor?.commands?.setNodeSelection === "function"
-      ) {
+      if (typeof this.#editor?.commands?.setNodeSelection === "function") {
         selected = this.#editor.commands.setNodeSelection(from) !== false;
       }
       if (!selected && Number.isFinite(range?.from) && Number.isFinite(range?.to) && range.to > range.from) {
         selected = this.#editor?.commands?.setTextSelection?.(range) !== false;
-      }
-      if (!selected && typeof this.#editor?.commands?.setNodeSelection === "function") {
-        selected = this.#editor.commands.setNodeSelection(from) !== false;
       }
       if (!selected) {
         this.#editor?.commands?.setTextSelection?.(from);

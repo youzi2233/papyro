@@ -905,12 +905,43 @@ test("Tiptap block handle opens the insert menu from the plus action", () => {
     ["keydown", "ArrowDown"],
   ]);
   assert.deepEqual(calls.slice(-2), [
-    ["setTextSelection", { from: 7, to: 13 }],
+    ["setNodeSelection", 7],
     ["focus"],
   ]);
 });
 
-test("Tiptap block handle selects the full textblock range before painting the DOM block", () => {
+test("Tiptap block handle prefers semantic node selection before painting the DOM block", () => {
+  const block = createElement({ tagName: "P" });
+  const { calls, editor } = createEditor({ block });
+  editor.state.doc.nodeAt = () => ({
+    isTextblock: true,
+    nodeSize: 9,
+    content: { size: 7 },
+  });
+  editor.commands.setNodeSelection = (pos) => {
+    calls.push(["setNodeSelection", pos]);
+    return true;
+  };
+  editor.commands.setTextSelection = (range) => {
+    calls.push(["setTextSelection", range]);
+    return true;
+  };
+  const menu = createMenuSpy();
+  const view = createViewSpy();
+  const controller = createTiptapBlockHandleController({ menu, view });
+  controller.attach({ editor, root: editor.view.dom, entry: { viewMode: "hybrid" } });
+  controller.handlePointerMove({ target: block });
+
+  view.openActions();
+
+  assert.deepEqual(calls.slice(-3), [
+    ["posAtDOM", "P", 0],
+    ["setNodeSelection", 7],
+    ["focus"],
+  ]);
+});
+
+test("Tiptap block handle falls back to the full textblock range before painting the DOM block", () => {
   const block = createElement({ tagName: "P" });
   const { calls, editor } = createEditor({ block });
   editor.state.doc.nodeAt = () => ({
@@ -935,7 +966,7 @@ test("Tiptap block handle selects the full textblock range before painting the D
   view.openActions();
 
   assert.deepEqual(calls.slice(-3), [
-    ["posAtDOM", "P", 0],
+    ["setNodeSelection", 7],
     ["setTextSelection", { from: 8, to: 15 }],
     ["focus"],
   ]);
@@ -971,7 +1002,7 @@ test("Tiptap block handle falls back to the full textblock range without DOM sel
   view.openActions();
 
   assert.deepEqual(calls.slice(-3), [
-    ["posAtDOM", "P", 0],
+    ["setNodeSelection", 7],
     ["setTextSelection", { from: 8, to: 15 }],
     ["focus"],
   ]);
@@ -1422,11 +1453,16 @@ test("Tiptap block handle mirrors official native drag lifecycle", () => {
   assert.equal(controller.viewState.officialDragging, true);
   assert.equal(block.classList.values.has("mn-tiptap-block-selected"), true);
   assert.deepEqual(
-    calls.filter((call) => call[0] === "setTextSelection" || call[0] === "focus"),
+    calls.filter(
+      (call) =>
+        call[0] === "setNodeSelection" ||
+        call[0] === "setTextSelection" ||
+        call[0] === "focus",
+    ),
     [
-      ["setTextSelection", { from: 7, to: 13 }],
+      ["setNodeSelection", 7],
       ["focus"],
-      ["setTextSelection", { from: 7, to: 13 }],
+      ["setNodeSelection", 7],
       ["focus"],
     ],
   );
