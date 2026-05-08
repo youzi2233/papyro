@@ -7,6 +7,7 @@ import {
   createPapyroTiptapSelectionSnapshot,
   normalizePapyroTiptapLanguage,
   normalizePapyroTiptapViewMode,
+  samePapyroTiptapSelectionSnapshot,
 } from "../src/tiptap-react/runtime-model.js";
 
 test("Tiptap React runtime model normalizes host language and view mode", () => {
@@ -150,4 +151,94 @@ test("Tiptap React runtime model exposes stable hooks data", () => {
     table: null,
   });
   assert.equal(model.commands.runInsert("paragraph").ok, true);
+});
+
+test("Tiptap React runtime model accepts an externally subscribed selection snapshot", () => {
+  const selection = Object.freeze({
+    kind: "range",
+    empty: false,
+    from: 2,
+    to: 8,
+    anchor: 2,
+    head: 8,
+    table: null,
+  });
+  const model = createPapyroTiptapRuntimeModel({
+    editor: {
+      state: {
+        selection: {
+          empty: true,
+          from: 1,
+          to: 1,
+        },
+      },
+    },
+    entry: {
+      preferences: { language: "english" },
+      viewMode: "hybrid",
+    },
+    selection,
+  });
+
+  assert.equal(model.selection, selection);
+});
+
+test("Tiptap React selection snapshots compare by value", () => {
+  const cursor = createPapyroTiptapSelectionSnapshot({
+    state: {
+      selection: {
+        empty: true,
+        from: 3,
+        to: 3,
+      },
+    },
+  });
+  const sameCursor = createPapyroTiptapSelectionSnapshot({
+    state: {
+      selection: {
+        empty: true,
+        from: 3,
+        to: 3,
+      },
+    },
+  });
+  const nextCursor = createPapyroTiptapSelectionSnapshot({
+    state: {
+      selection: {
+        empty: true,
+        from: 4,
+        to: 4,
+      },
+    },
+  });
+  const tableSelection = createPapyroTiptapSelectionSnapshot({
+    state: {
+      selection: {
+        empty: false,
+        from: 8,
+        to: 24,
+        $anchorCell: { pos: 10 },
+        $headCell: { pos: 18 },
+      },
+    },
+  });
+  const sameTableSelection = createPapyroTiptapSelectionSnapshot({
+    state: {
+      selection: {
+        empty: false,
+        from: 8,
+        to: 24,
+        $anchorCell: { pos: 10 },
+        $headCell: { pos: 18 },
+      },
+    },
+  });
+
+  assert.equal(samePapyroTiptapSelectionSnapshot(cursor, sameCursor), true);
+  assert.equal(samePapyroTiptapSelectionSnapshot(cursor, nextCursor), false);
+  assert.equal(
+    samePapyroTiptapSelectionSnapshot(tableSelection, sameTableSelection),
+    true,
+  );
+  assert.equal(samePapyroTiptapSelectionSnapshot(tableSelection, cursor), false);
 });

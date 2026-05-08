@@ -12,12 +12,14 @@ export {
   createPapyroTiptapSelectionSnapshot,
   normalizePapyroTiptapLanguage,
   normalizePapyroTiptapViewMode,
+  samePapyroTiptapSelectionSnapshot,
   PapyroTiptapRuntimeProvider,
   usePapyroTiptapCommandExecutor,
   usePapyroTiptapLanguage,
   usePapyroTiptapPreferences,
   usePapyroTiptapRuntime,
   usePapyroTiptapSelection,
+  usePapyroTiptapSelectionSnapshot,
   usePapyroTiptapViewMode,
 } from "./runtime-context.jsx";
 export {

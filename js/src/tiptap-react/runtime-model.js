@@ -69,6 +69,21 @@ export function createPapyroTiptapSelectionSnapshot(editor = null) {
   });
 }
 
+export function samePapyroTiptapSelectionSnapshot(left, right) {
+  if (left === right) return true;
+  if (!left || !right) return false;
+  return (
+    left.kind === right.kind
+    && left.empty === right.empty
+    && left.from === right.from
+    && left.to === right.to
+    && left.anchor === right.anchor
+    && left.head === right.head
+    && left.table?.anchorCell === right.table?.anchorCell
+    && left.table?.headCell === right.table?.headCell
+  );
+}
+
 function commandContext({ editor, entry, tabId, message, extra }) {
   return {
     editor,
@@ -161,7 +176,11 @@ export function createPapyroTiptapCommandExecutor({
   });
 }
 
-export function createPapyroTiptapRuntimeModel({ editor = null, entry = null } = {}) {
+export function createPapyroTiptapRuntimeModel({
+  editor = null,
+  entry = null,
+  selection = undefined,
+} = {}) {
   return Object.freeze({
     editor,
     entry,
@@ -169,7 +188,7 @@ export function createPapyroTiptapRuntimeModel({ editor = null, entry = null } =
     viewMode: normalizePapyroTiptapViewMode(entry),
     dioxus: entry?.dioxus ?? null,
     preferences: entry?.preferences ?? null,
-    selection: createPapyroTiptapSelectionSnapshot(editor),
+    selection: selection ?? createPapyroTiptapSelectionSnapshot(editor),
     commands: createPapyroTiptapCommandExecutor({
       editor,
       entry,

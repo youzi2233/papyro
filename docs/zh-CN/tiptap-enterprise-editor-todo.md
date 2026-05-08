@@ -143,6 +143,7 @@ node scripts/check-workspace-deps.js
   - 当前覆盖：代码块语言、复制和软换行命令元数据已经进入纯 React command model，slash 侧边面板和 React 代码块 node view 复用同一套 label、token、active state 和 i18n 契约。代码块扩展现在支持注入 node-view renderer，并在 React 挂载生命周期尚未准备好时回退到迁移期 DOM node view。
 - [ ] 暴露稳定 runtime hooks：editor instance、language、view mode、preferences、command executor、active selection snapshot。
   - 当前覆盖：React runtime context 现在基于纯 runtime model 构建，已经暴露 preferences、command executor 和 active selection snapshot hooks，并把 cursor/range/table 选区归一化，供后续 React block-handle 和 table-chrome 组件复用。code-block 命令模型已经开始脱离迁移期 controller；table 命令模型仍需要继续上提。
+  - 当前覆盖：React runtime selection 现在通过 `useSyncExternalStore` 订阅 Tiptap `transaction` 和 `selectionUpdate` 事件，并使用值稳定 snapshot，避免 editor transaction 后 React chrome 继续读取过期选区。
 - [ ] 在 React 替换完成前，把旧 DOM controller 放在 runtime flag 后面，避免双系统同时抢 UI。
 
 验收标准：
