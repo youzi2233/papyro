@@ -251,6 +251,7 @@ Tasks:
   - Still required: the final React handle implementation based on official drag-handle/node-range APIs.
 - [ ] Add block actions: copy Markdown, duplicate, delete, reset formatting, text color, highlight, turn into, and move up/down.
   - Current coverage: block action commands now include move up/down, backed by a shared ProseMirror transaction helper used by both the handle drag path and menu actions. Commands are hidden at sibling boundaries, keep selection on the moved block, expose localized labels, support `Alt+Up` / `Alt+Down`, and have focused tests for command metadata, keyboard shortcuts, and transaction behavior.
+  - Current coverage: `Shift+F10` and the keyboard Context Menu key now open the block action menu for the current semantic block in Hybrid mode. The selection resolver climbs to the outer table when the caret is inside table cells, and IME composition events are ignored so Chinese input confirmation does not open the block menu.
 
 Acceptance criteria:
 

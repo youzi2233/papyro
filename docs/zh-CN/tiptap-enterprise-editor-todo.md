@@ -247,6 +247,7 @@ node scripts/check-editor-markdown-gate.js
   - 仍需继续：在最终 React 句柄里基于官方 drag-handle/node-range API 落地。
 - [ ] 增加块动作：复制 Markdown、重复、删除、重置格式、文字颜色、高亮、turn into、上移/下移。
   - 当前覆盖：块操作命令现在已包含上移/下移，并复用句柄拖拽路径同一套 ProseMirror transaction helper。命令会在兄弟节点边界自动隐藏，移动后保持选中当前块，补齐中英文标签，支持 `Alt+Up` / `Alt+Down`，并覆盖命令元数据、键盘快捷键和 transaction 行为测试。
+  - 当前覆盖：Hybrid 模式下 `Shift+F10` 和键盘 Context Menu 键现在会为当前语义块打开块操作菜单。选区解析在表格单元格内部会向上归属到外层表格，并且 IME composition 事件会被忽略，避免中文输入确认误开块菜单。
 
 验收标准：
 

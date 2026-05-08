@@ -6,6 +6,7 @@ import {
   createElement,
   defaultDocument,
   defaultWindow,
+  isComposingKeyboardEvent,
   mountFloatingRoot,
   setHidden,
 } from "./tiptap-ui-primitives.js";
@@ -166,6 +167,65 @@ function blockTargetFromEvent(event, editor) {
     pos,
     node: blockNode(editor, block, pos),
   };
+}
+
+function resolvedSelectionPosition(editor) {
+  const selection = editor?.state?.selection;
+  if (selection?.$from) return selection.$from;
+
+  const from = Number(selection?.from);
+  const doc = editor?.state?.doc;
+  if (!Number.isFinite(from) || typeof doc?.resolve !== "function") {
+    return null;
+  }
+
+  try {
+    return doc.resolve(from);
+  } catch (_error) {
+    return null;
+  }
+}
+
+export function blockTargetFromSelection(editor) {
+  const resolved = resolvedSelectionPosition(editor);
+  const editorDom = editor?.view?.dom;
+  if (!resolved || !isElement(editorDom)) return null;
+
+  for (let depth = Number(resolved.depth); depth > 0; depth -= 1) {
+    let pos = null;
+    let node = null;
+
+    try {
+      pos = typeof resolved.before === "function" ? resolved.before(depth) : null;
+      node = typeof resolved.node === "function" ? resolved.node(depth) : null;
+    } catch (_error) {
+      continue;
+    }
+
+    if (!Number.isFinite(pos) || !node || node.isText === true) continue;
+    if (TABLE_STRUCTURE_NODE_TYPES.has(String(node?.type?.name ?? ""))) continue;
+
+    const block = blockElementFromPosition(editor, pos);
+    if (!block) continue;
+
+    const tableAncestor = block.closest?.(".mn-tiptap-table, table") ?? null;
+    const nodeName = String(node?.type?.name ?? "");
+    if ((blockKind(block) === "table" || tableAncestor === block) && nodeName !== "table") {
+      continue;
+    }
+    if (tableAncestor && tableAncestor !== block && nodeName !== "table") {
+      continue;
+    }
+
+    return {
+      block,
+      kind: blockKind(block),
+      pos,
+      node: node ?? blockNode(editor, block, pos),
+    };
+  }
+
+  return null;
 }
 
 export function blockTargetFromOfficialDragHandle({ editor, node = null, pos = null } = {}) {
@@ -1108,11 +1168,41 @@ export class TiptapBlockHandleController {
   }
 
   handleKeyDown(event) {
-    return (
-      this.#insertMenu?.handleKeyDown?.(event) ??
-      this.#menu?.handleKeyDown?.(event) ??
-      false
-    );
+    if (this.#insertMenu?.state?.open === true && this.#insertMenu?.handleKeyDown?.(event)) {
+      return true;
+    }
+    if (this.#menu?.state?.open === true && this.#menu?.handleKeyDown?.(event)) {
+      return true;
+    }
+    return this.#handleKeyboardActionMenu(event);
+  }
+
+  #handleKeyboardActionMenu(event) {
+    if (
+      !this.#editor ||
+      this.#entry?.viewMode !== "hybrid" ||
+      isComposingKeyboardEvent(event)
+    ) {
+      return false;
+    }
+
+    const key = String(event?.key ?? "");
+    const shouldOpen = (event?.shiftKey && key === "F10") || key === "ContextMenu";
+    if (!shouldOpen) return false;
+
+    const target = blockTargetFromSelection(this.#editor);
+    if (!target) return false;
+
+    event?.preventDefault?.();
+    event?.stopPropagation?.();
+    this.#state = {
+      open: true,
+      target,
+    };
+    this.#updateView();
+    return this.#openActions({
+      anchorRect: target.block.getBoundingClientRect?.(),
+    });
   }
 
   handleContextMenu(event) {

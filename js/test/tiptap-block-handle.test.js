@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 
 import {
   blockTargetFromOfficialDragHandle,
+  blockTargetFromSelection,
   blockDropPlacement,
   createTiptapBlockMove,
   createTiptapBlockHandleController,
@@ -524,6 +525,129 @@ test("Tiptap block handle ignores official child blocks inside tables", () => {
     }),
     null,
   );
+});
+
+test("Tiptap block handle maps editor selections to block targets", () => {
+  const { block, editor } = createEditor();
+  editor.view.nodeDOM = (pos) => (pos === 7 ? block : null);
+  const node = { nodeSize: 6, type: { name: "paragraph" } };
+  editor.state.selection = {
+    $from: {
+      depth: 1,
+      before: (depth) => (depth === 1 ? 7 : 0),
+      node: (depth) => (depth === 1 ? node : null),
+    },
+  };
+
+  const target = blockTargetFromSelection(editor);
+
+  assert.equal(target.kind, "paragraph");
+  assert.equal(target.block, block);
+  assert.equal(target.pos, 7);
+  assert.equal(target.node, node);
+});
+
+test("Tiptap block handle maps table selections to the outer table only", () => {
+  const { editor, root } = createEditor();
+  const table = createElement({ tagName: "TABLE", parent: root });
+  table.classList.add("mn-tiptap-table");
+  const row = createElement({ tagName: "TR", parent: table });
+  const cell = createElement({ tagName: "TD", parent: row });
+  const paragraph = createElement({ tagName: "P", parent: cell });
+  const tableNode = { nodeSize: 42, type: { name: "table" } };
+  const cellNode = { nodeSize: 12, type: { name: "tableCell" } };
+  const paragraphNode = { nodeSize: 6, type: { name: "paragraph" } };
+  editor.view.nodeDOM = (pos) => {
+    if (pos === 21) return table;
+    if (pos === 23) return cell;
+    if (pos === 24) return paragraph;
+    return null;
+  };
+  editor.state.selection = {
+    $from: {
+      depth: 3,
+      before: (depth) => {
+        if (depth === 1) return 21;
+        if (depth === 2) return 23;
+        if (depth === 3) return 24;
+        return 0;
+      },
+      node: (depth) => {
+        if (depth === 1) return tableNode;
+        if (depth === 2) return cellNode;
+        if (depth === 3) return paragraphNode;
+        return null;
+      },
+    },
+  };
+
+  const target = blockTargetFromSelection(editor);
+
+  assert.equal(target.kind, "table");
+  assert.equal(target.block, table);
+  assert.equal(target.pos, 21);
+  assert.equal(target.node, tableNode);
+});
+
+test("Tiptap block handle opens actions from keyboard context menu shortcuts", () => {
+  const { block, editor } = createEditor();
+  editor.view.nodeDOM = (pos) => (pos === 7 ? block : null);
+  editor.state.selection = {
+    from: 8,
+    $from: {
+      depth: 1,
+      before: () => 7,
+      node: () => ({ nodeSize: 6, type: { name: "paragraph" } }),
+    },
+  };
+  const menu = createMenuSpy();
+  const view = createViewSpy();
+  const controller = createTiptapBlockHandleController({ menu, view });
+  const events = [];
+  controller.attach({ editor, root: editor.view.dom, entry: { viewMode: "hybrid" } });
+
+  assert.equal(
+    controller.handleKeyDown({
+      key: "F10",
+      shiftKey: true,
+      preventDefault: () => events.push("preventDefault"),
+      stopPropagation: () => events.push("stopPropagation"),
+    }),
+    true,
+  );
+
+  assert.equal(menu.state.open, true);
+  assert.deepEqual(events, ["preventDefault", "stopPropagation"]);
+  assert.deepEqual(menu.calls, [["attach", "DIV"], ["open", "paragraph", 7, [100, 40]]]);
+});
+
+test("Tiptap block handle does not open keyboard actions during IME composition", () => {
+  const { block, editor } = createEditor();
+  editor.view.nodeDOM = (pos) => (pos === 7 ? block : null);
+  editor.state.selection = {
+    $from: {
+      depth: 1,
+      before: () => 7,
+      node: () => ({ nodeSize: 6, type: { name: "paragraph" } }),
+    },
+  };
+  const menu = createMenuSpy();
+  const view = createViewSpy();
+  const controller = createTiptapBlockHandleController({ menu, view });
+  controller.attach({ editor, root: editor.view.dom, entry: { viewMode: "hybrid" } });
+
+  assert.equal(
+    controller.handleKeyDown({
+      key: "F10",
+      shiftKey: true,
+      isComposing: true,
+      preventDefault() {
+        throw new Error("should not prevent IME events");
+      },
+    }),
+    false,
+  );
+  assert.equal(menu.state.open, false);
 });
 
 test("Tiptap block handle opens from official drag handle node changes", () => {
