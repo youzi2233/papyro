@@ -425,6 +425,26 @@ test("Tiptap release smoke fixture preserves editor-critical block semantics", (
       language: "rust",
       text: 'fn main() {\n    println!("hello tiptap");\n}',
     },
+    {
+      language: "javascript",
+      text: 'const message = "hello papyro";\nconsole.log(message);',
+    },
+    {
+      language: "markdown",
+      text: "# Nested Markdown\n\n- It stays inside the code fence.",
+    },
+    {
+      language: "plaintext",
+      text: "plain text should not be highlighted",
+    },
+    {
+      language: "custom-lang",
+      text: "safe custom language ids should survive",
+    },
+    {
+      language: null,
+      text: "language-less fences stay automatic",
+    },
   ]);
   assert.deepEqual(callouts, [
     {
@@ -689,6 +709,18 @@ test("Tiptap Markdown code blocks round trip language metadata and text", () => 
     "const answer: number = 42;",
     "console.log(answer);",
     "```",
+    "",
+    "```plaintext",
+    "plain text",
+    "```",
+    "",
+    "```custom-lang",
+    "safe custom language",
+    "```",
+    "",
+    "```",
+    "automatic language",
+    "```",
   ].join("\n");
   const { parsed, serialized, reparsed } = roundTripTiptapMarkdown(markdown);
 
@@ -696,6 +728,18 @@ test("Tiptap Markdown code blocks round trip language metadata and text", () => 
     {
       language: "ts",
       text: "const answer: number = 42;\nconsole.log(answer);",
+    },
+    {
+      language: "plaintext",
+      text: "plain text",
+    },
+    {
+      language: "custom-lang",
+      text: "safe custom language",
+    },
+    {
+      language: null,
+      text: "automatic language",
     },
   ]);
   assert.equal(serialized, markdown);

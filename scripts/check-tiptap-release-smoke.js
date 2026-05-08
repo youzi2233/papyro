@@ -104,6 +104,11 @@ function checkReleaseFixture(markdown) {
   ]);
   expectEqual(failures, "code block language", collectCodeBlocks(parsed), [
     { language: "rust", text: 'fn main() {\n    println!("hello tiptap");\n}' },
+    { language: "javascript", text: 'const message = "hello papyro";\nconsole.log(message);' },
+    { language: "markdown", text: "# Nested Markdown\n\n- It stays inside the code fence." },
+    { language: "plaintext", text: "plain text should not be highlighted" },
+    { language: "custom-lang", text: "safe custom language ids should survive" },
+    { language: null, text: "language-less fences stay automatic" },
   ]);
   expectEqual(failures, "callout content", collectCallouts(parsed), [
     { kind: "NOTE", text: "Callout content should round-trip through Markdown." },

@@ -27,6 +27,29 @@ fn main() {
 }
 ```
 
+```javascript
+const message = "hello papyro";
+console.log(message);
+```
+
+```markdown
+# Nested Markdown
+
+- It stays inside the code fence.
+```
+
+```plaintext
+plain text should not be highlighted
+```
+
+```custom-lang
+safe custom language ids should survive
+```
+
+```
+language-less fences stay automatic
+```
+
 | Name | Count | Status |
 | :--- | ---: | :---: |
 | Alpha | 12 | Ready |

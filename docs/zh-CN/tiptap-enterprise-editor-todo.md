@@ -343,7 +343,8 @@ node scripts/check-tiptap-release-smoke.js
 - [ ] 亮色和暗色模式都使用真正的代码高亮主题。
   - 当前覆盖：Hybrid 代码块使用 lowlight 的 `.hljs-*` class，并通过主题 token、亮色模式左侧强调线与 smoke 检查覆盖核心语法分组。
   - 当前打磨：代码语言 chrome 增加主题感知的亮色 chip surface，语法控件不再像一整块纯蓝色区域。
-- [ ] fenced code language 通过 Markdown round-trip 保留。
+- [x] fenced code language 通过 Markdown round-trip 保留。
+  - 当前覆盖：release smoke 和 Markdown 测试已覆盖 Rust、JavaScript、Markdown、plaintext、自定义安全语言 id 以及无语言自动 fence，避免保存笔记时静默丢失代码块语言元数据。
 - [ ] 为代码块前后增加插入入口，尤其是表格紧挨代码块的场景。
   - 当前覆盖：复杂块插入 rail 已有独立且更宽容的底部热区，用于 table/code 相邻处插入，同时不扩大表格 resize 或 quick-add 的意图范围。
 

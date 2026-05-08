@@ -348,7 +348,8 @@ Tasks:
 - [ ] Use a real highlighter theme for light and dark modes.
   - Current coverage: Hybrid code blocks use lowlight `.hljs-*` classes with theme-scoped token palettes, a light-mode left accent rail, and smoke coverage for the core syntax groups.
   - Current polish: code-language chrome uses theme-aware light-mode chip surfaces so the syntax controls no longer read as a flat blue block.
-- [ ] Preserve fenced code language through Markdown round-trip.
+- [x] Preserve fenced code language through Markdown round-trip.
+  - Current coverage: release smoke and Markdown tests now cover Rust, JavaScript, Markdown, plaintext, custom safe language ids, and language-less automatic fences so saved notes cannot silently drop code fence metadata.
 - [ ] Add insertion affordance before and after code blocks, especially when adjacent to tables.
   - Current coverage: the complex-block insert rail has an independent, more forgiving bottom hot zone for table/code adjacency without widening table resize or quick-add intent.
 
