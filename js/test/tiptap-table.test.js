@@ -10,6 +10,8 @@ import {
   PapyroTableCellBackground,
   PapyroTableCellContentActions,
   createPapyroTableExtensions,
+  duplicateSelectedTableColumns,
+  duplicateSelectedTableRows,
   moveSelectedTableAxis,
   resetSelectedTableCellAttrs,
   selectedTableCellsPlainText,
@@ -361,6 +363,53 @@ test("Papyro table content actions move selected rows and columns through ProseM
   }
 });
 
+test("Papyro table content actions duplicate selected rows and columns", () => {
+  const windowRef = new Window({ url: "http://localhost/" });
+  const previousGlobals = installDomGlobals(windowRef);
+  const root = windowRef.document.createElement("div");
+  windowRef.document.body.appendChild(root);
+  let editor = null;
+
+  try {
+    editor = new Editor({
+      element: root,
+      extensions: [StarterKit, ...createPapyroTableExtensions()],
+      content:
+        "<table><tbody><tr><td>A1</td><td>A2</td></tr><tr><td>B1</td><td>B2</td></tr></tbody></table>",
+      injectCSS: false,
+    });
+    const [, , secondRowFirstCell, secondRowSecondCell] = tableCellPositions(editor.state.doc);
+
+    editor.commands.setCellSelection({
+      anchorCell: secondRowFirstCell,
+      headCell: secondRowSecondCell,
+    });
+    assert.equal(editor.commands.duplicateSelectedTableRow(), true);
+    assert.equal(editor.state.selection.isRowSelection?.(), true);
+    assert.deepEqual(
+      Array.from(editor.view.dom.querySelectorAll("td,th")).map((cell) => cell.textContent),
+      ["A1", "A2", "B1", "B2", "B1", "B2"],
+    );
+
+    const [, secondColumnTopCell, , , , secondColumnBottomCell] =
+      tableCellPositions(editor.state.doc);
+    editor.commands.setCellSelection({
+      anchorCell: secondColumnTopCell,
+      headCell: secondColumnBottomCell,
+    });
+    assert.equal(editor.commands.duplicateSelectedTableColumn(), true);
+    assert.equal(editor.state.selection.isColSelection?.(), true);
+    assert.deepEqual(
+      Array.from(editor.view.dom.querySelectorAll("td,th")).map((cell) => cell.textContent),
+      ["A1", "A2", "A2", "B1", "B2", "B2", "B1", "B2", "B2"],
+    );
+  } finally {
+    editor?.destroy?.();
+    restoreDomGlobals(previousGlobals);
+    windowRef.close?.();
+  }
+});
+
 test("Papyro table content actions style selected rows and columns", () => {
   const windowRef = new Window({ url: "http://localhost/" });
   const previousGlobals = installDomGlobals(windowRef);
@@ -526,6 +575,8 @@ test("Papyro table content actions expose the expected command name", () => {
   assert.equal(typeof commands.copySelectedTableCells, "function");
   assert.equal(typeof commands.moveSelectedTableRow, "function");
   assert.equal(typeof commands.moveSelectedTableColumn, "function");
+  assert.equal(typeof commands.duplicateSelectedTableRow, "function");
+  assert.equal(typeof commands.duplicateSelectedTableColumn, "function");
 });
 
 test("Papyro table clipboard writer reports unavailable and successful writes", async () => {
@@ -544,4 +595,6 @@ test("Papyro table content actions reject non-cell selections when resetting att
   assert.equal(resetSelectedTableCellAttrs(null, null), false);
   assert.equal(setSelectedTableCellTextColor(null, null, null, "var(--mn-accent)"), false);
   assert.equal(moveSelectedTableAxis(null, null, "row", "up"), false);
+  assert.equal(duplicateSelectedTableRows(null, null), false);
+  assert.equal(duplicateSelectedTableColumns(null, null), false);
 });

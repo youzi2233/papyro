@@ -75,6 +75,14 @@ export const TABLE_COMMANDS = Object.freeze([
     icon: "move-column-right",
   },
   {
+    id: "duplicate-column",
+    group: "Columns",
+    title: "Duplicate current column",
+    label: "Duplicate",
+    command: "duplicateSelectedTableColumn",
+    icon: "duplicate-column",
+  },
+  {
     id: "add-row-before",
     group: "Rows",
     title: "Insert row above",
@@ -116,6 +124,14 @@ export const TABLE_COMMANDS = Object.freeze([
     command: "moveSelectedTableRow",
     args: ["down"],
     icon: "move-row-down",
+  },
+  {
+    id: "duplicate-row",
+    group: "Rows",
+    title: "Duplicate current row",
+    label: "Duplicate",
+    command: "duplicateSelectedTableRow",
+    icon: "duplicate-row",
   },
   {
     id: "merge-cells",
@@ -358,6 +374,7 @@ export const TABLE_MENU_COMMAND_SCOPE = Object.freeze({
     "move-row-down",
     "add-row-before",
     "add-row-after",
+    "duplicate-row",
     "copy-cell-content",
     "clear-cell-content",
     "clear-cell-style",
@@ -370,6 +387,7 @@ export const TABLE_MENU_COMMAND_SCOPE = Object.freeze({
     "move-column-right",
     "add-column-before",
     "add-column-after",
+    "duplicate-column",
     "copy-cell-content",
     "clear-cell-content",
     "clear-cell-style",
@@ -391,6 +409,7 @@ export const TABLE_COMMAND_CONTEXT_ORDER = Object.freeze({
     "move-row-down",
     "add-row-after",
     "add-row-before",
+    "duplicate-row",
     "copy-cell-content",
     "clear-cell-content",
     "clear-cell-style",
@@ -403,6 +422,7 @@ export const TABLE_COMMAND_CONTEXT_ORDER = Object.freeze({
     "move-column-right",
     "add-column-after",
     "add-column-before",
+    "duplicate-column",
     "copy-cell-content",
     "clear-cell-content",
     "clear-cell-style",
@@ -448,11 +468,13 @@ export const KEYBOARD_TABLE_COMMAND_IDS = new Set([
   "add-column-after",
   "move-column-left",
   "move-column-right",
+  "duplicate-column",
   "delete-column",
   "add-row-before",
   "add-row-after",
   "move-row-up",
   "move-row-down",
+  "duplicate-row",
   "delete-row",
   "merge-cells",
   "split-cell",
@@ -543,6 +565,8 @@ export function tableCommandLayoutGroup(command) {
   if (command?.id === "copy-cell-content") return "actions";
   if (command?.id === "clear-cell-content") return "actions";
   if (command?.id === "clear-cell-style") return "actions";
+  if (command?.id === "duplicate-row") return "actions";
+  if (command?.id === "duplicate-column") return "actions";
   if (TABLE_CONTEXT_HEADER_COMMAND_IDS.has(command?.id)) return "actions";
   const variant = tableCommandVariant(command);
   if (variant === "icon") return "align";

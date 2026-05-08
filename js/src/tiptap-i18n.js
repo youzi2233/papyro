@@ -150,6 +150,21 @@ const TABLE_COMMAND_LABELS = Object.freeze({
   "delete-table": ["Delete table", "删除表格", "Delete", "删除"],
 });
 
+const PAPYRO_TABLE_COMMAND_LABELS = Object.freeze({
+  "duplicate-column": [
+    "Duplicate current column",
+    "\u590d\u5236\u5f53\u524d\u5217",
+    "Duplicate",
+    "\u590d\u5236",
+  ],
+  "duplicate-row": [
+    "Duplicate current row",
+    "\u590d\u5236\u5f53\u524d\u884c",
+    "Duplicate",
+    "\u590d\u5236",
+  ],
+});
+
 function localizedGroup(group, language) {
   return localizedText(language, group, GROUP_LABELS[group] ?? group);
 }
@@ -181,7 +196,7 @@ export function localizeSlashCommand(command, language) {
 }
 
 export function localizeTableCommand(command, language) {
-  const labels = TABLE_COMMAND_LABELS[command.id];
+  const labels = TABLE_COMMAND_LABELS[command.id] ?? PAPYRO_TABLE_COMMAND_LABELS[command.id];
   return {
     ...command,
     groupKey: command.groupKey ?? command.group,

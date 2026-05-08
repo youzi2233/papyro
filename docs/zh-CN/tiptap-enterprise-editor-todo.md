@@ -287,6 +287,7 @@ node scripts/check-tiptap-release-smoke.js
   - 当前打磨：行/列细句柄会先冻结自己的几何位置，再选择对应轴并打开菜单，避免 table chrome 重绘后菜单锚点漂移。
   - 当前覆盖：行/列上下文菜单现在通过 Papyro 薄封装接入公开的 `prosemirror-tables` `moveTableRow` 和 `moveTableColumn` 命令，提供上移/下移、左移/右移结构操作；边界移动会被 capability 禁用，移动后继续保持对应轴选中，并补齐本地化标签与紧凑表格箭头图标。
   - 当前覆盖：行/列上下文菜单现在也暴露对齐、文字颜色和背景颜色命令，整行/整列样式复用与单元格范围一致的 ProseMirror `CellSelection` 和 Tiptap 表格属性语义。
+  - 当前覆盖：行/列上下文菜单现在暴露重复行/列动作，作为官方 `table-node` duplicate 能力在免费/开源路径下的 Papyro 等价实现。常规无合并单元格表格会保留被选中行/列的内容；遇到 merged-cell 结构时会禁用，避免静默破坏表格结构。
 - [ ] 列边框支持 resize，即使当前已有单元格选中也不能失效。
   - 当前覆盖：已选中的表格单元格不会仅因为选中态就露出列 resize handle；resize chrome 只跟随 hover 或正在 resize 的明确意图。
   - 当前打磨：选中/激活单元格现在保留 16px 的列宽调整命中区，并用克制的主题色细 rail 提示可拖拽，避免选中后 resize 入口变得不可发现。

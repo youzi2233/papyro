@@ -5,6 +5,7 @@ import {
 } from "@tiptap/extension-table";
 import { Extension } from "@tiptap/core";
 import {
+  CellSelection,
   deleteCellSelection,
   moveTableColumn,
   moveTableRow,
@@ -216,6 +217,134 @@ export function moveSelectedTableAxis(state, dispatch, axis, direction) {
   return false;
 }
 
+function tableHasSpanningCells(table) {
+  let spanning = false;
+  table?.descendants?.((node) => {
+    const typeName = String(node?.type?.name ?? "");
+    if (typeName !== "tableCell" && typeName !== "tableHeader") return true;
+
+    const attrs = node?.attrs ?? {};
+    if (!isDefaultSpan(attrs.colspan) || !isDefaultSpan(attrs.rowspan)) {
+      spanning = true;
+      return false;
+    }
+
+    return true;
+  });
+  return spanning;
+}
+
+function tableRowInsertPosition(table, tableStart, rowIndex) {
+  let position = tableStart;
+  for (let index = 0; index < rowIndex; index += 1) {
+    position += table.child(index).nodeSize;
+  }
+  return position;
+}
+
+function tableCellInsertPosition(table, tableStart, rowIndex, columnIndex) {
+  const row = table.child(rowIndex);
+  let position = tableRowInsertPosition(table, tableStart, rowIndex) + 1;
+  for (let index = 0; index < columnIndex; index += 1) {
+    position += row.child(index).nodeSize;
+  }
+  return position;
+}
+
+function dispatchChangedTransaction(tr, dispatch) {
+  if (!tr?.docChanged) return false;
+  const nextTr = typeof tr.scrollIntoView === "function" ? tr.scrollIntoView() : tr;
+  dispatch(nextTr);
+  return true;
+}
+
+function selectRegularTableRect(tr, tableStart, map, rect, axis) {
+  const anchor =
+    axis === "row"
+      ? tableStart + map.map[rect.top * map.width]
+      : tableStart + map.map[rect.left];
+  const head =
+    axis === "row"
+      ? tableStart + map.map[(rect.bottom - 1) * map.width + map.width - 1]
+      : tableStart + map.map[(map.height - 1) * map.width + rect.right - 1];
+  if (!Number.isFinite(anchor) || !Number.isFinite(head)) return false;
+
+  tr.setSelection(
+    axis === "row"
+      ? CellSelection.rowSelection(tr.doc.resolve(anchor), tr.doc.resolve(head))
+      : CellSelection.colSelection(tr.doc.resolve(anchor), tr.doc.resolve(head)),
+  );
+  return true;
+}
+
+export function duplicateSelectedTableRows(state, dispatch) {
+  const rect = currentSelectedTableRect(state);
+  const table = rect?.table;
+  if (!table || !rect?.map || rect.left !== 0 || rect.right !== rect.map.width) {
+    return false;
+  }
+  if (rect.top < 0 || rect.bottom <= rect.top || rect.bottom > table.childCount) {
+    return false;
+  }
+  if (tableHasSpanningCells(table)) return false;
+  if (!dispatch) return true;
+
+  const insertPos = tableRowInsertPosition(table, rect.tableStart, rect.bottom);
+  const tr = state.tr;
+  for (let rowIndex = rect.bottom - 1; rowIndex >= rect.top; rowIndex -= 1) {
+    const row = table.child(rowIndex);
+    tr.insert(insertPos, row.copy(row.content));
+  }
+  selectRegularTableRect(
+    tr,
+    rect.tableStart,
+    rect.map,
+    {
+      ...rect,
+      top: rect.bottom,
+      bottom: rect.bottom + (rect.bottom - rect.top),
+    },
+    "row",
+  );
+  return dispatchChangedTransaction(tr, dispatch);
+}
+
+export function duplicateSelectedTableColumns(state, dispatch) {
+  const rect = currentSelectedTableRect(state);
+  const table = rect?.table;
+  if (!table || !rect?.map || rect.top !== 0 || rect.bottom !== rect.map.height) {
+    return false;
+  }
+  if (rect.left < 0 || rect.right <= rect.left || rect.right > rect.map.width) {
+    return false;
+  }
+  if (tableHasSpanningCells(table)) return false;
+  if (!dispatch) return true;
+
+  const tr = state.tr;
+  for (let rowIndex = table.childCount - 1; rowIndex >= 0; rowIndex -= 1) {
+    const row = table.child(rowIndex);
+    if (rect.right > row.childCount) return false;
+    const insertPos = tableCellInsertPosition(table, rect.tableStart, rowIndex, rect.right);
+    for (let columnIndex = rect.right - 1; columnIndex >= rect.left; columnIndex -= 1) {
+      const cell = row.child(columnIndex);
+      tr.insert(insertPos, cell.copy(cell.content));
+    }
+  }
+  selectRegularTableRect(
+    tr,
+    rect.tableStart,
+    rect.map,
+    {
+      ...rect,
+      left: rect.right,
+      right: rect.right + (rect.right - rect.left),
+    },
+    "column",
+  );
+  return dispatchChangedTransaction(tr, dispatch);
+}
+
 function selectedTableCellTextRanges(selection) {
   if (typeof selection?.forEachCell !== "function") return [];
 
@@ -407,6 +536,14 @@ export const PapyroTableCellContentActions = Extension.create({
         (direction) =>
         ({ state, dispatch }) =>
           moveSelectedTableAxis(state, dispatch, "column", direction),
+      duplicateSelectedTableRow:
+        () =>
+        ({ state, dispatch }) =>
+          duplicateSelectedTableRows(state, dispatch),
+      duplicateSelectedTableColumn:
+        () =>
+        ({ state, dispatch }) =>
+          duplicateSelectedTableColumns(state, dispatch),
     };
   },
 });
