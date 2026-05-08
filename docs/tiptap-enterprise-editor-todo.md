@@ -265,6 +265,7 @@ Tasks:
 - [ ] Add cell action menu: merge, split, alignment, text color, background color, clear formatting, copy, delete contents.
 - [ ] Add row and column action menus from slim edge handles.
 - [ ] Add resize affordance on column borders that still works while a cell is active.
+  - Current coverage: selected table cells no longer reveal column resize handles by selection alone; resize chrome stays tied to hover or active resize intent.
 - [ ] Add quick row and column insertion rails: slim full-width/full-height rails with centered `+`, close enough to the table to be discoverable.
 - [ ] Keep table controls hidden for adjacent code blocks or other non-table content.
 - [ ] Add Markdown round-trip fixtures for alignment, header rows, merged-cell fallback, and cell background metadata if supported.

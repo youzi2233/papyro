@@ -543,10 +543,6 @@
 
 .mn-tiptap-table-cell:hover > .column-resize-handle,
 .mn-tiptap-table-header:hover > .column-resize-handle,
-.mn-tiptap-table-cell.mn-tiptap-table-cell-selected > .column-resize-handle,
-.mn-tiptap-table-header.mn-tiptap-table-cell-selected > .column-resize-handle,
-.mn-tiptap-table-cell.selectedCell > .column-resize-handle,
-.mn-tiptap-table-header.selectedCell > .column-resize-handle,
 .mn-tiptap-editor.resize-cursor .column-resize-handle {
     opacity: .7;
 }

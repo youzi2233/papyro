@@ -75,6 +75,8 @@ const TIPTAP_REQUIREMENTS = [
   ["Tiptap editor body size", ".mn-tiptap-editor", "--mn-markdown-body-size"],
   ["Tiptap editor line height", ".mn-tiptap-editor", "--mn-markdown-line-height"],
   ["Tiptap table cell padding", ".mn-tiptap-table-cell", "--mn-markdown-table-cell-pad"],
+  ["Tiptap table collapsed borders", ".mn-tiptap-table", "border-collapse: collapse"],
+  ["Tiptap table quiet resize handles", ".mn-tiptap-table-cell:hover > .column-resize-handle", ".mn-tiptap-editor.resize-cursor .column-resize-handle"],
   ["Tiptap math font", ".mn-tiptap-inline-math", "--mn-markdown-inline-math-font"],
   ["Tiptap math block surface", ".mn-tiptap-math-block", "--mn-markdown-code-block-bg"],
   ["Tiptap Mermaid editor padding", ".mn-tiptap-mermaid-source", "--mn-markdown-code-block-pad-y"],

@@ -265,6 +265,7 @@ node scripts/check-tiptap-release-smoke.js
 - [ ] 增加单元格菜单：合并、拆分、对齐、文字颜色、背景颜色、清除格式、复制、删除内容。
 - [ ] 从细边缘句柄打开行/列操作菜单。
 - [ ] 列边框支持 resize，即使当前已有单元格选中也不能失效。
+  - 当前覆盖：已选中的表格单元格不会仅因为选中态就露出列 resize handle；resize chrome 只跟随 hover 或正在 resize 的明确意图。
 - [ ] 增加快捷新增行/列轨道：贴近表格边缘的细长轨道，宽/高跟随整表，中间是 `+`。
 - [ ] 表格控件不能出现在相邻代码块或其它非表格内容下面。
 - [ ] 为对齐、表头、合并单元格 fallback、单元格背景 metadata 补 Markdown round-trip fixtures。
