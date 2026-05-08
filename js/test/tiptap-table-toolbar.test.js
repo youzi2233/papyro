@@ -349,6 +349,12 @@ function createDocument() {
         setAttribute(name, value) {
           this[name] = value;
         },
+        getAttribute(name) {
+          return this[name] ?? null;
+        },
+        removeAttribute(name) {
+          delete this[name];
+        },
         addEventListener(name, handler) {
           this[`on${name}`] = handler;
         },
@@ -1410,14 +1416,28 @@ test("Tiptap table quick add rails appear only on the hovered table edge", () =>
   editor.view.dom.listeners.get("pointermove")({ target: cells[4], clientX: 235, clientY: 130 });
   assert.equal(rowButton.hidden, true);
   assert.equal(columnButton.hidden, true);
+  assert.equal(rowButton.dataset.visible, "false");
+  assert.equal(rowButton["aria-hidden"], "true");
+  assert.equal(rowButton.tabIndex, -1);
+  assert.equal(columnButton.dataset.visible, "false");
+  assert.equal(columnButton["aria-hidden"], "true");
+  assert.equal(columnButton.tabIndex, -1);
 
   editor.view.dom.listeners.get("pointermove")({ target: editor.view.dom, clientX: 160, clientY: 162 });
   assert.equal(rowButton.hidden, false);
   assert.equal(columnButton.hidden, true);
+  assert.equal(rowButton.dataset.visible, "true");
+  assert.equal(rowButton["aria-hidden"], undefined);
+  assert.equal(columnButton.dataset.visible, "false");
+  assert.equal(columnButton["aria-hidden"], "true");
 
   editor.view.dom.listeners.get("pointermove")({ target: editor.view.dom, clientX: 366, clientY: 118 });
   assert.equal(rowButton.hidden, true);
   assert.equal(columnButton.hidden, false);
+  assert.equal(rowButton.dataset.visible, "false");
+  assert.equal(rowButton["aria-hidden"], "true");
+  assert.equal(columnButton.dataset.visible, "true");
+  assert.equal(columnButton["aria-hidden"], undefined);
 
   editor.view.dom.listeners.get("pointermove")({ target: editor.view.dom, clientX: 366, clientY: 152 });
   assert.equal(rowButton.hidden, true);
@@ -2206,6 +2226,9 @@ test("Tiptap table toolbar keeps the cell menu trigger hidden until the edge is 
     String(element.className).includes("mn-tiptap-table-cell-menu-trigger"),
   );
   assert.equal(trigger.hidden, true);
+  assert.equal(trigger.dataset.visible, "false");
+  assert.equal(trigger["aria-hidden"], "true");
+  assert.equal(trigger.tabIndex, -1);
   assert.equal(trigger.textContent ?? "", "");
   assert.equal(trigger.dataset.selectionKind, "cell");
   assert.equal(trigger.dataset.selectedCount, "0");
@@ -2245,6 +2268,8 @@ test("Tiptap table toolbar reveals the cell trigger after selecting a cell", () 
     clientY: 107,
   });
   assert.equal(trigger.hidden, false);
+  assert.equal(trigger.dataset.visible, "true");
+  assert.equal(trigger["aria-hidden"], undefined);
   assert.equal(trigger.style.left, "200px");
   assert.equal(trigger.style.top, "107px");
   assert.equal(trigger.dataset.edgeIntent, "true");

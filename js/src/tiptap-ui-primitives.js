@@ -88,10 +88,87 @@ export function createFloatingDismissController({
   };
 }
 
-export function setHidden(element, hidden) {
+function getAttributeValue(element, name) {
+  if (typeof element?.getAttribute === "function") {
+    return element.getAttribute(name);
+  }
+  if (element?.attributes instanceof Map) {
+    return element.attributes.get(name) ?? null;
+  }
+  return element?.[name] ?? null;
+}
+
+function removeAttributeValue(element, name) {
+  if (typeof element?.removeAttribute === "function") {
+    element.removeAttribute(name);
+    return;
+  }
+  if (element?.attributes instanceof Map) {
+    element.attributes.delete(name);
+  }
+  delete element?.[name];
+}
+
+function setVisibilityDataset(element, hidden) {
+  const value = hidden ? "false" : "true";
+  if (element?.dataset) {
+    element.dataset.visible = value;
+    return;
+  }
+  element?.setAttribute?.("data-visible", value);
+}
+
+function setHiddenFocusState(element, hidden) {
+  if (!element) return;
+  const attributeKey = "__mnPreviousTabIndexAttribute";
+  const propertyKey = "__mnPreviousTabIndexProperty";
+
+  if (hidden) {
+    if (!Object.prototype.hasOwnProperty.call(element, attributeKey)) {
+      element[attributeKey] = getAttributeValue(element, "tabindex");
+      element[propertyKey] = element.tabIndex;
+    }
+    element.tabIndex = -1;
+    return;
+  }
+
+  if (!Object.prototype.hasOwnProperty.call(element, attributeKey)) return;
+  const previous = element[attributeKey];
+  const previousProperty = element[propertyKey];
+  if (previous == null) {
+    removeAttributeValue(element, "tabindex");
+    if (previousProperty == null) {
+      delete element.tabIndex;
+    } else {
+      element.tabIndex = previousProperty;
+    }
+  } else {
+    element.setAttribute?.("tabindex", previous);
+    element.tabIndex = Number(previous);
+  }
+  delete element[attributeKey];
+  delete element[propertyKey];
+}
+
+export function setHidden(
+  element,
+  hidden,
+  { visibilityAttributes = false, inertFocus = false } = {},
+) {
   if (!element) return;
   element.hidden = hidden;
   element.classList?.toggle?.("hidden", hidden);
+  if (visibilityAttributes) {
+    setVisibilityDataset(element, hidden);
+    if (hidden) {
+      element.setAttribute?.("aria-hidden", "true");
+    } else {
+      removeAttributeValue(element, "aria-hidden");
+    }
+  }
+  if (inertFocus) {
+    setHiddenFocusState(element, hidden);
+  }
 }
 
 export function commandElementId(ownerId, index) {

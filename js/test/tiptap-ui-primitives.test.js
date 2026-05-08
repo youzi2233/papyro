@@ -33,6 +33,7 @@ function createDocument() {
       return {
         tagName: tagName.toUpperCase(),
         className: "",
+        dataset: {},
         classList: {
           values: new Set(),
           toggle(name, enabled) {
@@ -47,6 +48,12 @@ function createDocument() {
         attributes: new Map(),
         setAttribute(name, value) {
           this.attributes.set(name, value);
+        },
+        getAttribute(name) {
+          return this.attributes.get(name) ?? null;
+        },
+        removeAttribute(name) {
+          this.attributes.delete(name);
         },
       };
     },
@@ -85,10 +92,52 @@ test("Tiptap UI primitives hide elements with hidden and class state", () => {
   setHidden(element, true);
   assert.equal(element.hidden, true);
   assert.equal(element.classList.values.has("hidden"), true);
+  assert.equal(element.dataset.visible, undefined);
+  assert.equal(element.attributes.get("aria-hidden"), undefined);
 
   setHidden(element, false);
   assert.equal(element.hidden, false);
   assert.equal(element.classList.values.has("hidden"), false);
+});
+
+test("Tiptap UI primitives can expose hidden state semantics for floating chrome", () => {
+  const element = createElement(createDocument(), "button", "");
+  element.tabIndex = 0;
+
+  setHidden(element, true, {
+    visibilityAttributes: true,
+    inertFocus: true,
+  });
+  assert.equal(element.hidden, true);
+  assert.equal(element.dataset.visible, "false");
+  assert.equal(element.attributes.get("aria-hidden"), "true");
+  assert.equal(element.tabIndex, -1);
+
+  setHidden(element, false, {
+    visibilityAttributes: true,
+    inertFocus: true,
+  });
+  assert.equal(element.hidden, false);
+  assert.equal(element.dataset.visible, "true");
+  assert.equal(element.attributes.get("aria-hidden"), undefined);
+  assert.equal(element.tabIndex, 0);
+});
+
+test("Tiptap UI primitives restore explicit tab index values", () => {
+  const element = createElement(createDocument(), "button", "");
+  element.setAttribute("tabindex", "3");
+  element.tabIndex = 3;
+
+  setHidden(element, true, {
+    inertFocus: true,
+  });
+  assert.equal(element.tabIndex, -1);
+
+  setHidden(element, false, {
+    inertFocus: true,
+  });
+  assert.equal(element.attributes.get("tabindex"), "3");
+  assert.equal(element.tabIndex, 3);
 });
 
 test("Tiptap UI primitives position floating elements inside the viewport", () => {
