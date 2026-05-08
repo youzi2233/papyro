@@ -393,6 +393,7 @@ node scripts/check-tiptap-release-smoke.js
 - [ ] 将浮动格式栏迁入 React。
   - 当前覆盖：真实桌面/移动运行时已经在 editor 入口边界注入 React 渲染的格式工具栏 view；现有 controller 和 DOM fallback 暂时保留，用于测试与迁移期稳定性。
 - [ ] 用 Tiptap state selector 获取 active marks，不再 DOM polling。
+  - 当前覆盖：active mark、文字颜色和高亮状态现在进入纯 format snapshot；React runtime 通过 Tiptap 文档推荐的 `useEditorState` selector 订阅，迁移期 controller 也消费同一份 snapshot，确保 controller 退场前两条路径的 active-state 语义一致。
 - [ ] 增加加粗、斜体、删除线、行内代码、链接、文字颜色、高亮、清除格式、turn into。
   - 当前覆盖：headless 行内格式命令模型现在已经暴露 Tiptap 官方免费版的加粗、斜体、下划线、删除线、行内代码、链接、文字颜色、高亮和 `unsetAllMarks` 清除格式命令，并把本地化标签同时供给 React view 和 DOM fallback。
   - 当前覆盖：文字颜色复用现有 `TextStyle` + 官方 `Color` 扩展路径，通过 `setColor` 和 `unsetColor` 执行；浮动格式栏提供默认、弱化、强调、危险四个紧凑色板按钮。

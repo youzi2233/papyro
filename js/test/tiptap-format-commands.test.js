@@ -157,6 +157,61 @@ test("Tiptap format commands report active marks", () => {
   );
 });
 
+test("Tiptap format commands can consume a precomputed format snapshot", () => {
+  const { editor } = createFakeEditor();
+  const controller = createTiptapFormatCommandController();
+
+  const states = controller.states({
+    editor,
+    formatSnapshot: {
+      marks: {
+        bold: false,
+        italic: true,
+        underline: false,
+        strike: false,
+        code: false,
+        link: true,
+      },
+      textColors: {
+        ink: false,
+        muted: false,
+        accent: true,
+        danger: false,
+      },
+      highlights: {
+        clear: false,
+        yellow: false,
+        blue: false,
+        green: true,
+      },
+      textColor: "var(--mn-accent)",
+      highlightColor: "rgba(16, 185, 129, 0.18)",
+    },
+  });
+
+  assert.deepEqual(
+    states.map((command) => [command.id, command.active]),
+    [
+      ["bold", false],
+      ["italic", true],
+      ["underline", false],
+      ["strike", false],
+      ["code", false],
+      ["link", true],
+      ["text-color-ink", false],
+      ["text-color-muted", false],
+      ["text-color-accent", true],
+      ["text-color-danger", false],
+      ["highlight-clear", false],
+      ["highlight-yellow", false],
+      ["highlight-blue", false],
+      ["highlight-green", true],
+      ["turn-into", false],
+      ["clear-formatting", false],
+    ],
+  );
+});
+
 test("Tiptap format command controller runs editor mark commands", () => {
   const { calls, editor } = createFakeEditor();
   const controller = createTiptapFormatCommandController();

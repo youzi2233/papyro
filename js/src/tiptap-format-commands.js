@@ -1,4 +1,5 @@
 import { localizedText } from "./tiptap-i18n.js";
+import { createPapyroTiptapFormatSnapshot } from "./tiptap-format-snapshot.js";
 import {
   PAPYRO_HIGHLIGHT_OPTIONS,
   PAPYRO_TEXT_COLOR_OPTIONS,
@@ -32,12 +33,20 @@ function isCommandActive(editor, activeName, activeAttrs) {
   return activeAttrs ? editor.isActive(activeName, activeAttrs) : editor.isActive(activeName);
 }
 
-function textStyleColor(editor) {
-  return editor?.getAttributes?.("textStyle")?.color ?? null;
+function formatSnapshot(context = {}) {
+  return context.formatSnapshot ?? createPapyroTiptapFormatSnapshot(context.editor);
 }
 
-function highlightColor(editor) {
-  return editor?.getAttributes?.("highlight")?.color ?? null;
+function isSnapshotMarkActive(context, markId) {
+  return formatSnapshot(context).marks?.[markId] === true;
+}
+
+function isSnapshotTextColorActive(context, option) {
+  return formatSnapshot(context).textColors?.[option.id] === true;
+}
+
+function isSnapshotHighlightActive(context, option) {
+  return formatSnapshot(context).highlights?.[option.id] === true;
 }
 
 function formatCommandLanguage(context = {}) {
@@ -245,6 +254,7 @@ export const PAPYRO_TIPTAP_FORMAT_COMMANDS = Object.freeze([
     title: "Bold",
     ariaLabel: "Toggle bold",
     commandName: "toggleBold",
+    active: (context) => isSnapshotMarkActive(context, "bold"),
     priority: 10,
   }),
   createCommand({
@@ -253,6 +263,7 @@ export const PAPYRO_TIPTAP_FORMAT_COMMANDS = Object.freeze([
     title: "Italic",
     ariaLabel: "Toggle italic",
     commandName: "toggleItalic",
+    active: (context) => isSnapshotMarkActive(context, "italic"),
     priority: 20,
   }),
   createCommand({
@@ -261,6 +272,7 @@ export const PAPYRO_TIPTAP_FORMAT_COMMANDS = Object.freeze([
     title: "Underline",
     ariaLabel: "Toggle underline",
     commandName: "toggleUnderline",
+    active: (context) => isSnapshotMarkActive(context, "underline"),
     priority: 25,
   }),
   createCommand({
@@ -269,6 +281,7 @@ export const PAPYRO_TIPTAP_FORMAT_COMMANDS = Object.freeze([
     title: "Strike",
     ariaLabel: "Toggle strikethrough",
     commandName: "toggleStrike",
+    active: (context) => isSnapshotMarkActive(context, "strike"),
     priority: 30,
   }),
   createCommand({
@@ -277,6 +290,7 @@ export const PAPYRO_TIPTAP_FORMAT_COMMANDS = Object.freeze([
     title: "Inline code",
     ariaLabel: "Toggle inline code",
     commandName: "toggleCode",
+    active: (context) => isSnapshotMarkActive(context, "code"),
     priority: 40,
   }),
   createCommand({
@@ -285,6 +299,7 @@ export const PAPYRO_TIPTAP_FORMAT_COMMANDS = Object.freeze([
     title: "Link",
     ariaLabel: "Edit link",
     activeName: "link",
+    active: (context) => isSnapshotMarkActive(context, "link"),
     run: ({ openLinkEditor }) =>
       typeof openLinkEditor === "function" && openLinkEditor() === true,
     focusAfterRun: false,
@@ -299,7 +314,7 @@ export const PAPYRO_TIPTAP_FORMAT_COMMANDS = Object.freeze([
       commandName: option.color ? "setColor" : "unsetColor",
       commandArgs: option.color ? [option.color] : [],
       icon: `text-color ${option.id}`,
-      active: ({ editor }) => textStyleColor(editor) === (option.color ?? null),
+      active: (context) => isSnapshotTextColorActive(context, option),
       priority: 46 + index,
     }),
   ),
@@ -313,11 +328,7 @@ export const PAPYRO_TIPTAP_FORMAT_COMMANDS = Object.freeze([
       commandArgs: option.color ? [{ color: option.color }] : [],
       icon: `highlight ${option.id}`,
       active:
-        option.color
-          ? ({ editor }) =>
-              isCommandActive(editor, "highlight", { color: option.color }) ||
-              highlightColor(editor) === option.color
-          : () => false,
+        option.color ? (context) => isSnapshotHighlightActive(context, option) : () => false,
       priority: 50 + index,
     }),
   ),

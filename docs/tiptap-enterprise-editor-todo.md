@@ -403,6 +403,7 @@ Tasks:
 - [ ] Move floating toolbar into React.
   - Current coverage: the real desktop/mobile runtime now injects a React-rendered format toolbar view at the editor entry boundary, while the existing controller and DOM fallback remain for tests and migration safety.
 - [ ] Use Tiptap state selectors for active marks instead of DOM polling.
+  - Current coverage: active mark, text-color, and highlight state now flows through a pure format snapshot. The React runtime subscribes with Tiptap's documented `useEditorState` selector path, and the migration controller consumes the same snapshot so active-state semantics stay aligned until the controller is retired.
 - [ ] Add bold, italic, strike, inline code, link, text color, highlight, clear formatting, and turn into.
   - Current coverage: the headless inline-format command model now exposes Tiptap's official/free bold, italic, underline, strike, inline code, link, text color, highlight, and `unsetAllMarks` clear-formatting commands, with localized labels feeding both the React view and DOM fallback.
   - Current coverage: text color uses the existing `TextStyle` + official `Color` extension path through `setColor` and `unsetColor`, with compact swatch buttons for default, muted, accent, and danger text.

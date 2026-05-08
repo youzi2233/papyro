@@ -1,4 +1,5 @@
 import { createTiptapFormatCommandController } from "./tiptap-format-commands.js";
+import { createPapyroTiptapFormatSnapshot } from "./tiptap-format-snapshot.js";
 import {
   commandElementId,
   createElement,
@@ -393,7 +394,11 @@ export class TiptapFormatToolbarController {
       density: shouldUseCompactToolbar(editor, range, defaultWindow(editor?.view?.dom?.ownerDocument))
         ? "compact"
         : "regular",
-      commands: this.#commands.states({ editor, entry: this.#entry }),
+      commands: this.#commands.states({
+        editor,
+        entry: this.#entry,
+        formatSnapshot: createPapyroTiptapFormatSnapshot(editor),
+      }),
       activeCommandId: this.#state.activeCommandId,
       submenuOpen: this.#state.submenuOpen,
       activeChildCommandId: this.#state.activeChildCommandId,

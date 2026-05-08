@@ -8,13 +8,17 @@ export {
 } from "./slots.jsx";
 export {
   createPapyroTiptapCommandExecutor,
+  createPapyroTiptapFormatSnapshot,
   createPapyroTiptapRuntimeModel,
   createPapyroTiptapSelectionSnapshot,
   normalizePapyroTiptapLanguage,
   normalizePapyroTiptapViewMode,
+  samePapyroTiptapFormatSnapshot,
   samePapyroTiptapSelectionSnapshot,
   PapyroTiptapRuntimeProvider,
   usePapyroTiptapCommandExecutor,
+  usePapyroTiptapFormat,
+  usePapyroTiptapFormatSnapshot,
   usePapyroTiptapLanguage,
   usePapyroTiptapPreferences,
   usePapyroTiptapRuntime,

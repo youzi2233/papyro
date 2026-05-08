@@ -1,5 +1,15 @@
+import {
+  createPapyroTiptapFormatSnapshot,
+  samePapyroTiptapFormatSnapshot,
+} from "../tiptap-format-snapshot.js";
+
 const DEFAULT_LANGUAGE = "english";
 const DEFAULT_VIEW_MODE = "hybrid";
+
+export {
+  createPapyroTiptapFormatSnapshot,
+  samePapyroTiptapFormatSnapshot,
+};
 
 export function normalizePapyroTiptapLanguage(entryOrLanguage) {
   const language =
@@ -190,6 +200,7 @@ export function createPapyroTiptapRuntimeModel({
   editor = null,
   entry = null,
   selection = undefined,
+  format = undefined,
 } = {}) {
   return Object.freeze({
     editor,
@@ -199,6 +210,7 @@ export function createPapyroTiptapRuntimeModel({
     dioxus: entry?.dioxus ?? null,
     preferences: entry?.preferences ?? null,
     selection: selection ?? createPapyroTiptapSelectionSnapshot(editor),
+    format: format ?? createPapyroTiptapFormatSnapshot(editor),
     commands: createPapyroTiptapCommandExecutor({
       editor,
       entry,

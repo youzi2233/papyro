@@ -3,10 +3,12 @@ import assert from "node:assert/strict";
 
 import {
   createPapyroTiptapCommandExecutor,
+  createPapyroTiptapFormatSnapshot,
   createPapyroTiptapRuntimeModel,
   createPapyroTiptapSelectionSnapshot,
   normalizePapyroTiptapLanguage,
   normalizePapyroTiptapViewMode,
+  samePapyroTiptapFormatSnapshot,
   samePapyroTiptapSelectionSnapshot,
 } from "../src/tiptap-react/runtime-model.js";
 
@@ -166,6 +168,8 @@ test("Tiptap React runtime model exposes stable hooks data", () => {
     head: 6,
     table: null,
   });
+  assert.equal(model.format.marks.bold, false);
+  assert.equal(model.format.textColors.ink, true);
   assert.equal(model.commands.runInsert("paragraph").ok, true);
 });
 
@@ -257,4 +261,39 @@ test("Tiptap React selection snapshots compare by value", () => {
     true,
   );
   assert.equal(samePapyroTiptapSelectionSnapshot(tableSelection, cursor), false);
+});
+
+test("Tiptap React runtime model exposes format snapshots", () => {
+  const format = createPapyroTiptapFormatSnapshot({
+    isActive(name) {
+      return name === "bold";
+    },
+    getAttributes(name) {
+      if (name === "textStyle") return { color: "var(--mn-danger)" };
+      return {};
+    },
+  });
+  const model = createPapyroTiptapRuntimeModel({
+    editor: null,
+    entry: { viewMode: "hybrid" },
+    format,
+  });
+  const same = createPapyroTiptapFormatSnapshot({
+    isActive(name) {
+      return name === "bold";
+    },
+    getAttributes(name) {
+      if (name === "textStyle") return { color: "var(--mn-danger)" };
+      return {};
+    },
+  });
+
+  assert.equal(model.format, format);
+  assert.equal(format.marks.bold, true);
+  assert.equal(format.textColors.danger, true);
+  assert.equal(samePapyroTiptapFormatSnapshot(format, same), true);
+  assert.equal(
+    samePapyroTiptapFormatSnapshot(format, createPapyroTiptapFormatSnapshot(null)),
+    false,
+  );
 });

@@ -120,19 +120,28 @@ test("React runtime context exposes stable editor runtime hooks", () => {
   assert.match(runtimeModelSource, /export function createPapyroTiptapRuntimeModel/u);
   assert.match(runtimeModelSource, /export function createPapyroTiptapSelectionSnapshot/u);
   assert.match(runtimeModelSource, /export function samePapyroTiptapSelectionSnapshot/u);
+  assert.match(runtimeModelSource, /createPapyroTiptapFormatSnapshot/u);
+  assert.match(runtimeModelSource, /samePapyroTiptapFormatSnapshot/u);
   assert.match(runtimeModelSource, /export function createPapyroTiptapCommandExecutor/u);
   assert.match(runtimeContextSource, /useSyncExternalStore/u);
+  assert.match(runtimeContextSource, /useEditorState/u);
   assert.match(runtimeContextSource, /editor\.on\("transaction"/u);
   assert.match(runtimeContextSource, /editor\.on\("selectionUpdate"/u);
   assert.match(runtimeContextSource, /export function usePapyroTiptapSelectionSnapshot/u);
+  assert.match(runtimeContextSource, /export function usePapyroTiptapFormatSnapshot/u);
   assert.match(runtimeContextSource, /createPapyroTiptapRuntimeModel/u);
   assert.match(runtimeContextSource, /export function usePapyroTiptapPreferences/u);
   assert.match(runtimeContextSource, /export function usePapyroTiptapSelection/u);
+  assert.match(runtimeContextSource, /export function usePapyroTiptapFormat/u);
   assert.match(runtimeContextSource, /export function usePapyroTiptapCommandExecutor/u);
   assert.match(indexSource, /createPapyroTiptapSelectionSnapshot/u);
   assert.match(indexSource, /samePapyroTiptapSelectionSnapshot/u);
+  assert.match(indexSource, /createPapyroTiptapFormatSnapshot/u);
+  assert.match(indexSource, /samePapyroTiptapFormatSnapshot/u);
   assert.match(indexSource, /usePapyroTiptapSelectionSnapshot/u);
   assert.match(indexSource, /usePapyroTiptapSelection/u);
+  assert.match(indexSource, /usePapyroTiptapFormatSnapshot/u);
+  assert.match(indexSource, /usePapyroTiptapFormat/u);
   assert.match(indexSource, /usePapyroTiptapCommandExecutor/u);
 });
 

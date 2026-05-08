@@ -6,21 +6,26 @@ import React, {
   useRef,
   useSyncExternalStore,
 } from "react";
+import { useEditorState } from "@tiptap/react";
 
 import {
+  createPapyroTiptapFormatSnapshot,
   createPapyroTiptapRuntimeModel,
   createPapyroTiptapSelectionSnapshot,
   normalizePapyroTiptapLanguage,
   normalizePapyroTiptapViewMode,
+  samePapyroTiptapFormatSnapshot,
   samePapyroTiptapSelectionSnapshot,
 } from "./runtime-model.js";
 
 export {
   createPapyroTiptapCommandExecutor,
+  createPapyroTiptapFormatSnapshot,
   createPapyroTiptapRuntimeModel,
   createPapyroTiptapSelectionSnapshot,
   normalizePapyroTiptapLanguage,
   normalizePapyroTiptapViewMode,
+  samePapyroTiptapFormatSnapshot,
   samePapyroTiptapSelectionSnapshot,
 } from "./runtime-model.js";
 
@@ -94,14 +99,24 @@ export function usePapyroTiptapSelectionSnapshot(editor) {
   );
 }
 
+export function usePapyroTiptapFormatSnapshot(editor) {
+  return useEditorState({
+    editor: editor ?? null,
+    selector: ({ editor: currentEditor }) =>
+      createPapyroTiptapFormatSnapshot(currentEditor),
+    equalityFn: samePapyroTiptapFormatSnapshot,
+  }) ?? createPapyroTiptapFormatSnapshot(null);
+}
+
 export function PapyroTiptapRuntimeProvider({
   editor,
   entry = null,
   children,
 }) {
   const selection = usePapyroTiptapSelectionSnapshot(editor);
+  const format = usePapyroTiptapFormatSnapshot(editor);
   const value = useMemo(
-    () => createPapyroTiptapRuntimeModel({ editor, entry, selection }),
+    () => createPapyroTiptapRuntimeModel({ editor, entry, selection, format }),
     [
       editor,
       entry,
@@ -109,6 +124,7 @@ export function PapyroTiptapRuntimeProvider({
       entry?.preferences,
       entry?.preferences?.language,
       entry?.viewMode,
+      format,
       selection,
     ],
   );
@@ -144,6 +160,10 @@ export function usePapyroTiptapPreferences() {
 
 export function usePapyroTiptapSelection() {
   return usePapyroTiptapRuntime().selection;
+}
+
+export function usePapyroTiptapFormat() {
+  return usePapyroTiptapRuntime().format;
 }
 
 export function usePapyroTiptapCommandExecutor() {
