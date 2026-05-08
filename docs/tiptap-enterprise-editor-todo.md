@@ -351,6 +351,7 @@ Goal: selected text formatting should be compact, stable, and keyboard accessibl
 Tasks:
 
 - [ ] Move floating toolbar into React.
+  - Current coverage: the real desktop/mobile runtime now injects a React-rendered format toolbar view at the editor entry boundary, while the existing controller and DOM fallback remain for tests and migration safety.
 - [ ] Use Tiptap state selectors for active marks instead of DOM polling.
 - [ ] Add bold, italic, strike, inline code, link, text color, highlight, clear formatting, and turn into.
 - [ ] Keep toolbar placement stable near viewport edges.

@@ -231,6 +231,7 @@ export function createTiptapEditorRuntime({
   blockHandleViewFactory = null,
   formatCommandControllerFactory = createTiptapFormatCommandController,
   formatToolbarControllerFactory = createTiptapFormatToolbarController,
+  formatToolbarViewFactory = null,
   historyCommandControllerFactory = createTiptapHistoryCommandController,
   pasteControllerFactory = createTiptapPasteController,
   preferencesControllerFactory = createTiptapPreferencesController,
@@ -411,6 +412,10 @@ export function createTiptapEditorRuntime({
     const historyCommands = createHistoryCommandController();
     const formatToolbar = createFormatToolbarController({
       commandController: formatCommands,
+      view:
+        typeof formatToolbarViewFactory === "function"
+          ? formatToolbarViewFactory({ document: documentRef })
+          : null,
       dom: {
         document: documentRef,
       },

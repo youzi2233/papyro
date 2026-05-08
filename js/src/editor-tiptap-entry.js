@@ -4,6 +4,7 @@ import { installPapyroEditorRuntime } from "./editor-runtime-bootstrap.js";
 import {
   createTiptapReactBlockActionMenuView,
   createTiptapReactBlockHandleView,
+  createTiptapReactFormatToolbarView,
   createTiptapReactMountController,
   createTiptapReactSlashMenuView,
   createTiptapReactTableContextMenuRenderer,
@@ -23,6 +24,7 @@ const tiptapRuntimeAdapter = createTiptapEditorRuntime({
   },
   blockActionMenuViewFactory: createTiptapReactBlockActionMenuView,
   blockHandleViewFactory: createTiptapReactBlockHandleView,
+  formatToolbarViewFactory: createTiptapReactFormatToolbarView,
   mountControllerFactory: createTiptapReactMountController,
   slashMenuViewFactory: createTiptapReactSlashMenuView,
   tableMenuRendererFactory: createTiptapReactTableContextMenuRenderer,

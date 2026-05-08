@@ -41,6 +41,7 @@ function createRuntimeHarness({
   sourcePaneControllerFactory,
   slashMenuControllerFactory,
   tableToolbarControllerFactory,
+  formatToolbarViewFactory,
   mountControllerFactory,
   layout,
   document: documentOverride,
@@ -236,6 +237,7 @@ function createRuntimeHarness({
     ...(blockHandleViewFactory ? { blockHandleViewFactory } : {}),
     ...(formatCommandControllerFactory ? { formatCommandControllerFactory } : {}),
     formatToolbarControllerFactory: createFormatToolbar,
+    ...(formatToolbarViewFactory ? { formatToolbarViewFactory } : {}),
     ...(historyCommandControllerFactory ? { historyCommandControllerFactory } : {}),
     pasteControllerFactory: createPasteController,
     ...(preferencesControllerFactory ? { preferencesControllerFactory } : {}),
@@ -317,6 +319,39 @@ test("Tiptap runtime injects a custom block handle view", () => {
   assert.ok(
     calls.some(
       (call) => call[0] === "blockHandleAttach" && call[1] === "mn-tiptap-runtime",
+    ),
+  );
+});
+
+test("Tiptap runtime injects a custom format toolbar view", () => {
+  const { calls, runtime } = createRuntimeHarness({
+    formatToolbarControllerFactory: ({ view }) => ({
+      attach: ({ root }) => calls.push(["formatToolbarAttach", root.className]),
+      close: () => calls.push(["formatToolbarClose"]),
+      destroy: () => calls.push(["formatToolbarDestroy"]),
+      refresh: () => calls.push(["formatToolbarRefresh"]),
+      view,
+    }),
+    formatToolbarViewFactory: ({ document }) => {
+      calls.push(["formatToolbarViewFactory", Boolean(document)]);
+      return { kind: "react-format-toolbar-view" };
+    },
+  });
+
+  runtime.ensureEditor({
+    tabId: "tab-a",
+    containerId: "editor-root",
+    initialContent: "# Note",
+  });
+
+  assert.ok(
+    calls.some(
+      (call) => call[0] === "formatToolbarViewFactory" && call[1] === true,
+    ),
+  );
+  assert.ok(
+    calls.some(
+      (call) => call[0] === "formatToolbarAttach" && call[1] === "mn-tiptap-runtime",
     ),
   );
 });

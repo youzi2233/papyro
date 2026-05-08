@@ -351,6 +351,7 @@ node scripts/check-tiptap-release-smoke.js
 任务：
 
 - [ ] 将浮动格式栏迁入 React。
+  - 当前覆盖：真实桌面/移动运行时已经在 editor 入口边界注入 React 渲染的格式工具栏 view；现有 controller 和 DOM fallback 暂时保留，用于测试与迁移期稳定性。
 - [ ] 用 Tiptap state selector 获取 active marks，不再 DOM polling。
 - [ ] 增加加粗、斜体、删除线、行内代码、链接、文字颜色、高亮、清除格式、turn into。
 - [ ] 靠近视口边缘时定位稳定。

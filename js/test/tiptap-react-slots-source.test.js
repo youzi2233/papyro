@@ -26,8 +26,16 @@ const tableContextMenuSource = readFileSync(
   new URL("../src/tiptap-react/components/table-context-menu.jsx", import.meta.url),
   "utf8",
 );
+const formatToolbarSource = readFileSync(
+  new URL("../src/tiptap-react/components/format-toolbar.jsx", import.meta.url),
+  "utf8",
+);
 const slashMenuViewSource = readFileSync(
   new URL("../src/tiptap-react/slash-menu-view.jsx", import.meta.url),
+  "utf8",
+);
+const formatToolbarViewSource = readFileSync(
+  new URL("../src/tiptap-react/format-toolbar-view.jsx", import.meta.url),
   "utf8",
 );
 const blockActionMenuViewSource = readFileSync(
@@ -97,7 +105,19 @@ test("React floating chrome shares positioning utilities", () => {
 
 test("React table context menu is injected at the editor entry boundary", () => {
   assert.match(indexSource, /createTiptapReactTableContextMenuRenderer/u);
+  assert.match(indexSource, /createTiptapReactFormatToolbarView/u);
   assert.match(editorEntrySource, /tableMenuRendererFactory:\s*createTiptapReactTableContextMenuRenderer/u);
+  assert.match(editorEntrySource, /formatToolbarViewFactory:\s*createTiptapReactFormatToolbarView/u);
   assert.match(tableToolbarViewSource, /menuRendererFactory/u);
   assert.doesNotMatch(tableToolbarViewSource, /tiptap-react\/index\.js/u);
+});
+
+test("React format toolbar is injected without changing the runtime command controller", () => {
+  assert.match(formatToolbarSource, /export function PapyroFormatToolbar/u);
+  assert.match(formatToolbarSource, /usePointerActivation/u);
+  assert.match(formatToolbarSource, /aria-pressed=\{String\(command\.active\)\}/u);
+  assert.match(formatToolbarViewSource, /createRoot/u);
+  assert.match(formatToolbarViewSource, /positionReactFloatingElement/u);
+  assert.match(formatToolbarViewSource, /role = "toolbar"/u);
+  assert.doesNotMatch(formatToolbarViewSource, /createElement\(/u);
 });

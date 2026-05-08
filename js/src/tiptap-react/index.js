@@ -35,6 +35,10 @@ export {
   TiptapReactTableContextMenuRenderer,
 } from "./table-context-menu-renderer.jsx";
 export {
+  createTiptapReactFormatToolbarView,
+  TiptapReactFormatToolbarView,
+} from "./format-toolbar-view.jsx";
+export {
   PapyroOfficialDragHandleBridge,
 } from "./official-drag-handle-bridge.jsx";
 export {
