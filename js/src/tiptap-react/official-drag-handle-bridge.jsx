@@ -16,6 +16,25 @@ export function PapyroOfficialDragHandleBridge({ editor, entry = null }) {
   const handleElementDragEnd = useCallback(() => {
     entryRef.current?.blockHandle?.cancelDrag?.();
   }, []);
+  const openActionsFromBridge = useCallback((event) => {
+    event?.preventDefault?.();
+    event?.stopPropagation?.();
+    entryRef.current?.blockHandle?.clickAction?.(event);
+  }, []);
+  const openContextActionsFromBridge = useCallback((event) => {
+    event?.preventDefault?.();
+    event?.stopPropagation?.();
+    entryRef.current?.blockHandle?.openActions?.(event);
+  }, []);
+  const ignoreAuxActionFromBridge = useCallback((event) => {
+    event?.preventDefault?.();
+    event?.stopPropagation?.();
+  }, []);
+  const allowOfficialDragFromBridge = useCallback((event) => {
+    if (event?.button === 2) {
+      openContextActionsFromBridge(event);
+    }
+  }, [openContextActionsFromBridge]);
   const handleState = entry?.blockHandle?.viewState ?? null;
   const hidden =
     !handleState?.open ||
@@ -38,6 +57,11 @@ export function PapyroOfficialDragHandleBridge({ editor, entry = null }) {
         state={{
           ...(handleState ?? {}),
           hidden,
+          onActionPointerDown: allowOfficialDragFromBridge,
+          onActionPointerUp: undefined,
+          onActionClick: openActionsFromBridge,
+          onActionContextMenu: openContextActionsFromBridge,
+          onAuxClick: ignoreAuxActionFromBridge,
           rootProps: {
             "data-view-mode": bridgeState.viewMode,
             "data-state": bridgeState.reason,

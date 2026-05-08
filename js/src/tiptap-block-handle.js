@@ -950,6 +950,8 @@ export class TiptapBlockHandleController {
   }
 
   clickAction(event = null) {
+    event?.preventDefault?.();
+    event?.stopPropagation?.();
     if (this.#menu?.state?.open === true) return true;
     if (this.#drag) return this.finishDrag(event);
     return this.#openActions({
