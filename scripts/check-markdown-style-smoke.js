@@ -89,6 +89,8 @@ const TIPTAP_REQUIREMENTS = [
   ["Tiptap code block caret", ".mn-tiptap-code-block", "caret-color: var(--mn-caret)"],
   ["Tiptap code block toolbar", ".mn-tiptap-code-toolbar", "data-action=\"copy\""],
   ["Tiptap code block wrap state", ".mn-tiptap-code-block[data-code-wrap=\"true\"] code", "white-space: pre-wrap"],
+  ["Tiptap code language token badge", ".mn-tiptap-code-language-button::before", "--mn-markdown-mono-font"],
+  ["Tiptap light code chip surface", ":root[data-theme=\"github_light\"] .mn-tiptap-code-language-button", "--mn-code-language-chip-surface"],
 ];
 
 const TIPTAP_COMMAND_PANEL_REQUIREMENTS = [

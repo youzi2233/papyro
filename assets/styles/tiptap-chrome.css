@@ -45,24 +45,19 @@
     display: grid;
     grid-template-columns: auto minmax(0, 1fr) auto;
     align-items: center;
-    gap: 6px;
-    max-width: min(218px, calc(100% - 122px));
-    min-width: 88px;
-    height: 26px;
-    border: 1px solid color-mix(in srgb, var(--mn-code-token-comment) 18%, var(--mn-border));
-    border-radius: 6px;
-    background:
-        linear-gradient(
-            180deg,
-            color-mix(in srgb, var(--mn-code-block-surface) 84%, var(--mn-surface-raised)),
-            color-mix(in srgb, var(--mn-code-block-surface) 94%, var(--mn-surface-sunken))
-        );
-    color: color-mix(in srgb, var(--mn-code-ink) 76%, transparent);
-    padding: 0 8px 0 5px;
+    gap: 7px;
+    max-width: min(236px, calc(100% - 122px));
+    min-width: 102px;
+    height: 28px;
+    border: 1px solid color-mix(in srgb, var(--mn-code-token-comment) 20%, var(--mn-border));
+    border-radius: 7px;
+    background: color-mix(in srgb, var(--mn-code-block-surface) 74%, var(--mn-surface-raised));
+    color: color-mix(in srgb, var(--mn-code-ink) 80%, transparent);
+    padding: 0 9px 0 5px;
     overflow: hidden;
     font-family: var(--mn-font-ui);
-    font-size: 10.5px;
-    font-weight: var(--mn-weight-medium);
+    font-size: 11px;
+    font-weight: var(--mn-weight-semibold);
     line-height: 1;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -78,12 +73,14 @@
     content: attr(data-language-badge);
     display: inline-grid;
     place-items: center;
-    min-width: 31px;
-    height: 18px;
-    border-radius: 4px;
-    background: color-mix(in srgb, var(--mn-accent) 8%, var(--mn-surface-raised));
-    color: color-mix(in srgb, var(--mn-accent) 82%, var(--mn-code-ink));
-    font-size: 9px;
+    min-width: 34px;
+    height: 20px;
+    border: 1px solid color-mix(in srgb, var(--mn-accent) 22%, transparent);
+    border-radius: 5px;
+    background: color-mix(in srgb, var(--mn-accent) 9%, var(--mn-code-block-surface));
+    color: color-mix(in srgb, var(--mn-accent) 76%, var(--mn-code-ink));
+    font-family: var(--mn-markdown-mono-font);
+    font-size: 9.5px;
     font-weight: var(--mn-weight-semibold);
     line-height: 1;
     text-transform: uppercase;
@@ -104,15 +101,10 @@
 .mn-tiptap-code-language-button:focus-visible,
 .mn-tiptap-code-language-button[aria-expanded="true"] {
     outline: 0;
-    border-color: color-mix(in srgb, var(--mn-accent) 30%, var(--mn-border));
-    background:
-        linear-gradient(
-            180deg,
-            color-mix(in srgb, var(--mn-surface-raised) 92%, var(--mn-accent) 8%),
-            color-mix(in srgb, var(--mn-code-block-surface) 86%, var(--mn-accent) 6%)
-        );
-    color: color-mix(in srgb, var(--mn-accent) 82%, var(--mn-code-ink));
-    box-shadow: 0 2px 8px color-mix(in srgb, #000 7%, transparent);
+    border-color: color-mix(in srgb, var(--mn-accent) 34%, var(--mn-border));
+    background: color-mix(in srgb, var(--mn-surface-raised) 88%, var(--mn-accent) 8%);
+    color: color-mix(in srgb, var(--mn-accent) 78%, var(--mn-code-ink));
+    box-shadow: 0 4px 12px color-mix(in srgb, #000 8%, transparent);
 }
 
 .mn-tiptap-code-block[data-code-language-mode="auto"] .mn-tiptap-code-language-button {
@@ -240,11 +232,11 @@
     z-index: 166;
     display: grid;
     grid-template-rows: auto minmax(0, 1fr);
-    width: 176px;
+    width: 184px;
     max-height: min(286px, calc(100vh - 20px));
-    padding: 6px;
+    padding: 7px;
     border: var(--mn-border-default);
-    border-radius: 10px;
+    border-radius: 9px;
     background: var(--mn-surface-raised);
     color: var(--mn-ink);
     box-shadow: 0 18px 38px color-mix(in srgb, #000 13%, transparent), var(--mn-shadow-lg);
@@ -288,10 +280,10 @@
 
 .mn-tiptap-code-language-menu-item {
     display: grid;
-    grid-template-columns: 31px minmax(0, 1fr) 14px;
+    grid-template-columns: 34px minmax(0, 1fr) 14px;
     align-items: center;
     gap: 7px;
-    min-height: 30px;
+    min-height: 31px;
     border: 1px solid transparent;
     border-radius: 7px;
     background: transparent;
@@ -306,12 +298,13 @@
     content: attr(data-language-token);
     display: inline-grid;
     place-items: center;
-    width: 31px;
+    width: 34px;
     height: 20px;
     border: var(--mn-border-subtle);
     border-radius: 5px;
     background: color-mix(in srgb, var(--mn-surface-sunken) 82%, transparent);
     color: color-mix(in srgb, var(--mn-ink-3) 88%, transparent);
+    font-family: var(--mn-markdown-mono-font);
     font-size: 8.5px;
     font-weight: var(--mn-weight-semibold);
     letter-spacing: 0;
@@ -422,6 +415,33 @@
 }
 .mn-tiptap-code-block .hljs-emphasis { font-style: italic; }
 .mn-tiptap-code-block .hljs-strong { font-weight: var(--mn-weight-semibold); }
+
+:root[data-theme="light"] .mn-tiptap-code-block,
+:root[data-theme="github_light"] .mn-tiptap-code-block,
+:root[data-theme="warm_reading"] .mn-tiptap-code-block {
+    --mn-code-language-chip-surface: color-mix(in srgb, var(--mn-code-block-surface) 82%, #fff);
+    --mn-code-language-chip-border: color-mix(in srgb, var(--mn-code-token-comment) 24%, var(--mn-border));
+}
+
+:root[data-theme="light"] .mn-tiptap-code-language-button,
+:root[data-theme="github_light"] .mn-tiptap-code-language-button,
+:root[data-theme="warm_reading"] .mn-tiptap-code-language-button {
+    background: var(--mn-code-language-chip-surface);
+    border-color: var(--mn-code-language-chip-border);
+    box-shadow: 0 1px 2px color-mix(in srgb, #000 5%, transparent);
+}
+
+:root[data-theme="light"] .mn-tiptap-code-language-button:hover,
+:root[data-theme="light"] .mn-tiptap-code-language-button:focus-visible,
+:root[data-theme="light"] .mn-tiptap-code-language-button[aria-expanded="true"],
+:root[data-theme="github_light"] .mn-tiptap-code-language-button:hover,
+:root[data-theme="github_light"] .mn-tiptap-code-language-button:focus-visible,
+:root[data-theme="github_light"] .mn-tiptap-code-language-button[aria-expanded="true"],
+:root[data-theme="warm_reading"] .mn-tiptap-code-language-button:hover,
+:root[data-theme="warm_reading"] .mn-tiptap-code-language-button:focus-visible,
+:root[data-theme="warm_reading"] .mn-tiptap-code-language-button[aria-expanded="true"] {
+    background: color-mix(in srgb, #fff 86%, var(--mn-accent) 7%);
+}
 
 .mn-tiptap-editor > *:first-child { margin-top: 0; }
 .mn-tiptap-editor > *:last-child { margin-bottom: 0; }

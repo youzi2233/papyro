@@ -323,10 +323,12 @@ node scripts/check-tiptap-release-smoke.js
   - 当前覆盖：桌面和移动运行时现在通过 Tiptap 扩展边界注入基于 React `NodeViewWrapper`/`NodeViewContent` 的代码块 node view。它保留官方 React node-view 生命周期，把代码块属性同步到真实 ProseMirror node-view 根节点，供句柄和样式识别；在 React `EditorContent` content component 尚未 ready 时仍回退到 DOM node view。
 - [ ] 显示语言标签，并支持切换语言。
   - 当前覆盖：代码块已提供语言 badge、显式/自动状态数据、紧凑语言 token 和可编辑语言菜单。语言列表现在由共享 React command model 驱动，React node view 和迁移期 fallback 都复用同一套命令模型。
+  - 当前打磨：可见语言 chip 现在显示实际语法 token（`JS`、`RS`、`TXT` 等），自动检测语言也会显示检测结果 token，而不是泛泛的“语言”标签。
 - [ ] 增加复制按钮、自动换行开关；如果定义了 Markdown 策略，再支持 filename/title metadata。
   - 当前覆盖：代码块 node-view chrome 已提供低噪声复制和软换行控件，不改变保存后的 Markdown。复制/换行标签和状态已经进入共享 React command model，供后续 React node view 直接复用。
 - [ ] 亮色和暗色模式都使用真正的代码高亮主题。
   - 当前覆盖：Hybrid 代码块使用 lowlight 的 `.hljs-*` class，并通过主题 token、亮色模式左侧强调线与 smoke 检查覆盖核心语法分组。
+  - 当前打磨：代码语言 chrome 增加主题感知的亮色 chip surface，语法控件不再像一整块纯蓝色区域。
 - [ ] fenced code language 通过 Markdown round-trip 保留。
 - [ ] 为代码块前后增加插入入口，尤其是表格紧挨代码块的场景。
   - 当前覆盖：复杂块插入 rail 已有独立且更宽容的底部热区，用于 table/code 相邻处插入，同时不扩大表格 resize 或 quick-add 的意图范围。

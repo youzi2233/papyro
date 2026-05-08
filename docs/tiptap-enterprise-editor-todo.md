@@ -323,10 +323,12 @@ Tasks:
   - Current coverage: the desktop/mobile runtime now injects a React `NodeViewWrapper`/`NodeViewContent` code block node view through the Tiptap extension boundary. It keeps the official React node-view lifecycle intact, applies code-block attributes to the real ProseMirror node-view root for handles/styling, and falls back to the DOM node view until the React `EditorContent` content component is ready.
 - [ ] Show language label with a language switcher.
   - Current coverage: code blocks expose a language badge, explicit/auto state data, compact language tokens, and an editable language menu. The language list is now backed by the shared React command model in both the React node view and the migration fallback.
+  - Current polish: the visible language chip now shows the effective syntax token (`JS`, `RS`, `TXT`, etc.) instead of a generic "Lang" label, including auto-detected languages.
 - [ ] Add copy button, wrap toggle, and optional filename/title metadata if Markdown strategy is defined.
   - Current coverage: code blocks expose quiet copy and soft-wrap controls in the node-view chrome without changing saved Markdown. Copy/wrap labels and states are now represented by the shared React command model for the future React node view.
 - [ ] Use a real highlighter theme for light and dark modes.
   - Current coverage: Hybrid code blocks use lowlight `.hljs-*` classes with theme-scoped token palettes, a light-mode left accent rail, and smoke coverage for the core syntax groups.
+  - Current polish: code-language chrome uses theme-aware light-mode chip surfaces so the syntax controls no longer read as a flat blue block.
 - [ ] Preserve fenced code language through Markdown round-trip.
 - [ ] Add insertion affordance before and after code blocks, especially when adjacent to tables.
   - Current coverage: the complex-block insert rail has an independent, more forgiving bottom hot zone for table/code adjacency without widening table resize or quick-add intent.

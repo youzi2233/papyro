@@ -369,7 +369,7 @@ test("Papyro code block node view exposes an editable language menu", () => {
   assert.equal(view.dom.dataset.codeLanguageMode, "explicit");
   assert.equal(view.dom.dataset.hasLanguageControl, "true");
   assert.equal(languageButton.textContent, "Rust");
-  assert.equal(languageButton.dataset.languageBadge, "语言");
+  assert.equal(languageButton.dataset.languageBadge, "RS");
   assert.equal(languageButton.dataset.languageMode, "explicit");
   assert.equal(languageButton.dataset.languageValue, "rust");
   assert.equal(languageButton["aria-haspopup"], "menu");
@@ -722,7 +722,7 @@ test("Papyro code block node view labels automatic syntax detection when reliabl
   assert.equal(view.dom.dataset.codeLanguageDetected, "javascript");
   assert.equal(view.dom.dataset.codeLanguageHighlighted, "javascript");
   assert.equal(view.dom.dataset.codeLanguageLabel, "自动 · JavaScript");
-  assert.equal(view.dom.children[0].dataset.languageBadge, "语言");
+  assert.equal(view.dom.children[0].dataset.languageBadge, "JS");
   assert.equal(view.dom.children[0].dataset.languageMode, "auto");
   assert.equal(view.dom.children[0].dataset.languageDetected, "javascript");
   assert.equal(view.contentDOM.className, "language-javascript hljs language-javascript");

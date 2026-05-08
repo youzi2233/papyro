@@ -145,7 +145,9 @@ export function createCodeBlockLanguageChrome({
     label,
     title: actionLabel,
     ariaLabel: actionLabel,
-    token: command?.token ?? codeBlockLanguageOptionToken(selectedLanguage),
+    token: codeBlockLanguageOptionToken(
+      selectedLanguage ?? normalizedDetectedLanguage ?? command?.language ?? null,
+    ),
     language: selectedLanguage,
     value: selectedLanguage ?? normalizedDetectedLanguage ?? "auto",
     mode: selectedLanguage ? "explicit" : "auto",

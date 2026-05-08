@@ -111,7 +111,7 @@ test("React code block language chrome exposes explicit and auto-detected states
   assert.equal(autoChrome.command.id, "code-language-auto");
   assert.equal(autoChrome.label, "Auto \u00b7 JavaScript");
   assert.equal(autoChrome.title, "Change code language: Auto \u00b7 JavaScript");
-  assert.equal(autoChrome.token, "AU");
+  assert.equal(autoChrome.token, "JS");
   assert.equal(autoChrome.language, null);
   assert.equal(autoChrome.value, "javascript");
   assert.equal(autoChrome.mode, "auto");

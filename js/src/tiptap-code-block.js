@@ -165,10 +165,6 @@ function codeLanguageButtonAriaLabel(language) {
   return localizedText(language, "Change code language", "修改代码语言");
 }
 
-function codeLanguageButtonBadge(language) {
-  return localizedText(language, "Lang", "语言");
-}
-
 export function codeBlockCopyLabel(language) {
   return localizedText(language, "Copy code", "\u590d\u5236\u4ee3\u7801");
 }
@@ -736,7 +732,7 @@ export function createPapyroCodeBlockNodeView({ editor, node, getPos, view = nul
       .filter(Boolean)
       .join(" ");
     languageButton.textContent = label;
-    languageButton.dataset.languageBadge = codeLanguageButtonBadge(currentLanguage);
+    languageButton.dataset.languageBadge = codeBlockLanguageOptionToken(language ?? detectedLanguage ?? null);
     languageButton.dataset.languageValue = language ?? detectedLanguage ?? "auto";
     languageButton.dataset.languageMode = language ? "explicit" : "auto";
     languageButton.dataset.languageDetected = detectedLanguage ?? "";
