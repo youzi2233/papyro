@@ -284,6 +284,7 @@ Tasks:
   - Current coverage: selected table cells can now be copied as plain TSV text through a table-scoped command backed by the official `selectedRect` grid semantics. The menu action is localized, has a dedicated copy icon, does not mutate the document, and is covered by mounted-editor tests.
 - [ ] Add row and column action menus from slim edge handles.
   - Current coverage: row and column context menus now expose the same clear-content and clear-style actions as cell selections, so axis selections can reuse the official table clear/reset semantics without switching back to a cell menu.
+  - Current polish: slim row/column handles freeze their own geometry before selecting the axis, so the context menu opens from the clicked handle instead of drifting after the table chrome re-renders.
 - [ ] Add resize affordance on column borders that still works while a cell is active.
   - Current coverage: selected table cells no longer reveal column resize handles by selection alone; resize chrome stays tied to hover or active resize intent.
 - [ ] Add quick row and column insertion rails: slim full-width/full-height rails with centered `+`, close enough to the table to be discoverable.

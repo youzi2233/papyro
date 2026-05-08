@@ -101,6 +101,19 @@ function hoveredCellIsSelected(state) {
   return Number.isFinite(match?.pos) && selected.has(match.pos);
 }
 
+function axisHandleAnchorRect(button, handle) {
+  const domRect = normalizedRect(button?.getBoundingClientRect?.());
+  if (domRect) return domRect;
+  return normalizedRect({
+    left: handle?.left,
+    top: handle?.top,
+    right: Number(handle?.left) + Number(handle?.width),
+    bottom: Number(handle?.top) + Number(handle?.height),
+    width: handle?.width,
+    height: handle?.height,
+  });
+}
+
 function syncTableToolbarActiveCommand(
   root,
   ownerId,
@@ -654,10 +667,11 @@ export class TiptapTableToolbarView {
       button.dataset.axis = "row";
       button.dataset.index = String(index);
       bindPointerCommand(button, null, () => {
+        const anchorRect = axisHandleAnchorRect(button, handle);
         state.selectAxis("row", index);
         return state.toggleMenu("context", {
           open: true,
-          anchorRect: button.getBoundingClientRect?.(),
+          anchorRect,
         });
       });
       mountFloatingRoot(button, state.table, this.#document);
@@ -690,10 +704,11 @@ export class TiptapTableToolbarView {
       button.dataset.axis = "column";
       button.dataset.index = String(index);
       bindPointerCommand(button, null, () => {
+        const anchorRect = axisHandleAnchorRect(button, handle);
         state.selectAxis("column", index);
         return state.toggleMenu("context", {
           open: true,
-          anchorRect: button.getBoundingClientRect?.(),
+          anchorRect,
         });
       });
       mountFloatingRoot(button, state.table, this.#document);

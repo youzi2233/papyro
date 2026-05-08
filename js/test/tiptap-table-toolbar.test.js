@@ -1859,6 +1859,55 @@ test("Tiptap table row and column handles hide after row or column selection", (
   );
 });
 
+test("Tiptap table row and column menus anchor to the slim handle geometry", () => {
+  const { created, documentRef } = createDocument();
+  const { editor, table } = createTableHarness({
+    addRowAfter: () => true,
+    addRowBefore: () => true,
+    addColumnAfter: () => true,
+    addColumnBefore: () => true,
+  });
+  const controller = createTiptapTableToolbarController({
+    dom: { document: documentRef },
+  });
+
+  controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
+  editor.view.dom.listeners.get("pointermove")({
+    target: table,
+    clientX: 108,
+    clientY: 128,
+  });
+  const rowHandle = latestAxisHandle(created, "row", 1);
+  assert.ok(rowHandle, "expected a row handle for the second row");
+  rowHandle.onpointerdown({ preventDefault() {}, stopPropagation() {} });
+
+  assert.equal(controller.state.selection.kind, "row");
+  assert.equal(controller.state.menuOpen, true);
+  assert.equal(controller.state.menuAnchorRect.left, 98);
+  assert.equal(controller.state.menuAnchorRect.top, 124);
+  assert.equal(controller.state.menuAnchorRect.width, 20);
+  assert.equal(controller.state.menuAnchorRect.height, 34);
+
+  controller.toggleMenu("context", { open: false });
+  editor.state.selection = { from: 4 };
+  controller.refresh(editor);
+  editor.view.dom.listeners.get("pointermove")({
+    target: table,
+    clientX: 204,
+    clientY: 76,
+  });
+  const columnHandle = latestAxisHandle(created, "column", 1);
+  assert.ok(columnHandle, "expected a column handle for the second column");
+  columnHandle.onpointerdown({ preventDefault() {}, stopPropagation() {} });
+
+  assert.equal(controller.state.selection.kind, "column");
+  assert.equal(controller.state.menuOpen, true);
+  assert.equal(controller.state.menuAnchorRect.left, 200);
+  assert.equal(controller.state.menuAnchorRect.top, 68);
+  assert.equal(controller.state.menuAnchorRect.width, 80);
+  assert.equal(controller.state.menuAnchorRect.height, 20);
+});
+
 test("Tiptap table toolbar reflects selected rows columns and cells in chrome", () => {
   const { cells, created, documentRef, editor } = (() => {
     const { created, documentRef } = createDocument();
