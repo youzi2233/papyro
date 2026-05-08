@@ -537,7 +537,9 @@
 .mn-tiptap-table-header.mn-tiptap-table-cell-selected > .column-resize-handle,
 .mn-tiptap-table-cell.mn-tiptap-table-cell-active > .column-resize-handle,
 .mn-tiptap-table-header.mn-tiptap-table-cell-active > .column-resize-handle {
-    opacity: .46;
+    right: -8px;
+    width: 16px;
+    opacity: .62;
 }
 
 .mn-tiptap-editor .column-resize-handle {
@@ -567,6 +569,16 @@
     border-radius: var(--mn-radius-round);
     background: color-mix(in srgb, var(--mn-accent) 78%, transparent);
     opacity: .58;
+}
+
+.mn-tiptap-table-cell.mn-tiptap-table-cell-selected > .column-resize-handle::before,
+.mn-tiptap-table-header.mn-tiptap-table-cell-selected > .column-resize-handle::before,
+.mn-tiptap-table-cell.mn-tiptap-table-cell-active > .column-resize-handle::before,
+.mn-tiptap-table-header.mn-tiptap-table-cell-active > .column-resize-handle::before {
+    right: 7px;
+    width: 2px;
+    background: color-mix(in srgb, var(--mn-accent) 88%, transparent);
+    opacity: .72;
 }
 
 .mn-tiptap-table-cell:hover > .column-resize-handle,

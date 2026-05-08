@@ -287,6 +287,7 @@ Tasks:
   - Current polish: slim row/column handles freeze their own geometry before selecting the axis, so the context menu opens from the clicked handle instead of drifting after the table chrome re-renders.
 - [ ] Add resize affordance on column borders that still works while a cell is active.
   - Current coverage: selected table cells no longer reveal column resize handles by selection alone; resize chrome stays tied to hover or active resize intent.
+  - Current polish: selected and active cells now keep a wider 16px resize hit zone with a restrained accent rail, so column resizing remains discoverable after cell selection without adding always-on table chrome.
 - [ ] Add quick row and column insertion rails: slim full-width/full-height rails with centered `+`, close enough to the table to be discoverable.
   - Current coverage: quick-add rails are now flush with the real table grid edge, use compact 12px hit chrome, and keep light/dark contrast without reading like debug overlays.
 - [ ] Keep table controls hidden for adjacent code blocks or other non-table content.
