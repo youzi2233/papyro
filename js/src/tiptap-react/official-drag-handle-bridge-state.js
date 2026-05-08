@@ -30,3 +30,7 @@ export function officialDragHandleBridgeState({ editor = null, entry = null } = 
 
   return { active: true, viewMode, reason: "active" };
 }
+
+export function officialDragHandleControlsHidden(handleState = null) {
+  return !handleState?.open || !handleState?.target;
+}

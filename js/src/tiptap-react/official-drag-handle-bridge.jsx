@@ -3,7 +3,10 @@ import { DragHandle } from "@tiptap/extension-drag-handle-react";
 
 import { createPapyroOfficialDragHandleConfig } from "../tiptap-official-drag-handle.js";
 import { PapyroBlockHandle } from "./components/block-handle.jsx";
-import { officialDragHandleBridgeState } from "./official-drag-handle-bridge-state.js";
+import {
+  officialDragHandleBridgeState,
+  officialDragHandleControlsHidden,
+} from "./official-drag-handle-bridge-state.js";
 
 function useBlockHandleViewState(entry) {
   const blockHandle = entry?.blockHandle ?? null;
@@ -59,10 +62,7 @@ export function PapyroOfficialDragHandleBridge({ editor, entry = null }) {
       openContextActionsFromBridge(event);
     }
   }, [openContextActionsFromBridge]);
-  const hidden =
-    !handleState?.open ||
-    !handleState?.target ||
-    handleState?.floatingViewHidden === true;
+  const hidden = officialDragHandleControlsHidden(handleState);
 
   if (!bridgeState.active) return null;
 

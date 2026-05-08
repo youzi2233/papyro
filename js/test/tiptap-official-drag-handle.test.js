@@ -10,6 +10,7 @@ import {
   papyroTableOverlayRule,
 } from "../src/tiptap-official-drag-handle.js";
 import {
+  officialDragHandleControlsHidden,
   officialDragHandleBridgeState as reactBridgeState,
 } from "../src/tiptap-react/official-drag-handle-bridge-state.js";
 
@@ -128,5 +129,19 @@ test("Papyro React drag handle bridge only activates for editable Hybrid mode", 
   assert.deepEqual(
     reactBridgeState({ editor: { ...editor, isDestroyed: true }, entry: { blockHandle } }),
     { active: false, viewMode: "hybrid", reason: "destroyed-editor" },
+  );
+});
+
+test("Papyro React drag handle keeps official controls visible while hiding only the legacy floating view", () => {
+  assert.equal(officialDragHandleControlsHidden(null), true);
+  assert.equal(officialDragHandleControlsHidden({ open: false, target: {} }), true);
+  assert.equal(officialDragHandleControlsHidden({ open: true, target: null }), true);
+  assert.equal(
+    officialDragHandleControlsHidden({
+      open: true,
+      target: { kind: "paragraph" },
+      floatingViewHidden: true,
+    }),
+    false,
   );
 });
