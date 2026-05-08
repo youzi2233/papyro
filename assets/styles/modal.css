@@ -1331,6 +1331,17 @@ select.mn-input {
     user-select: none;
 }
 
+.mn-settings-titlebar.native-window {
+    min-height: 38px;
+    justify-content: center;
+    padding-inline: 72px 18px;
+    cursor: default;
+}
+
+.mn-settings-titlebar.native-window .mn-modal-title {
+    text-align: center;
+}
+
 .mn-settings-window-controls {
     flex-shrink: 0;
 }

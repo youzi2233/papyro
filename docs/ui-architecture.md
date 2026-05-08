@@ -31,6 +31,7 @@ Rules:
 - Product components compose primitives and should avoid inventing control behavior.
 - Layout modules arrange product regions; they should not own button, menu, or field styling.
 - Tiptap runtime modules and node views consume the same CSS tokens through semantic `.mn-tiptap-*` and `.mn-editor-*` classes.
+- Desktop shell chrome is platform-aware through `crates/ui/src/desktop_chrome.rs`: macOS uses native window controls and `.mn-platform-macos`, while Windows and Linux keep Papyro's custom controls and `.mn-custom-window-controls`.
 
 ## Component Placement Rules
 

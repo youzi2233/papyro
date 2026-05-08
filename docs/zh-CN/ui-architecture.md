@@ -31,6 +31,7 @@ flowchart TD
 - 产品组件组合基础组件，不应该重新发明控件行为。
 - layout 模块负责排列产品区域，不拥有按钮、菜单或表单字段样式。
 - Tiptap runtime 模块和 node views 通过语义化 `.mn-tiptap-*` 与 `.mn-editor-*` class 消费同一批 CSS token。
+- 桌面窗口 chrome 通过 `crates/ui/src/desktop_chrome.rs` 按平台适配：macOS 使用系统原生窗口控制和 `.mn-platform-macos`，Windows 与 Linux 保留 Papyro 自绘控制和 `.mn-custom-window-controls`。
 
 ## 组件放置规则
 

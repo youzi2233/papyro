@@ -224,6 +224,7 @@ The desktop shell owns:
 
 - logging setup
 - native window title, size, icon, and menu configuration
+- platform window chrome policy: macOS keeps native traffic-light controls, while Windows and Linux keep the Papyro custom titlebar controls
 - runtime asset sync
 - `/assets/editor.js` injection
 - startup Markdown path collection
@@ -724,6 +725,7 @@ The implementation path is:
 - The tool window receives the same app context as the main window, so settings changes still flow through normal commands and update the main editor live.
 - The tool window is created hidden, then shown and focused after the desktop context resolves. This avoids a visible blank white window during webview startup.
 - Window title text is localized through the shared app context, and the native window icon is loaded from the Papyro logo asset so secondary windows match the main app chrome.
+- Desktop chrome is platform-aware. macOS settings and main windows use native traffic-light controls and hide Papyro's self-drawn minimize, maximize, and close buttons. Windows and Linux keep the custom Papyro controls and drag regions.
 
 Document windows reuse the same process-level window pattern, but unlike settings
 they create a fresh app runtime rather than sharing the main `AppContext`.

@@ -116,6 +116,7 @@ Goal: make the app look and behave like a professional note editor.
 - [x] Replace native-looking `select`, modal, message, menu, and tooltip surfaces with Papyro design-system components.
 - [x] Define component primitives for `Button`, `IconButton`, `Select`, `SegmentedControl`, `Modal/Dialog`, `Message/Toast`, `ContextMenu`, `Tooltip`, `Tabs`, and `FormField`.
 - [x] Use proven open-source component systems as references, not direct React dependencies. [Radix Primitives](https://github.com/radix-ui/primitives) is a strong behavior/accessibility reference, and [shadcn/ui](https://github.com/shadcn-ui/ui) is a strong copy-and-own visual/component composition reference.
+- [x] Make desktop window chrome platform-aware: macOS uses native traffic-light controls, while Windows and Linux retain the custom Papyro titlebar controls.
 - [x] Finish mobile layout pass after desktop behavior stabilizes.
 
 Settings-window direction:

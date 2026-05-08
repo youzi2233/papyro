@@ -241,6 +241,7 @@ flowchart TD
 - 初始化日志。
 - 配置窗口大小、标题、图标。
 - 禁用原生菜单栏。
+- 管理平台窗口 chrome 策略：macOS 使用原生红黄绿窗口控制，Windows 和 Linux 保留 Papyro 自绘标题栏控制。
 - 同步运行时资产到可访问的 `/assets`。
 - 注入 `editor.js`。
 - 收集启动参数里的 Markdown 路径。
@@ -809,6 +810,7 @@ Storage 和 settings 是进程级依赖：
 - 工具窗口接收和主窗口相同的 app context，因此设置修改仍走正常 command，并能实时更新主编辑器。
 - 工具窗口会先以隐藏状态创建，等 desktop context 就绪后再显示并聚焦，避免 webview 初始化阶段出现一闪而过的白屏。
 - 窗口标题会跟随共享 app context 的当前语言更新，原生窗口图标也会从 Papyro 的 logo 资源加载，保证次级窗口和主窗口的品牌与语言一致。
+- 桌面 chrome 会按平台分支处理。macOS 主窗口和设置窗口使用系统原生红黄绿控制，并隐藏 Papyro 自绘最小化、最大化和关闭按钮；Windows 和 Linux 保留 Papyro 自绘按钮和拖拽区域。
 
 Document window 复用同一套进程级窗口模式，但和 settings 不同，它会创建新的 app runtime，而不是共享主窗口的 `AppContext`。
 它的编辑状态保持窗口本地，storage 和 settings 则通过进程级 shared services 注入。

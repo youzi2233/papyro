@@ -3,6 +3,7 @@ mod chrome;
 pub mod commands;
 pub mod components;
 pub mod context;
+pub mod desktop_chrome;
 pub mod i18n;
 pub mod layouts;
 mod perf;

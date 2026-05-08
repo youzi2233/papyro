@@ -38,6 +38,13 @@ struct SettingsMessage {
     text: String,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum SettingsTitleBarMode {
+    Modal,
+    CustomWindow,
+    NativeWindow,
+}
+
 #[component]
 pub fn SettingsModal(on_close: EventHandler<()>) -> Element {
     let i18n = use_i18n();
@@ -50,13 +57,18 @@ pub fn SettingsModal(on_close: EventHandler<()>) -> Element {
             SettingsSurface {
                 on_close,
                 window_chrome: false,
+                native_window_chrome: false,
             }
         }
     }
 }
 
 #[component]
-pub fn SettingsSurface(on_close: EventHandler<()>, window_chrome: bool) -> Element {
+pub fn SettingsSurface(
+    on_close: EventHandler<()>,
+    window_chrome: bool,
+    native_window_chrome: bool,
+) -> Element {
     let app = use_app_context();
     let i18n = use_i18n();
     let commands = app.commands.clone();
@@ -120,7 +132,13 @@ pub fn SettingsSurface(on_close: EventHandler<()>, window_chrome: bool) -> Eleme
             close_label: i18n.text("Close settings", "关闭设置").to_string(),
             minimize_label: i18n.text("Minimize settings", "最小化设置").to_string(),
             maximize_label: i18n.text("Maximize settings", "最大化设置").to_string(),
-            window_chrome,
+            mode: if window_chrome {
+                SettingsTitleBarMode::CustomWindow
+            } else if native_window_chrome {
+                SettingsTitleBarMode::NativeWindow
+            } else {
+                SettingsTitleBarMode::Modal
+            },
             on_close,
         }
         div { class: "mn-modal-body mn-settings-body",
@@ -446,24 +464,27 @@ fn SettingsTitleBar(
     close_label: String,
     minimize_label: String,
     maximize_label: String,
-    window_chrome: bool,
+    mode: SettingsTitleBarMode,
     on_close: EventHandler<()>,
 ) -> Element {
+    let is_custom_window = mode == SettingsTitleBarMode::CustomWindow;
+    let is_modal = mode == SettingsTitleBarMode::Modal;
+
     rsx! {
         div {
-            class: if window_chrome { "mn-modal-header mn-settings-titlebar window" } else { "mn-modal-header mn-settings-titlebar" },
+            class: settings_titlebar_class(mode),
             onmousedown: move |_| {
-                if window_chrome {
+                if is_custom_window {
                     drag_settings_window();
                 }
             },
             ondoubleclick: move |_| {
-                if window_chrome {
+                if is_custom_window {
                     toggle_settings_window_maximized();
                 }
             },
             h2 { class: "mn-modal-title", "{title}" }
-            if window_chrome {
+            if is_custom_window {
                 div {
                     class: "mn-window-controls mn-settings-window-controls",
                     onmousedown: move |event| event.stop_propagation(),
@@ -517,7 +538,7 @@ fn SettingsTitleBar(
                         span { "aria-hidden": "true" }
                     }
                 }
-            } else {
+            } else if is_modal {
                 RawButton {
                     class_name: "mn-modal-close".to_string(),
                     label: Some(close_label),
@@ -532,6 +553,18 @@ fn SettingsTitleBar(
                     "x"
                 }
             }
+        }
+    }
+}
+
+fn settings_titlebar_class(mode: SettingsTitleBarMode) -> &'static str {
+    match mode {
+        SettingsTitleBarMode::Modal => "mn-modal-header mn-settings-titlebar",
+        SettingsTitleBarMode::CustomWindow => {
+            "mn-modal-header mn-settings-titlebar window custom-window"
+        }
+        SettingsTitleBarMode::NativeWindow => {
+            "mn-modal-header mn-settings-titlebar window native-window"
         }
     }
 }

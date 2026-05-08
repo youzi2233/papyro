@@ -632,6 +632,10 @@ button { border: 0; cursor: pointer; background: transparent; }
     background: var(--mn-bg);
 }
 
+.mn-shell.mn-platform-macos {
+    background: var(--mn-bg);
+}
+
 /* Header */
 .mn-header {
     display: flex;
@@ -1025,6 +1029,11 @@ button { border: 0; cursor: pointer; background: transparent; }
     padding-top: 12px;
     padding-right: 42px;
     box-sizing: border-box;
+}
+
+.mn-platform-macos .mn-sidebar-brand {
+    min-height: 50px;
+    padding-top: 10px;
 }
 
 .mn-sidebar-brand-logo {
@@ -1656,6 +1665,15 @@ button.mn-sidebar-workspace-main:hover {
 
 .mn-editor-titlebar {
     border-bottom: 0;
+}
+
+.mn-platform-macos .mn-editor-titlebar {
+    min-height: 40px;
+    padding-inline: 10px;
+}
+
+.mn-platform-macos .mn-editor-tools {
+    padding-right: 2px;
 }
 
 .mn-editor-tabs-row {

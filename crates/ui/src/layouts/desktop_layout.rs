@@ -10,6 +10,7 @@ use crate::components::{
     trash::TrashModal,
 };
 use crate::context::{use_app_context, SettingsWindowLauncher};
+use crate::desktop_chrome::DesktopChromePolicy;
 use crate::perf::{perf_timer, trace_chrome_open_modal};
 use crate::theme::ThemeDomEffect;
 use dioxus::prelude::*;
@@ -19,6 +20,7 @@ use papyro_core::models::ViewMode;
 pub fn DesktopLayout() -> Element {
     let app = use_app_context();
     let commands = app.commands;
+    let chrome_policy = DesktopChromePolicy::current();
     let mut show_settings = use_signal(|| false);
     let mut show_quick_open = use_signal(|| false);
     let mut show_command_palette = use_signal(|| false);
@@ -132,7 +134,7 @@ pub fn DesktopLayout() -> Element {
     });
 
     rsx! {
-        AppShell { class_name: String::new(),
+        AppShell { class_name: chrome_policy.shell_class().to_string(),
             ThemeDomEffect {}
             Workbench { class_name: String::new(),
                 if !sidebar_collapsed {

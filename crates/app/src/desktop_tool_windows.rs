@@ -11,6 +11,7 @@ use papyro_core::models::{AppLanguage, Theme};
 use papyro_core::{NoteStorage, WindowSessionId, WorkspaceBootstrap};
 use papyro_platform::PlatformApi;
 use papyro_ui::context::{AppContext, SettingsWindowLauncher};
+use papyro_ui::desktop_chrome::DesktopChromePolicy;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
@@ -244,7 +245,6 @@ fn SettingsToolWindowRoot(props: SettingsToolWindowProps) -> Element {
         None,
         RuntimeSharedServices { process_settings },
     );
-
     let close_settings = EventHandler::new(move |_| {
         window().set_visible(false);
     });
@@ -267,7 +267,8 @@ fn SettingsToolWindowRoot(props: SettingsToolWindowProps) -> Element {
             papyro_ui::theme::ThemeDomEffect {}
             papyro_ui::components::settings::SettingsSurface {
                 on_close: close_settings,
-                window_chrome: true,
+                window_chrome: DesktopChromePolicy::current().uses_custom_window_controls(),
+                native_window_chrome: DesktopChromePolicy::current().uses_native_window_controls(),
             }
         }
     }
@@ -350,7 +351,7 @@ fn settings_tool_window_config(
             SETTINGS_WINDOW_HEIGHT,
         ))
         .with_min_inner_size(LogicalSize::new(720.0, 560.0))
-        .with_decorations(false)
+        .with_decorations(DesktopChromePolicy::current().uses_native_window_controls())
         .with_visible(false)
         .with_window_icon(settings_window_icon())
         .with_always_on_top(false);
@@ -434,7 +435,7 @@ fn settings_tool_window_head(theme: &Theme, language: AppLanguage) -> String {
     let lang = settings_window_lang(language);
 
     format!(
-        r#"{theme_script}<script>document.documentElement.lang='{lang}';</script>
+        r#"{theme_script}<script>document.documentElement.lang='{lang}';document.documentElement.dataset.platform='{platform}';</script>
 <link rel="icon" href="{TOOL_WINDOW_FAVICON}">
 <style>
 html,body{{margin:0;padding:0;overflow:hidden;background:#f3f5f8;color:#111827;font-family:"SF Pro Text",-apple-system,BlinkMacSystemFont,"Segoe UI Variable","Segoe UI",system-ui,sans-serif;}}
@@ -445,13 +446,15 @@ html,body{{margin:0;padding:0;overflow:hidden;background:#f3f5f8;color:#111827;f
 :root[data-theme="warm_reading"] html,:root[data-theme="warm_reading"] body{{background:#f4f1e8;color:#202124;}}
 @media(prefers-color-scheme:dark){{:root:not([data-theme]) html,:root:not([data-theme]) body{{background:#0f1117;color:#f3f4f6;}}}}
 </style>
-<style>{TOOL_WINDOW_CSS}</style>"#
+<style>{TOOL_WINDOW_CSS}</style>"#,
+        platform = DesktopChromePolicy::current().platform.as_str(),
     )
 }
 
 fn document_tool_window_head() -> String {
     format!(
-        r#"<link rel="icon" href="{TOOL_WINDOW_FAVICON}">
+        r#"<script>document.documentElement.dataset.platform='{platform}';</script>
+<link rel="icon" href="{TOOL_WINDOW_FAVICON}">
 <style>
 html,body{{margin:0;padding:0;overflow:hidden;background:#f3f5f8;color:#111827;font-family:"SF Pro Text",-apple-system,BlinkMacSystemFont,"Segoe UI Variable","Segoe UI",system-ui,sans-serif;}}
 :root[data-theme="dark"] html,:root[data-theme="dark"] body{{background:#0f1117;color:#f3f4f6;}}
@@ -472,7 +475,8 @@ window.__PAPYRO_EDITOR_LOAD_ERROR__ = "desktop editor runtime script has not loa
     data-papyro-editor-runtime-src="{TOOL_WINDOW_EDITOR_JS_SRC}"
     onload="if (window.papyroEditor) delete window.__PAPYRO_EDITOR_LOAD_ERROR__; else window.__PAPYRO_EDITOR_LOAD_ERROR__ = 'desktop editor runtime script loaded but did not register';"
     onerror="window.__PAPYRO_EDITOR_LOAD_ERROR__ = 'failed to load editor runtime script: {TOOL_WINDOW_EDITOR_JS_SRC}';"
-></script>"#
+></script>"#,
+        platform = DesktopChromePolicy::current().platform.as_str(),
     )
 }
 
@@ -537,6 +541,7 @@ mod tests {
         let head = settings_tool_window_head(&Theme::Light, AppLanguage::Chinese);
 
         assert!(head.contains("document.documentElement.lang='zh-CN'"));
+        assert!(head.contains("document.documentElement.dataset.platform="));
         assert!(head.contains(r#"<link rel="icon" href="/assets/favicon.ico">"#));
     }
 

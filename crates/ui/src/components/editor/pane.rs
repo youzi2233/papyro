@@ -10,6 +10,7 @@ use crate::components::primitives::{
     EmptyStateCopy, EmptyStateSurface, InlineOverflow, RawButton, ToolbarZone, ToolbarZoneKind,
 };
 use crate::context::use_app_context;
+use crate::desktop_chrome::DesktopChromePolicy;
 use crate::i18n::{use_i18n, UiText};
 use crate::perf::{
     perf_timer, trace_editor_host_lifecycle, trace_editor_pane_render_prep,
@@ -476,6 +477,8 @@ fn EditorChrome(
     let sidebar_commands = commands.clone();
     let outline_tool_commands = commands.clone();
     let theme_commands = commands.clone();
+    let chrome_policy = DesktopChromePolicy::current();
+    let custom_window_controls = chrome_policy.uses_custom_window_controls();
     let sidebar_label = sidebar_toggle_label(i18n, sidebar_collapsed);
     let sidebar_icon_class = sidebar_toggle_icon_class(sidebar_collapsed);
     let outline_label = if outline_visible {
@@ -493,8 +496,16 @@ fn EditorChrome(
         div { class: "mn-editor-chrome-shell",
             div {
                 class: "mn-editor-chrome mn-sticky-toolbar mn-editor-titlebar",
-                onmousedown: crate::chrome::drag_window_on_primary_mouse_down,
-                ondoubleclick: move |_| toggle_maximized_app_window(),
+                onmousedown: move |event| {
+                    if custom_window_controls {
+                        crate::chrome::drag_window_on_primary_mouse_down(event);
+                    }
+                },
+                ondoubleclick: move |_| {
+                    if custom_window_controls {
+                        toggle_maximized_app_window();
+                    }
+                },
                 ToolbarZone { kind: ToolbarZoneKind::Flexible, class_name: String::new(),
                     if sidebar_collapsed {
                         EditorToolButton {
@@ -549,7 +560,9 @@ fn EditorChrome(
                         selected: false,
                         on_click: move |_| on_settings.call(()),
                     }
-                    WindowControls {}
+                    if custom_window_controls {
+                        WindowControls {}
+                    }
                 }
             }
             div { class: "mn-markdown-toolbar",

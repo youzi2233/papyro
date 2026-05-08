@@ -59,7 +59,7 @@ fn main() {
         .with_title("Papyro")
         .with_inner_size(LogicalSize::new(1440.0, 920.0))
         .with_min_inner_size(LogicalSize::new(880.0, 600.0))
-        .with_decorations(false)
+        .with_decorations(desktop_window_decorations())
         .with_always_on_top(false);
     let window = if let Some(icon) = load_window_icon() {
         window.with_window_icon(Some(icon))
@@ -149,6 +149,10 @@ fn DesktopRoot() -> Element {
     rsx! {
         papyro_app::desktop::DesktopApp {}
     }
+}
+
+fn desktop_window_decorations() -> bool {
+    cfg!(target_os = "macos")
 }
 
 fn load_window_icon() -> Option<Icon> {

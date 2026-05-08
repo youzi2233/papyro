@@ -7,6 +7,7 @@ use dioxus::prelude::*;
 use papyro_core::models::{AppSettings, Theme, Workspace};
 use papyro_core::{FileState, NoteStorage, WorkspaceBootstrap};
 use papyro_platform::{DesktopPlatform, PlatformApi};
+use papyro_ui::desktop_chrome::DesktopChromePolicy;
 use std::ffi::OsString;
 use std::fmt::Display;
 use std::path::{Path, PathBuf};
@@ -112,7 +113,8 @@ fn build_startup_chrome(
     };
 
     let custom_head = format!(
-        r#"{theme_script}<link rel="icon" href="{favicon}">
+        r#"{theme_script}<script>document.documentElement.dataset.platform='{platform}';</script>
+<link rel="icon" href="{favicon}">
 <style>
 html,body{{margin:0;padding:0;overflow:hidden;background:#f3f5f8;color:#111827;
 font-family:"SF Pro Text",-apple-system,BlinkMacSystemFont,"Segoe UI Variable","Segoe UI",system-ui,sans-serif;}}
@@ -125,6 +127,7 @@ font-family:"SF Pro Text",-apple-system,BlinkMacSystemFont,"Segoe UI Variable","
 </style>
 <style>{main_css}</style>"#,
         favicon = favicon,
+        platform = DesktopChromePolicy::current().platform.as_str(),
     );
 
     DesktopStartupChrome {
@@ -283,6 +286,9 @@ mod tests {
 
         assert_eq!(chrome.background_color, (243, 245, 248, 255));
         assert!(chrome.custom_head.contains("data-theme','light'"));
+        assert!(chrome
+            .custom_head
+            .contains("document.documentElement.dataset.platform="));
         assert!(chrome.custom_head.contains(r#"href="/favicon.ico""#));
         assert!(chrome.custom_head.contains(".mn-shell"));
         assert!(!chrome.custom_head.contains("papyroEditor"));
@@ -315,6 +321,16 @@ mod tests {
         assert!(chrome.custom_head.contains("data-theme','github_dark'"));
         assert!(chrome.custom_head.contains("github_dark"));
         assert!(chrome.custom_head.contains(":root:not([data-theme])"));
+    }
+
+    #[test]
+    fn startup_chrome_exposes_platform_name() {
+        let settings = AppSettings::default();
+        let chrome = build_startup_chrome(&settings, "/favicon.ico", "");
+
+        assert!(chrome
+            .custom_head
+            .contains("document.documentElement.dataset.platform="));
     }
 
     #[test]

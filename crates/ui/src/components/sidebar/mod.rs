@@ -7,6 +7,7 @@ use crate::components::primitives::{
 };
 use crate::components::search::SearchResultsPanel;
 use crate::context::use_app_context;
+use crate::desktop_chrome::DesktopChromePolicy;
 use crate::i18n::use_i18n;
 use crate::perf::{perf_timer, trace_sidebar_resize};
 use crate::view_model::{SearchResultRowViewModel, WorkspaceSearchViewModel};
@@ -148,6 +149,8 @@ pub fn Sidebar(on_search: EventHandler<()>, on_settings: EventHandler<()>) -> El
     let _ = on_search;
     let app = use_app_context();
     let i18n = use_i18n();
+    let chrome_policy = DesktopChromePolicy::current();
+    let custom_window_controls = chrome_policy.uses_custom_window_controls();
     let commands = app.commands;
     let brand_logo_src =
         try_use_context::<String>().unwrap_or_else(|| "/assets/logo.png".to_string());
@@ -230,7 +233,11 @@ pub fn Sidebar(on_search: EventHandler<()>, on_settings: EventHandler<()>) -> El
 
             div { class: "mn-sidebar-header",
                 div { class: "mn-sidebar-brand",
-                    onmousedown: crate::chrome::drag_window_on_primary_mouse_down,
+                    onmousedown: move |event| {
+                        if custom_window_controls {
+                            crate::chrome::drag_window_on_primary_mouse_down(event);
+                        }
+                    },
                     img {
                         class: "mn-sidebar-brand-logo",
                         src: brand_logo_src,
