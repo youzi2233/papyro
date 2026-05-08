@@ -5,6 +5,8 @@ import {
   commandMenuGroupTone,
   commandMenuSidePanelId,
   commandMenuSidePanel,
+  commandMenuSidePanelHeight,
+  commandMenuSidePanelSize,
   commandMenuSidePanelWidth,
   groupCommandsForMenu,
 } from "../src/tiptap-react/commands/command-menu-model.js";
@@ -55,10 +57,19 @@ test("React command menu model exposes side panel contracts", () => {
   assert.equal(commandMenuSidePanel({ id: "paragraph" }), "none");
   assert.equal(commandMenuSidePanel(null), "none");
 
-  assert.equal(commandMenuSidePanelWidth("table"), 148);
+  assert.deepEqual(commandMenuSidePanelSize("table"), { width: 176, height: 190 });
+  assert.deepEqual(commandMenuSidePanelSize("callout"), { width: 166, height: 188 });
+  assert.deepEqual(commandMenuSidePanelSize("code-language"), { width: 176, height: 286 });
+  assert.deepEqual(commandMenuSidePanelSize("none"), { width: 0, height: 0 });
+  assert.deepEqual(commandMenuSidePanelSize("unknown"), { width: 0, height: 0 });
+  assert.equal(commandMenuSidePanelWidth("table"), 176);
   assert.equal(commandMenuSidePanelWidth("callout"), 166);
   assert.equal(commandMenuSidePanelWidth("code-language"), 176);
   assert.equal(commandMenuSidePanelWidth("none"), 0);
+  assert.equal(commandMenuSidePanelHeight("table"), 190);
+  assert.equal(commandMenuSidePanelHeight("callout"), 188);
+  assert.equal(commandMenuSidePanelHeight("code-language"), 286);
+  assert.equal(commandMenuSidePanelHeight("none"), 0);
   assert.equal(commandMenuSidePanelId("menu", "table"), "menu-table-panel");
   assert.equal(commandMenuSidePanelId("menu", "callout"), "menu-callout-panel");
   assert.equal(commandMenuSidePanelId("menu", "code-language"), "menu-code-language-panel");

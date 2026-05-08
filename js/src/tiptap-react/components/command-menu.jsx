@@ -88,31 +88,39 @@ function SlashCommandItem({ command, ownerId, selected, activePanel, activate, c
 
 function TableSizePicker({ id, language, choose }) {
   const [size, setSize] = useState({ rows: 3, cols: 2 });
+  const label = tableSizeLabel(language, size.rows, size.cols);
 
   return (
     <div
       id={id}
       className="mn-tiptap-table-size-picker"
       role="menu"
-      aria-label={tableSizeLabel(language, size.rows, size.cols)}
+      aria-label={label}
     >
-      <div className="mn-tiptap-table-size-picker-label">
-        {tableSizeLabel(language, size.rows, size.cols)}
+      <div className="mn-tiptap-table-size-picker-header">
+        <span className="mn-tiptap-table-size-picker-title">
+          {insertTableLabel(language, size.rows, size.cols)}
+        </span>
+        <span className="mn-tiptap-table-size-picker-label">
+          {label}
+        </span>
       </div>
-      <div className="mn-tiptap-table-size-picker-grid">
-        {Array.from({ length: TABLE_GRID_ROWS }, (_, rowIndex) =>
-          Array.from({ length: TABLE_GRID_COLS }, (_, colIndex) => (
-            <TableSizePickerCell
-              key={`${rowIndex + 1}-${colIndex + 1}`}
-              rows={rowIndex + 1}
-              cols={colIndex + 1}
-              active={rowIndex + 1 <= size.rows && colIndex + 1 <= size.cols}
-              language={language}
-              choose={choose}
-              setSize={setSize}
-            />
-          )),
-        )}
+      <div className="mn-tiptap-table-size-picker-grid-shell">
+        <div className="mn-tiptap-table-size-picker-grid">
+          {Array.from({ length: TABLE_GRID_ROWS }, (_, rowIndex) =>
+            Array.from({ length: TABLE_GRID_COLS }, (_, colIndex) => (
+              <TableSizePickerCell
+                key={`${rowIndex + 1}-${colIndex + 1}`}
+                rows={rowIndex + 1}
+                cols={colIndex + 1}
+                active={rowIndex + 1 <= size.rows && colIndex + 1 <= size.cols}
+                language={language}
+                choose={choose}
+                setSize={setSize}
+              />
+            )),
+          )}
+        </div>
       </div>
     </div>
   );

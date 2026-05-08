@@ -188,10 +188,13 @@ function createDocument() {
         },
       },
       append(...children) {
-        this.children.push(...children);
+        children.forEach((child) => this.appendChild(child));
       },
       appendChild(child) {
         this.children.push(child);
+        child.parentNode = this;
+        child.parentElement = this;
+        return child;
       },
       addEventListener(name, handler) {
         this[`on${name}`] = handler;
@@ -446,7 +449,7 @@ test("Tiptap slash menu anchors side panels beside the active command row", () =
     controller.state.commands.findIndex((command) => command.id === "table"),
   );
 
-  assert.equal(menu.style.properties.get("--mn-slash-side-panel-top") ?? menu.style["--mn-slash-side-panel-top"], "190px");
+  assert.equal(menu.style.properties.get("--mn-slash-side-panel-top") ?? menu.style["--mn-slash-side-panel-top"], "166px");
 });
 
 test("Tiptap slash menu activates command details on pointer hover", () => {
@@ -462,6 +465,10 @@ test("Tiptap slash menu activates command details on pointer hover", () => {
   const tableItem = slashMenuCommandItem(menu, "table");
   const codeBlockItem = slashMenuCommandItem(menu, "code-block");
   const tablePicker = findElementByClass(menu, "mn-tiptap-table-size-picker");
+  const tablePickerHeader = findElementByClass(menu, "mn-tiptap-table-size-picker-header");
+  const tablePickerTitle = findElementByClass(menu, "mn-tiptap-table-size-picker-title");
+  const tablePickerLabel = findElementByClass(menu, "mn-tiptap-table-size-picker-label");
+  const tablePickerGridShell = findElementByClass(menu, "mn-tiptap-table-size-picker-grid-shell");
   const codeLanguagePicker = findElementByClass(menu, "mn-tiptap-code-language-picker");
   assert.equal(tablePicker.hidden, true);
   assert.equal(codeLanguagePicker.hidden, true);
@@ -480,6 +487,14 @@ test("Tiptap slash menu activates command details on pointer hover", () => {
   assert.equal(slashMenuCommandItem(menu, "table").dataset.sidePanel, "table");
   assert.equal(tablePicker.id, "mn-tiptap-slash-menu-table-panel");
   assert.equal(tablePicker.role, "menu");
+  assert.equal(String(tablePicker["aria-label"]).includes("3 x 2"), true);
+  assert.equal(tablePickerTitle.parentNode, tablePickerHeader);
+  assert.equal(tablePickerLabel.parentNode, tablePickerHeader);
+  assert.equal(tablePickerLabel.textContent, tablePicker["aria-label"]);
+  assert.equal(
+    tablePickerGridShell.children[0].className,
+    "mn-tiptap-table-size-picker-grid",
+  );
 
   codeBlockItem.onpointerenter?.({ preventDefault() {}, stopPropagation() {} });
   assert.equal(controller.state.commands[controller.state.selectedIndex].id, "code-block");
@@ -870,6 +885,11 @@ test("Tiptap slash table picker supports click fallback without double-run", () 
   const target = cells.find((cell) => cell.dataset.row === "4" && cell.dataset.col === "3");
   const event = () => ({ preventDefault() {}, stopPropagation() {} });
 
+  target.onpointerenter?.(event());
+  assert.equal(
+    findElementByClass(documentRef.body.children[0], "mn-tiptap-table-size-picker-label").textContent,
+    "Table 4 x 3",
+  );
   target.onclick(event());
 
   assert.deepEqual(calls.slice(-3), [

@@ -750,12 +750,12 @@
     top: var(--mn-slash-side-panel-top, 4px);
     left: calc(100% + 8px);
     display: grid;
-    gap: 8px;
-    width: 148px;
+    gap: 9px;
+    width: 176px;
     margin: 0;
-    padding: 8px;
+    padding: 10px;
     border: var(--mn-border-default);
-    border-radius: 9px;
+    border-radius: 11px;
     background:
         linear-gradient(
             180deg,
@@ -794,26 +794,54 @@
     display: none;
 }
 
+.mn-tiptap-table-size-picker-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: baseline;
+    gap: 8px;
+    min-width: 0;
+}
+
+.mn-tiptap-table-size-picker-title {
+    min-width: 0;
+    overflow: hidden;
+    color: var(--mn-ink);
+    font-size: 12px;
+    font-weight: var(--mn-weight-semibold);
+    line-height: var(--mn-line-caption);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .mn-tiptap-table-size-picker-label {
-    color: var(--mn-ink-2);
-    font-size: var(--mn-type-caption);
+    color: var(--mn-ink-3);
+    font-size: 10px;
     font-weight: var(--mn-weight-medium);
     line-height: var(--mn-line-caption);
+    white-space: nowrap;
+}
+
+.mn-tiptap-table-size-picker-grid-shell {
+    display: inline-grid;
+    width: max-content;
+    border: 1px solid color-mix(in srgb, var(--mn-border) 76%, transparent);
+    border-radius: 7px;
+    background: color-mix(in srgb, var(--mn-surface-sunken) 58%, transparent);
+    padding: 6px;
 }
 
 .mn-tiptap-table-size-picker-grid {
     display: grid;
-    grid-template-columns: repeat(6, 15px);
-    gap: 3px;
-    padding: 1px;
+    grid-template-columns: repeat(6, 16px);
+    gap: 4px;
 }
 
 .mn-tiptap-table-size-picker-cell {
-    width: 15px;
-    height: 15px;
-    border: var(--mn-border-default);
-    border-radius: 3px;
-    background: color-mix(in srgb, var(--mn-surface-sunken) 72%, var(--mn-surface-raised));
+    width: 16px;
+    height: 16px;
+    border: 1px solid color-mix(in srgb, var(--mn-border) 82%, transparent);
+    border-radius: 4px;
+    background: color-mix(in srgb, var(--mn-surface-raised) 72%, var(--mn-surface-sunken));
     padding: 0;
     transition:
         background-color var(--mn-transition-fast),
@@ -824,11 +852,16 @@
 .mn-tiptap-table-size-picker-cell:hover,
 .mn-tiptap-table-size-picker-cell:focus-visible,
 .mn-tiptap-table-size-picker-cell.active {
-    border-color: color-mix(in srgb, var(--mn-accent) 58%, var(--mn-border));
-    background: color-mix(in srgb, var(--mn-accent) 14%, var(--mn-surface-raised));
+    border-color: color-mix(in srgb, var(--mn-accent) 64%, var(--mn-border));
+    background:
+        linear-gradient(
+            180deg,
+            color-mix(in srgb, var(--mn-accent) 20%, var(--mn-surface-raised)),
+            color-mix(in srgb, var(--mn-accent) 14%, var(--mn-surface-sunken))
+        );
     box-shadow:
-        inset 0 0 0 1px color-mix(in srgb, var(--mn-accent) 10%, transparent),
-        0 0 0 1px color-mix(in srgb, var(--mn-accent) 6%, transparent);
+        inset 0 0 0 1px color-mix(in srgb, var(--mn-accent) 12%, transparent),
+        0 0 0 1px color-mix(in srgb, var(--mn-accent) 7%, transparent);
 }
 
 .mn-tiptap-callout-kind-picker {

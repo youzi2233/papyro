@@ -78,11 +78,27 @@ export function commandMenuSidePanel(command) {
   return "none";
 }
 
+const SIDE_PANEL_LAYOUTS = Object.freeze({
+  table: Object.freeze({ width: 176, height: 190 }),
+  callout: Object.freeze({ width: 166, height: 188 }),
+  "code-language": Object.freeze({ width: 176, height: 286 }),
+  none: Object.freeze({ width: 0, height: 0 }),
+});
+
+export function commandMenuSidePanelSize(panel) {
+  const layout = SIDE_PANEL_LAYOUTS[panel] ?? SIDE_PANEL_LAYOUTS.none;
+  return {
+    width: layout.width,
+    height: layout.height,
+  };
+}
+
 export function commandMenuSidePanelWidth(panel) {
-  if (panel === "table") return 148;
-  if (panel === "callout") return 166;
-  if (panel === "code-language") return 176;
-  return 0;
+  return commandMenuSidePanelSize(panel).width;
+}
+
+export function commandMenuSidePanelHeight(panel) {
+  return commandMenuSidePanelSize(panel).height;
 }
 
 export function commandMenuSidePanelId(ownerId, panel) {

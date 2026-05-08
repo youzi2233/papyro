@@ -5,6 +5,7 @@ import { createRoot } from "react-dom/client";
 import { PapyroSlashCommandMenu } from "./components/command-menu.jsx";
 import {
   commandMenuSidePanel,
+  commandMenuSidePanelHeight,
   commandMenuSidePanelWidth,
 } from "./commands/command-menu-model.js";
 import {
@@ -52,13 +53,6 @@ function commandItemByIndex(root, index) {
   } catch (_error) {
     return null;
   }
-}
-
-function activePanelHeight(panel) {
-  if (panel === "table") return 148;
-  if (panel === "callout") return 188;
-  if (panel === "code-language") return 286;
-  return 0;
 }
 
 export class TiptapReactSlashMenuView {
@@ -163,7 +157,7 @@ export class TiptapReactSlashMenuView {
       const top = clamp(
         itemRect.top - rootRect.top - 6,
         4,
-        Math.max(4, rootRect.height - activePanelHeight(panel) - 4),
+        Math.max(4, rootRect.height - commandMenuSidePanelHeight(panel) - 4),
       );
       this.#root.style.setProperty?.("--mn-slash-side-panel-top", `${top}px`);
     }

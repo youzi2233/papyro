@@ -20,6 +20,7 @@ import {
   commandMenuGroupTone,
   commandMenuSidePanel,
   commandMenuSidePanelId,
+  commandMenuSidePanelSize,
 } from "./tiptap-react/commands/command-menu-model.js";
 import {
   clamp,
@@ -156,9 +157,6 @@ function blockInsertMenuAnchorRect(slashRect, target, fallbackRect = null) {
 const MAIN_MENU_WIDTH = 224;
 const MAIN_MENU_HEIGHT = 360;
 const SIDE_PANEL_GAP = 8;
-const TABLE_PICKER_WIDTH = 166;
-const CALLOUT_PICKER_WIDTH = 166;
-const CODE_LANGUAGE_PICKER_WIDTH = 176;
 const SIDE_PANEL_INTENT_DELAY_MS = 80;
 
 function placeMenu(element, editor, range, anchorRect = null, placement = "bottom") {
@@ -293,6 +291,7 @@ class TiptapSlashMenuView {
   #empty = null;
   #tablePicker = null;
   #tablePickerLabel = null;
+  #tablePickerTitle = null;
   #calloutPicker = null;
   #codeLanguagePicker = null;
   #language = "english";
@@ -313,11 +312,14 @@ class TiptapSlashMenuView {
     const list = createElement(this.#document, "div", "mn-tiptap-slash-menu-list");
     const empty = createElement(this.#document, "div", "mn-tiptap-slash-menu-empty");
     const tablePicker = createElement(this.#document, "div", "mn-tiptap-table-size-picker hidden");
+    const tablePickerHeader = createElement(this.#document, "div", "mn-tiptap-table-size-picker-header");
+    const tablePickerTitle = createElement(this.#document, "span", "mn-tiptap-table-size-picker-title");
     const tablePickerLabel = createElement(this.#document, "div", "mn-tiptap-table-size-picker-label");
+    const tablePickerGridShell = createElement(this.#document, "div", "mn-tiptap-table-size-picker-grid-shell");
     const tablePickerGrid = createElement(this.#document, "div", "mn-tiptap-table-size-picker-grid");
     const calloutPicker = createElement(this.#document, "div", "mn-tiptap-callout-kind-picker hidden");
     const codeLanguagePicker = createElement(this.#document, "div", "mn-tiptap-code-language-picker hidden");
-    if (!root || !header || !eyebrow || !title || !list || !empty || !tablePicker || !tablePickerLabel || !tablePickerGrid || !calloutPicker || !codeLanguagePicker) return;
+    if (!root || !header || !eyebrow || !title || !list || !empty || !tablePicker || !tablePickerHeader || !tablePickerTitle || !tablePickerLabel || !tablePickerGridShell || !tablePickerGrid || !calloutPicker || !codeLanguagePicker) return;
 
     root.id = this.#ownerId;
     root.role = "listbox";
@@ -333,6 +335,7 @@ class TiptapSlashMenuView {
     eyebrow.textContent = markdownCommandsLabel(this.#language);
     title.textContent = insertBlockMenuTitleLabel(this.#language);
     empty.textContent = noCommandsLabel(this.#language);
+    tablePickerTitle.textContent = insertTableLabel(this.#language, 3, 2);
     tablePickerLabel.textContent = tableSizeLabel(this.#language, 3, 2);
     for (let row = 1; row <= TABLE_GRID_ROWS; row += 1) {
       for (let col = 1; col <= TABLE_GRID_COLS; col += 1) {
@@ -349,7 +352,9 @@ class TiptapSlashMenuView {
         tablePickerGrid.appendChild(cell);
       }
     }
-    tablePicker.append(tablePickerLabel, tablePickerGrid);
+    tablePickerHeader.append(tablePickerTitle, tablePickerLabel);
+    tablePickerGridShell.appendChild(tablePickerGrid);
+    tablePicker.append(tablePickerHeader, tablePickerGridShell);
     PAPYRO_CALLOUT_KIND_OPTIONS.forEach((option) => {
       const item = createElement(this.#document, "button", "mn-tiptap-callout-kind-option");
       const tone = createElement(this.#document, "span", "mn-tiptap-callout-kind-tone");
@@ -402,6 +407,7 @@ class TiptapSlashMenuView {
     this.#list = list;
     this.#empty = empty;
     this.#tablePicker = tablePicker;
+    this.#tablePickerTitle = tablePickerTitle;
     this.#tablePickerLabel = tablePickerLabel;
     this.#calloutPicker = calloutPicker;
     this.#codeLanguagePicker = codeLanguagePicker;
@@ -548,6 +554,7 @@ class TiptapSlashMenuView {
     this.#list = null;
     this.#empty = null;
     this.#tablePicker = null;
+    this.#tablePickerTitle = null;
     this.#tablePickerLabel = null;
     this.#calloutPicker = null;
     this.#codeLanguagePicker = null;
@@ -600,15 +607,9 @@ class TiptapSlashMenuView {
   #syncSidePanelPlacement(state, editor) {
     if (!this.#root) return;
     const selectedCommand = state.commands[state.selectedIndex];
-    const panelWidth =
-      selectedCommand?.id === "table"
-        ? TABLE_PICKER_WIDTH
-        : selectedCommand?.id === "callout"
-          ? CALLOUT_PICKER_WIDTH
-          : selectedCommand?.id === "code-block"
-            ? CODE_LANGUAGE_PICKER_WIDTH
-            : 0;
-    if (!panelWidth) {
+    const panel = commandMenuSidePanel(selectedCommand);
+    const panelSize = commandMenuSidePanelSize(panel);
+    if (!panelSize.width) {
       this.#root.dataset.sidePlacement = "right";
       return;
     }
@@ -617,18 +618,10 @@ class TiptapSlashMenuView {
     const rootRect = this.#root.getBoundingClientRect?.();
     const itemRect = selectedItem?.getBoundingClientRect?.();
     if (rootRect && itemRect) {
-      const panelHeight =
-        selectedCommand?.id === "table"
-          ? 166
-          : selectedCommand?.id === "callout"
-            ? 188
-            : selectedCommand?.id === "code-block"
-              ? 286
-              : 0;
       const top = clamp(
         itemRect.top - rootRect.top - 6,
         4,
-        Math.max(4, rootRect.height - panelHeight - 4),
+        Math.max(4, rootRect.height - panelSize.height - 4),
       );
       if (typeof this.#root.style?.setProperty === "function") {
         this.#root.style.setProperty("--mn-slash-side-panel-top", `${top}px`);
@@ -642,7 +635,7 @@ class TiptapSlashMenuView {
       editor?.view?.dom,
       defaultWindow(editor?.view?.dom?.ownerDocument),
     );
-    const neededWidth = panelWidth + SIDE_PANEL_GAP + 10;
+    const neededWidth = panelSize.width + SIDE_PANEL_GAP + 10;
     const shouldFlip =
       rect &&
       rect.right + neededWidth > viewport.width &&
@@ -686,6 +679,9 @@ class TiptapSlashMenuView {
     if (!this.#tablePicker || !this.#tablePickerLabel) return;
     const label = tableSizeLabel(this.#language, rows, cols);
     this.#tablePicker.setAttribute("aria-label", label);
+    if (this.#tablePickerTitle) {
+      this.#tablePickerTitle.textContent = insertTableLabel(this.#language, rows, cols);
+    }
     this.#tablePickerLabel.textContent = label;
     this.#tablePicker
       .querySelectorAll?.(".mn-tiptap-table-size-picker-cell")
