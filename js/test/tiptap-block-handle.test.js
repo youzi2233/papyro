@@ -1393,6 +1393,50 @@ test("Tiptap block handle closes menus when dragging really starts", () => {
   assert.equal(view.calls.some((call) => call[0] === "drag"), true);
 });
 
+test("Tiptap block handle mirrors official native drag lifecycle", () => {
+  const { block, calls, editor } = createEditor();
+  const menu = createMenuSpy();
+  const insertMenu = createInsertMenuSpy();
+  const view = createViewSpy();
+  const controller = createTiptapBlockHandleController({ insertMenu, menu, view });
+  let stopped = 0;
+
+  controller.attach({ editor, root: editor.view.dom, entry: { viewMode: "hybrid" } });
+  controller.handlePointerMove({ target: block });
+  view.openInsert();
+
+  assert.equal(menu.state.open, false);
+  assert.equal(insertMenu.state.open, true);
+  assert.equal(
+    controller.startOfficialNativeDrag({
+      stopPropagation() {
+        stopped += 1;
+      },
+    }),
+    true,
+  );
+
+  assert.equal(stopped, 1);
+  assert.equal(menu.state.open, false);
+  assert.equal(insertMenu.state.open, false);
+  assert.equal(controller.viewState.officialDragging, true);
+  assert.equal(block.classList.values.has("mn-tiptap-block-selected"), true);
+  assert.deepEqual(
+    calls.filter((call) => call[0] === "setTextSelection" || call[0] === "focus"),
+    [
+      ["setTextSelection", { from: 7, to: 13 }],
+      ["focus"],
+      ["setTextSelection", { from: 7, to: 13 }],
+      ["focus"],
+    ],
+  );
+
+  assert.equal(controller.finishOfficialNativeDrag(), true);
+  assert.equal(controller.viewState.officialDragging, false);
+  assert.equal(block.classList.values.has("mn-tiptap-block-selected"), false);
+  assert.ok(view.calls.some((call) => call[0] === "drag" && call[1] === false));
+});
+
 test("Tiptap block drop placement targets before and after positions", () => {
   const block = createElement({
     tagName: "P",

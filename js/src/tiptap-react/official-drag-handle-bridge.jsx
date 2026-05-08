@@ -41,7 +41,11 @@ export function PapyroOfficialDragHandleBridge({ editor, entry = null }) {
     entryRef.current?.blockHandle?.handleOfficialNodeChange?.(data);
   }, []);
   const handleElementDragEnd = useCallback(() => {
+    entryRef.current?.blockHandle?.finishOfficialNativeDrag?.();
     entryRef.current?.blockHandle?.cancelDrag?.();
+  }, []);
+  const handleElementDragStart = useCallback((event) => {
+    entryRef.current?.blockHandle?.startOfficialNativeDrag?.(event);
   }, []);
   const openActionsFromBridge = useCallback((event) => {
     event?.preventDefault?.();
@@ -74,6 +78,7 @@ export function PapyroOfficialDragHandleBridge({ editor, entry = null }) {
       nested={config.nested}
       className="mn-tiptap-official-drag-handle-bridge"
       onNodeChange={handleNodeChange}
+      onElementDragStart={handleElementDragStart}
       onElementDragEnd={handleElementDragEnd}
     >
       <PapyroBlockHandle

@@ -221,6 +221,7 @@ node scripts/check-editor-markdown-gate.js
   - 基础已接入：官方 DragHandle adapter 配置和 Papyro 排除规则已在 `js/src/tiptap-official-drag-handle.js` 中测试覆盖；运行时行为仍需从兼容 controller 切到官方 plugin。
   - 基础已接入：React 官方 DragHandle bridge 现在只在可编辑 Hybrid 模式且存在 block-handle controller 时注册，Source/Preview 不再保持官方 hover plugin 激活。
   - 基础已接入：块操作菜单和插入菜单打开时会锁定官方 DragHandle plugin；优先调用 `lockDragHandle`/`unlockDragHandle`，React bridge 场景下回退到 `setMeta("lockDragHandle", ...)`。
+  - 当前覆盖：官方原生 drag start/end 现在会回流到 Papyro controller 生命周期。原生拖拽会关闭块操作/插入浮层、先选中语义 block、向 React chrome 发布 `officialDragging` 状态，并在拖拽结束时清理选中底色，同时不替换官方 drop handler。
 - [ ] 用 React 渲染句柄，明确分成拖拽/操作句柄和插入 `+` 两个控件。
   - 当前覆盖：桌面端/移动端 bundle 入口保留 React block-handle view 作为迁移 fallback，官方 `DragHandle` React bridge 现在会在官方 drag-handle 元素内部直接渲染同一套 Papyro `+` 和操作控件。Hybrid 模式下可见句柄的 hover 跟踪和定位由官方插件负责，旧 floating view 只保留菜单锚点、drop indicator 和 fallback 职责。
   - 当前打磨：`+` 和操作句柄的间距、点击热区和静态/激活样式已进一步细化，避免两个 icon 簇在一起导致职责模糊。

@@ -710,6 +710,7 @@ export class TiptapBlockHandleController {
   #root = null;
   #removeListeners = [];
   #drag = null;
+  #officialNativeDrag = false;
   #selectedBlock = null;
   #officialTrackingActive = false;
   #officialDragHandleLocked = false;
@@ -1049,6 +1050,30 @@ export class TiptapBlockHandleController {
     return true;
   }
 
+  startOfficialNativeDrag(event = null) {
+    if (!this.#state.open || !this.#state.target || this.#entry?.viewMode !== "hybrid") {
+      return false;
+    }
+
+    this.#officialNativeDrag = true;
+    this.#selectTarget(this.#state.target);
+    this.#menu?.close?.();
+    this.#insertMenu?.close?.();
+    this.#syncFloatingMenuState();
+    event?.stopPropagation?.();
+    this.#updateView();
+    return true;
+  }
+
+  finishOfficialNativeDrag() {
+    if (!this.#officialNativeDrag) return false;
+    this.#officialNativeDrag = false;
+    this.#view.updateDrag?.({ open: false, drop: null });
+    this.#clearSelectedBlock();
+    this.#updateView();
+    return true;
+  }
+
   handleDragMove(event) {
     if (!this.#drag || !this.#editor || this.#entry?.viewMode !== "hybrid") {
       return this.state;
@@ -1212,6 +1237,7 @@ export class TiptapBlockHandleController {
         actions: blockHandleActionsLabel(language),
       },
       dragging: !!this.#drag,
+      officialDragging: this.#officialNativeDrag,
       menuOpen: this.#menu?.state?.open === true,
       insertOpen: this.#insertMenu?.state?.open === true,
       officialTracking: this.#officialTrackingActive,
