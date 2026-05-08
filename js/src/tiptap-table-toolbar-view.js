@@ -616,7 +616,8 @@ export class TiptapTableToolbarView {
       button.dataset.index = String(index);
       bindPointerCommand(button, null, () => {
         const anchorRect = axisHandleAnchorRect(button, handle);
-        state.selectAxis("row", index);
+        const selected = state.selectAxis("row", index) === true;
+        if (!selected) return false;
         return state.toggleMenu("context", {
           open: true,
           anchorRect,
@@ -643,7 +644,8 @@ export class TiptapTableToolbarView {
       button.dataset.index = String(index);
       bindPointerCommand(button, null, () => {
         const anchorRect = axisHandleAnchorRect(button, handle);
-        state.selectAxis("column", index);
+        const selected = state.selectAxis("column", index) === true;
+        if (!selected) return false;
         return state.toggleMenu("context", {
           open: true,
           anchorRect,

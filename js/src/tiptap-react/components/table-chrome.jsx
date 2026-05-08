@@ -180,7 +180,8 @@ function TableAxisHandle({ handle, label, onSelectAxis }) {
       width: handle.width,
       height: handle.height,
     };
-    onSelectAxis?.(handle.axis, handle.index);
+    const selected = onSelectAxis?.(handle.axis, handle.index) === true;
+    if (!selected) return false;
     return onSelectAxis?.("menu", handle.index, anchorRect) !== false;
   });
 

@@ -1925,6 +1925,32 @@ test("Tiptap table toolbar axis handles select rows and columns", () => {
   ]);
 });
 
+test("Tiptap table toolbar axis handles keep menus closed when selection fails", () => {
+  const { created, documentRef } = createDocument();
+  const { calls, editor } = createTableHarness({
+    setCellSelection(selection) {
+      calls.push(["setCellSelection", selection.anchorCell, selection.headCell]);
+      return false;
+    },
+  });
+  const controller = createTiptapTableToolbarController({
+    dom: { document: documentRef },
+  });
+
+  controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
+  editor.view.dom.listeners.get("pointermove")({ target: editor.view.dom, clientX: 108, clientY: 94 });
+  const rowHandle = latestAxisHandle(created, "row", 0);
+  assert.ok(rowHandle, "expected a row handle for the first row");
+  rowHandle.onpointerdown({ preventDefault() {}, stopPropagation() {} });
+
+  const root = created.find((element) =>
+    String(element.className).includes("mn-tiptap-table-toolbar"),
+  );
+  assert.deepEqual(calls, [["setCellSelection", 10, 12]]);
+  assert.equal(controller.state.menuOpen, false);
+  assert.equal(root.hidden, true);
+});
+
 test("Tiptap table axis handles reveal only for the hovered first row or column cell", () => {
   const { created, documentRef } = createDocument();
   const { cells, editor } = createTableHarness();

@@ -311,6 +311,15 @@ test("React table chrome exposes explicit hidden state semantics", () => {
   assert.match(tableChromeSource, /data-visible=\{chrome\.visible \? "true" : "false"\}/u);
 });
 
+test("React table axis handles open menus only after selection succeeds", () => {
+  assert.match(
+    tableChromeSource,
+    /const selected = onSelectAxis\?\.\(handle\.axis, handle\.index\) === true/u,
+  );
+  assert.match(tableChromeSource, /if \(!selected\) return false/u);
+  assert.doesNotMatch(tableChromeSource, /onSelectAxis\?\.\(handle\.axis, handle\.index\);\s*return onSelectAxis/u);
+});
+
 test("React format toolbar is injected without changing the runtime command controller", () => {
   assert.match(formatToolbarSource, /export function PapyroFormatToolbar/u);
   assert.match(formatToolbarSource, /blockActionSubmenuLabel/u);
