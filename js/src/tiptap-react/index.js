@@ -39,6 +39,10 @@ export {
   TiptapReactFormatToolbarView,
 } from "./format-toolbar-view.jsx";
 export {
+  createTiptapReactLinkEditorView,
+  TiptapReactLinkEditorView,
+} from "./link-editor-view.jsx";
+export {
   PapyroOfficialDragHandleBridge,
 } from "./official-drag-handle-bridge.jsx";
 export {

@@ -1850,6 +1850,12 @@
     font-size: var(--mn-type-small);
 }
 
+.mn-tiptap-format-toolbar-button[data-command-id="link"] .mn-tiptap-format-toolbar-label {
+    text-decoration: underline;
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 3px;
+}
+
 .mn-tiptap-format-toolbar-button[data-command-id="highlight"] .mn-tiptap-format-toolbar-label {
     position: relative;
     z-index: 0;
@@ -1876,6 +1882,149 @@
 .mn-tiptap-format-toolbar-button[data-command-id="clear-formatting"]:hover,
 .mn-tiptap-format-toolbar-button[data-command-id="clear-formatting"].active {
     color: var(--mn-ink);
+}
+
+.mn-tiptap-link-editor {
+    position: fixed;
+    z-index: 166;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 24px;
+    gap: 8px;
+    width: min(260px, calc(100vw - 20px));
+    padding: 8px;
+    border: var(--mn-border-default);
+    border-radius: 9px;
+    background:
+        linear-gradient(
+            180deg,
+            color-mix(in srgb, var(--mn-surface-raised) 97%, var(--mn-surface) 3%),
+            var(--mn-surface-raised)
+        );
+    color: var(--mn-ink);
+    box-shadow: 0 18px 38px color-mix(in srgb, #000 13%, transparent), var(--mn-shadow-lg);
+    font-family: var(--mn-font-ui);
+    user-select: none;
+}
+
+.mn-tiptap-link-editor.hidden {
+    display: none;
+}
+
+.mn-tiptap-link-editor-title {
+    grid-column: 1;
+    color: var(--mn-ink);
+    font-size: var(--mn-type-caption);
+    font-weight: var(--mn-weight-semibold);
+    line-height: var(--mn-line-control);
+}
+
+.mn-tiptap-link-editor-form {
+    grid-column: 1 / -1;
+    display: grid;
+    gap: 6px;
+}
+
+.mn-tiptap-link-editor-input {
+    width: 100%;
+    height: 30px;
+    min-width: 0;
+    border: var(--mn-border-subtle);
+    border-radius: 7px;
+    background: var(--mn-surface-sunken);
+    color: var(--mn-ink);
+    padding: 0 9px;
+    font: inherit;
+    font-size: var(--mn-type-caption);
+    line-height: var(--mn-line-control);
+    outline: 0;
+    user-select: text;
+}
+
+.mn-tiptap-link-editor-input:focus {
+    border-color: color-mix(in srgb, var(--mn-accent) 34%, var(--mn-border));
+    box-shadow: var(--mn-focus-ring-sm);
+}
+
+.mn-tiptap-link-editor-error {
+    color: var(--mn-danger);
+    font-size: 10px;
+    line-height: var(--mn-line-caption);
+}
+
+.mn-tiptap-link-editor-error.hidden {
+    display: none;
+}
+
+.mn-tiptap-link-editor-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+}
+
+.mn-tiptap-link-editor-button {
+    height: 26px;
+    border-radius: 6px;
+    padding: 0 10px;
+    font: inherit;
+    font-size: var(--mn-type-caption);
+    font-weight: var(--mn-weight-medium);
+    line-height: var(--mn-line-control);
+}
+
+.mn-tiptap-link-editor-button.subtle {
+    border: var(--mn-border-subtle);
+    background: transparent;
+    color: var(--mn-ink-2);
+}
+
+.mn-tiptap-link-editor-button.primary {
+    border: 1px solid color-mix(in srgb, var(--mn-accent) 44%, var(--mn-border));
+    background: color-mix(in srgb, var(--mn-accent) 11%, var(--mn-surface-raised));
+    color: color-mix(in srgb, var(--mn-accent) 82%, var(--mn-ink));
+}
+
+.mn-tiptap-link-editor-button:hover,
+.mn-tiptap-link-editor-button:focus-visible {
+    outline: 0;
+    box-shadow: var(--mn-focus-ring-sm);
+}
+
+.mn-tiptap-link-editor-close {
+    position: relative;
+    grid-column: 2;
+    grid-row: 1;
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--mn-ink-3);
+}
+
+.mn-tiptap-link-editor-close:hover,
+.mn-tiptap-link-editor-close:focus-visible {
+    outline: 0;
+    background: color-mix(in srgb, var(--mn-accent) 7%, transparent);
+    color: var(--mn-ink);
+}
+
+.mn-tiptap-link-editor-close::before,
+.mn-tiptap-link-editor-close::after {
+    content: "";
+    position: absolute;
+    left: 7px;
+    top: 11px;
+    width: 10px;
+    height: 1.4px;
+    border-radius: var(--mn-radius-round);
+    background: currentColor;
+}
+
+.mn-tiptap-link-editor-close::before {
+    transform: rotate(45deg);
+}
+
+.mn-tiptap-link-editor-close::after {
+    transform: rotate(-45deg);
 }
 
 .mn-tiptap-block-handle {

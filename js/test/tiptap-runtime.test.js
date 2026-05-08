@@ -38,6 +38,8 @@ function createRuntimeHarness({
   formatToolbarControllerFactory,
   pasteControllerFactory,
   preferencesControllerFactory,
+  linkEditorControllerFactory,
+  linkEditorViewFactory,
   sourcePaneControllerFactory,
   slashMenuControllerFactory,
   tableToolbarControllerFactory,
@@ -86,6 +88,15 @@ function createRuntimeHarness({
       close: () => calls.push(["formatToolbarClose"]),
       destroy: () => calls.push(["formatToolbarDestroy"]),
       refresh: () => calls.push(["formatToolbarRefresh"]),
+    }));
+
+  const createLinkEditor =
+    linkEditorControllerFactory ??
+    (() => ({
+      attach: () => {},
+      close: () => {},
+      contains: () => false,
+      destroy: () => {},
     }));
 
   const createPasteController =
@@ -239,6 +250,8 @@ function createRuntimeHarness({
     formatToolbarControllerFactory: createFormatToolbar,
     ...(formatToolbarViewFactory ? { formatToolbarViewFactory } : {}),
     ...(historyCommandControllerFactory ? { historyCommandControllerFactory } : {}),
+    linkEditorControllerFactory: createLinkEditor,
+    ...(linkEditorViewFactory ? { linkEditorViewFactory } : {}),
     pasteControllerFactory: createPasteController,
     ...(preferencesControllerFactory ? { preferencesControllerFactory } : {}),
     ...(sourcePaneControllerFactory ? { sourcePaneControllerFactory } : {}),
@@ -352,6 +365,39 @@ test("Tiptap runtime injects a custom format toolbar view", () => {
   assert.ok(
     calls.some(
       (call) => call[0] === "formatToolbarAttach" && call[1] === "mn-tiptap-runtime",
+    ),
+  );
+});
+
+test("Tiptap runtime injects a custom link editor view", () => {
+  const { calls, runtime } = createRuntimeHarness({
+    linkEditorControllerFactory: ({ view }) => ({
+      attach: ({ root }) => calls.push(["linkEditorAttach", root.className]),
+      close: () => calls.push(["linkEditorClose"]),
+      contains: () => false,
+      destroy: () => calls.push(["linkEditorDestroy"]),
+      view,
+    }),
+    linkEditorViewFactory: ({ document }) => {
+      calls.push(["linkEditorViewFactory", Boolean(document)]);
+      return { kind: "react-link-editor-view" };
+    },
+  });
+
+  runtime.ensureEditor({
+    tabId: "tab-a",
+    containerId: "editor-root",
+    initialContent: "# Note",
+  });
+
+  assert.ok(
+    calls.some(
+      (call) => call[0] === "linkEditorViewFactory" && call[1] === true,
+    ),
+  );
+  assert.ok(
+    calls.some(
+      (call) => call[0] === "linkEditorAttach" && call[1] === "mn-tiptap-runtime",
     ),
   );
 });

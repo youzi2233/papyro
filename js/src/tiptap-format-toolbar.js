@@ -10,8 +10,8 @@ import {
   viewportSize,
 } from "./tiptap-ui-primitives.js";
 
-const REGULAR_TOOLBAR_WIDTH = 252;
-const COMPACT_TOOLBAR_WIDTH = 224;
+const REGULAR_TOOLBAR_WIDTH = 282;
+const COMPACT_TOOLBAR_WIDTH = 252;
 const TOOLBAR_HEIGHT = 38;
 
 function selectionContext(editor) {
@@ -172,6 +172,7 @@ export class TiptapFormatToolbarController {
   #dismiss;
   #editor = null;
   #entry = null;
+  #linkEditor = null;
   #state = {
     open: false,
     range: null,
@@ -182,9 +183,11 @@ export class TiptapFormatToolbarController {
   constructor({
     commandController = createTiptapFormatCommandController(),
     view = null,
+    linkEditor = null,
     dom = {},
   } = {}) {
     this.#commands = commandController;
+    this.#linkEditor = linkEditor;
     const documentRef = dom.document ?? defaultDocument();
     const windowRef = dom.window ?? defaultWindow(documentRef);
     this.#view =
@@ -253,6 +256,7 @@ export class TiptapFormatToolbarController {
       editor: this.#editor,
       entry: this.#entry,
       source: "format_toolbar",
+      openLinkEditor: () => this.openLinkEditor(),
     });
     this.refresh(this.#editor);
     return result.ok;
@@ -279,7 +283,16 @@ export class TiptapFormatToolbarController {
   }
 
   contains(target) {
-    return this.#view.contains?.(target) ?? false;
+    return (this.#view.contains?.(target) ?? false) || (this.#linkEditor?.contains?.(target) ?? false);
+  }
+
+  openLinkEditor() {
+    if (!this.#editor || !this.#entry || this.#entry.viewMode !== "hybrid") return false;
+    return this.#linkEditor?.open?.({
+      editor: this.#editor,
+      entry: this.#entry,
+      range: this.#state.range,
+    }) === true;
   }
 }
 

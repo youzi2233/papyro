@@ -37,6 +37,7 @@ const FORMAT_COMMAND_LABELS = Object.freeze({
   underline: ["Underline", "下划线", "Toggle underline", "切换下划线"],
   strike: ["Strike", "删除线", "Toggle strikethrough", "切换删除线"],
   code: ["Inline code", "行内代码", "Toggle inline code", "切换行内代码"],
+  link: ["Link", "链接", "Edit link", "编辑链接"],
   highlight: ["Highlight", "高亮", "Toggle highlight", "切换高亮"],
   "clear-formatting": [
     "Clear formatting",
@@ -68,6 +69,7 @@ function createCommand({
   activeAttrs,
   run,
   active,
+  focusAfterRun = true,
   icon,
   priority = 100,
 }) {
@@ -95,6 +97,7 @@ function createCommand({
     activeAttrs,
     icon: icon ?? id,
     priority,
+    focusAfterRun,
     run: runCommand,
     active: activeCommand,
   });
@@ -140,6 +143,17 @@ export const PAPYRO_TIPTAP_FORMAT_COMMANDS = Object.freeze([
     ariaLabel: "Toggle inline code",
     commandName: "toggleCode",
     priority: 40,
+  }),
+  createCommand({
+    id: "link",
+    label: "L",
+    title: "Link",
+    ariaLabel: "Edit link",
+    activeName: "link",
+    run: ({ openLinkEditor }) =>
+      typeof openLinkEditor === "function" && openLinkEditor() === true,
+    focusAfterRun: false,
+    priority: 45,
   }),
   createCommand({
     id: "highlight",
@@ -189,6 +203,7 @@ export class TiptapFormatCommandController {
           ariaLabel: command.ariaLabel,
           icon: command.icon,
           priority: command.priority,
+          focusAfterRun: command.focusAfterRun,
           active: command.active(context) === true,
         },
         language,
@@ -207,7 +222,7 @@ export class TiptapFormatCommandController {
     }
 
     const ok = command.run(context) !== false;
-    if (ok) {
+    if (ok && command.focusAfterRun !== false) {
       focusEditor(context.editor);
     }
 

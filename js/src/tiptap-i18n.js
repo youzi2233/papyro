@@ -282,6 +282,38 @@ export function blockActionSubmenuDescription(language, submenu) {
   return label ? localizedText(language, label[0], label[1]) : "";
 }
 
+export function linkEditorTitleLabel(language) {
+  return localizedText(language, "Edit link", "\u7f16\u8f91\u94fe\u63a5");
+}
+
+export function linkEditorInputLabel(language) {
+  return localizedText(language, "Link URL", "\u94fe\u63a5\u5730\u5740");
+}
+
+export function linkEditorPlaceholder(language) {
+  return localizedText(language, "https://example.com", "https://example.com");
+}
+
+export function linkEditorApplyLabel(language) {
+  return localizedText(language, "Apply", "\u5e94\u7528");
+}
+
+export function linkEditorRemoveLabel(language) {
+  return localizedText(language, "Remove", "\u79fb\u9664");
+}
+
+export function linkEditorCloseLabel(language) {
+  return localizedText(language, "Close link editor", "\u5173\u95ed\u94fe\u63a5\u7f16\u8f91\u5668");
+}
+
+export function linkEditorInvalidLabel(language) {
+  return localizedText(
+    language,
+    "Enter a valid http, https, mailto, tel, or relative link.",
+    "\u8bf7\u8f93\u5165\u6709\u6548\u7684 http\u3001https\u3001mailto\u3001tel \u6216\u76f8\u5bf9\u94fe\u63a5\u3002",
+  );
+}
+
 export function tableToolsLabel(language) {
   return localizedText(language, "Table tools", "表格工具");
 }

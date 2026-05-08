@@ -30,12 +30,20 @@ const formatToolbarSource = readFileSync(
   new URL("../src/tiptap-react/components/format-toolbar.jsx", import.meta.url),
   "utf8",
 );
+const linkEditorSource = readFileSync(
+  new URL("../src/tiptap-react/components/link-editor.jsx", import.meta.url),
+  "utf8",
+);
 const slashMenuViewSource = readFileSync(
   new URL("../src/tiptap-react/slash-menu-view.jsx", import.meta.url),
   "utf8",
 );
 const formatToolbarViewSource = readFileSync(
   new URL("../src/tiptap-react/format-toolbar-view.jsx", import.meta.url),
+  "utf8",
+);
+const linkEditorViewSource = readFileSync(
+  new URL("../src/tiptap-react/link-editor-view.jsx", import.meta.url),
   "utf8",
 );
 const blockActionMenuViewSource = readFileSync(
@@ -120,4 +128,15 @@ test("React format toolbar is injected without changing the runtime command cont
   assert.match(formatToolbarViewSource, /positionReactFloatingElement/u);
   assert.match(formatToolbarViewSource, /role = "toolbar"/u);
   assert.doesNotMatch(formatToolbarViewSource, /createElement\(/u);
+});
+
+test("React link editor popover is injected at the editor entry boundary", () => {
+  assert.match(indexSource, /createTiptapReactLinkEditorView/u);
+  assert.match(editorEntrySource, /linkEditorViewFactory:\s*createTiptapReactLinkEditorView/u);
+  assert.match(linkEditorSource, /export function PapyroLinkEditor/u);
+  assert.match(linkEditorSource, /inputMode="url"/u);
+  assert.match(linkEditorViewSource, /createRoot/u);
+  assert.match(linkEditorViewSource, /positionReactFloatingElement/u);
+  assert.match(linkEditorViewSource, /role = "dialog"/u);
+  assert.doesNotMatch(linkEditorViewSource, /createElement\(/u);
 });

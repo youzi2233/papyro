@@ -50,12 +50,21 @@ function createFakeEditor(activeIds = []) {
 test("Tiptap format commands expose stable command ids", () => {
   assert.deepEqual(
     PAPYRO_TIPTAP_FORMAT_COMMANDS.map((command) => command.id),
-    ["bold", "italic", "underline", "strike", "code", "highlight", "clear-formatting"],
+    [
+      "bold",
+      "italic",
+      "underline",
+      "strike",
+      "code",
+      "link",
+      "highlight",
+      "clear-formatting",
+    ],
   );
 });
 
 test("Tiptap format commands report active marks", () => {
-  const { editor } = createFakeEditor(["bold", "underline", "code", "highlight"]);
+  const { editor } = createFakeEditor(["bold", "underline", "code", "link", "highlight"]);
   const controller = createTiptapFormatCommandController();
 
   assert.deepEqual(
@@ -66,6 +75,7 @@ test("Tiptap format commands report active marks", () => {
       ["underline", true],
       ["strike", false],
       ["code", true],
+      ["link", true],
       ["highlight", true],
       ["clear-formatting", false],
     ],
@@ -78,6 +88,7 @@ test("Tiptap format commands report active marks", () => {
       ["underline", 25],
       ["strike", 30],
       ["code", 40],
+      ["link", 45],
       ["highlight", 50],
       ["clear-formatting", 90],
     ],
@@ -114,6 +125,30 @@ test("Tiptap format command controller runs underline, highlight, and clear form
   ]);
 });
 
+test("Tiptap format command controller opens the custom link editor", () => {
+  const { calls, editor } = createFakeEditor();
+  const controller = createTiptapFormatCommandController();
+  const linkCalls = [];
+
+  assert.deepEqual(
+    controller.run("link", {
+      editor,
+      openLinkEditor: () => {
+        linkCalls.push(["openLinkEditor"]);
+        return true;
+      },
+    }),
+    {
+      ok: true,
+      commandId: "link",
+      error: null,
+    },
+  );
+
+  assert.deepEqual(linkCalls, [["openLinkEditor"]]);
+  assert.deepEqual(calls, []);
+});
+
 test("Tiptap format command states localize labels and tooltips", () => {
   const { editor } = createFakeEditor();
   const controller = createTiptapFormatCommandController();
@@ -131,6 +166,7 @@ test("Tiptap format command states localize labels and tooltips", () => {
       ["underline", "下划线", "切换下划线"],
       ["strike", "删除线", "切换删除线"],
       ["code", "行内代码", "切换行内代码"],
+      ["link", "链接", "编辑链接"],
       ["highlight", "高亮", "切换高亮"],
       ["clear-formatting", "清除格式", "清除所选文本格式"],
     ],

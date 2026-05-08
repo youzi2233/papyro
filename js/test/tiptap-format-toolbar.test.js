@@ -67,6 +67,24 @@ function createEditor({ selected = true, active = [], viewportWidth = 1000 } = {
   return { calls, editor };
 }
 
+function createLinkEditorSpy() {
+  const calls = [];
+  let containedTarget = null;
+  return {
+    calls,
+    open(payload) {
+      calls.push(["open", payload?.range, payload?.entry?.viewMode]);
+      return true;
+    },
+    contains(target) {
+      return target === containedTarget;
+    },
+    setContainedTarget(target) {
+      containedTarget = target;
+    },
+  };
+}
+
 function createViewSpy() {
   const calls = [];
   let containedTarget = null;
@@ -187,6 +205,7 @@ test("Tiptap format toolbar opens for non-empty Hybrid selections", () => {
       ["underline", false],
       ["strike", false],
       ["code", false],
+      ["link", false],
       ["highlight", false],
       ["clear-formatting", false],
     ],
@@ -241,6 +260,33 @@ test("Tiptap format toolbar runs selected commands", () => {
   assert.equal(view.calls[0][0], "update");
 });
 
+test("Tiptap format toolbar opens the injected link editor", () => {
+  const { calls, editor } = createEditor();
+  const view = createViewSpy();
+  const linkEditor = createLinkEditorSpy();
+  const controller = createTiptapFormatToolbarController({ view, linkEditor });
+  controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
+  view.calls.length = 0;
+
+  assert.equal(controller.run("link"), true);
+
+  assert.deepEqual(calls, []);
+  assert.deepEqual(linkEditor.calls, [["open", { from: 4, to: 12 }, "hybrid"]]);
+  assert.equal(view.calls[0][0], "update");
+});
+
+test("Tiptap format toolbar contains the link editor overlay", () => {
+  const { editor } = createEditor();
+  const view = createViewSpy();
+  const linkEditor = createLinkEditorSpy();
+  const linkTarget = { id: "link-editor" };
+  linkEditor.setContainedTarget(linkTarget);
+  const controller = createTiptapFormatToolbarController({ view, linkEditor });
+  controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
+
+  assert.equal(controller.contains(linkTarget), true);
+});
+
 test("Tiptap format toolbar exposes official mark commands and clear formatting", () => {
   const { calls, editor } = createEditor({ active: ["underline", "highlight"] });
   const view = createViewSpy();
@@ -255,6 +301,7 @@ test("Tiptap format toolbar exposes official mark commands and clear formatting"
       ["underline", true],
       ["strike", false],
       ["code", false],
+      ["link", false],
       ["highlight", true],
       ["clear-formatting", false],
     ],

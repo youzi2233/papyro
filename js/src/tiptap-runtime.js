@@ -14,6 +14,7 @@ import { createTiptapBlockHandleController } from "./tiptap-block-handle.js";
 import { createTiptapFormatCommandController } from "./tiptap-format-commands.js";
 import { createTiptapFormatToolbarController } from "./tiptap-format-toolbar.js";
 import { createTiptapHistoryCommandController } from "./tiptap-history-commands.js";
+import { createTiptapLinkEditorController } from "./tiptap-link-editor.js";
 import { createTiptapModeController } from "./tiptap-mode-controller.js";
 import { createTiptapModeSnapshotController } from "./tiptap-mode-snapshots.js";
 import { createTiptapPasteController } from "./tiptap-paste-controller.js";
@@ -179,6 +180,7 @@ function createEntry({
   formatCommands,
   formatToolbar,
   historyCommands,
+  linkEditor,
   pasteController,
   preferencesController,
   sourcePane,
@@ -203,6 +205,7 @@ function createEntry({
     formatCommands,
     formatToolbar,
     historyCommands,
+    linkEditor,
     pasteController,
     preferences: preferencesController.preferences,
     preferencesController,
@@ -233,6 +236,8 @@ export function createTiptapEditorRuntime({
   formatToolbarControllerFactory = createTiptapFormatToolbarController,
   formatToolbarViewFactory = null,
   historyCommandControllerFactory = createTiptapHistoryCommandController,
+  linkEditorControllerFactory = createTiptapLinkEditorController,
+  linkEditorViewFactory = null,
   pasteControllerFactory = createTiptapPasteController,
   preferencesControllerFactory = createTiptapPreferencesController,
   sourcePaneControllerFactory = createTiptapSourcePaneController,
@@ -291,6 +296,10 @@ export function createTiptapEditorRuntime({
   const createHistoryCommandController = requireFunction(
     historyCommandControllerFactory,
     "historyCommandControllerFactory",
+  );
+  const createLinkEditorController = requireFunction(
+    linkEditorControllerFactory,
+    "linkEditorControllerFactory",
   );
   const createPasteController = requireFunction(
     pasteControllerFactory,
@@ -410,8 +419,18 @@ export function createTiptapEditorRuntime({
     });
     const formatCommands = createFormatCommandController();
     const historyCommands = createHistoryCommandController();
+    const linkEditor = createLinkEditorController({
+      view:
+        typeof linkEditorViewFactory === "function"
+          ? linkEditorViewFactory({ document: documentRef })
+          : null,
+      dom: {
+        document: documentRef,
+      },
+    });
     const formatToolbar = createFormatToolbarController({
       commandController: formatCommands,
+      linkEditor,
       view:
         typeof formatToolbarViewFactory === "function"
           ? formatToolbarViewFactory({ document: documentRef })
@@ -532,6 +551,7 @@ export function createTiptapEditorRuntime({
       formatCommands,
       formatToolbar,
       historyCommands,
+      linkEditor,
       pasteController,
       preferencesController,
       sourcePane,
@@ -549,6 +569,7 @@ export function createTiptapEditorRuntime({
     sourcePane.attach({ editor, root, entry });
     modeSnapshots.capture(entry, entry.viewMode);
     blockHandle.attach({ editor, root, entry });
+    linkEditor.attach({ editor, root, entry });
     formatToolbar.attach({ editor, root, entry });
     pasteController.attach({ editor, root, entry });
     slashMenu.attach({ editor, root, entry });
@@ -688,6 +709,7 @@ export function createTiptapEditorRuntime({
         }
         released?.blockHandle?.destroy?.();
         released?.formatToolbar?.destroy?.();
+        released?.linkEditor?.destroy?.();
         released?.pasteController?.destroy?.();
         detachEditorScroll(released);
         detachLayoutObserver(released);
