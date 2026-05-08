@@ -37,6 +37,10 @@ const BUNDLE_COPIES = [
   ["assets/editor.js", "apps/mobile/assets/editor.js"],
 ];
 
+const RUNTIME_STYLE_COPIES = [
+  ["assets/styles/tiptap-chrome.css", "apps/desktop/assets/styles/tiptap-chrome.css"],
+];
+
 function main() {
   const args = process.argv.slice(2);
 
@@ -57,7 +61,8 @@ function main() {
     runStep(step);
   }
 
-  checkBundleCopies();
+  checkMirroredCopies("editor.js bundle sync", BUNDLE_COPIES);
+  checkMirroredCopies("Tiptap runtime style sync", RUNTIME_STYLE_COPIES);
   console.log("Editor Markdown gate passed.");
 }
 
@@ -67,7 +72,8 @@ function printUsage() {
 
 Runs the minimum pre-commit gate for Tiptap/editor/Markdown changes:
 JS tests, editor bundle build, Markdown style smoke, Markdown round-trip
-smoke, mounted Tiptap runtime smoke, and generated bundle sync.`);
+smoke, mounted Tiptap runtime smoke, generated bundle sync, and runtime
+style mirror sync.`);
 }
 
 function runStep({ name, command, args, shell = false }) {
@@ -90,9 +96,9 @@ function runStep({ name, command, args, shell = false }) {
   }
 }
 
-function checkBundleCopies() {
-  console.log("=== editor.js bundle sync ===");
-  for (const [source, copy] of BUNDLE_COPIES) {
+function checkMirroredCopies(name, copies) {
+  console.log(`=== ${name} ===`);
+  for (const [source, copy] of copies) {
     const sourceBytes = readFileSync(source);
     const copyBytes = readFileSync(copy);
     if (!sourceBytes.equals(copyBytes)) {
