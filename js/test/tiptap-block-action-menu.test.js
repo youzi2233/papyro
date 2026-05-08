@@ -654,7 +654,7 @@ test("Tiptap block action menu supports keyboard submenu entry and return", () =
 
   controller.setSelection(controller.state.commands.findIndex((command) => command.id === "heading-1"));
   assert.equal(controller.handleKeyDown(event("End")), true);
-  assert.equal(controller.state.commands[controller.state.selectedIndex].id, "callout");
+  assert.equal(controller.state.commands[controller.state.selectedIndex].id, "code-block");
   assert.equal(controller.handleKeyDown(event("ArrowLeft")), true);
   assert.equal(controller.state.commands[controller.state.selectedIndex].id, "turn-into");
 

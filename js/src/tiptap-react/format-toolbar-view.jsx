@@ -104,10 +104,14 @@ export class TiptapReactFormatToolbarView {
     syncMenuActiveDescendant(
       this.#root,
       FORMAT_TOOLBAR_OWNER_ID,
-      state.commands,
+      state.submenuOpen ? state.commands.find((command) => command.id === state.submenuOpen)?.children ?? state.commands : state.commands,
       Math.max(
         0,
-        state.commands.findIndex((command) => command.id === state.activeCommandId),
+        state.submenuOpen
+          ? (state.commands.find((command) => command.id === state.submenuOpen)?.children ?? []).findIndex(
+              (command) => command.id === state.activeChildCommandId,
+            )
+          : state.commands.findIndex((command) => command.id === state.activeCommandId),
       ),
       {
         manageTabIndex: true,

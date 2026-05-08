@@ -12,8 +12,8 @@ import {
   viewportSize,
 } from "./tiptap-ui-primitives.js";
 
-const REGULAR_TOOLBAR_WIDTH = 410;
-const COMPACT_TOOLBAR_WIDTH = 352;
+const REGULAR_TOOLBAR_WIDTH = 448;
+const COMPACT_TOOLBAR_WIDTH = 386;
 const TOOLBAR_HEIGHT = 38;
 const FORMAT_TOOLBAR_OWNER_ID = "mn-tiptap-format-toolbar";
 
@@ -86,7 +86,9 @@ class TiptapFormatToolbarView {
   #document;
   #window;
   #root = null;
+  #shell = null;
   #list = null;
+  #submenu = null;
 
   constructor({ document = defaultDocument(), window = defaultWindow(document) } = {}) {
     this.#document = document;
@@ -97,16 +99,22 @@ class TiptapFormatToolbarView {
     if (this.#root || !this.#document) return;
 
     const root = createElement(this.#document, "div", "mn-tiptap-format-toolbar hidden");
+    const shell = createElement(this.#document, "div", "mn-tiptap-format-toolbar-shell");
     const list = createElement(this.#document, "div", "mn-tiptap-format-toolbar-list");
-    if (!root || !list) return;
+    const submenu = createElement(this.#document, "div", "mn-tiptap-format-toolbar-submenu hidden");
+    if (!root || !shell || !list || !submenu) return;
 
     root.role = "toolbar";
     root.setAttribute("aria-label", "Text formatting");
-    root.appendChild(list);
+    shell.appendChild(list);
+    shell.appendChild(submenu);
+    root.appendChild(shell);
     mountFloatingRoot(root, container, this.#document);
 
     this.#root = root;
+    this.#shell = shell;
     this.#list = list;
+    this.#submenu = submenu;
     setHidden(root, true);
   }
 
@@ -137,12 +145,18 @@ class TiptapFormatToolbarView {
       button.id = commandElementId(FORMAT_TOOLBAR_OWNER_ID, commandIndex);
       button.setAttribute("aria-label", command.ariaLabel);
       button.setAttribute("aria-pressed", String(command.active));
+      if (command.id === "turn-into") {
+        button.setAttribute("aria-haspopup", "menu");
+        button.setAttribute("aria-expanded", String(state.submenuOpen === command.id));
+      }
       button.classList.toggle("active", command.active);
       button.dataset.commandId = command.id;
       button.dataset.commandIndex = String(commandIndex);
       button.dataset.priority = String(command.priority ?? 100);
       button.dataset.keyboardActive =
         state.activeCommandId === command.id ? "true" : "false";
+      button.dataset.submenuOpen =
+        state.submenuOpen === command.id ? "true" : "false";
       button.tabIndex = state.activeCommandId === command.id ? 0 : -1;
       text.textContent = command.label;
       button.append(icon, text);
@@ -162,6 +176,7 @@ class TiptapFormatToolbarView {
       );
       this.#list.appendChild(button);
     });
+    this.#renderSubmenu(state);
     syncMenuActiveDescendant(
       this.#root,
       FORMAT_TOOLBAR_OWNER_ID,
@@ -181,10 +196,77 @@ class TiptapFormatToolbarView {
     placeToolbar(this.#root, editor, state.range, this.#window, density);
   }
 
+  #renderSubmenu(state) {
+    if (!this.#submenu) return;
+    this.#submenu.replaceChildren();
+    const parent = state.commands.find((command) => command.id === state.submenuOpen);
+    if (!parent?.children?.length) {
+      setHidden(this.#submenu, true);
+      return;
+    }
+
+    this.#submenu.dataset.parentCommandId = parent.id;
+    this.#submenu.setAttribute("role", "menu");
+    this.#submenu.setAttribute("aria-label", parent.title ?? "Turn into");
+    parent.children.forEach((command, index) => {
+      const button = createElement(
+        this.#document,
+        "button",
+        "mn-tiptap-format-toolbar-submenu-item",
+      );
+      const icon = createElement(
+        this.#document,
+        "span",
+        `mn-tiptap-format-toolbar-submenu-icon ${command.icon}`,
+      );
+      const label = createElement(
+        this.#document,
+        "span",
+        "mn-tiptap-format-toolbar-submenu-label",
+      );
+      if (!button || !icon || !label) return;
+
+      button.type = "button";
+      button.title = command.title;
+      button.setAttribute("aria-label", command.ariaLabel);
+      button.setAttribute("role", "menuitem");
+      button.classList.toggle("active", command.active);
+      button.dataset.commandId = command.id;
+      button.dataset.submenuCommandIndex = String(index);
+      button.dataset.active = command.active ? "true" : "false";
+      button.dataset.keyboardActive =
+        state.activeChildCommandId === command.id ? "true" : "false";
+      button.tabIndex = state.activeChildCommandId === command.id ? 0 : -1;
+      label.textContent = command.title;
+      button.append(icon, label);
+      button.addEventListener("pointerdown", (event) => {
+        event.preventDefault();
+        event.stopPropagation?.();
+        state.run(command.id);
+      });
+      button.addEventListener("mousedown", (event) => {
+        event.preventDefault();
+      });
+      button.addEventListener("pointerenter", () =>
+        state.setActiveChildCommand?.(command.id, { keyboardActive: false }),
+      );
+      button.addEventListener("focus", () =>
+        state.setActiveChildCommand?.(command.id, { keyboardActive: true }),
+      );
+      this.#submenu.appendChild(button);
+    });
+    setHidden(this.#submenu, false);
+  }
+
   focusCommand(commandId) {
-    const button = Array.from(this.#list?.children ?? []).find(
-      (element) => element.dataset?.commandId === commandId,
-    );
+    const searchRoots = [this.#list, this.#submenu];
+    let button = null;
+    for (const root of searchRoots) {
+      button = Array.from(root?.children ?? []).find(
+        (element) => element.dataset?.commandId === commandId,
+      );
+      if (button) break;
+    }
     button?.focus?.();
     return !!button;
   }
@@ -200,7 +282,9 @@ class TiptapFormatToolbarView {
   destroy() {
     this.#root?.remove?.();
     this.#root = null;
+    this.#shell = null;
     this.#list = null;
+    this.#submenu = null;
   }
 }
 
@@ -217,6 +301,8 @@ export class TiptapFormatToolbarController {
     density: "regular",
     commands: [],
     activeCommandId: null,
+    submenuOpen: null,
+    activeChildCommandId: null,
     keyboardActive: false,
   };
 
@@ -252,6 +338,20 @@ export class TiptapFormatToolbarController {
     };
   }
 
+  #syncView(editor = this.#editor) {
+    this.#view.update?.(
+      {
+        ...this.#state,
+        run: (commandId) => this.run(commandId),
+        setActiveChildCommand: (commandId, options) =>
+          this.setActiveChildCommand(commandId, options),
+        setActiveCommand: (commandId, options) => this.setActiveCommand(commandId, options),
+        handleKeyDown: (event) => this.handleKeyDown(event),
+      },
+      editor,
+    );
+  }
+
   attach({ editor, root, entry } = {}) {
     this.#editor = editor ?? null;
     this.#entry = entry ?? null;
@@ -279,20 +379,14 @@ export class TiptapFormatToolbarController {
         : "regular",
       commands: this.#commands.states({ editor, entry: this.#entry }),
       activeCommandId: this.#state.activeCommandId,
+      submenuOpen: this.#state.submenuOpen,
+      activeChildCommandId: this.#state.activeChildCommandId,
       keyboardActive: this.#state.keyboardActive,
     };
     if (!this.#state.activeCommandId) {
       this.#state.activeCommandId = this.#state.commands[0]?.id ?? null;
     }
-    this.#view.update?.(
-      {
-        ...this.#state,
-        run: (commandId) => this.run(commandId),
-        setActiveCommand: (commandId, options) => this.setActiveCommand(commandId, options),
-        handleKeyDown: (event) => this.handleKeyDown(event),
-      },
-      editor,
-    );
+    this.#syncView(editor);
     this.#dismiss.open();
     return this.state;
   }
@@ -304,7 +398,15 @@ export class TiptapFormatToolbarController {
       entry: this.#entry,
       source: "format_toolbar",
       openLinkEditor: () => this.openLinkEditor(),
+      openTurnIntoMenu: () => this.openSubmenu("turn-into"),
     });
+    if (result.ok && result.commandId !== "turn-into") {
+      this.#state = {
+        ...this.#state,
+        submenuOpen: null,
+        activeChildCommandId: null,
+      };
+    }
     this.refresh(this.#editor);
     return result.ok;
   }
@@ -317,6 +419,8 @@ export class TiptapFormatToolbarController {
       density: "regular",
       commands: [],
       activeCommandId: null,
+      submenuOpen: null,
+      activeChildCommandId: null,
       keyboardActive: false,
     };
     this.#view.hide?.();
@@ -352,16 +456,44 @@ export class TiptapFormatToolbarController {
       activeCommandId: command.id,
       keyboardActive,
     };
-    this.#view.update?.(
-      {
+    if (command.id !== "turn-into") {
+      this.#state = {
         ...this.#state,
-        run: (nextCommandId) => this.run(nextCommandId),
-        setActiveCommand: (nextCommandId, options) =>
-          this.setActiveCommand(nextCommandId, options),
-        handleKeyDown: (event) => this.handleKeyDown(event),
-      },
-      this.#editor,
-    );
+        submenuOpen: null,
+        activeChildCommandId: null,
+      };
+    }
+    this.#syncView();
+    if (focus) {
+      this.#view.focusCommand?.(command.id);
+    }
+    return true;
+  }
+
+  openSubmenu(commandId) {
+    const command = this.#state.commands.find((item) => item.id === commandId);
+    if (!command?.children?.length) return false;
+    this.#state = {
+      ...this.#state,
+      activeCommandId: command.id,
+      submenuOpen: command.id,
+      activeChildCommandId: command.children[0]?.id ?? null,
+      keyboardActive: true,
+    };
+    this.#syncView();
+    return true;
+  }
+
+  setActiveChildCommand(commandId, { focus = false, keyboardActive = true } = {}) {
+    const parent = this.#state.commands.find((command) => command.id === this.#state.submenuOpen);
+    const command = parent?.children?.find((item) => item.id === commandId);
+    if (!command) return false;
+    this.#state = {
+      ...this.#state,
+      activeChildCommandId: command.id,
+      keyboardActive,
+    };
+    this.#syncView();
     if (focus) {
       this.#view.focusCommand?.(command.id);
     }
@@ -391,9 +523,46 @@ export class TiptapFormatToolbarController {
     if (key === "Escape") {
       event?.preventDefault?.();
       event?.stopPropagation?.();
+      if (this.#state.submenuOpen) {
+        this.#state = {
+          ...this.#state,
+          submenuOpen: null,
+          activeChildCommandId: null,
+          keyboardActive: true,
+        };
+        this.#syncView();
+        this.#view.focusCommand?.(this.#state.activeCommandId);
+        return true;
+      }
       this.close();
       this.#editor?.commands?.focus?.();
       return true;
+    }
+
+    if (this.#state.submenuOpen && (key === "ArrowDown" || key === "ArrowUp")) {
+      const parent = this.#state.commands.find((command) => command.id === this.#state.submenuOpen);
+      const children = parent?.children ?? [];
+      if (!children.length) return false;
+      const currentIndex = Math.max(
+        0,
+        children.findIndex((command) => command.id === this.#state.activeChildCommandId),
+      );
+      const nextIndex =
+        key === "ArrowDown"
+          ? (currentIndex + 1) % children.length
+          : (currentIndex - 1 + children.length) % children.length;
+      event?.preventDefault?.();
+      event?.stopPropagation?.();
+      return this.setActiveChildCommand(children[nextIndex].id, {
+        focus: true,
+        keyboardActive: true,
+      });
+    }
+
+    if (key === "ArrowDown" && this.#state.activeCommandId === "turn-into") {
+      event?.preventDefault?.();
+      event?.stopPropagation?.();
+      return this.openSubmenu("turn-into");
     }
 
     if (key === "ArrowRight" || key === "ArrowDown") {
@@ -417,6 +586,11 @@ export class TiptapFormatToolbarController {
       return this.setActiveCommand(lastId, { focus: true, keyboardActive: true });
     }
     if (key === "Enter" || key === " ") {
+      if (this.#state.submenuOpen && this.#state.activeChildCommandId) {
+        event?.preventDefault?.();
+        event?.stopPropagation?.();
+        return this.run(this.#state.activeChildCommandId);
+      }
       const commandId = this.#state.activeCommandId;
       if (!commandId) return false;
       event?.preventDefault?.();
@@ -434,6 +608,12 @@ export class TiptapFormatToolbarController {
     if (!firstId) return false;
     event?.preventDefault?.();
     event?.stopPropagation?.();
+    if (this.#state.submenuOpen && this.#state.activeChildCommandId) {
+      return this.setActiveChildCommand(this.#state.activeChildCommandId, {
+        focus: true,
+        keyboardActive: true,
+      });
+    }
     return this.setActiveCommand(firstId, { focus: true, keyboardActive: true });
   }
 }

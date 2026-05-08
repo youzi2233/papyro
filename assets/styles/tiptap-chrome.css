@@ -1024,6 +1024,13 @@
     display: none;
 }
 
+.mn-tiptap-format-toolbar-shell {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
 .mn-tiptap-table-toolbar {
     position: fixed;
     z-index: 162;
@@ -1970,6 +1977,90 @@
 .mn-tiptap-format-toolbar-button[data-command-id="clear-formatting"]:hover,
 .mn-tiptap-format-toolbar-button[data-command-id="clear-formatting"].active {
     color: var(--mn-ink);
+}
+
+.mn-tiptap-format-toolbar-button[data-command-id="turn-into"] {
+    min-width: 76px;
+    padding-right: 6px;
+}
+
+.mn-tiptap-format-toolbar-button[data-command-id="turn-into"]::after {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: rotate(45deg) translateY(-1px);
+    opacity: .68;
+}
+
+.mn-tiptap-format-toolbar-button[data-submenu-open="true"] {
+    background: var(--mn-accent-wash);
+    color: var(--mn-ink);
+}
+
+.mn-tiptap-format-toolbar-submenu {
+    position: absolute;
+    top: 50%;
+    left: calc(100% + 6px);
+    transform: translateY(-50%);
+    display: grid;
+    gap: 2px;
+    padding: 6px;
+    border: var(--mn-border-default);
+    border-radius: 8px;
+    background: var(--mn-surface-raised);
+    box-shadow: 0 18px 38px color-mix(in srgb, #000 12%, transparent), var(--mn-shadow-lg);
+    white-space: nowrap;
+}
+
+.mn-tiptap-format-toolbar-submenu.hidden {
+    display: none;
+}
+
+.mn-tiptap-format-toolbar-submenu-item {
+    display: grid;
+    grid-template-columns: 14px minmax(0, 1fr);
+    gap: 6px;
+    align-items: center;
+    min-width: 168px;
+    min-height: 26px;
+    padding: 3px 7px 3px 5px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--mn-ink-2);
+    font: inherit;
+}
+
+.mn-tiptap-format-toolbar-submenu-item:hover,
+.mn-tiptap-format-toolbar-submenu-item.active {
+    border-color: color-mix(in srgb, var(--mn-accent) 14%, transparent);
+    background: color-mix(in srgb, var(--mn-accent) 5%, transparent);
+    color: var(--mn-ink);
+}
+
+.mn-tiptap-format-toolbar-submenu-item:focus-visible {
+    outline: 0;
+    box-shadow: var(--mn-focus-ring-sm);
+}
+
+.mn-tiptap-format-toolbar-submenu-icon {
+    display: grid;
+    place-items: center;
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    background: color-mix(in srgb, var(--mn-surface-sunken) 66%, transparent);
+    color: var(--mn-ink-3);
+}
+
+.mn-tiptap-format-toolbar-submenu-label {
+    min-width: 0;
+    font-size: var(--mn-type-caption);
+    font-weight: var(--mn-weight-medium);
+    line-height: var(--mn-line-control);
+    white-space: nowrap;
 }
 
 .mn-tiptap-link-editor {

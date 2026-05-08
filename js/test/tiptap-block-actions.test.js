@@ -174,6 +174,7 @@ test("Tiptap block actions expose stable command ids", () => {
       "task-list",
       "blockquote",
       "callout",
+      "code-block",
       "callout-kind-note",
       "callout-kind-tip",
       "callout-kind-warning",
@@ -201,7 +202,6 @@ test("Tiptap block actions expose stable command ids", () => {
       "code-language-sql",
       "code-language-yaml",
       "code-language-toml",
-      "code-block",
       "divider",
       "table",
       "math-block",
@@ -332,6 +332,7 @@ test("Tiptap block actions expose menu metadata in priority order", () => {
       "task-list",
       "blockquote",
       "callout",
+      "code-block",
     ],
   );
   assert.deepEqual(commands.find((command) => command.id === "copy-block"), {

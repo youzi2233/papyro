@@ -5,6 +5,7 @@ import {
   createTiptapFormatCommandController,
   PAPYRO_TIPTAP_FORMAT_COMMANDS,
 } from "../src/tiptap-format-commands.js";
+import { PAPYRO_TIPTAP_TURN_INTO_COMMANDS } from "../src/tiptap-turn-into-commands.js";
 
 function createFakeEditor(activeIds = []) {
   const calls = [];
@@ -85,9 +86,21 @@ test("Tiptap format commands expose stable command ids", () => {
       "highlight-yellow",
       "highlight-blue",
       "highlight-green",
+      "turn-into",
       "clear-formatting",
     ],
   );
+});
+
+test("Tiptap format commands expose turn into submenu commands", () => {
+  const controller = createTiptapFormatCommandController();
+  const turnInto = controller.states({}).find((command) => command.id === "turn-into");
+
+  assert.deepEqual(
+    turnInto.children.map((command) => command.id),
+    PAPYRO_TIPTAP_TURN_INTO_COMMANDS.map((command) => command.id),
+  );
+  assert.equal(turnInto.ariaLabel, "Change block type");
 });
 
 test("Tiptap format commands report active marks", () => {
@@ -117,6 +130,7 @@ test("Tiptap format commands report active marks", () => {
       ["highlight-yellow", true],
       ["highlight-blue", false],
       ["highlight-green", false],
+      ["turn-into", false],
       ["clear-formatting", false],
     ],
   );
@@ -137,6 +151,7 @@ test("Tiptap format commands report active marks", () => {
       ["highlight-yellow", 51],
       ["highlight-blue", 52],
       ["highlight-green", 53],
+      ["turn-into", 88],
       ["clear-formatting", 90],
     ],
   );
@@ -173,6 +188,81 @@ test("Tiptap format command controller runs underline, highlight, and clear form
     ["unsetAllMarks"],
     ["focus"],
   ]);
+});
+
+test("Tiptap format command controller runs turn into submenu commands", () => {
+  const calls = [];
+  const editor = {
+    commands: {
+      focus: () => calls.push(["focus"]),
+      setParagraph: () => {
+        calls.push(["setParagraph"]);
+        return true;
+      },
+      toggleHeading: (attrs) => {
+        calls.push(["toggleHeading", attrs.level]);
+        return true;
+      },
+      toggleBulletList: () => {
+        calls.push(["toggleBulletList"]);
+        return true;
+      },
+      toggleOrderedList: () => {
+        calls.push(["toggleOrderedList"]);
+        return true;
+      },
+      toggleTaskList: () => {
+        calls.push(["toggleTaskList"]);
+        return true;
+      },
+      toggleBlockquote: () => {
+        calls.push(["toggleBlockquote"]);
+        return true;
+      },
+      setCalloutBlock: (attrs) => {
+        calls.push(["setCalloutBlock", attrs.kind, attrs.text]);
+        return true;
+      },
+      toggleCodeBlock: () => {
+        calls.push(["toggleCodeBlock"]);
+        return true;
+      },
+    },
+  };
+  const controller = createTiptapFormatCommandController();
+
+  assert.equal(
+    controller.run("heading-2", { editor }).ok,
+    true,
+  );
+  assert.equal(
+    controller.run("code-block", { editor }).ok,
+    true,
+  );
+
+  assert.deepEqual(calls, [
+    ["toggleHeading", 2],
+    ["focus"],
+    ["toggleCodeBlock"],
+    ["focus"],
+  ]);
+});
+
+test("Tiptap format command controller opens turn into submenu from the parent command", () => {
+  const controller = createTiptapFormatCommandController();
+  const opens = [];
+
+  assert.equal(
+    controller.run("turn-into", {
+      openTurnIntoMenu: () => {
+        opens.push("open");
+        return true;
+      },
+    }).ok,
+    true,
+  );
+
+  assert.deepEqual(opens, ["open"]);
 });
 
 test("Tiptap format command controller opens the custom link editor", () => {
@@ -240,6 +330,7 @@ test("Tiptap format command states localize labels and tooltips", () => {
       ["highlight-yellow", "黄色高亮", "切换黄色高亮"],
       ["highlight-blue", "蓝色高亮", "切换蓝色高亮"],
       ["highlight-green", "绿色高亮", "切换绿色高亮"],
+      ["turn-into", "转换为", "更改块类型"],
       ["clear-formatting", "清除格式", "清除所选文本格式"],
     ],
   );

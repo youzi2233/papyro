@@ -238,6 +238,7 @@ test("Tiptap format toolbar opens for non-empty Hybrid selections", () => {
       ["highlight-yellow", false],
       ["highlight-blue", false],
       ["highlight-green", false],
+      ["turn-into", false],
       ["clear-formatting", false],
     ],
   );
@@ -343,6 +344,7 @@ test("Tiptap format toolbar exposes official mark commands and clear formatting"
       ["highlight-yellow", false],
       ["highlight-blue", true],
       ["highlight-green", false],
+      ["turn-into", false],
       ["clear-formatting", false],
     ],
   );
@@ -381,6 +383,20 @@ test("Tiptap format toolbar exposes official highlight color commands", () => {
     ["unsetHighlight"],
     ["focus"],
   ]);
+});
+
+test("Tiptap format toolbar exposes turn into submenu commands", () => {
+  const { editor } = createEditor();
+  const view = createViewSpy();
+  const controller = createTiptapFormatToolbarController({ view });
+  controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
+
+  const turnInto = controller.state.commands.find((command) => command.id === "turn-into");
+  assert.equal(turnInto.children.length > 0, true);
+  assert.deepEqual(
+    turnInto.children.map((command) => command.id),
+    ["paragraph", "heading-1", "heading-2", "heading-3", "bullet-list", "ordered-list", "task-list", "blockquote", "callout", "code-block"],
+  );
 });
 
 test("Tiptap format toolbar buttons run commands from pointerdown", () => {

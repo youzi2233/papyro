@@ -3,6 +3,7 @@ import {
   PAPYRO_HIGHLIGHT_OPTIONS,
   PAPYRO_TEXT_COLOR_OPTIONS,
 } from "./tiptap-text-style.js";
+import { PAPYRO_TIPTAP_TURN_INTO_COMMANDS } from "./tiptap-turn-into-commands.js";
 
 function normalizeCommandId(value) {
   return String(value ?? "").trim().toLowerCase();
@@ -41,6 +42,70 @@ function highlightColor(editor) {
 
 function formatCommandLanguage(context = {}) {
   return context.language ?? context.entry?.preferences?.language ?? "english";
+}
+
+function localizeTurnIntoLabel(language, command) {
+  const labels = {
+    "turn-into": [
+      "Turn into",
+      "\u8f6c\u6362\u4e3a",
+      "Change block type",
+      "\u66f4\u6539\u5757\u7c7b\u578b",
+    ],
+    paragraph: ["Paragraph", "\u6bb5\u843d", "Use plain body text", "\u4f7f\u7528\u666e\u901a\u6b63\u6587"],
+    "heading-1": [
+      "Heading 1",
+      "\u4e00\u7ea7\u6807\u9898",
+      "Large section title",
+      "\u5927\u578b\u7ae0\u8282\u6807\u9898",
+    ],
+    "heading-2": [
+      "Heading 2",
+      "\u4e8c\u7ea7\u6807\u9898",
+      "Use a medium section title",
+      "\u4e2d\u578b\u7ae0\u8282\u6807\u9898",
+    ],
+    "heading-3": [
+      "Heading 3",
+      "\u4e09\u7ea7\u6807\u9898",
+      "Small subsection title",
+      "\u5c0f\u578b\u5c0f\u8282\u6807\u9898",
+    ],
+    "bullet-list": [
+      "Bullet list",
+      "\u65e0\u5e8f\u5217\u8868",
+      "Turn this block into bullets",
+      "\u8f6c\u6362\u4e3a\u65e0\u5e8f\u5217\u8868",
+    ],
+    "ordered-list": [
+      "Numbered list",
+      "\u6709\u5e8f\u5217\u8868",
+      "Turn this block into steps",
+      "\u8f6c\u6362\u4e3a\u6709\u5e8f\u5217\u8868",
+    ],
+    "task-list": [
+      "Task list",
+      "\u4efb\u52a1\u5217\u8868",
+      "Create Markdown checkboxes",
+      "\u521b\u5efa Markdown \u590d\u9009\u6846",
+    ],
+    blockquote: ["Quote", "\u5f15\u7528", "Highlight a quoted passage", "\u7a81\u51fa\u5f15\u7528\u5185\u5bb9"],
+    callout: ["Callout", "\u6807\u6ce8", "Insert a note callout", "\u63d2\u5165\u63d0\u793a\u6807\u6ce8"],
+    "code-block": [
+      "Code block",
+      "\u4ee3\u7801\u5757",
+      "Use a fenced code block",
+      "\u4f7f\u7528\u56f4\u680f\u4ee3\u7801\u5757",
+    ],
+  };
+  const label = labels[command.id];
+  if (!label) return command;
+
+  return {
+    ...command,
+    title: localizedText(language, label[0], label[1]),
+    ariaLabel: localizedText(language, label[2], label[3]),
+  };
 }
 
 const FORMAT_COMMAND_LABELS = Object.freeze({
@@ -111,6 +176,10 @@ const HIGHLIGHT_FORMAT_COMMAND_LABELS = Object.freeze({
 });
 
 function localizeFormatCommand(command, language) {
+  if (command.id === "turn-into") {
+    return localizeTurnIntoLabel(language, command);
+  }
+
   const labels =
     FORMAT_COMMAND_LABELS[command.id] ?? HIGHLIGHT_FORMAT_COMMAND_LABELS[command.id];
   if (!labels) return command;
@@ -136,6 +205,7 @@ function createCommand({
   focusAfterRun = true,
   icon,
   priority = 100,
+  children = [],
 }) {
   if (!id || (!commandName && typeof run !== "function")) {
     throw new TypeError("Tiptap format commands require an id and runnable command");
@@ -162,6 +232,7 @@ function createCommand({
     icon: icon ?? id,
     priority,
     focusAfterRun,
+    children: Object.freeze([...children]),
     run: runCommand,
     active: activeCommand,
   });
@@ -251,6 +322,19 @@ export const PAPYRO_TIPTAP_FORMAT_COMMANDS = Object.freeze([
     }),
   ),
   createCommand({
+    id: "turn-into",
+    label: "T",
+    title: "Turn into",
+    ariaLabel: "Change block type",
+    icon: "turn-into",
+    run: ({ openTurnIntoMenu }) =>
+      typeof openTurnIntoMenu === "function" && openTurnIntoMenu() === true,
+    focusAfterRun: false,
+    children: PAPYRO_TIPTAP_TURN_INTO_COMMANDS,
+    active: () => false,
+    priority: 88,
+  }),
+  createCommand({
     id: "clear-formatting",
     label: "Tx",
     title: "Clear formatting",
@@ -279,6 +363,17 @@ export class TiptapFormatCommandController {
     return this.#commands.find((command) => command.id === id) ?? null;
   }
 
+  findChild(commandId) {
+    const id = normalizeCommandId(commandId);
+    for (const command of this.#commands) {
+      const child = command.children.find((item) => item.id === id);
+      if (child) {
+        return { parent: command, child };
+      }
+    }
+    return null;
+  }
+
   states(context = {}) {
     const language = formatCommandLanguage(context);
     return this.#commands.map((command) =>
@@ -292,6 +387,17 @@ export class TiptapFormatCommandController {
           priority: command.priority,
           focusAfterRun: command.focusAfterRun,
           active: command.active(context) === true,
+          children: command.children.map((child) =>
+            localizeTurnIntoLabel(language, {
+              id: child.id,
+              title: child.title,
+              ariaLabel: child.description ?? child.title,
+              description: child.description,
+              icon: child.icon,
+              priority: child.priority,
+              active: child.active?.(context) === true,
+            }),
+          ),
         },
         language,
       ),
@@ -300,6 +406,21 @@ export class TiptapFormatCommandController {
 
   run(commandId, context = {}) {
     const command = this.find(commandId);
+    const childMatch = command ? null : this.findChild(commandId);
+    if (childMatch) {
+      const ok = childMatch.child.run(context) !== false;
+      if (ok) {
+        focusEditor(context.editor);
+      }
+
+      return {
+        ok,
+        commandId: childMatch.child.id,
+        parentCommandId: childMatch.parent.id,
+        error: ok ? null : "format_command_failed",
+      };
+    }
+
     if (!command) {
       return {
         ok: false,
@@ -308,7 +429,8 @@ export class TiptapFormatCommandController {
       };
     }
 
-    const ok = command.run(context) !== false;
+    const child = command.children.find((item) => item.id === context.childCommandId);
+    const ok = child ? child.run(context) !== false : command.run(context) !== false;
     if (ok && command.focusAfterRun !== false) {
       focusEditor(context.editor);
     }

@@ -1,7 +1,4 @@
-import {
-  createMarkdownCallout,
-  PAPYRO_CALLOUT_KIND_OPTIONS,
-} from "./tiptap-markdown-snippets.js";
+import { PAPYRO_CALLOUT_KIND_OPTIONS } from "./tiptap-markdown-snippets.js";
 import {
   PAPYRO_CODE_LANGUAGE_OPTIONS,
   codeBlockLanguageDisplayLabel,
@@ -19,6 +16,7 @@ import {
   localizeBlockAction,
   normalizeTiptapLanguage,
 } from "./tiptap-i18n.js";
+import { PAPYRO_TIPTAP_TURN_INTO_COMMANDS } from "./tiptap-turn-into-commands.js";
 
 function normalizeCommandId(value) {
   return String(value ?? "").trim().toLowerCase();
@@ -123,6 +121,10 @@ function runEditorCommand(editor, commandName, args = [], fallbackMarkdown = nul
   return ok;
 }
 
+function canRunEditorCommand(editor, commandName) {
+  return typeof editor?.commands?.[commandName] === "function";
+}
+
 function targetEndPos(target) {
   const nodeSize = target?.node?.nodeSize ?? target?.block?.pmViewDesc?.node?.nodeSize ?? 0;
   return Number.isFinite(target?.pos) ? target.pos + Math.max(1, nodeSize) : null;
@@ -159,10 +161,6 @@ function clearTargetFormatting(editor, target) {
     ran = setTargetHighlight(editor, target, null) !== false || ran;
   }
   return ran;
-}
-
-function canRunEditorCommand(editor, commandName) {
-  return typeof editor?.commands?.[commandName] === "function";
 }
 
 function targetNodeName(target) {
@@ -245,105 +243,12 @@ function createCommand({
 }
 
 export const PAPYRO_TIPTAP_BLOCK_ACTIONS = Object.freeze([
-  createCommand({
-    id: "paragraph",
-    title: "Paragraph",
-    description: "Use plain body text",
-    group: "Text",
-    icon: "paragraph",
-    submenu: "turn-into",
-    priority: 20,
-    run: ({ editor }) => editorCommand(editor, "setParagraph"),
-  }),
-  createCommand({
-    id: "heading-1",
-    title: "Heading 1",
-    description: "Large section title",
-    group: "Text",
-    icon: "heading-1",
-    submenu: "turn-into",
-    priority: 21,
-    run: ({ editor }) => runEditorCommand(editor, "toggleHeading", [{ level: 1 }], "# "),
-  }),
-  createCommand({
-    id: "heading-2",
-    title: "Heading 2",
-    description: "Use a medium section title",
-    group: "Text",
-    icon: "heading-2",
-    submenu: "turn-into",
-    priority: 22,
-    run: ({ editor }) => runEditorCommand(editor, "toggleHeading", [{ level: 2 }], "## "),
-  }),
-  createCommand({
-    id: "heading-3",
-    title: "Heading 3",
-    description: "Small subsection title",
-    group: "Text",
-    icon: "heading-3",
-    submenu: "turn-into",
-    priority: 23,
-    run: ({ editor }) => runEditorCommand(editor, "toggleHeading", [{ level: 3 }], "### "),
-  }),
-  createCommand({
-    id: "bullet-list",
-    title: "Bullet list",
-    description: "Turn this block into bullets",
-    group: "Lists",
-    icon: "bullet-list",
-    submenu: "turn-into",
-    priority: 30,
-    run: ({ editor }) => runEditorCommand(editor, "toggleBulletList", [], "- "),
-  }),
-  createCommand({
-    id: "ordered-list",
-    title: "Numbered list",
-    description: "Turn this block into steps",
-    group: "Lists",
-    icon: "ordered-list",
-    submenu: "turn-into",
-    priority: 31,
-    run: ({ editor }) => runEditorCommand(editor, "toggleOrderedList", [], "1. "),
-  }),
-  createCommand({
-    id: "task-list",
-    title: "Task list",
-    description: "Create Markdown checkboxes",
-    group: "Lists",
-    icon: "task-list",
-    submenu: "turn-into",
-    priority: 32,
-    run: ({ editor }) =>
-      canRunEditorCommand(editor, "toggleTaskList")
-        ? editorCommand(editor, "toggleTaskList")
-        : insertMarkdown(editor, "- [ ] "),
-  }),
-  createCommand({
-    id: "blockquote",
-    title: "Quote",
-    description: "Highlight a quoted passage",
-    group: "Blocks",
-    icon: "quote",
-    submenu: "turn-into",
-    priority: 40,
-    run: ({ editor }) => runEditorCommand(editor, "toggleBlockquote", [], "> "),
-  }),
-  createCommand({
-    id: "callout",
-    title: "Callout",
-    description: "Insert a note callout",
-    group: "Blocks",
-    icon: "callout",
-    submenu: "turn-into",
-    priority: 41,
-    run: ({ editor }) =>
-      runEditorCommand(
-        editor,
-        "setCalloutBlock",
-        [{ kind: "NOTE", text: "Callout text" }],
-        createMarkdownCallout(),
-      ),
-  }),
+  ...PAPYRO_TIPTAP_TURN_INTO_COMMANDS.map((command) =>
+    createCommand({
+      ...command,
+      submenu: "turn-into",
+    }),
+  ),
   ...PAPYRO_CALLOUT_KIND_OPTIONS.map((option, index) =>
     createCommand({
       id: `callout-kind-${option.kind.toLowerCase()}`,
@@ -396,17 +301,6 @@ export const PAPYRO_TIPTAP_BLOCK_ACTIONS = Object.freeze([
       run: ({ editor, target }) => setCodeBlockLanguage(editor, option.language, target?.pos),
     }),
   ),
-  createCommand({
-    id: "code-block",
-    title: "Code block",
-    description: "Use a fenced code block",
-    group: "Blocks",
-    icon: "code-block",
-    visibleInBlockMenu: false,
-    priority: 52,
-    run: ({ editor }) =>
-      runEditorCommand(editor, "toggleCodeBlock", [], "```\ncode\n```"),
-  }),
   createCommand({
     id: "divider",
     title: "Divider",
