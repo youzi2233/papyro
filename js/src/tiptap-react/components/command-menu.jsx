@@ -59,19 +59,14 @@ function SlashCommandItem({
   choose,
 }) {
   const activation = usePointerActivation(() => choose(command.id));
-  const modelPanel = commandMenuSidePanel(command);
-  const inlinePanel = command?.id === "table" ? "table" : null;
-  const panel = inlinePanel ? "none" : modelPanel;
+  const panel = commandMenuSidePanel(command);
   const hasSidePanel = panel !== "none";
   const panelId = commandMenuSidePanelId(ownerId, panel);
-  const inlinePanelId = inlinePanel ? `${ownerId}-${command.index}-${inlinePanel}-inline-panel` : undefined;
 
   return (
     <div
       className={`mn-tiptap-slash-menu-item-shell${selected ? " active" : ""}`}
       data-command-id={command.id}
-      data-inline-panel={inlinePanel ?? "none"}
-      data-expanded={inlinePanel ? String(selected) : undefined}
     >
       <PrimitiveCommandItem
         command={command}
@@ -82,9 +77,9 @@ function SlashCommandItem({
         tabIndex={-1}
         aria={{
           "aria-selected": String(selected),
-          "aria-haspopup": hasSidePanel || inlinePanel ? "menu" : undefined,
-          "aria-expanded": hasSidePanel ? String(activePanel === panel) : inlinePanel ? String(selected) : undefined,
-          "aria-controls": hasSidePanel ? panelId : inlinePanel && selected ? inlinePanelId : undefined,
+          "aria-haspopup": hasSidePanel ? "menu" : undefined,
+          "aria-expanded": hasSidePanel ? String(activePanel === panel) : undefined,
+          "aria-controls": hasSidePanel ? panelId : undefined,
         }}
         data={{
           "command-id": command.id,
@@ -92,7 +87,6 @@ function SlashCommandItem({
           recent: command.recent ? "true" : undefined,
           group: command.group ?? "",
           "side-panel": panel,
-          "inline-panel": inlinePanel ?? "none",
         }}
         onPointerMove={() => activate(command.index, { scroll: false })}
         onFocus={() => activate(command.index, { scroll: true })}
@@ -102,29 +96,21 @@ function SlashCommandItem({
         titleClassName="mn-tiptap-slash-menu-title"
         descriptionClassName="mn-tiptap-slash-menu-description"
       />
-      {inlinePanel === "table" && selected ? (
-        <TableSizePicker
-          id={inlinePanelId}
-          language={language}
-          choose={choose}
-          inline
-        />
-      ) : null}
     </div>
   );
 }
 
-function TableSizePicker({ id, language, choose, inline = false }) {
+function TableSizePicker({ id, language, choose }) {
   const [size, setSize] = useState({ rows: 3, cols: 2 });
   const label = tableSizeLabel(language, size.rows, size.cols);
 
   return (
     <div
       id={id}
-      className={`mn-tiptap-table-size-picker${inline ? " inline" : ""}`}
+      className="mn-tiptap-table-size-picker"
       role="menu"
       aria-label={label}
-      data-layout={inline ? "inline" : "floating"}
+      data-layout="floating"
     >
       <div className="mn-tiptap-table-size-picker-header">
         <span className="mn-tiptap-table-size-picker-title">
@@ -327,6 +313,9 @@ export function PapyroSlashCommandMenu({
       </div>
       {sidePanel === "callout" ? (
         <CalloutKindPicker id={sidePanelId} language={language} choose={state.choose} />
+      ) : null}
+      {sidePanel === "table" ? (
+        <TableSizePicker id={sidePanelId} language={language} choose={state.choose} />
       ) : null}
       {sidePanel === "code-language" ? (
         <CodeLanguagePicker id={sidePanelId} language={language} choose={state.choose} />

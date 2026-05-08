@@ -179,7 +179,7 @@ Tasks:
   - Current coverage: empty slash and `+` menus promote successfully used commands into a Recent group while preserving `sourceIndex` for diagnostics and tests.
 - [ ] Support nested detail panels for table size, callout style, code language, and future diagram/math templates.
   - Current coverage: table size, callout style, and code language panels are implemented and anchored to the active command row.
-  - Current coverage: the React menu now expands the table size picker inline under the Table command, so the size grid no longer appears as a detached top-right side panel. Callout style and code language still use side panels because they are longer choice lists.
+  - Current coverage: the React menu now shows table size as a compact secondary panel anchored to the active Table command row, so the size grid no longer appears as a detached top-right panel or shifts the main command list. Callout style and code language use the same anchored side-panel contract for longer choice lists.
 - [x] Fix keyboard navigation so ArrowDown can reach every command and never loops before the last item.
 - [x] Support Home and End navigation across the full insert command list.
 - [x] Position detail panels beside the selected command, not at awkward top-right coordinates.
@@ -188,7 +188,7 @@ Tasks:
 - [x] Keep `+` semantics distinct: insert below the current block, open the menu at the new caret, and clean temporary slash text on cancel.
 - [x] Replace ad hoc slash-menu glyphs with a shared Lucide-backed React icon system and semantic command-group tones.
   - Current polish: slash and `+` menus now use quieter neutral icon frames, and the table size detail panel is narrower with matching positioning contracts. The React path uses Lucide icons, while the migration DOM fallback now has the same semantic line-icon vocabulary and Recent tone so rendering paths do not split visually.
-  - Current polish: the insert menu width, item rhythm, and inline table picker have been tightened so the table size grid reads as a child control instead of a bulky overlay that blocks scanning lower commands.
+  - Current polish: the insert menu width, item rhythm, and compact table-size secondary panel have been tightened so table insertion reads as one focused nested choice instead of a bulky overlay that blocks scanning lower commands.
 
 Acceptance criteria:
 

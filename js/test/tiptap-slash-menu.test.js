@@ -450,7 +450,7 @@ test("Tiptap slash menu anchors side panels beside the active command row", () =
     controller.state.commands.findIndex((command) => command.id === "table"),
   );
 
-  assert.equal(menu.style.properties.get("--mn-slash-side-panel-top") ?? menu.style["--mn-slash-side-panel-top"], "166px");
+  assert.equal(menu.style.properties.get("--mn-slash-side-panel-top") ?? menu.style["--mn-slash-side-panel-top"], "184px");
 });
 
 test("Tiptap slash menu activates command details on pointer hover", () => {

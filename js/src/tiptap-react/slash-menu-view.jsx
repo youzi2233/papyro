@@ -23,7 +23,7 @@ import {
   usableFloatingRect,
 } from "./utils/floating.js";
 
-const MAIN_MENU_WIDTH = 212;
+const MAIN_MENU_WIDTH = 224;
 const MAIN_MENU_HEIGHT = 390;
 const SIDE_PANEL_GAP = 5;
 
@@ -53,10 +53,6 @@ function commandItemByIndex(root, index) {
   } catch (_error) {
     return null;
   }
-}
-
-function reactSlashMenuSidePanel(command) {
-  return command?.id === "table" ? "none" : commandMenuSidePanel(command);
 }
 
 export class TiptapReactSlashMenuView {
@@ -95,7 +91,7 @@ export class TiptapReactSlashMenuView {
 
     this.#language = state.language ?? "english";
     this.#root.setAttribute("aria-label", markdownCommandsLabel(this.#language));
-    this.#root.dataset.sidePanel = reactSlashMenuSidePanel(
+    this.#root.dataset.sidePanel = commandMenuSidePanel(
       state.commands?.[state.selectedIndex],
     );
 
@@ -147,7 +143,7 @@ export class TiptapReactSlashMenuView {
   #syncSidePanelPlacement(state, editor) {
     if (!this.#root) return;
     const selectedCommand = state.commands?.[state.selectedIndex];
-    const panel = reactSlashMenuSidePanel(selectedCommand);
+    const panel = commandMenuSidePanel(selectedCommand);
     const panelWidth = commandMenuSidePanelWidth(panel);
     if (!panelWidth) {
       this.#root.dataset.sidePlacement = "right";
