@@ -132,6 +132,28 @@ test("Tiptap table geometry reserves the outer bottom rail for adding rows", () 
   assert.equal(hover.block, table);
 });
 
+test("Tiptap table geometry treats flush table edges as quick add rails", () => {
+  const { cells, grid, table, tableRect } = createTableGeometryHarness();
+  const classify = (target, clientX, clientY) =>
+    tableHoverWithIntent({
+      target,
+      table,
+      grid,
+      tableRect,
+      clientX,
+      clientY,
+      rowHandleWidth: 20,
+      columnHandleHeight: 20,
+      allowRailTarget: true,
+    })?.edge;
+
+  assert.equal(classify(table, 240, 158), "add-row");
+  assert.equal(classify(table, 360, 140), "add-column");
+  assert.equal(classify(cells[5], 359, 152), "cell");
+  assert.equal(classify(table, 240, 177), undefined);
+  assert.equal(classify(table, 379, 140), undefined);
+});
+
 test("Tiptap table geometry does not infer table rails from adjacent complex blocks", () => {
   const { grid, table, tableRect } = createTableGeometryHarness();
   const codeBlock = {

@@ -1955,7 +1955,7 @@
 
 .mn-tiptap-table-add-row {
     min-width: 42px;
-    height: 12px;
+    height: 18px;
 }
 
 .mn-tiptap-table-add-row[data-edge="row"]::before {
@@ -1966,7 +1966,7 @@
 }
 
 .mn-tiptap-table-add-column {
-    width: 12px;
+    width: 18px;
     min-height: 42px;
 }
 
