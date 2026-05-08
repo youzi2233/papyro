@@ -460,6 +460,7 @@ test("Tiptap table toolbar disables commands rejected by editor.can", () => {
   const { created, documentRef } = createDocument();
   const { calls, editor } = createTableHarness();
   editor.commands.addRowAfter = commandSpy(calls, "addRowAfter");
+  editor.commands.copySelectedTableCells = commandSpy(calls, "copySelectedTableCells");
   editor.commands.setCellAttribute = commandSpy(calls, "setCellAttribute");
   editor.can = () => ({
     addRowAfter: () => false,
@@ -479,6 +480,7 @@ test("Tiptap table toolbar disables commands rejected by editor.can", () => {
     controller.state.commands.map((command) => [command.id, command.disabled]),
     [
       ["add-row-after", true],
+      ["copy-cell-content", false],
       ["align-left", true],
       ["align-center", true],
       ["align-right", true],
@@ -530,6 +532,7 @@ test("Tiptap table toolbar exposes grouped enterprise table commands", () => {
       ["Rows", "delete-row", "deleteRow"],
       ["Cells", "merge-cells", "mergeCells"],
       ["Cells", "split-cell", "splitCell"],
+      ["Cells", "copy-cell-content", "copySelectedTableCells"],
       ["Cells", "clear-cell-content", "clearSelectedTableCells"],
       ["Cells", "clear-cell-style", "resetSelectedTableCellAttrs"],
       ["Cells", "merge-or-split", "mergeOrSplit"],
@@ -579,6 +582,10 @@ test("Tiptap table toolbar sets cell alignment attributes", () => {
     calls.push(["setCellAttribute", name, value]);
     return true;
   };
+  editor.commands.copySelectedTableCells = () => {
+    calls.push(["copySelectedTableCells"]);
+    return true;
+  };
   editor.commands.setSelectedTableCellTextColor = (value) => {
     calls.push(["setSelectedTableCellTextColor", value]);
     return true;
@@ -588,6 +595,7 @@ test("Tiptap table toolbar sets cell alignment attributes", () => {
   controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
 
   assert.deepEqual(controller.state.commands.map((command) => command.id), [
+    "copy-cell-content",
     "align-left",
     "align-center",
     "align-right",
@@ -691,6 +699,21 @@ test("Tiptap table toolbar clears selected cell content through the official tab
   assert.equal(controller.run("clear-cell-content"), true);
 
   assert.deepEqual(calls, [["clearSelectedTableCells"], ["focus"]]);
+});
+
+test("Tiptap table toolbar copies selected cell content through the table command", () => {
+  const { calls, editor } = createTableHarness();
+  editor.commands.copySelectedTableCells = () => {
+    calls.push(["copySelectedTableCells"]);
+    return true;
+  };
+  const view = createViewSpy();
+  const controller = createTiptapTableToolbarController({ view });
+  controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
+
+  assert.equal(controller.run("copy-cell-content"), true);
+
+  assert.deepEqual(calls, [["copySelectedTableCells"], ["focus"]]);
 });
 
 test("Tiptap table toolbar clears selected cell style attributes", () => {
@@ -1378,6 +1401,7 @@ test("Tiptap table toolbar keeps complex command chrome hidden until requested",
   const { editor } = createTableHarness();
   editor.commands.addRowAfter = () => true;
   editor.commands.mergeCells = () => true;
+  editor.commands.copySelectedTableCells = () => true;
   editor.commands.setCellAttribute = () => true;
   const controller = createTiptapTableToolbarController({
     dom: { document: documentRef },
@@ -1405,6 +1429,7 @@ test("Tiptap table toolbar keeps complex command chrome hidden until requested",
       .filter((element) => element.dataset.commandId)
       .map((element) => element.dataset.commandId),
     [
+      "copy-cell-content",
       "align-left",
       "align-center",
       "align-right",
@@ -2026,6 +2051,7 @@ test("Tiptap table toolbar scopes context commands to row and column selections"
     addColumnAfter: () => true,
     deleteColumn: () => true,
     toggleHeaderColumn: () => true,
+    copySelectedTableCells: () => true,
     clearSelectedTableCells: () => true,
     resetSelectedTableCellAttrs: () => true,
     mergeCells: () => true,
@@ -2047,13 +2073,13 @@ test("Tiptap table toolbar scopes context commands to row and column selections"
     controller.state.commands
       .filter((command) => !command.disabled)
       .map((command) => command.id)
-      .filter((id) => ["add-row-before", "add-row-after", "clear-cell-content", "clear-cell-style", "delete-row", "toggle-header-row", "merge-cells"].includes(id)),
-    ["add-row-before", "add-row-after", "delete-row", "merge-cells", "clear-cell-content", "clear-cell-style", "toggle-header-row"],
+      .filter((id) => ["add-row-before", "add-row-after", "copy-cell-content", "clear-cell-content", "clear-cell-style", "delete-row", "toggle-header-row", "merge-cells"].includes(id)),
+    ["add-row-before", "add-row-after", "delete-row", "merge-cells", "copy-cell-content", "clear-cell-content", "clear-cell-style", "toggle-header-row"],
   );
   assert.deepEqual(
     toolbarCommandIds(created)
-      .filter((id) => ["add-row-before", "add-row-after", "clear-cell-content", "clear-cell-style", "delete-row", "toggle-header-row", "merge-cells"].includes(id)),
-    ["add-row-after", "add-row-before", "clear-cell-content", "clear-cell-style", "toggle-header-row", "delete-row"],
+      .filter((id) => ["add-row-before", "add-row-after", "copy-cell-content", "clear-cell-content", "clear-cell-style", "delete-row", "toggle-header-row", "merge-cells"].includes(id)),
+    ["add-row-after", "add-row-before", "copy-cell-content", "clear-cell-content", "clear-cell-style", "toggle-header-row", "delete-row"],
   );
 
   controller.selectAxis("column", 0);
@@ -2061,8 +2087,8 @@ test("Tiptap table toolbar scopes context commands to row and column selections"
   assert.equal(controller.toggleMenu("context", { open: true }), true);
   assert.deepEqual(
     toolbarCommandIds(created)
-      .filter((id) => ["add-column-before", "add-column-after", "clear-cell-content", "clear-cell-style", "delete-column", "toggle-header-column", "merge-cells"].includes(id)),
-    ["add-column-after", "add-column-before", "clear-cell-content", "clear-cell-style", "toggle-header-column", "delete-column"],
+      .filter((id) => ["add-column-before", "add-column-after", "copy-cell-content", "clear-cell-content", "clear-cell-style", "delete-column", "toggle-header-column", "merge-cells"].includes(id)),
+    ["add-column-after", "add-column-before", "copy-cell-content", "clear-cell-content", "clear-cell-style", "toggle-header-column", "delete-column"],
   );
 });
 
@@ -2071,6 +2097,7 @@ test("Tiptap table toolbar separates destructive row actions from ordinary comma
   const { editor } = createTableHarness({
     addRowBefore: () => true,
     addRowAfter: () => true,
+    copySelectedTableCells: () => true,
     clearSelectedTableCells: () => true,
     resetSelectedTableCellAttrs: () => true,
     deleteRow: () => true,
@@ -2116,6 +2143,7 @@ test("Tiptap table toolbar separates destructive row actions from ordinary comma
       .filter((element) => element.dataset.commandId)
       .map((element) => [element.dataset.commandId, element.textContent]),
     [
+      ["copy-cell-content", "Copy cell content"],
       ["clear-cell-content", "Clear cell content"],
       ["clear-cell-style", "Clear cell style"],
     ],
@@ -2137,6 +2165,7 @@ test("Tiptap table context menu renders text commands as command rows", () => {
   const { editor } = createTableHarness({
     addRowBefore: () => true,
     addRowAfter: () => true,
+    copySelectedTableCells: () => true,
     clearSelectedTableCells: () => true,
     resetSelectedTableCellAttrs: () => true,
     deleteRow: () => true,
@@ -2152,6 +2181,7 @@ test("Tiptap table context menu renders text commands as command rows", () => {
   rowHandle.onpointerdown({ preventDefault() {}, stopPropagation() {} });
 
   const insertBelow = toolbarCommandButton(created, "add-row-after");
+  const copyContent = toolbarCommandButton(created, "copy-cell-content");
   const clearContent = toolbarCommandButton(created, "clear-cell-content");
   const clearStyle = toolbarCommandButton(created, "clear-cell-style");
   const headerRow = toolbarCommandButton(created, "toggle-header-row");
@@ -2169,6 +2199,8 @@ test("Tiptap table context menu renders text commands as command rows", () => {
     true,
   );
   assert.equal(insertBelow.children[1].textContent, "Insert row below");
+  assert.equal(copyContent.children[0].dataset.icon, "copy-cell");
+  assert.equal(copyContent.children[1].textContent, "Copy cell content");
   assert.equal(clearContent.children[0].dataset.icon, "clear-content");
   assert.equal(clearContent.children[1].textContent, "Clear cell content");
   assert.equal(clearStyle.children[0].dataset.icon, "clear-style");
@@ -2226,6 +2258,7 @@ test("Tiptap table toolbar keeps cell and axis context menus focused", () => {
     deleteColumn: () => true,
     toggleHeaderColumn: () => true,
     mergeCells: () => true,
+    copySelectedTableCells: () => true,
     splitCell: () => false,
     setCellAttribute: () => true,
     fixTables: () => true,
@@ -2244,6 +2277,7 @@ test("Tiptap table toolbar keeps cell and axis context menus focused", () => {
   );
   trigger.onpointerdown({ preventDefault() {}, stopPropagation() {} });
   assert.deepEqual(toolbarCommandIds(created), [
+    "copy-cell-content",
     "align-left",
     "align-center",
     "align-right",

@@ -121,6 +121,7 @@ const TABLE_COMMAND_LABELS = Object.freeze({
   "delete-row": ["Delete current row", "删除当前行", "Delete", "删除"],
   "merge-cells": ["Merge selected cells", "合并选中单元格", "Merge", "合并"],
   "split-cell": ["Split current cell", "拆分当前单元格", "Split", "拆分"],
+  "copy-cell-content": ["Copy cell content", "复制单元格内容", "Copy", "复制"],
   "clear-cell-content": ["Clear cell content", "清空单元格内容", "Clear content", "清空内容"],
   "clear-cell-style": ["Clear cell style", "清除单元格样式", "Clear style", "清除样式"],
   "merge-or-split": ["Merge or split cells", "合并或拆分单元格", "Auto", "自动"],

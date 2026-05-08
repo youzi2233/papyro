@@ -31,6 +31,7 @@ test("Tiptap table commands expose stable enterprise command metadata", () => {
       ["Rows", "delete-row", "deleteRow"],
       ["Cells", "merge-cells", "mergeCells"],
       ["Cells", "split-cell", "splitCell"],
+      ["Cells", "copy-cell-content", "copySelectedTableCells"],
       ["Cells", "clear-cell-content", "clearSelectedTableCells"],
       ["Cells", "clear-cell-style", "resetSelectedTableCellAttrs"],
       ["Cells", "merge-or-split", "mergeOrSplit"],
@@ -63,6 +64,7 @@ test("Tiptap table command scope keeps cell menus focused", () => {
   }));
 
   assert.deepEqual(commandIds(visibleTableCommands(commands, "context", "cell")), [
+    "copy-cell-content",
     "clear-cell-content",
     "clear-cell-style",
     "align-left",
@@ -79,6 +81,7 @@ test("Tiptap table command scope keeps cell menus focused", () => {
   ]);
   assert.deepEqual(commandIds(visibleTableCommands(commands, "context", "cells")), [
     "merge-cells",
+    "copy-cell-content",
     "clear-cell-content",
     "clear-cell-style",
     "align-left",
@@ -99,6 +102,7 @@ test("Tiptap table command scope orders row column and table menus by intent", (
   assert.deepEqual(commandIds(visibleTableCommands(TABLE_COMMANDS, "context", "row")), [
     "add-row-after",
     "add-row-before",
+    "copy-cell-content",
     "clear-cell-content",
     "clear-cell-style",
     "toggle-header-row",
@@ -107,6 +111,7 @@ test("Tiptap table command scope orders row column and table menus by intent", (
   assert.deepEqual(commandIds(visibleTableCommands(TABLE_COMMANDS, "context", "column")), [
     "add-column-after",
     "add-column-before",
+    "copy-cell-content",
     "clear-cell-content",
     "clear-cell-style",
     "toggle-header-column",
@@ -130,6 +135,7 @@ test("Tiptap table commands expose layout groups and keyboard helpers", () => {
   assert.equal(tableCommandLayoutGroup({ id: "cell-bg-blue", group: "Cell color" }), "cell-color");
   assert.equal(tableCommandLayoutGroup({ id: "delete-row", group: "Rows", tone: "danger" }), "danger");
   assert.equal(tableCommandLayoutGroup({ id: "toggle-header-row", group: "Headers" }), "actions");
+  assert.equal(tableCommandLayoutGroup({ id: "copy-cell-content", group: "Cells" }), "actions");
   assert.equal(tableCommandLayoutGroup({ id: "clear-cell-content", group: "Cells" }), "actions");
   assert.equal(tableCommandLayoutGroup({ id: "clear-cell-style", group: "Cells" }), "actions");
 

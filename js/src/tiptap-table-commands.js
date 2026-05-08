@@ -1,5 +1,6 @@
 export const TABLE_CELL_MENU_COMMAND_IDS = new Set([
   "split-cell",
+  "copy-cell-content",
   "clear-cell-content",
   "clear-cell-style",
   "align-left",
@@ -81,6 +82,14 @@ export const TABLE_COMMANDS = Object.freeze([
     label: "Split",
     command: "splitCell",
     icon: "split",
+  },
+  {
+    id: "copy-cell-content",
+    group: "Cells",
+    title: "Copy cell content",
+    label: "Copy",
+    command: "copySelectedTableCells",
+    icon: "copy-cell",
   },
   {
     id: "clear-cell-content",
@@ -279,6 +288,7 @@ export const TABLE_MENU_COMMAND_SCOPE = Object.freeze({
   cell: TABLE_CELL_MENU_COMMAND_IDS,
   cells: new Set([
     "merge-cells",
+    "copy-cell-content",
     "align-left",
     "align-center",
     "align-right",
@@ -296,6 +306,7 @@ export const TABLE_MENU_COMMAND_SCOPE = Object.freeze({
   row: new Set([
     "add-row-before",
     "add-row-after",
+    "copy-cell-content",
     "clear-cell-content",
     "clear-cell-style",
     "delete-row",
@@ -304,6 +315,7 @@ export const TABLE_MENU_COMMAND_SCOPE = Object.freeze({
   column: new Set([
     "add-column-before",
     "add-column-after",
+    "copy-cell-content",
     "clear-cell-content",
     "clear-cell-style",
     "delete-column",
@@ -321,6 +333,7 @@ export const TABLE_COMMAND_CONTEXT_ORDER = Object.freeze({
   row: [
     "add-row-after",
     "add-row-before",
+    "copy-cell-content",
     "clear-cell-content",
     "clear-cell-style",
     "toggle-header-row",
@@ -329,6 +342,7 @@ export const TABLE_COMMAND_CONTEXT_ORDER = Object.freeze({
   column: [
     "add-column-after",
     "add-column-before",
+    "copy-cell-content",
     "clear-cell-content",
     "clear-cell-style",
     "toggle-header-column",
@@ -351,6 +365,7 @@ export const TABLE_CONTEXT_HEADER_COMMAND_IDS = new Set([
 export const SELECTION_TABLE_COMMAND_IDS = new Set([
   "merge-cells",
   "split-cell",
+  "copy-cell-content",
   "clear-cell-content",
   "clear-cell-style",
   "align-left",
@@ -375,6 +390,7 @@ export const KEYBOARD_TABLE_COMMAND_IDS = new Set([
   "delete-row",
   "merge-cells",
   "split-cell",
+  "copy-cell-content",
   "clear-cell-content",
   "clear-cell-style",
   "toggle-header-row",
@@ -458,6 +474,7 @@ export function tableCommandVariant(command) {
 
 export function tableCommandLayoutGroup(command) {
   if (command?.id === "split-cell") return "actions";
+  if (command?.id === "copy-cell-content") return "actions";
   if (command?.id === "clear-cell-content") return "actions";
   if (command?.id === "clear-cell-style") return "actions";
   if (TABLE_CONTEXT_HEADER_COMMAND_IDS.has(command?.id)) return "actions";

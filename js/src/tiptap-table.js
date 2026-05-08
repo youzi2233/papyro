@@ -1,6 +1,6 @@
 import { TableKit } from "@tiptap/extension-table";
 import { Extension } from "@tiptap/core";
-import { deleteCellSelection } from "@tiptap/pm/tables";
+import { deleteCellSelection, selectedRect } from "@tiptap/pm/tables";
 
 export const PAPYRO_TABLE_CELL_RESET_ATTRS = Object.freeze([
   "align",
@@ -51,6 +51,24 @@ function isTextNode(node) {
   return node?.isText === true || node?.type?.name === "text" || node?.type === "text";
 }
 
+function clipboardApi() {
+  if (typeof globalThis === "undefined") return null;
+  return globalThis.navigator?.clipboard ?? null;
+}
+
+function tableCellClipboardText(cell) {
+  if (!cell) return "";
+  const text =
+    typeof cell.textBetween === "function"
+      ? cell.textBetween(0, cell.content?.size ?? cell.nodeSize ?? 0, "\n", "\n")
+      : cell.textContent ?? "";
+  return String(text ?? "")
+    .replace(/\t/g, " ")
+    .replace(/\r?\n/g, " ")
+    .replace(/[ ]{2,}/g, " ")
+    .trim();
+}
+
 function selectedTableCellTextRanges(selection) {
   if (typeof selection?.forEachCell !== "function") return [];
 
@@ -75,6 +93,64 @@ function selectedTableCellTextRanges(selection) {
   });
 
   return ranges;
+}
+
+export function selectedTableCellsPlainText(state) {
+  let rect = null;
+  try {
+    rect = selectedRect(state);
+  } catch (_error) {
+    return "";
+  }
+
+  const table = rect?.table;
+  const map = rect?.map;
+  if (!table || !map || !Number.isInteger(map.width) || map.width <= 0) {
+    return "";
+  }
+
+  const used = new Set();
+  const rows = [];
+  for (let row = rect.top; row < rect.bottom; row += 1) {
+    const cells = [];
+    for (let column = rect.left; column < rect.right; column += 1) {
+      const relativePos = map.map[row * map.width + column];
+      if (!Number.isFinite(relativePos) || used.has(relativePos)) {
+        cells.push("");
+        continue;
+      }
+
+      let cellRect = null;
+      try {
+        cellRect = map.findCell(relativePos);
+      } catch (_error) {
+        cells.push("");
+        continue;
+      }
+
+      if (cellRect.top !== row || cellRect.left !== column) {
+        cells.push("");
+        continue;
+      }
+
+      used.add(relativePos);
+      cells.push(tableCellClipboardText(table.nodeAt(relativePos)));
+    }
+    rows.push(cells.join("\t"));
+  }
+
+  return rows.join("\n");
+}
+
+export async function writeTableTextToClipboard(text, writeText = null) {
+  const value = String(text ?? "");
+  if (!value) return false;
+  const clipboard = clipboardApi();
+  const writer =
+    typeof writeText === "function" ? writeText : clipboard?.writeText?.bind?.(clipboard);
+  if (typeof writer !== "function") return false;
+  await writer(value);
+  return true;
 }
 
 export function resetSelectedTableCellAttrs(selection, tr, names = PAPYRO_TABLE_CELL_RESET_ATTRS) {
@@ -121,6 +197,12 @@ export const PapyroTableCellBackground = Extension.create({
 export const PapyroTableCellContentActions = Extension.create({
   name: "papyroTableCellContentActions",
 
+  addOptions() {
+    return {
+      writeText: null,
+    };
+  },
+
   addCommands() {
     return {
       clearSelectedTableCells:
@@ -166,11 +248,20 @@ export const PapyroTableCellContentActions = Extension.create({
           }
           return true;
         },
+      copySelectedTableCells:
+        () =>
+        ({ state, dispatch }) => {
+          const text = selectedTableCellsPlainText(state);
+          if (!text) return false;
+          if (!dispatch) return true;
+          writeTableTextToClipboard(text, this.options.writeText).catch(() => {});
+          return true;
+        },
     };
   },
 });
 
-export function createPapyroTableExtensions() {
+export function createPapyroTableExtensions({ writeText = null } = {}) {
   return [
     TableKit.configure({
       table: {
@@ -200,6 +291,6 @@ export function createPapyroTableExtensions() {
       },
     }),
     PapyroTableCellBackground,
-    PapyroTableCellContentActions,
+    PapyroTableCellContentActions.configure({ writeText }),
   ];
 }

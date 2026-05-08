@@ -10,7 +10,9 @@ import {
   PapyroTableCellContentActions,
   createPapyroTableExtensions,
   resetSelectedTableCellAttrs,
+  selectedTableCellsPlainText,
   setSelectedTableCellTextColor,
+  writeTableTextToClipboard,
 } from "../src/tiptap-table.js";
 import { createPapyroTextStyleExtensions } from "../src/tiptap-text-style.js";
 
@@ -179,6 +181,73 @@ test("Papyro table content actions color selected cell text through textStyle ma
   }
 });
 
+test("Papyro table content actions serialize selected cells for clipboard use", () => {
+  const windowRef = new Window({ url: "http://localhost/" });
+  const previousGlobals = installDomGlobals(windowRef);
+  const root = windowRef.document.createElement("div");
+  windowRef.document.body.appendChild(root);
+  let editor = null;
+
+  try {
+    editor = new Editor({
+      element: root,
+      extensions: [StarterKit, ...createPapyroTableExtensions()],
+      content:
+        "<table><tbody><tr><td>Alpha</td><td>Beta <strong>two</strong></td></tr><tr><td>Gamma</td><td>Delta<br>line</td></tr></tbody></table>",
+      injectCSS: false,
+    });
+    const [anchorCell, , , headCell] = tableCellPositions(editor.state.doc);
+
+    editor.commands.setCellSelection({ anchorCell, headCell });
+
+    assert.equal(
+      selectedTableCellsPlainText(editor.state),
+      "Alpha\tBeta two\nGamma\tDelta line",
+    );
+  } finally {
+    editor?.destroy?.();
+    restoreDomGlobals(previousGlobals);
+    windowRef.close?.();
+  }
+});
+
+test("Papyro table content actions copy selected cell text without mutating the document", async () => {
+  const windowRef = new Window({ url: "http://localhost/" });
+  const previousGlobals = installDomGlobals(windowRef);
+  const root = windowRef.document.createElement("div");
+  windowRef.document.body.appendChild(root);
+  const writes = [];
+  let editor = null;
+
+  try {
+    editor = new Editor({
+      element: root,
+      extensions: [
+        StarterKit,
+        ...createPapyroTableExtensions({
+          writeText: async (text) => writes.push(text),
+        }),
+      ],
+      content:
+        "<table><tbody><tr><td>Alpha</td><td>Beta</td></tr></tbody></table>",
+      injectCSS: false,
+    });
+    const [anchorCell, headCell] = tableCellPositions(editor.state.doc);
+
+    editor.commands.setCellSelection({ anchorCell, headCell });
+    const before = editor.getJSON();
+    assert.equal(editor.commands.copySelectedTableCells(), true);
+    await Promise.resolve();
+
+    assert.deepEqual(writes, ["Alpha\tBeta"]);
+    assert.deepEqual(editor.getJSON(), before);
+  } finally {
+    editor?.destroy?.();
+    restoreDomGlobals(previousGlobals);
+    windowRef.close?.();
+  }
+});
+
 test("Papyro table content actions can reset selected cell attributes while clearing contents", () => {
   const windowRef = new Window({ url: "http://localhost/" });
   const previousGlobals = installDomGlobals(windowRef);
@@ -257,6 +326,19 @@ test("Papyro table content actions expose the expected command name", () => {
   assert.equal(typeof commands.clearSelectedTableCells, "function");
   assert.equal(typeof commands.resetSelectedTableCellAttrs, "function");
   assert.equal(typeof commands.setSelectedTableCellTextColor, "function");
+  assert.equal(typeof commands.copySelectedTableCells, "function");
+});
+
+test("Papyro table clipboard writer reports unavailable and successful writes", async () => {
+  const writes = [];
+
+  assert.equal(await writeTableTextToClipboard(""), false);
+  assert.equal(await writeTableTextToClipboard("Alpha"), false);
+  assert.equal(
+    await writeTableTextToClipboard("Alpha", async (text) => writes.push(text)),
+    true,
+  );
+  assert.deepEqual(writes, ["Alpha"]);
 });
 
 test("Papyro table content actions reject non-cell selections when resetting attributes", () => {
