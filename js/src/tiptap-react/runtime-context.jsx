@@ -1,27 +1,20 @@
 import React, { createContext, useContext, useMemo } from "react";
 
+import {
+  createPapyroTiptapRuntimeModel,
+  normalizePapyroTiptapLanguage,
+  normalizePapyroTiptapViewMode,
+} from "./runtime-model.js";
+
+export {
+  createPapyroTiptapCommandExecutor,
+  createPapyroTiptapRuntimeModel,
+  createPapyroTiptapSelectionSnapshot,
+  normalizePapyroTiptapLanguage,
+  normalizePapyroTiptapViewMode,
+} from "./runtime-model.js";
+
 const PapyroTiptapRuntimeContext = createContext(null);
-
-export function normalizePapyroTiptapLanguage(entryOrLanguage) {
-  const language =
-    typeof entryOrLanguage === "string"
-      ? entryOrLanguage
-      : entryOrLanguage?.preferences?.language;
-  const normalized = String(language ?? "english").toLowerCase();
-  if (normalized === "chinese" || normalized === "zh-cn" || normalized === "zh_cn") {
-    return "chinese";
-  }
-  return "english";
-}
-
-export function normalizePapyroTiptapViewMode(entryOrMode) {
-  const mode =
-    typeof entryOrMode === "string" ? entryOrMode : entryOrMode?.viewMode;
-  if (mode === "source" || mode === "preview") {
-    return mode;
-  }
-  return "hybrid";
-}
 
 export function PapyroTiptapRuntimeProvider({
   editor,
@@ -29,14 +22,7 @@ export function PapyroTiptapRuntimeProvider({
   children,
 }) {
   const value = useMemo(
-    () => ({
-      editor,
-      entry,
-      language: normalizePapyroTiptapLanguage(entry),
-      viewMode: normalizePapyroTiptapViewMode(entry),
-      dioxus: entry?.dioxus ?? null,
-      preferences: entry?.preferences ?? null,
-    }),
+    () => createPapyroTiptapRuntimeModel({ editor, entry }),
     [
       editor,
       entry,
@@ -44,6 +30,7 @@ export function PapyroTiptapRuntimeProvider({
       entry?.preferences,
       entry?.preferences?.language,
       entry?.viewMode,
+      editor?.state?.selection,
     ],
   );
 
@@ -70,4 +57,16 @@ export function usePapyroTiptapLanguage() {
 
 export function usePapyroTiptapViewMode() {
   return usePapyroTiptapRuntime().viewMode;
+}
+
+export function usePapyroTiptapPreferences() {
+  return usePapyroTiptapRuntime().preferences;
+}
+
+export function usePapyroTiptapSelection() {
+  return usePapyroTiptapRuntime().selection;
+}
+
+export function usePapyroTiptapCommandExecutor() {
+  return usePapyroTiptapRuntime().commands;
 }

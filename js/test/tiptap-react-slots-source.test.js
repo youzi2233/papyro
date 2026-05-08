@@ -10,6 +10,14 @@ const indexSource = readFileSync(
   new URL("../src/tiptap-react/index.js", import.meta.url),
   "utf8",
 );
+const runtimeContextSource = readFileSync(
+  new URL("../src/tiptap-react/runtime-context.jsx", import.meta.url),
+  "utf8",
+);
+const runtimeModelSource = readFileSync(
+  new URL("../src/tiptap-react/runtime-model.js", import.meta.url),
+  "utf8",
+);
 const officialDragHandleBridgeSource = readFileSync(
   new URL("../src/tiptap-react/official-drag-handle-bridge.jsx", import.meta.url),
   "utf8",
@@ -78,6 +86,19 @@ test("React island slots register the official drag handle bridge by default", (
 test("React index exports the official drag handle bridge", () => {
   assert.match(indexSource, /PapyroOfficialDragHandleBridge/u);
   assert.match(indexSource, /official-drag-handle-bridge\.jsx/u);
+});
+
+test("React runtime context exposes stable editor runtime hooks", () => {
+  assert.match(runtimeModelSource, /export function createPapyroTiptapRuntimeModel/u);
+  assert.match(runtimeModelSource, /export function createPapyroTiptapSelectionSnapshot/u);
+  assert.match(runtimeModelSource, /export function createPapyroTiptapCommandExecutor/u);
+  assert.match(runtimeContextSource, /createPapyroTiptapRuntimeModel/u);
+  assert.match(runtimeContextSource, /export function usePapyroTiptapPreferences/u);
+  assert.match(runtimeContextSource, /export function usePapyroTiptapSelection/u);
+  assert.match(runtimeContextSource, /export function usePapyroTiptapCommandExecutor/u);
+  assert.match(indexSource, /createPapyroTiptapSelectionSnapshot/u);
+  assert.match(indexSource, /usePapyroTiptapSelection/u);
+  assert.match(indexSource, /usePapyroTiptapCommandExecutor/u);
 });
 
 test("official drag handle bridge keeps Tiptap callbacks stable across renders", () => {

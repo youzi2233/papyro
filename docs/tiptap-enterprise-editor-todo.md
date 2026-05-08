@@ -141,6 +141,7 @@ Tasks:
   - Current coverage: the shared primitive module now exports the target popover, command menu, command item/section, icon button, toolbar button, keyboard hint, and visually-hidden building blocks. Slash command groups and command items now use `CommandSection`/`CommandItem`; block action and table context command rows share the primitive row/text/icon path; the floating format toolbar uses the shared toolbar button contract. Table geometry, selection overlays, resize rails, and quick-add rails still use the migration-era controller.
 - [ ] Add a typed command model for insert, block action, inline format, table, and code block commands.
 - [ ] Expose stable runtime hooks: editor instance, language, view mode, preferences, command executor, and active selection snapshot.
+  - Current coverage: React runtime context now builds from a pure runtime model, exposes preferences, command executor, and active selection snapshot hooks, and normalizes cursor/range/table selections for future React block-handle and table-chrome components. Table and code-block command models still need to be lifted out of migration controllers.
 - [ ] Keep the existing DOM controllers disabled behind a runtime flag while React replacements are tested.
 
 Acceptance criteria:

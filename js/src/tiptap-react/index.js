@@ -7,11 +7,17 @@ export {
   renderIslandSlot,
 } from "./slots.jsx";
 export {
+  createPapyroTiptapCommandExecutor,
+  createPapyroTiptapRuntimeModel,
+  createPapyroTiptapSelectionSnapshot,
   normalizePapyroTiptapLanguage,
   normalizePapyroTiptapViewMode,
   PapyroTiptapRuntimeProvider,
+  usePapyroTiptapCommandExecutor,
   usePapyroTiptapLanguage,
+  usePapyroTiptapPreferences,
   usePapyroTiptapRuntime,
+  usePapyroTiptapSelection,
   usePapyroTiptapViewMode,
 } from "./runtime-context.jsx";
 export {
