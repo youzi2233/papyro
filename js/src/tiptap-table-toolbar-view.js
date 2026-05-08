@@ -652,18 +652,18 @@ export class TiptapTableToolbarView {
       columnHandleHeight: TABLE_COLUMN_HANDLE_HEIGHT,
     });
     const hoverSelected = hoveredCellIsSelected(state);
-    const hoverRowIndex =
+    const hoverEdge = state.hover?.edge;
+    const axisHoverAllowed =
       state.hover?.cell &&
       !hoverSelected &&
-      state.hover?.edge === "row-handle" &&
-      state.hover?.columnIndex === 0
+      state.selection?.kind === "cell" &&
+      !["add-row", "add-column", "cell-menu"].includes(hoverEdge);
+    const hoverRowIndex =
+      axisHoverAllowed && state.hover?.columnIndex === 0
         ? state.hover.rowIndex
         : null;
     const hoverColumnIndex =
-      state.hover?.cell &&
-      !hoverSelected &&
-      state.hover?.edge === "column-handle" &&
-      state.hover?.rowIndex === 0
+      axisHoverAllowed && state.hover?.rowIndex === 0
         ? state.hover.columnIndex
         : null;
 

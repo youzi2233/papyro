@@ -275,6 +275,7 @@ Tasks:
 - [x] Remove the top-left whole-table selector unless a clear product action requires it.
   - Current coverage: the table overlay no longer renders a whole-table corner handle; geometry now returns `table: null`, leaving row/column handles as the only axis affordances.
 - [ ] Remove visible handles by default. Show row/column handles only on intentional hover near the first row or first column.
+  - Current coverage: row and column handles now stay hidden by default, but become discoverable when hovering any cell in the first column or first row. The handle remains outside the editable cell surface, so users get official-style axis affordances without losing normal cell text editing.
 - [ ] Make the entire cell surface editable and focusable, not only a tiny center area.
   - Current coverage: blank cell surfaces and empty paragraph surfaces now use the table focus fallback, while filled inline content keeps native ProseMirror text selection and does not start table-range dragging.
 - [x] Ensure cells have no visual gaps, so selection and resize borders look continuous.
