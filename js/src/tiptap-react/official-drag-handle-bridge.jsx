@@ -1,13 +1,37 @@
-import React, { useCallback, useMemo, useRef } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { DragHandle } from "@tiptap/extension-drag-handle-react";
 
 import { createPapyroOfficialDragHandleConfig } from "../tiptap-official-drag-handle.js";
 import { PapyroBlockHandle } from "./components/block-handle.jsx";
 import { officialDragHandleBridgeState } from "./official-drag-handle-bridge-state.js";
 
+function useBlockHandleViewState(entry) {
+  const blockHandle = entry?.blockHandle ?? null;
+  const [handleState, setHandleState] = useState(
+    () => blockHandle?.viewState ?? null,
+  );
+
+  useEffect(() => {
+    if (!blockHandle) {
+      setHandleState(null);
+      return undefined;
+    }
+
+    if (typeof blockHandle.subscribeViewState !== "function") {
+      setHandleState(blockHandle.viewState ?? null);
+      return undefined;
+    }
+
+    return blockHandle.subscribeViewState(setHandleState);
+  }, [blockHandle]);
+
+  return handleState;
+}
+
 export function PapyroOfficialDragHandleBridge({ editor, entry = null }) {
   const config = useMemo(() => createPapyroOfficialDragHandleConfig(), []);
   const bridgeState = officialDragHandleBridgeState({ editor, entry });
+  const handleState = useBlockHandleViewState(entry);
   const entryRef = useRef(entry);
   entryRef.current = entry;
   const handleNodeChange = useCallback((data) => {
@@ -35,7 +59,6 @@ export function PapyroOfficialDragHandleBridge({ editor, entry = null }) {
       openContextActionsFromBridge(event);
     }
   }, [openContextActionsFromBridge]);
-  const handleState = entry?.blockHandle?.viewState ?? null;
   const hidden =
     !handleState?.open ||
     !handleState?.target ||

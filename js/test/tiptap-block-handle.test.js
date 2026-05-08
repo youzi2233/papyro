@@ -329,6 +329,67 @@ test("Tiptap block handle opens on hovered editor blocks", () => {
   ]);
 });
 
+test("Tiptap block handle publishes view state updates for React bridges", () => {
+  const { block, editor } = createEditor();
+  const insertMenu = createInsertMenuSpy();
+  const menu = createMenuSpy();
+  const view = createViewSpy();
+  const controller = createTiptapBlockHandleController({ insertMenu, menu, view });
+  const states = [];
+  controller.attach({ editor, root: editor.view.dom, entry: { viewMode: "hybrid" } });
+  const unsubscribe = controller.subscribeViewState((state) => {
+    states.push({
+      open: state.open,
+      menuOpen: state.menuOpen,
+      insertOpen: state.insertOpen,
+      hidden: state.floatingViewHidden,
+      kind: state.target?.kind ?? null,
+    });
+  });
+
+  controller.handlePointerMove({ target: block });
+  assert.deepEqual(states.at(-1), {
+    open: true,
+    menuOpen: false,
+    insertOpen: false,
+    hidden: false,
+    kind: "paragraph",
+  });
+
+  view.openActions();
+  assert.deepEqual(states.at(-1), {
+    open: true,
+    menuOpen: true,
+    insertOpen: false,
+    hidden: false,
+    kind: "paragraph",
+  });
+
+  menu.close();
+  view.openInsert();
+  assert.deepEqual(states.at(-1), {
+    open: true,
+    menuOpen: false,
+    insertOpen: true,
+    hidden: false,
+    kind: "paragraph",
+  });
+
+  controller.close();
+  assert.deepEqual(states.at(-1), {
+    open: false,
+    menuOpen: false,
+    insertOpen: false,
+    hidden: false,
+    kind: null,
+  });
+
+  unsubscribe();
+  const previousCount = states.length;
+  controller.handlePointerMove({ target: block });
+  assert.equal(states.length, previousCount);
+});
+
 test("Tiptap block handle targets the outer table from inside table cells", () => {
   const { editor, root } = createEditor();
   const table = createElement({ tagName: "TABLE", parent: root });

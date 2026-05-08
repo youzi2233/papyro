@@ -713,6 +713,7 @@ export class TiptapBlockHandleController {
   #selectedBlock = null;
   #officialTrackingActive = false;
   #officialDragHandleLocked = false;
+  #viewStateListeners = new Set();
   #state = {
     open: false,
     target: null,
@@ -746,6 +747,18 @@ export class TiptapBlockHandleController {
     return this.#currentViewState();
   }
 
+  subscribeViewState(listener) {
+    if (typeof listener !== "function") {
+      return () => {};
+    }
+
+    this.#viewStateListeners.add(listener);
+    listener(this.viewState);
+    return () => {
+      this.#viewStateListeners.delete(listener);
+    };
+  }
+
   contains(target) {
     return (
       this.#view.contains?.(target) ||
@@ -771,9 +784,9 @@ export class TiptapBlockHandleController {
     this.#view.mount?.(root);
     this.#menu?.attach?.({ editor, root, entry });
     this.#menu?.setExternalContains?.((target) => this.#view.contains?.(target));
-    this.#menu?.setOpenStateListener?.(() => this.#syncOfficialDragHandleLock());
+    this.#menu?.setOpenStateListener?.(() => this.#syncFloatingMenuState());
     this.#insertMenu?.setExternalContains?.((target) => this.#view.contains?.(target));
-    this.#insertMenu?.setOpenStateListener?.(() => this.#syncOfficialDragHandleLock());
+    this.#insertMenu?.setOpenStateListener?.(() => this.#syncFloatingMenuState());
     this.#bind();
   }
 
@@ -965,7 +978,7 @@ export class TiptapBlockHandleController {
     this.#menu?.open?.(this.#state.target, {
       anchorRect: anchorRect ?? this.#view.actionRect?.(),
     });
-    this.#syncOfficialDragHandleLock();
+    this.#syncFloatingMenuState();
     return true;
   }
 
@@ -979,7 +992,7 @@ export class TiptapBlockHandleController {
     const opened = this.#insertMenu?.openAtBlock?.(this.#state.target, {
       anchorRect: this.#view.insertRect?.(),
     }) !== false;
-    this.#syncOfficialDragHandleLock();
+    this.#syncFloatingMenuState();
     return opened;
   }
 
@@ -1055,7 +1068,7 @@ export class TiptapBlockHandleController {
     if (!this.#drag.moved) {
       this.#menu?.close?.();
       this.#insertMenu?.close?.();
-      this.#syncOfficialDragHandleLock();
+      this.#syncFloatingMenuState();
       this.#root?.classList?.add?.(DRAGGING_CLASS);
     }
     this.#drag.moved = true;
@@ -1172,7 +1185,13 @@ export class TiptapBlockHandleController {
       return;
     }
 
-    this.#view.update?.(this.#currentViewState(), this.#editor);
+    const viewState = this.#currentViewState();
+    this.#view.update?.(viewState, this.#editor);
+    this.#publishViewState(viewState);
+  }
+
+  #publishViewState(viewState = this.#currentViewState()) {
+    this.#viewStateListeners.forEach((listener) => listener(viewState));
   }
 
   #currentViewState() {
@@ -1305,6 +1324,15 @@ export class TiptapBlockHandleController {
     return ok;
   }
 
+  #syncFloatingMenuState() {
+    this.#syncOfficialDragHandleLock();
+    if (this.#state.open) {
+      this.#updateView();
+    } else {
+      this.#publishViewState();
+    }
+  }
+
   close() {
     this.cancelDrag();
     if (!this.#state.open) return;
@@ -1317,6 +1345,7 @@ export class TiptapBlockHandleController {
     this.#menu?.close?.();
     this.#insertMenu?.close?.();
     this.#syncOfficialDragHandleLock();
+    this.#publishViewState();
   }
 
   destroy() {
@@ -1327,6 +1356,7 @@ export class TiptapBlockHandleController {
     this.#setOfficialDragHandleLocked(false);
     this.#menu?.destroy?.();
     this.#view.destroy?.();
+    this.#viewStateListeners.clear();
     this.#editor = null;
     this.#entry = null;
     this.#root = null;
