@@ -143,13 +143,13 @@ test("Tiptap table geometry positions quick add rails on real grid edges", () =>
   assert.deepEqual(tableQuickAddGeometry(grid, tableRect), {
     row: {
       left: 120,
-      top: 159,
+      top: 158,
       width: 240,
       height: 12,
       rail: 240,
     },
     column: {
-      left: 361,
+      left: 360,
       top: 90,
       width: 12,
       height: 68,
@@ -192,7 +192,7 @@ test("Tiptap table geometry positions row column handles and scoped cell menus",
       edgeHovered: true,
       selectedCount: 0,
     }),
-    { left: 200, top: 98, placement: "edge" },
+    { left: 200, top: 107, placement: "edge" },
   );
   assert.deepEqual(
     tableCellMenuTriggerGeometry({
@@ -200,6 +200,6 @@ test("Tiptap table geometry positions row column handles and scoped cell menus",
       selectionKind: "cells",
       selectedCount: 2,
     }),
-    { left: 280, top: 98, placement: "center" },
+    { left: 280, top: 107, placement: "center" },
   );
 });

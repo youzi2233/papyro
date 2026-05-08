@@ -1389,7 +1389,7 @@
     display: grid;
     place-items: center;
     width: 16px;
-    height: 22px;
+    height: 20px;
     border: 1px solid transparent;
     border-radius: 8px;
     background: transparent;
@@ -1401,12 +1401,12 @@
     font-weight: var(--mn-weight-semibold);
     line-height: 1;
     transform: translate(-50%, -50%);
-    opacity: .78;
+    opacity: .74;
 }
 
 .mn-tiptap-table-cell-menu-trigger[data-placement="center"] {
     width: 16px;
-    height: 22px;
+    height: 20px;
     color: color-mix(in srgb, var(--mn-accent) 66%, var(--mn-ink-3));
     opacity: .72;
 }
@@ -1467,7 +1467,7 @@
 .mn-tiptap-table-cell-menu-trigger[data-open="true"] {
     outline: 0;
     width: 20px;
-    height: 22px;
+    height: 20px;
     border-color: color-mix(in srgb, var(--mn-accent) 24%, var(--mn-border));
     background: color-mix(in srgb, var(--mn-surface-raised) 92%, transparent);
     color: var(--mn-accent);
@@ -1520,12 +1520,12 @@
 
 .mn-tiptap-table-quick-add[data-edge="row"]::before,
 .mn-tiptap-table-quick-add[data-edge="column"]::before {
-    border: 1px solid color-mix(in srgb, var(--mn-accent) 16%, var(--mn-border));
-    opacity: .58;
-    background: color-mix(in srgb, var(--mn-surface-raised) 88%, var(--mn-accent) 12%);
+    border: 1px solid color-mix(in srgb, var(--mn-accent) 20%, var(--mn-border));
+    opacity: .74;
+    background: color-mix(in srgb, var(--mn-surface-raised) 92%, var(--mn-accent) 8%);
     box-shadow:
-        0 1px 4px color-mix(in srgb, #000 5%, transparent),
-        0 0 0 1px color-mix(in srgb, var(--mn-editor-bg) 72%, transparent);
+        0 1px 3px color-mix(in srgb, #000 5%, transparent),
+        0 0 0 1px color-mix(in srgb, var(--mn-editor-bg) 78%, transparent);
     transition:
         background-color var(--mn-transition-fast),
         border-color var(--mn-transition-fast),
@@ -1561,23 +1561,23 @@
 
 .mn-tiptap-table-add-row {
     min-width: 42px;
-    height: 14px;
+    height: 12px;
 }
 
 .mn-tiptap-table-add-row[data-edge="row"]::before {
     width: 100%;
-    height: 10px;
+    height: 8px;
     border-radius: var(--mn-radius-round);
     transform: translate(-50%, -50%);
 }
 
 .mn-tiptap-table-add-column {
-    width: 14px;
+    width: 12px;
     min-height: 42px;
 }
 
 .mn-tiptap-table-add-column[data-edge="column"]::before {
-    width: 10px;
+    width: 8px;
     height: 100%;
     border-radius: var(--mn-radius-round);
     transform: translate(-50%, -50%);
@@ -1597,8 +1597,8 @@
 
 .mn-tiptap-table-quick-add:hover::before,
 .mn-tiptap-table-quick-add:focus-visible::before {
-    border-color: color-mix(in srgb, var(--mn-accent) 34%, var(--mn-border));
-    background: color-mix(in srgb, var(--mn-surface-raised) 78%, var(--mn-accent) 22%);
+    border-color: color-mix(in srgb, var(--mn-accent) 38%, var(--mn-border));
+    background: color-mix(in srgb, var(--mn-surface-raised) 84%, var(--mn-accent) 16%);
     box-shadow:
         0 3px 10px color-mix(in srgb, #000 8%, transparent),
         0 0 0 2px color-mix(in srgb, var(--mn-accent) 8%, transparent);
@@ -1693,8 +1693,8 @@
     z-index: 161;
     display: grid;
     place-items: center;
-    width: 17px;
-    height: 17px;
+    width: 18px;
+    height: 18px;
     border: 1px solid transparent;
     border-radius: 7px;
     background: transparent;
@@ -1737,8 +1737,8 @@
 
 .mn-tiptap-table-axis-handle.row,
 .mn-tiptap-table-axis-handle.column {
-    border-color: color-mix(in srgb, var(--mn-border) 46%, transparent);
-    background: color-mix(in srgb, var(--mn-surface-raised) 94%, transparent);
+    border-color: color-mix(in srgb, var(--mn-border) 44%, transparent);
+    background: color-mix(in srgb, var(--mn-surface-raised) 96%, transparent);
     color: color-mix(in srgb, var(--mn-ink-3) 72%, transparent);
     opacity: .98;
     backdrop-filter: blur(10px);
@@ -1746,12 +1746,12 @@
 }
 
 .mn-tiptap-table-axis-handle.row {
-    width: 17px;
+    width: 18px;
     border-radius: 999px;
 }
 
 .mn-tiptap-table-axis-handle.column {
-    height: 17px;
+    height: 18px;
     border-radius: 999px;
 }
 

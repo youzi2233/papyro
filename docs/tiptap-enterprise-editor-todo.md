@@ -264,6 +264,7 @@ Tasks:
 - [ ] Make the entire cell surface editable and focusable, not only a tiny center area.
 - [ ] Ensure cells have no visual gaps, so selection and resize borders look continuous.
 - [ ] On cell click, show a theme-colored active border around that cell.
+  - Current coverage: active and selected cells now use a quieter continuous theme border, the cell menu trigger is anchored to the true vertical cell center, and hover feedback stays secondary to selection.
 - [ ] On cell selection range, show a restrained overlay and a small action trigger on the range edge.
   - Current coverage: the table cell action trigger idles as a small edge dot and expands into a compact four-dot grip only on hover, focus, or open state.
 - [ ] Add cell action menu: merge, split, alignment, text color, background color, clear formatting, copy, delete contents.
@@ -272,6 +273,7 @@ Tasks:
 - [ ] Add resize affordance on column borders that still works while a cell is active.
   - Current coverage: selected table cells no longer reveal column resize handles by selection alone; resize chrome stays tied to hover or active resize intent.
 - [ ] Add quick row and column insertion rails: slim full-width/full-height rails with centered `+`, close enough to the table to be discoverable.
+  - Current coverage: quick-add rails are now flush with the real table grid edge, use compact 12px hit chrome, and keep light/dark contrast without reading like debug overlays.
 - [ ] Keep table controls hidden for adjacent code blocks or other non-table content.
 - [ ] Add Markdown round-trip fixtures for alignment, header rows, merged-cell fallback, and cell background metadata if supported.
 

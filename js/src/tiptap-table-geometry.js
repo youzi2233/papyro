@@ -280,7 +280,7 @@ export function tableQuickAddGeometry(grid, tableRect, {
   rowHeight = 12,
   columnWidth = 12,
   minimumRailSize = 42,
-  gap = 1,
+  gap = 0,
 } = {}) {
   const rect = normalizedRect(tableRect);
   if (!rect) return { row: null, column: null };
@@ -371,11 +371,8 @@ export function tableCellMenuTriggerGeometry({
 
   const centeredCellSelection = selectionKind === "cells" && selectedCount > 1;
   const edgeCellTrigger = selectionKind === "cell" && edgeHovered;
-  const handleHeight = 18;
   const left = normalized.right;
-  const top = selectionKind === "column"
-    ? normalized.bottom - handleHeight / 2
-    : normalized.top + Math.max(0, normalized.height - handleHeight) / 2;
+  const top = normalized.top + normalized.height / 2;
 
   return {
     left,

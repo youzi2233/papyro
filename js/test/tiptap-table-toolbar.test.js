@@ -763,9 +763,9 @@ test("Tiptap table toolbar quick add buttons run row and column insertion", () =
   assert.equal(rowButton.textContent ?? "", "");
   assert.equal(columnButton.textContent ?? "", "");
   assert.equal(rowButton.style.left, "120px");
-  assert.equal(rowButton.style.top, "159px");
+  assert.equal(rowButton.style.top, "158px");
   assert.equal(rowButton.style.properties.get("--mn-table-quick-add-rail"), "240px");
-  assert.equal(columnButton.style.left, "361px");
+  assert.equal(columnButton.style.left, "360px");
   assert.equal(columnButton.style.top, "90px");
   assert.equal(columnButton.style.properties.get("--mn-table-quick-add-rail"), "68px");
 
@@ -1141,10 +1141,10 @@ test("Tiptap table toolbar anchors quick add buttons to the table grid edges", (
   );
 
   assert.equal(rowButton.style.left, "120px");
-  assert.equal(rowButton.style.top, "159px");
+  assert.equal(rowButton.style.top, "158px");
   assert.equal(rowButton.dataset.edge, "row");
   assert.equal(rowButton.style.properties.get("--mn-table-quick-add-rail"), "240px");
-  assert.equal(columnButton.style.left, "361px");
+  assert.equal(columnButton.style.left, "360px");
   assert.equal(columnButton.style.top, "90px");
   assert.equal(columnButton.dataset.edge, "column");
   assert.equal(columnButton.style.properties.get("--mn-table-quick-add-rail"), "68px");
@@ -1782,7 +1782,7 @@ test("Tiptap table toolbar reveals the cell trigger after selecting a cell", () 
   controller.refresh(editor);
   assert.equal(trigger.hidden, false);
   assert.equal(trigger.style.left, "200px");
-  assert.equal(trigger.style.top, "98px");
+  assert.equal(trigger.style.top, "107px");
   assert.equal(controller.state.selection.kind, "cell");
 });
 
@@ -1854,7 +1854,7 @@ test("Tiptap table toolbar anchors multi-cell actions to the head cell", () => {
   );
   assert.equal(controller.state.selection.kind, "cells");
   assert.equal(trigger.style.left, "280px");
-  assert.equal(trigger.style.top, "98px");
+  assert.equal(trigger.style.top, "107px");
   assert.equal(trigger.dataset.selectionKind, "cells");
   assert.equal(trigger.dataset.placement, "center");
   assert.equal(trigger.dataset.selectedCount, "2");
@@ -2181,7 +2181,7 @@ test("Tiptap table toolbar anchors row and column menus to the active selection"
   assert.equal(root.hidden, false);
   assert.equal(root.style.top, "166px");
   assert.equal(trigger.style.left, "360px");
-  assert.equal(trigger.style.top, "132px");
+  assert.equal(trigger.style.top, "141px");
   assert.equal(backdrop.hidden, false);
   assert.equal(backdrop.style.left, "120px");
   assert.equal(backdrop.style.width, "240px");
@@ -2193,7 +2193,7 @@ test("Tiptap table toolbar anchors row and column menus to the active selection"
   assert.equal(controller.state.selection.kind, "column");
   assert.equal(root.style.top, "166px");
   assert.equal(trigger.style.left, "200px");
-  assert.equal(trigger.style.top, "149px");
+  assert.equal(trigger.style.top, "124px");
   assert.equal(backdrop.style.left, "120px");
   assert.equal(backdrop.style.width, "80px");
   assert.equal(backdrop.style.height, "68px");
