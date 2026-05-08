@@ -146,6 +146,7 @@ Tasks:
 - [ ] Expose stable runtime hooks: editor instance, language, view mode, preferences, command executor, and active selection snapshot.
   - Current coverage: React runtime context now builds from a pure runtime model, exposes preferences, command executor, and active selection snapshot hooks, and normalizes cursor/range/table selections for future React block-handle and table-chrome components. The code-block command model has started moving out of migration controllers; table command models still need to be lifted further.
   - Current coverage: React runtime selection now follows Tiptap `transaction` and `selectionUpdate` events through `useSyncExternalStore`, using value-stable snapshots so React chrome does not read stale selections after editor transactions.
+  - Current coverage: the React command executor now exposes a table-action scope routed through `entry.tableToolbar`, giving future React table chrome a stable command path instead of reaching directly into migration controller internals or raw `editor.commands`.
 - [ ] Keep the existing DOM controllers disabled behind a runtime flag while React replacements are tested.
 
 Acceptance criteria:

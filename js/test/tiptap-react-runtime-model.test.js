@@ -93,6 +93,7 @@ test("Tiptap React command executor routes known command scopes", () => {
     formatCommands: controller("format"),
     historyCommands: controller("history"),
     blockActions: controller("block"),
+    tableToolbar: controller("table"),
   };
   const executor = createPapyroTiptapCommandExecutor({
     editor: { id: "editor" },
@@ -104,12 +105,27 @@ test("Tiptap React command executor routes known command scopes", () => {
   assert.equal(executor.runFormat("bold").ok, true);
   assert.equal(executor.runHistory("undo").ok, true);
   assert.equal(executor.runBlockAction("copy-block").ok, true);
+  assert.equal(executor.runTableAction("merge-cells").ok, true);
   assert.deepEqual(calls, [
     ["slash", "table", "tab-a", "insert"],
     ["format", "bold", "tab-a", undefined],
     ["history", "undo", "tab-a", undefined],
     ["block", "copy-block", "tab-a", undefined],
+    ["table", "merge-cells", "tab-a", undefined],
   ]);
+});
+
+test("Tiptap React command executor reports missing table command controllers", () => {
+  const executor = createPapyroTiptapCommandExecutor({
+    entry: {},
+    tabId: "tab-a",
+  });
+
+  assert.deepEqual(executor.runTableAction("merge-cells"), {
+    ok: false,
+    commandId: "merge-cells",
+    error: "missing_table_command_controller",
+  });
 });
 
 test("Tiptap React runtime model exposes stable hooks data", () => {

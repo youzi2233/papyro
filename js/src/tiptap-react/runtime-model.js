@@ -160,6 +160,15 @@ export function createPapyroTiptapCommandExecutor({
       });
     }
 
+    if (scope === "table" || scope === "table-action") {
+      return runControllerCommand({
+        controller: context.entry?.tableCommands ?? context.entry?.tableToolbar,
+        commandId,
+        context,
+        missingError: "missing_table_command_controller",
+      });
+    }
+
     return {
       ok: false,
       commandId,
@@ -173,6 +182,7 @@ export function createPapyroTiptapCommandExecutor({
     runFormat: (commandId, options) => run("format", commandId, options),
     runHistory: (commandId, options) => run("history", commandId, options),
     runBlockAction: (commandId, options) => run("block-action", commandId, options),
+    runTableAction: (commandId, options) => run("table-action", commandId, options),
   });
 }
 
