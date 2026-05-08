@@ -272,6 +272,23 @@ test("React table context menu is injected at the editor entry boundary", () => 
   assert.doesNotMatch(tableToolbarViewSource, /tiptap-react\/index\.js/u);
 });
 
+test("React table context menu keeps fallback command accessibility semantics", () => {
+  assert.match(tableContextMenuSource, /function tableCommandAccessibleLabel\(command\)/u);
+  assert.match(
+    tableContextMenuSource,
+    /command\.description\?\.trim\?\.\(\) \?\? ""/u,
+  );
+  assert.match(
+    tableContextMenuSource,
+    /description \? `\$\{command\.title\}\. \$\{description\}` : command\.title/u,
+  );
+  assert.match(
+    tableContextMenuSource,
+    /"aria-label":\s*tableCommandAccessibleLabel\(command\)/u,
+  );
+  assert.doesNotMatch(tableContextMenuSource, /"aria-label":\s*command\.title/u);
+});
+
 test("React table chrome owns the non-menu table overlay rendering path", () => {
   assert.match(tableChromeRendererSource, /createRoot/u);
   assert.match(tableChromeRendererSource, /<PapyroTableChrome/u);

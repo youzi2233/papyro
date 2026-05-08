@@ -29,6 +29,11 @@ function TableCommandVisual({ command }) {
   );
 }
 
+function tableCommandAccessibleLabel(command) {
+  const description = command.description?.trim?.() ?? "";
+  return description ? `${command.title}. ${description}` : command.title;
+}
+
 function TableCommandButton({
   command,
   commandIndex,
@@ -66,7 +71,7 @@ function TableCommandButton({
       title={command.title}
       disabled={!!command.disabled}
       aria={{
-        "aria-label": command.title,
+        "aria-label": tableCommandAccessibleLabel(command),
         "aria-disabled": command.disabled ? "true" : "false",
       }}
       data={{
