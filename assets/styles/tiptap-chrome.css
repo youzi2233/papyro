@@ -483,11 +483,13 @@
 }
 
 .mn-tiptap-official-drag-handle-bridge {
-    width: 1px;
-    height: 1px;
-    opacity: 0;
-    overflow: hidden;
-    pointer-events: none;
+    z-index: 155;
+    width: auto;
+    height: 24px;
+    opacity: 1;
+    overflow: visible;
+    pointer-events: auto;
+    user-select: none;
 }
 
 .mn-tiptap-slash-menu {
@@ -2218,7 +2220,8 @@
     transform: rotate(-45deg);
 }
 
-.mn-tiptap-block-handle {
+.mn-tiptap-block-handle,
+.mn-tiptap-block-handle-controls {
     position: fixed;
     z-index: 155;
     display: flex;
@@ -2229,7 +2232,13 @@
     user-select: none;
 }
 
-.mn-tiptap-block-handle.hidden {
+.mn-tiptap-block-handle-controls {
+    position: static;
+    padding-right: 0;
+}
+
+.mn-tiptap-block-handle.hidden,
+.mn-tiptap-block-handle-controls.hidden {
     display: none;
 }
 
@@ -2252,14 +2261,18 @@
         transform var(--mn-transition-fast);
 }
 
-.mn-tiptap-block-handle[data-dragging="true"] .mn-tiptap-block-handle-button {
+.mn-tiptap-block-handle[data-dragging="true"] .mn-tiptap-block-handle-button,
+.mn-tiptap-block-handle-controls[data-dragging="true"] .mn-tiptap-block-handle-button,
+.mn-tiptap-official-drag-handle-bridge[data-dragging="true"] .mn-tiptap-block-handle-button {
     cursor: grabbing;
     border-color: var(--mn-accent);
     color: var(--mn-accent);
 }
 
 .mn-tiptap-block-handle[data-menu-open="true"] .mn-tiptap-block-handle-action,
-.mn-tiptap-block-handle[data-insert-open="true"] .mn-tiptap-block-handle-insert {
+.mn-tiptap-block-handle[data-insert-open="true"] .mn-tiptap-block-handle-insert,
+.mn-tiptap-block-handle-controls[data-menu-open="true"] .mn-tiptap-block-handle-action,
+.mn-tiptap-block-handle-controls[data-insert-open="true"] .mn-tiptap-block-handle-insert {
     border-color: color-mix(in srgb, var(--mn-accent) 24%, var(--mn-border));
     background: color-mix(in srgb, var(--mn-accent) 7%, var(--mn-surface-raised));
     color: var(--mn-accent);

@@ -219,8 +219,8 @@ Tasks:
   - Foundation added: the React official DragHandle bridge now registers only for editable Hybrid mode with a block-handle controller, so Source/Preview do not keep the official hover plugin active.
   - Foundation added: block action and insert menus now lock the official DragHandle plugin while floating menus are open, using `lockDragHandle`/`unlockDragHandle` when available and `setMeta("lockDragHandle", ...)` as the React bridge fallback.
 - [ ] React-render the handle with two distinct controls: drag/action handle and insert `+`.
-  - Done for the visual view: desktop/mobile bundle entry now injects a React block-handle view while the existing controller still owns behavior.
-  - Still required: move behavior to the official `DragHandle`/`NodeRange` integration.
+  - Current coverage: desktop/mobile bundle entry injects the React block-handle view for migration fallback, and the official `DragHandle` React bridge now renders the same Papyro `+` and action controls directly inside the official drag-handle element. Official hover tracking and positioning therefore own the visible handle in Hybrid mode, while the old floating view is kept only for menu anchoring, drop indicators, and fallback paths.
+  - Still required: move drag reorder execution fully onto the official drag/drop path and reduce the compatibility controller further.
 - [ ] Open the block action menu on normal click beside the pointer, not after long press.
 - [ ] Block native WebView context menus on right-click and show only Papyro actions.
 - [ ] Highlight the whole semantic block, including inline code and mixed marks.

@@ -34,6 +34,10 @@ const officialDragHandleBridgeSource = readFileSync(
   new URL("../src/tiptap-react/official-drag-handle-bridge.jsx", import.meta.url),
   "utf8",
 );
+const blockHandleComponentSource = readFileSync(
+  new URL("../src/tiptap-react/components/block-handle.jsx", import.meta.url),
+  "utf8",
+);
 const commandMenuSource = readFileSync(
   new URL("../src/tiptap-react/components/command-menu.jsx", import.meta.url),
   "utf8",
@@ -138,11 +142,15 @@ test("React code block node view follows Tiptap React node view lifecycle", () =
 });
 
 test("official drag handle bridge keeps Tiptap callbacks stable across renders", () => {
+  assert.match(officialDragHandleBridgeSource, /PapyroBlockHandle/u);
   assert.match(officialDragHandleBridgeSource, /useCallback/u);
   assert.match(officialDragHandleBridgeSource, /useRef/u);
   assert.match(officialDragHandleBridgeSource, /entryRef\.current\s*=\s*entry/u);
   assert.match(officialDragHandleBridgeSource, /onNodeChange=\{handleNodeChange\}/u);
   assert.match(officialDragHandleBridgeSource, /onElementDragEnd=\{handleElementDragEnd\}/u);
+  assert.match(officialDragHandleBridgeSource, /entry\?\.blockHandle\?\.viewState/u);
+  assert.match(blockHandleComponentSource, /mn-tiptap-block-handle-controls/u);
+  assert.match(blockHandleComponentSource, /rootProps/u);
 });
 
 test("React command chrome uses shared menu primitives", () => {

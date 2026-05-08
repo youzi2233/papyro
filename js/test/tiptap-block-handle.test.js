@@ -457,6 +457,50 @@ test("Tiptap block handle opens from official drag handle node changes", () => {
     ["mount", ""],
     ["update", "paragraph", 7],
   ]);
+  assert.equal(controller.viewState.officialTracking, true);
+  assert.equal(controller.viewState.floatingViewHidden, true);
+  assert.equal(controller.viewState.target.kind, "paragraph");
+  assert.equal(typeof controller.viewState.onInsertPointerDown, "function");
+  assert.equal(typeof controller.viewState.onActionPointerDown, "function");
+});
+
+test("Tiptap block handle exposes bridge actions through the official view state", () => {
+  const { block, editor } = createEditor();
+  editor.view.nodeDOM = (pos) => (pos === 7 ? block : null);
+  const insertMenu = createInsertMenuSpy();
+  const menu = createMenuSpy();
+  const view = createViewSpy();
+  const controller = createTiptapBlockHandleController({ insertMenu, menu, view });
+  controller.attach({ editor, root: editor.view.dom, entry: { viewMode: "hybrid" } });
+  controller.handleOfficialNodeChange({
+    node: { nodeSize: 6, type: { name: "paragraph" } },
+    pos: 7,
+  });
+  const events = [];
+  const event = {
+    preventDefault() {
+      events.push("preventDefault");
+    },
+    stopPropagation() {
+      events.push("stopPropagation");
+    },
+  };
+
+  controller.viewState.onInsertPointerDown(event);
+  assert.equal(insertMenu.state.open, true);
+  assert.equal(controller.viewState.insertOpen, true);
+  assert.equal(controller.viewState.floatingViewHidden, false);
+
+  insertMenu.close();
+  controller.viewState.onActionContextMenu(event);
+
+  assert.equal(menu.state.open, true);
+  assert.deepEqual(events, [
+    "preventDefault",
+    "stopPropagation",
+    "preventDefault",
+    "stopPropagation",
+  ]);
 });
 
 test("Tiptap block handle keeps open menus anchored during official hover changes", () => {

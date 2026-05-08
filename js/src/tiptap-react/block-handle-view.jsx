@@ -32,6 +32,8 @@ export class TiptapReactBlockHandleView {
   #root = null;
   #reactRoot = null;
   #dropIndicator = null;
+  #officialMode = false;
+  #lastState = null;
   #insertButton = null;
   #actionButton = null;
   #onContextAction = null;
@@ -84,34 +86,42 @@ export class TiptapReactBlockHandleView {
       return;
     }
 
+    this.#lastState = state;
     this.#onContextAction = state.openActions ?? null;
     this.#onActionRelease = state.releaseAction ?? null;
     this.#onActionClick = state.clickAction ?? null;
     this.#onInsert = state.openInsert ?? null;
     this.#onDragStart = state.startDrag ?? null;
 
-    flushSync(() => {
-      this.#reactRoot.render(
-        <PapyroBlockHandle
-          state={{
-            ...state,
-            onInsertPointerDown: (event) => this.#handleInsertPointerDown(event),
-            onInsertClick: (event) => this.#handleInsertClick(event),
-            onInsertContextMenu: (event) => this.#handleInsertContextMenu(event),
-            onActionPointerDown: (event) => this.#handleActionPointerDown(event),
-            onActionPointerUp: (event) => this.#handleActionPointerUp(event),
-            onActionClick: (event) => this.#handleActionClick(event),
-            onActionContextMenu: (event) => this.#handleActionContextMenu(event),
-            onAuxClick: stopEvent,
-          }}
-        />,
-      );
-    });
+    this.#officialMode = state.officialTracking === true;
+    if (this.#officialMode) {
+      this.#insertButton = null;
+      this.#actionButton = null;
+      this.#reactRoot.render(null);
+    } else {
+      flushSync(() => {
+        this.#reactRoot.render(
+          <PapyroBlockHandle
+            state={{
+              ...state,
+              onInsertPointerDown: (event) => this.#handleInsertPointerDown(event),
+              onInsertClick: (event) => this.#handleInsertClick(event),
+              onInsertContextMenu: (event) => this.#handleInsertContextMenu(event),
+              onActionPointerDown: (event) => this.#handleActionPointerDown(event),
+              onActionPointerUp: (event) => this.#handleActionPointerUp(event),
+              onActionClick: (event) => this.#handleActionClick(event),
+              onActionContextMenu: (event) => this.#handleActionContextMenu(event),
+              onAuxClick: stopEvent,
+            }}
+          />,
+        );
+      });
 
-    this.#insertButton = this.#root.querySelector?.(".mn-tiptap-block-handle-insert") ?? null;
-    this.#actionButton = this.#root.querySelector?.(".mn-tiptap-block-handle-action") ?? null;
+      this.#insertButton = this.#root.querySelector?.(".mn-tiptap-block-handle-insert") ?? null;
+      this.#actionButton = this.#root.querySelector?.(".mn-tiptap-block-handle-action") ?? null;
+    }
     this.#position(state);
-    setHidden(this.#root, false);
+    setHidden(this.#root, this.#officialMode);
   }
 
   updateDrag(state) {
@@ -157,11 +167,15 @@ export class TiptapReactBlockHandleView {
   }
 
   actionRect() {
-    return this.#actionButton?.getBoundingClientRect?.() ?? this.#root?.getBoundingClientRect?.();
+    return this.#actionButton?.getBoundingClientRect?.()
+      ?? this.#lastState?.target?.actionRect?.()
+      ?? this.#root?.getBoundingClientRect?.();
   }
 
   insertRect() {
-    return this.#insertButton?.getBoundingClientRect?.() ?? this.#root?.getBoundingClientRect?.();
+    return this.#insertButton?.getBoundingClientRect?.()
+      ?? this.#lastState?.target?.insertRect?.()
+      ?? this.#root?.getBoundingClientRect?.();
   }
 
   hide() {
@@ -183,6 +197,14 @@ export class TiptapReactBlockHandleView {
   #position(state) {
     const rect = state.target.block.getBoundingClientRect?.();
     if (!rect) return;
+
+    if (this.#officialMode) {
+      this.#root.dataset.blockKind = state.target.kind;
+      this.#root.dataset.dragging = state.dragging ? "true" : "false";
+      this.#root.dataset.menuOpen = state.menuOpen ? "true" : "false";
+      this.#root.dataset.insertOpen = state.insertOpen ? "true" : "false";
+      return;
+    }
 
     const viewportWidth =
       state.target.block.ownerDocument?.documentElement?.clientWidth ??

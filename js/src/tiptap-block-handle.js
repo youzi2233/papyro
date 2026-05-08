@@ -708,6 +708,10 @@ export class TiptapBlockHandleController {
     };
   }
 
+  get viewState() {
+    return this.#currentViewState();
+  }
+
   contains(target) {
     return (
       this.#view.contains?.(target) ||
@@ -1132,25 +1136,65 @@ export class TiptapBlockHandleController {
       return;
     }
 
+    this.#view.update?.(this.#currentViewState(), this.#editor);
+  }
+
+  #currentViewState() {
     const language = this.#entry?.preferences?.language ?? "english";
-    this.#view.update?.(
-      {
-        ...this.#state,
-        labels: {
-          insert: blockHandleInsertLabel(language),
-          actions: blockHandleActionsLabel(language),
-        },
-        dragging: !!this.#drag,
-        menuOpen: this.#menu?.state?.open === true,
-        insertOpen: this.#insertMenu?.state?.open === true,
-        openActions: (event) => this.openActions(event),
-        openInsert: () => this.openInsert(),
-        startDrag: (event) => this.startDrag(event),
-        releaseAction: (event) => this.releaseAction(event),
-        clickAction: (event) => this.clickAction(event),
+    const target = this.#state.target
+      ? {
+          ...this.#state.target,
+          actionRect: () => this.#view.actionRect?.(),
+          insertRect: () => this.#view.insertRect?.(),
+        }
+      : null;
+
+    return {
+      ...this.#state,
+      target,
+      labels: {
+        insert: blockHandleInsertLabel(language),
+        actions: blockHandleActionsLabel(language),
       },
-      this.#editor,
-    );
+      dragging: !!this.#drag,
+      menuOpen: this.#menu?.state?.open === true,
+      insertOpen: this.#insertMenu?.state?.open === true,
+      officialTracking: this.#officialTrackingActive,
+      floatingViewHidden: this.#officialTrackingActive && !this.#hasOpenFloatingMenu(),
+      openActions: (event) => this.openActions(event),
+      openInsert: () => this.openInsert(),
+      startDrag: (event) => this.startDrag(event),
+      releaseAction: (event) => this.releaseAction(event),
+      clickAction: (event) => this.clickAction(event),
+      onInsertPointerDown: (event) => {
+        event?.preventDefault?.();
+        event?.stopPropagation?.();
+        this.openInsert();
+      },
+      onInsertClick: (event) => {
+        event?.preventDefault?.();
+        event?.stopPropagation?.();
+      },
+      onInsertContextMenu: (event) => {
+        event?.preventDefault?.();
+        event?.stopPropagation?.();
+      },
+      onActionPointerDown: (event) => this.startDrag(event),
+      onActionPointerUp: (event) => this.releaseAction(event),
+      onActionClick: (event) => {
+        event?.preventDefault?.();
+        event?.stopPropagation?.();
+      },
+      onActionContextMenu: (event) => {
+        event?.preventDefault?.();
+        event?.stopPropagation?.();
+        this.openActions(event);
+      },
+      onAuxClick: (event) => {
+        event?.preventDefault?.();
+        event?.stopPropagation?.();
+      },
+    };
   }
 
   #selectTarget(target) {
