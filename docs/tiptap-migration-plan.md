@@ -251,6 +251,7 @@ flowchart TD
 - [x] Block drag-and-drop reorders blocks through the Papyro handle and keeps the transaction mover covered by JS tests.
 - [x] Document the focused [Tiptap Release Smoke Checklist](tiptap-release-smoke.md).
 - [ ] Execute manual smoke before release: Source/Hybrid/Preview, Chinese IME, paste, undo, tables, math, Mermaid, images, outline, failed saves, and OS-opened Markdown files.
+- [ ] After final acceptance and user sign-off, merge `feat-tiptap` back into the main branch as the migration closeout.
 
 ## Risks
 
@@ -271,3 +272,4 @@ flowchart TD
 - Markdown round-trip tests cover headings, paragraphs, lists, tasks, links, inline code, code blocks, tables, math, Mermaid, images, and callouts.
 - Tables, math, Mermaid, images, and callouts are testable extensions or adapter modules, not one-off DOM hacks.
 - Generated bundles, desktop/mobile assets, Rust checks, JS tests, and UI checks all pass.
+- The accepted `feat-tiptap` branch has been merged back into the main branch.

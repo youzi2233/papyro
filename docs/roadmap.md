@@ -363,6 +363,7 @@ Tasks:
 - [x] Implement full block drag-and-drop reordering through the Papyro block action handle with a tested ProseMirror transaction mover and drop indicator.
 - [x] Define the release-candidate [Tiptap Release Smoke Checklist](tiptap-release-smoke.md).
 - [ ] Execute release-candidate manual smoke for Source/Hybrid/Preview, Chinese IME, paste, undo, tables, math, Mermaid, images, outline, failed saves, and OS-opened Markdown files.
+- [ ] After final acceptance and user sign-off, merge `feat-tiptap` back into the main branch.
 
 ## Phase 4.5 - Themes, Typography, And Markdown Styles
 

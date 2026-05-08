@@ -551,6 +551,7 @@ Tasks:
 - [ ] Run full automated checks.
 - [ ] Run the real mounted editor smoke gate before committing editor runtime changes.
 - [ ] Execute manual Tiptap release smoke in the desktop WebView.
+- [ ] After the free/open-source enterprise editor experience passes final acceptance and user sign-off, merge `feat-tiptap` back into the main branch as the migration closeout.
 
 Acceptance criteria:
 
@@ -558,6 +559,7 @@ Acceptance criteria:
 - File line budget passes.
 - Generated `assets/editor.js` is in sync.
 - Manual smoke is documented before merging `feat-tiptap`.
+- `feat-tiptap` is merged only after the release-candidate manual smoke is recorded and accepted.
 
 Verification:
 

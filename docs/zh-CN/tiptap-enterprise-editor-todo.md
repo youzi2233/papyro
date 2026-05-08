@@ -541,6 +541,7 @@ node scripts/check-ui-contrast.js
 - [ ] 跑完整自动化检查。
 - [ ] 提交编辑器 runtime 改动前，运行真实挂载的编辑器 smoke gate。
 - [ ] 在桌面 WebView 执行完整 Tiptap release smoke。
+- [ ] 当免费/开源路径的企业级 Tiptap 编辑体验通过最终验收并得到用户确认后，将 `feat-tiptap` 合并回主分支，作为迁移收口步骤。
 
 验收标准：
 
@@ -548,6 +549,7 @@ node scripts/check-ui-contrast.js
 - 文件行数预算通过。
 - 生成的 `assets/editor.js` 已同步。
 - 合并 `feat-tiptap` 前，手工 smoke 结果已记录。
+- 只有发布候选手工 smoke 已记录并通过确认后，才允许合并 `feat-tiptap`。
 
 验证：
 

@@ -258,6 +258,7 @@ flowchart TD
 - [x] 块拖拽排序通过 Papyro 操作柄完成，并用 JS 测试覆盖 transaction 移动逻辑。
 - [x] 文档化专项 [Tiptap 发布候选 Smoke 检查清单](tiptap-release-smoke.md)。
 - [ ] 执行发布前手工 smoke：Source/Hybrid/Preview、中文 IME、粘贴、撤销、表格、公式、Mermaid、图片、大纲、保存失败、外部文件打开。
+- [ ] 通过最终验收并得到用户确认后，将 `feat-tiptap` 合并回主分支，作为迁移收口步骤。
 
 ## 关键风险和处理策略
 
@@ -280,3 +281,4 @@ Tiptap 迁移完成必须同时满足：
 - Markdown round-trip 覆盖标题、段落、列表、任务、链接、行内代码、代码块、表格、数学、Mermaid 和图片。
 - 表格、公式、Mermaid、图片不是一次性 DOM hack，而是可测试、可维护的 extension 或 adapter 模块。
 - 生成 bundle、桌面/mobile asset、Rust checks、JS tests 和 UI 检查全部通过。
+- 已验收的 `feat-tiptap` 分支已合并回主分支。
