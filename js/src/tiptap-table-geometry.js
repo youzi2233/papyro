@@ -510,6 +510,37 @@ export function complexBlockTarget(editor, block) {
   };
 }
 
+function runCodeBlockExit(editor, blockPos, node) {
+  if (node?.type?.name !== "codeBlock" || !Number.isFinite(blockPos)) return false;
+
+  const selectionPos = blockPos + 1;
+  const chain = typeof editor?.chain === "function" ? editor.chain() : null;
+  if (
+    chain &&
+    typeof chain.setTextSelection === "function" &&
+    typeof chain.exitCode === "function" &&
+    typeof chain.run === "function"
+  ) {
+    const selected = chain.setTextSelection(selectionPos) ?? chain;
+    const exited = selected.exitCode?.() ?? selected;
+    const focused = exited.focus?.() ?? exited;
+    return focused.run?.() !== false;
+  }
+
+  if (
+    typeof editor?.commands?.setTextSelection === "function" &&
+    typeof editor?.commands?.exitCode === "function"
+  ) {
+    const selected = editor.commands.setTextSelection(selectionPos) !== false;
+    if (selected && editor.commands.exitCode() !== false) {
+      editor.commands.focus?.();
+      return true;
+    }
+  }
+
+  return false;
+}
+
 export function insertParagraphAfterComplexBlock(editor, block) {
   const doc = editor?.state?.doc;
   const view = editor?.view;
@@ -517,6 +548,8 @@ export function insertParagraphAfterComplexBlock(editor, block) {
 
   const blockPos = complexBlockElementPosition(view, block);
   const node = Number.isFinite(blockPos) ? doc.nodeAt?.(blockPos) : null;
+  if (runCodeBlockExit(editor, blockPos, node)) return true;
+
   const insertPos = Number.isFinite(blockPos)
     ? blockPos + Math.max(1, node?.nodeSize ?? 1)
     : null;

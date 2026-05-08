@@ -352,6 +352,7 @@ Tasks:
   - Current coverage: release smoke and Markdown tests now cover Rust, JavaScript, Markdown, plaintext, custom safe language ids, and language-less automatic fences so saved notes cannot silently drop code fence metadata.
 - [ ] Add insertion affordance before and after code blocks, especially when adjacent to tables.
   - Current coverage: the complex-block insert rail has an independent, more forgiving bottom hot zone for table/code adjacency without widening table resize or quick-add intent.
+  - Current coverage: code-block continuation now prefers Tiptap's official `exitCode()` command before falling back to explicit paragraph insertion.
 
 Acceptance criteria:
 

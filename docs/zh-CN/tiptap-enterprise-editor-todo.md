@@ -347,6 +347,7 @@ node scripts/check-tiptap-release-smoke.js
   - 当前覆盖：release smoke 和 Markdown 测试已覆盖 Rust、JavaScript、Markdown、plaintext、自定义安全语言 id 以及无语言自动 fence，避免保存笔记时静默丢失代码块语言元数据。
 - [ ] 为代码块前后增加插入入口，尤其是表格紧挨代码块的场景。
   - 当前覆盖：复杂块插入 rail 已有独立且更宽容的底部热区，用于 table/code 相邻处插入，同时不扩大表格 resize 或 quick-add 的意图范围。
+  - 当前覆盖：代码块后继续写作时优先使用 Tiptap 官方 `exitCode()` 命令，不可用时再回退到显式插入段落。
 
 验收标准：
 

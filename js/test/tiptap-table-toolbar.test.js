@@ -1057,6 +1057,123 @@ test("Tiptap table toolbar exposes the insert-between rail after code blocks", (
   ]);
 });
 
+test("Tiptap table toolbar uses the official exitCode path after code blocks", () => {
+  const { created, documentRef } = createDocument();
+  const calls = [];
+  const codeBlock = {
+    nodeType: 1,
+    tagName: "PRE",
+    className: "mn-tiptap-code-block",
+    ownerDocument: {
+      documentElement: {
+        clientWidth: 1000,
+        clientHeight: 800,
+      },
+    },
+    contains(target) {
+      return target === this;
+    },
+    closest(selector) {
+      if (selector.includes(".mn-tiptap-code-block") || selector.includes("pre")) return this;
+      return null;
+    },
+    getBoundingClientRect: () => ({
+      left: 160,
+      top: 140,
+      right: 520,
+      bottom: 220,
+      width: 360,
+      height: 80,
+    }),
+  };
+  const root = {
+    listeners: new Map(),
+    contains: (target) => target === codeBlock,
+    addEventListener(type, listener) {
+      this.listeners.set(type, listener);
+    },
+    removeEventListener(type, listener) {
+      if (this.listeners.get(type) === listener) this.listeners.delete(type);
+    },
+  };
+  codeBlock.parentElement = root;
+  const codeNode = { nodeSize: 12, type: { name: "codeBlock" } };
+  const editor = {
+    state: {
+      selection: { from: 4 },
+      doc: {
+        nodeAt(pos) {
+          return pos === 5 ? codeNode : null;
+        },
+      },
+    },
+    view: {
+      dom: root,
+      domAtPos() {
+        return { node: codeBlock };
+      },
+      posAtDOM(target) {
+        return target === codeBlock ? 5 : 9;
+      },
+    },
+    chain() {
+      return {
+        setTextSelection(position) {
+          calls.push(["setTextSelection", position]);
+          return this;
+        },
+        exitCode() {
+          calls.push(["exitCode"]);
+          return this;
+        },
+        focus() {
+          calls.push(["focus"]);
+          return this;
+        },
+        run() {
+          calls.push(["run"]);
+          return true;
+        },
+      };
+    },
+    commands: {
+      insertContentAt(position, content, options) {
+        calls.push(["insertContentAt", position, content, options]);
+        return true;
+      },
+      setTextSelection(position) {
+        calls.push(["fallbackSetTextSelection", position]);
+        return true;
+      },
+      focus() {
+        calls.push(["fallbackFocus"]);
+      },
+    },
+  };
+  const controller = createTiptapTableToolbarController({
+    dom: { document: documentRef },
+  });
+
+  controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
+  root.listeners.get("pointermove")({
+    target: codeBlock,
+    clientX: 240,
+    clientY: 216,
+  });
+  const insertRail = created.find((element) =>
+    String(element.className).includes("mn-tiptap-complex-block-insert"),
+  );
+
+  insertRail.onpointerdown({ preventDefault() {}, stopPropagation() {} });
+
+  assert.deepEqual(calls, [
+    ["setTextSelection", 6],
+    ["exitCode"],
+    ["focus"],
+    ["run"],
+  ]);
+});
+
 test("Tiptap table toolbar opens the insert menu after complex blocks when available", () => {
   const { created, documentRef } = createDocument();
   const calls = [];
