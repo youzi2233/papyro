@@ -861,7 +861,14 @@ export function tableHoverWithIntent({
     y >= cellRect.top &&
     y < cellRect.top + Math.min(TABLE_AXIS_INNER_HOT_ZONE_PX, cellRect.height * 0.24);
 
-  if (wantsAddColumn && wantsAddRow) {
+  if (
+    wantsRowHandleFromCell &&
+    wantsColumnHandleFromCell &&
+    !insideBottomRail &&
+    !insideRightRail
+  ) {
+    hover.edge = "axis-corner";
+  } else if (wantsAddColumn && wantsAddRow) {
     hover.edge = (cellRect.right - x) <= (cellRect.bottom - y) ? "add-column" : "add-row";
   } else if (wantsAddColumn) {
     hover.edge = "add-column";

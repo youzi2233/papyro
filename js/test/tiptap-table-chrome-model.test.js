@@ -215,6 +215,18 @@ test("table chrome model limits axis handles to the hovered first row or column 
   assert.deepEqual(column.rows, []);
   assert.deepEqual(column.columns.map((handle) => handle.index), [2]);
 
+  const corner = createTableAxisHandleChromeState(baseState({
+    fixture,
+    hover: {
+      edge: "axis-corner",
+      rowIndex: 0,
+      columnIndex: 0,
+      cell: cells[0].cell,
+    },
+  }));
+  assert.deepEqual(corner.rows.map((handle) => handle.index), [0]);
+  assert.deepEqual(corner.columns.map((handle) => handle.index), [0]);
+
   const selectedHoverState = baseState({
     fixture,
     hover: {

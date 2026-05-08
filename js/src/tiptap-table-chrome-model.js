@@ -202,13 +202,13 @@ export function createTableAxisHandleChromeState(state, {
   );
   const hoverRowIndex =
     axisHoverAllowed &&
-    hoverEdge === "row-handle" &&
+    (hoverEdge === "row-handle" || hoverEdge === "axis-corner") &&
     state?.hover?.columnIndex === 0
       ? state.hover.rowIndex
       : null;
   const hoverColumnIndex =
     axisHoverAllowed &&
-    hoverEdge === "column-handle" &&
+    (hoverEdge === "column-handle" || hoverEdge === "axis-corner") &&
     state?.hover?.rowIndex === 0
       ? state.hover.columnIndex
       : null;

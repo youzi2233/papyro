@@ -1944,6 +1944,10 @@ test("Tiptap table axis handles reveal only for the hovered first row or column 
   assert.equal(visibleAxisHandles("row").length, 0);
   assert.equal(visibleAxisHandles("column").length, 0);
 
+  editor.view.dom.listeners.get("pointermove")({ target: cells[0], clientX: 122, clientY: 92 });
+  assert.equal(visibleAxisHandles("row").length, 1);
+  assert.equal(visibleAxisHandles("column").length, 1);
+
   editor.view.dom.listeners.get("pointermove")({ target: cells[3], clientX: 126, clientY: 128 });
   assert.equal(visibleAxisHandles("row").length, 0);
   assert.equal(visibleAxisHandles("column").length, 0);

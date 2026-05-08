@@ -77,6 +77,7 @@ test("Tiptap table geometry classifies low-noise hover intent", () => {
     })?.edge;
 
   assert.equal(classify(4, 202, 128), "cell");
+  assert.equal(classify(0, 122, 92), "axis-corner");
   assert.equal(classify(3, 122, 128), "row-handle");
   assert.equal(classify(3, 126, 128), "cell");
   assert.equal(classify(3, 124, 128), "row-handle");
