@@ -2034,11 +2034,23 @@ test("Tiptap table toolbar reveals the cell trigger after selecting a cell", () 
   });
   assert.equal(trigger.hidden, true);
 
+  editor.view.dom.listeners.get("pointermove")({
+    target: cells[0],
+    clientX: 197,
+    clientY: 107,
+  });
+  assert.equal(trigger.hidden, false);
+  assert.equal(trigger.style.left, "200px");
+  assert.equal(trigger.style.top, "107px");
+  assert.equal(trigger.dataset.edgeIntent, "true");
+  assert.equal(trigger.dataset.placement, "edge");
+
   editor.commands.setCellSelection({ anchorCell: 10, headCell: 10 });
   controller.refresh(editor);
   assert.equal(trigger.hidden, false);
   assert.equal(trigger.style.left, "200px");
   assert.equal(trigger.style.top, "107px");
+  assert.equal(trigger.dataset.placement, "quiet-edge");
   assert.equal(controller.state.selection.kind, "cell");
 });
 

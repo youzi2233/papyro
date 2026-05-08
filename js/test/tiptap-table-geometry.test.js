@@ -90,6 +90,7 @@ test("Tiptap table geometry classifies low-noise hover intent", () => {
   assert.equal(classify(5, 318, 156), "cell");
   assert.equal(classify(0, 194, 115), "cell");
   assert.equal(classify(0, 195, 107), "cell");
+  assert.equal(classify(0, 197, 107), "cell-menu");
   assert.equal(classify(0, 195, 123), "cell");
 });
 
@@ -226,6 +227,14 @@ test("Tiptap table geometry positions row column handles and scoped cell menus",
     [2, 280, 70, 80, 18],
   ]);
 
+  assert.deepEqual(
+    tableCellMenuTriggerGeometry({
+      rect: grid[0].cells[0].rect,
+      selectionKind: "cell",
+      selectedCount: 0,
+    }),
+    { left: 200, top: 107, placement: "quiet-edge" },
+  );
   assert.deepEqual(
     tableCellMenuTriggerGeometry({
       rect: grid[0].cells[0].rect,

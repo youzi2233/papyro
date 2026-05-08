@@ -2,7 +2,7 @@ const COMPLEX_BLOCK_SELECTOR = ".mn-tiptap-table, table, .mn-tiptap-code-block, 
 const EDGE_HOT_ZONE_PX = 12;
 const COMPLEX_BLOCK_INSERT_HOT_ZONE_PX = 18;
 const TABLE_AXIS_INNER_HOT_ZONE_PX = 6;
-const TABLE_CELL_MENU_EDGE_HOT_ZONE_PX = 4;
+const TABLE_CELL_MENU_EDGE_HOT_ZONE_PX = 3;
 const TABLE_CELL_MENU_CENTER_HOT_ZONE_PX = 8;
 
 function elementFromTarget(target) {
@@ -374,14 +374,13 @@ export function tableCellMenuTriggerGeometry({
   if (!normalized) return null;
 
   const centeredCellSelection = selectionKind === "cells" && selectedCount > 1;
-  const edgeCellTrigger = selectionKind === "cell" && edgeHovered;
   const left = normalized.right;
   const top = normalized.top + normalized.height / 2;
 
   return {
     left,
     top,
-    placement: centeredCellSelection ? "center" : "edge",
+    placement: centeredCellSelection ? "center" : edgeHovered ? "edge" : "quiet-edge",
   };
 }
 
@@ -852,6 +851,8 @@ export function tableHoverWithIntent({
     hover.edge = "column-handle";
   } else if (wantsColumnHandleFromCell && !insideRightRail) {
     hover.edge = "column-handle";
+  } else if (hoverIsNearCellMenuEdge(hover, x, y)) {
+    hover.edge = "cell-menu";
   } else {
     hover.edge = "cell";
   }

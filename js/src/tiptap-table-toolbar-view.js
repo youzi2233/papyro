@@ -532,10 +532,24 @@ export class TiptapTableToolbarView {
   #updateCellMenuTrigger(state) {
     const selectionKind = state.selection?.kind ?? "cell";
     const selectedCount = state.selection?.positions?.size ?? 0;
+    const edgeIntent = state.hover?.edge === "cell-menu";
+    const menuOpen = state.menuOpen && (
+      selectionKind !== "cell" ||
+      (state.mode === "context" && (
+        state.cell === state.hover?.cell ||
+        (state.selection?.positions?.size ?? 0) > 0
+      ))
+    );
     const singleSelectedCell =
       selectionKind === "cell" &&
       selectedCount === 1 &&
       (state.cellRect || state.cell);
+    const hoveredEdgeCell =
+      selectionKind === "cell" &&
+      selectedCount === 0 &&
+      edgeIntent &&
+      state.hover?.cell &&
+      (state.hover?.cellRect || state.hover?.cell);
     const selectionRect =
       selectedCount > 1
         ? state.menuRect ?? state.selectionRect
@@ -547,6 +561,9 @@ export class TiptapTableToolbarView {
       (singleSelectedCell && selectionKind === "cell"
         ? normalizedRect(state.cellRect ?? state.cell?.getBoundingClientRect?.())
         : null) ??
+      (hoveredEdgeCell
+        ? normalizedRect(state.hover?.cellRect ?? state.hover?.cell?.getBoundingClientRect?.())
+        : null) ??
       normalizedRect(selectionRect);
     if (!this.#cellMenuButton) return;
     if (!rect) {
@@ -557,7 +574,7 @@ export class TiptapTableToolbarView {
     const trigger = tableCellMenuTriggerGeometry({
       rect,
       selectionKind,
-      edgeHovered: selectionKind === "cell",
+      edgeHovered: edgeIntent || menuOpen,
       selectedCount,
     });
     if (!trigger) {
@@ -567,9 +584,10 @@ export class TiptapTableToolbarView {
     this.#cellMenuButton.style.left = `${trigger.left}px`;
     this.#cellMenuButton.style.top = `${trigger.top}px`;
     this.#cellMenuButton.dataset.placement = trigger.placement;
+    this.#cellMenuButton.dataset.edgeIntent = edgeIntent ? "true" : "false";
     setHidden(
       this.#cellMenuButton,
-      !state.menuOpen && !singleSelectedCell && selectedCount <= 1,
+      !state.menuOpen && !singleSelectedCell && !hoveredEdgeCell && selectedCount <= 1,
     );
   }
 
