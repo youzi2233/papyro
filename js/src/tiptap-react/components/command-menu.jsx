@@ -1,10 +1,5 @@
 import React, { useMemo, useState } from "react";
 
-import {
-  PAPYRO_CODE_LANGUAGE_OPTIONS,
-  codeBlockLanguageOptionToken,
-  codeBlockLanguageUiLabel,
-} from "../../tiptap-code-block.js";
 import { PAPYRO_CALLOUT_KIND_OPTIONS } from "../../tiptap-markdown-snippets.js";
 import {
   calloutOptionLabel,
@@ -22,6 +17,10 @@ import {
   commandMenuGroupTone,
   groupCommandsForMenu,
 } from "../commands/command-menu-model.js";
+import {
+  codeBlockLanguagePickerLabel,
+  createCodeBlockLanguageCommands,
+} from "../commands/code-block-command-model.js";
 import { usePointerActivation } from "../hooks/use-pointer-activation.js";
 import { CommandMenuIcon } from "./command-icons.jsx";
 import {
@@ -191,18 +190,22 @@ function CalloutKindOption({ option, language, choose }) {
 }
 
 function CodeLanguagePicker({ id, language, choose }) {
+  const commands = useMemo(
+    () => createCodeBlockLanguageCommands({ language, includeCustom: false }),
+    [language],
+  );
+
   return (
     <div
       id={id}
       className="mn-tiptap-code-language-picker"
       role="menu"
-      aria-label={codeBlockLanguageUiLabel(language, null)}
+      aria-label={codeBlockLanguagePickerLabel(language)}
     >
-      {PAPYRO_CODE_LANGUAGE_OPTIONS.map((option) => (
+      {commands.map((command) => (
         <CodeLanguageOption
-          key={option.id}
-          option={option}
-          language={language}
+          key={command.id}
+          command={command}
           choose={choose}
         />
       ))}
@@ -210,26 +213,25 @@ function CodeLanguagePicker({ id, language, choose }) {
   );
 }
 
-function CodeLanguageOption({ option, language, choose }) {
-  const title = codeBlockLanguageUiLabel(language, option.language);
+function CodeLanguageOption({ command, choose }) {
   const activation = usePointerActivation(() =>
-    choose("code-block", { codeLanguage: option.language }),
+    choose("code-block", { codeLanguage: command.language }),
   );
 
   return (
     <button
       type="button"
       className="mn-tiptap-code-language-option"
-      data-language-id={option.id}
-      data-language-value={option.language ?? ""}
+      data-language-id={command.optionId}
+      data-language-value={command.language ?? ""}
       role="menuitem"
-      aria-label={title}
+      aria-label={command.title}
       {...activation}
     >
       <span className="mn-tiptap-code-language-option-token" aria-hidden="true">
-        {codeBlockLanguageOptionToken(option)}
+        {command.token}
       </span>
-      <span className="mn-tiptap-code-language-option-title">{title}</span>
+      <span className="mn-tiptap-code-language-option-title">{command.title}</span>
     </button>
   );
 }

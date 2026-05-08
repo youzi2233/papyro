@@ -140,8 +140,9 @@ node scripts/check-workspace-deps.js
 - [ ] 增加共享 React primitives：`EditorPopover`、`CommandMenu`、`CommandItem`、`CommandSection`、`IconButton`、`ToolbarButton`、`Kbd`、`VisuallyHidden`。
   - 当前覆盖：共享 primitive 模块已经导出目标 popover、命令菜单、命令项/分组、图标按钮、工具栏按钮、键盘提示和 visually-hidden 基础组件。slash 命令分组和命令项已经使用 `CommandSection`/`CommandItem`；块操作和表格上下文命令行复用同一套 primitive row/text/icon 路径；浮动格式栏也已改用共享 toolbar button 契约。表格几何、选区遮罩、resize 轨道和快捷新增轨道仍由迁移期 controller 管理。
 - [ ] 为 insert、block action、inline format、table、code block 定义 typed command model。
+  - 当前覆盖：代码块语言、复制和软换行命令元数据已经进入纯 React command model，slash 侧边面板和后续 React 代码块 node view 可以复用同一套 label、token、active state 和 i18n 契约。可见代码块 node view 在 React node-view 切片完成前仍使用迁移期 DOM chrome。
 - [ ] 暴露稳定 runtime hooks：editor instance、language、view mode、preferences、command executor、active selection snapshot。
-  - 当前覆盖：React runtime context 现在基于纯 runtime model 构建，已经暴露 preferences、command executor 和 active selection snapshot hooks，并把 cursor/range/table 选区归一化，供后续 React block-handle 和 table-chrome 组件复用。table 和 code-block 的命令模型仍需要继续从迁移期 controller 中上提。
+  - 当前覆盖：React runtime context 现在基于纯 runtime model 构建，已经暴露 preferences、command executor 和 active selection snapshot hooks，并把 cursor/range/table 选区归一化，供后续 React block-handle 和 table-chrome 组件复用。code-block 命令模型已经开始脱离迁移期 controller；table 命令模型仍需要继续上提。
 - [ ] 在 React 替换完成前，把旧 DOM controller 放在 runtime flag 后面，避免双系统同时抢 UI。
 
 验收标准：
@@ -316,9 +317,9 @@ node scripts/check-tiptap-release-smoke.js
 
 - [ ] 如果能提升可维护性，用 React node view 实现代码块 chrome。
 - [ ] 显示语言标签，并支持切换语言。
-  - 当前覆盖：代码块已提供语言 badge、显式/自动状态数据、紧凑语言 token 和可编辑语言菜单。
+  - 当前覆盖：代码块已提供语言 badge、显式/自动状态数据、紧凑语言 token 和可编辑语言菜单。语言列表现在由共享 React command model 驱动，但可见 node view 仍是迁移期 DOM 实现。
 - [ ] 增加复制按钮、自动换行开关；如果定义了 Markdown 策略，再支持 filename/title metadata。
-  - 当前覆盖：代码块 node-view chrome 已提供低噪声复制和软换行控件，不改变保存后的 Markdown。
+  - 当前覆盖：代码块 node-view chrome 已提供低噪声复制和软换行控件，不改变保存后的 Markdown。复制/换行标签和状态已经进入共享 React command model，供后续 React node view 直接复用。
 - [ ] 亮色和暗色模式都使用真正的代码高亮主题。
   - 当前覆盖：Hybrid 代码块使用 lowlight 的 `.hljs-*` class，并通过主题 token、亮色模式左侧强调线与 smoke 检查覆盖核心语法分组。
 - [ ] fenced code language 通过 Markdown round-trip 保留。

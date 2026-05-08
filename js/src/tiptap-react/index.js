@@ -21,6 +21,11 @@ export {
   usePapyroTiptapViewMode,
 } from "./runtime-context.jsx";
 export {
+  codeBlockLanguagePickerLabel,
+  createCodeBlockChromeCommands,
+  createCodeBlockLanguageCommands,
+} from "./commands/code-block-command-model.js";
+export {
   createTiptapLegacyMountController,
   createTiptapReactMountController,
 } from "./mount-controller.jsx";

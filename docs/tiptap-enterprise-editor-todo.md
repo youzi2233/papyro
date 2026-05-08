@@ -140,8 +140,9 @@ Tasks:
 - [ ] Add shared React primitives: `EditorPopover`, `CommandMenu`, `CommandItem`, `CommandSection`, `IconButton`, `ToolbarButton`, `Kbd`, and `VisuallyHidden`.
   - Current coverage: the shared primitive module now exports the target popover, command menu, command item/section, icon button, toolbar button, keyboard hint, and visually-hidden building blocks. Slash command groups and command items now use `CommandSection`/`CommandItem`; block action and table context command rows share the primitive row/text/icon path; the floating format toolbar uses the shared toolbar button contract. Table geometry, selection overlays, resize rails, and quick-add rails still use the migration-era controller.
 - [ ] Add a typed command model for insert, block action, inline format, table, and code block commands.
+  - Current coverage: code block language, copy, and soft-wrap command metadata now live in a pure React command model, so slash side panels and future React code-block node views can share the same labels, tokens, active state, and i18n contract. The visible code block node view still uses the migration DOM chrome until the React node-view slice is complete.
 - [ ] Expose stable runtime hooks: editor instance, language, view mode, preferences, command executor, and active selection snapshot.
-  - Current coverage: React runtime context now builds from a pure runtime model, exposes preferences, command executor, and active selection snapshot hooks, and normalizes cursor/range/table selections for future React block-handle and table-chrome components. Table and code-block command models still need to be lifted out of migration controllers.
+  - Current coverage: React runtime context now builds from a pure runtime model, exposes preferences, command executor, and active selection snapshot hooks, and normalizes cursor/range/table selections for future React block-handle and table-chrome components. The code-block command model has started moving out of migration controllers; table command models still need to be lifted further.
 - [ ] Keep the existing DOM controllers disabled behind a runtime flag while React replacements are tested.
 
 Acceptance criteria:
@@ -316,9 +317,9 @@ Tasks:
 
 - [ ] Use a React node view for code block chrome if it improves maintainability.
 - [ ] Show language label with a language switcher.
-  - Current coverage: code blocks expose a language badge, explicit/auto state data, compact language tokens, and an editable language menu.
+  - Current coverage: code blocks expose a language badge, explicit/auto state data, compact language tokens, and an editable language menu. The language list is now backed by a shared React command model, but the visible node view is still the migration DOM implementation.
 - [ ] Add copy button, wrap toggle, and optional filename/title metadata if Markdown strategy is defined.
-  - Current coverage: code blocks expose quiet copy and soft-wrap controls in the node-view chrome without changing saved Markdown.
+  - Current coverage: code blocks expose quiet copy and soft-wrap controls in the node-view chrome without changing saved Markdown. Copy/wrap labels and states are now represented by the shared React command model for the future React node view.
 - [ ] Use a real highlighter theme for light and dark modes.
   - Current coverage: Hybrid code blocks use lowlight `.hljs-*` classes with theme-scoped token palettes, a light-mode left accent rail, and smoke coverage for the core syntax groups.
 - [ ] Preserve fenced code language through Markdown round-trip.

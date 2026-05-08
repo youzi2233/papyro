@@ -169,19 +169,19 @@ function codeLanguageButtonBadge(language) {
   return localizedText(language, "Lang", "语言");
 }
 
-function codeBlockCopyLabel(language) {
+export function codeBlockCopyLabel(language) {
   return localizedText(language, "Copy code", "\u590d\u5236\u4ee3\u7801");
 }
 
-function codeBlockCopiedLabel(language) {
+export function codeBlockCopiedLabel(language) {
   return localizedText(language, "Copied", "\u5df2\u590d\u5236");
 }
 
-function codeBlockCopyFailedLabel(language) {
+export function codeBlockCopyFailedLabel(language) {
   return localizedText(language, "Copy failed", "\u590d\u5236\u5931\u8d25");
 }
 
-function codeBlockWrapLabel(language, wrapped) {
+export function codeBlockWrapLabel(language, wrapped) {
   return wrapped
     ? localizedText(language, "Disable line wrap", "\u5173\u95ed\u81ea\u52a8\u6362\u884c")
     : localizedText(language, "Wrap lines", "\u81ea\u52a8\u6362\u884c");

@@ -18,6 +18,10 @@ const runtimeModelSource = readFileSync(
   new URL("../src/tiptap-react/runtime-model.js", import.meta.url),
   "utf8",
 );
+const codeBlockCommandModelSource = readFileSync(
+  new URL("../src/tiptap-react/commands/code-block-command-model.js", import.meta.url),
+  "utf8",
+);
 const officialDragHandleBridgeSource = readFileSync(
   new URL("../src/tiptap-react/official-drag-handle-bridge.jsx", import.meta.url),
   "utf8",
@@ -99,6 +103,14 @@ test("React runtime context exposes stable editor runtime hooks", () => {
   assert.match(indexSource, /createPapyroTiptapSelectionSnapshot/u);
   assert.match(indexSource, /usePapyroTiptapSelection/u);
   assert.match(indexSource, /usePapyroTiptapCommandExecutor/u);
+});
+
+test("React code block chrome exposes a typed command model", () => {
+  assert.match(codeBlockCommandModelSource, /export function createCodeBlockLanguageCommands/u);
+  assert.match(codeBlockCommandModelSource, /export function createCodeBlockChromeCommands/u);
+  assert.match(codeBlockCommandModelSource, /PAPYRO_CODE_LANGUAGE_OPTIONS/u);
+  assert.match(commandMenuSource, /createCodeBlockLanguageCommands/u);
+  assert.match(indexSource, /createCodeBlockLanguageCommands/u);
 });
 
 test("official drag handle bridge keeps Tiptap callbacks stable across renders", () => {
