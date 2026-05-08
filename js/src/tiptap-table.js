@@ -47,6 +47,36 @@ function resetTableCellAttrs(attrs, names = PAPYRO_TABLE_CELL_RESET_ATTRS) {
   return changed ? nextAttrs : null;
 }
 
+function isTextNode(node) {
+  return node?.isText === true || node?.type?.name === "text" || node?.type === "text";
+}
+
+function selectedTableCellTextRanges(selection) {
+  if (typeof selection?.forEachCell !== "function") return [];
+
+  const ranges = [];
+  selection.forEachCell((cell, cellPos) => {
+    if (!cell || !Number.isFinite(cellPos)) return;
+    if (isTextNode(cell)) {
+      ranges.push({ from: cellPos, to: cellPos + Math.max(0, cell.nodeSize ?? 0) });
+      return;
+    }
+
+    cell.descendants?.((node, offset) => {
+      if (!isTextNode(node)) return true;
+
+      const from = cellPos + 1 + offset;
+      const to = from + Math.max(0, node.nodeSize ?? node.text?.length ?? 0);
+      if (to > from) {
+        ranges.push({ from, to });
+      }
+      return false;
+    });
+  });
+
+  return ranges;
+}
+
 export function resetSelectedTableCellAttrs(selection, tr, names = PAPYRO_TABLE_CELL_RESET_ATTRS) {
   if (typeof selection?.forEachCell !== "function" || !tr) return false;
 
@@ -59,6 +89,20 @@ export function resetSelectedTableCellAttrs(selection, tr, names = PAPYRO_TABLE_
     changed = true;
   });
   return changed;
+}
+
+export function setSelectedTableCellTextColor(selection, tr, markType, color = null) {
+  if (typeof selection?.forEachCell !== "function" || !tr || !markType) return false;
+
+  const ranges = selectedTableCellTextRanges(selection);
+  ranges.forEach(({ from, to }) => {
+    tr.removeMark(from, to, markType);
+    if (color) {
+      tr.addMark(from, to, markType.create({ color }));
+    }
+  });
+
+  return ranges.length > 0;
 }
 
 export const PapyroTableCellBackground = Extension.create({
@@ -100,9 +144,24 @@ export const PapyroTableCellContentActions = Extension.create({
         () =>
         ({ state, dispatch }) => {
           if (typeof state?.selection?.forEachCell !== "function") return false;
+          if (!dispatch) return true;
+
+          const markType = state.schema?.marks?.textStyle ?? null;
+          const tr = state.tr;
+          resetSelectedTableCellAttrs(state.selection, tr);
+          setSelectedTableCellTextColor(state.selection, tr, markType, null);
+          if (tr.docChanged) dispatch(tr);
+          return true;
+        },
+      setSelectedTableCellTextColor:
+        (color = null) =>
+        ({ state, dispatch }) => {
+          if (typeof state?.selection?.forEachCell !== "function") return false;
+          const markType = state.schema?.marks?.textStyle ?? null;
+          if (!markType) return false;
           if (dispatch) {
             const tr = state.tr;
-            resetSelectedTableCellAttrs(state.selection, tr);
+            setSelectedTableCellTextColor(state.selection, tr, markType, color);
             if (tr.docChanged) dispatch(tr);
           }
           return true;

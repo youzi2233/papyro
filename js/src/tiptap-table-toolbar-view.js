@@ -421,7 +421,12 @@ export class TiptapTableToolbarView {
       if (visual) {
         visual.setAttribute("aria-hidden", "true");
         visual.dataset.icon = command.icon ?? command.id;
-        if (command.variant === "icon" || command.variant === "swatch") {
+        visual.dataset.variant = command.variant ?? tableCommandVariant(command);
+        if (
+          command.variant === "icon" ||
+          command.variant === "swatch" ||
+          command.variant === "text-swatch"
+        ) {
           button.replaceChildren(visual);
         } else if (state.mode === "context") {
           const label = createElement(

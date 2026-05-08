@@ -539,6 +539,10 @@ test("Tiptap table toolbar exposes grouped enterprise table commands", () => {
       ["Align", "align-left", "setCellAttribute"],
       ["Align", "align-center", "setCellAttribute"],
       ["Align", "align-right", "setCellAttribute"],
+      ["Text color", "cell-text-clear", "setSelectedTableCellTextColor"],
+      ["Text color", "cell-text-muted", "setSelectedTableCellTextColor"],
+      ["Text color", "cell-text-accent", "setSelectedTableCellTextColor"],
+      ["Text color", "cell-text-danger", "setSelectedTableCellTextColor"],
       ["Cell color", "cell-bg-clear", "setCellAttribute"],
       ["Cell color", "cell-bg-yellow", "setCellAttribute"],
       ["Cell color", "cell-bg-blue", "setCellAttribute"],
@@ -557,6 +561,10 @@ test("Tiptap table toolbar exposes grouped enterprise table commands", () => {
       ["align-left", "icon", "align-left"],
       ["align-center", "icon", "align-center"],
       ["align-right", "icon", "align-right"],
+      ["cell-text-clear", "text-swatch", "text-color-clear"],
+      ["cell-text-muted", "text-swatch", "text-color-muted"],
+      ["cell-text-accent", "text-swatch", "text-color-accent"],
+      ["cell-text-danger", "text-swatch", "text-color-danger"],
       ["cell-bg-clear", "swatch", "color-clear"],
       ["cell-bg-yellow", "swatch", "color-yellow"],
       ["cell-bg-blue", "swatch", "color-blue"],
@@ -571,6 +579,10 @@ test("Tiptap table toolbar sets cell alignment attributes", () => {
     calls.push(["setCellAttribute", name, value]);
     return true;
   };
+  editor.commands.setSelectedTableCellTextColor = (value) => {
+    calls.push(["setSelectedTableCellTextColor", value]);
+    return true;
+  };
   const view = createViewSpy();
   const controller = createTiptapTableToolbarController({ view });
   controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
@@ -579,6 +591,10 @@ test("Tiptap table toolbar sets cell alignment attributes", () => {
     "align-left",
     "align-center",
     "align-right",
+    "cell-text-clear",
+    "cell-text-muted",
+    "cell-text-accent",
+    "cell-text-danger",
     "cell-bg-clear",
     "cell-bg-yellow",
     "cell-bg-blue",
@@ -587,6 +603,7 @@ test("Tiptap table toolbar sets cell alignment attributes", () => {
   assert.equal(controller.run("align-left"), true);
   assert.equal(controller.run("align-center"), true);
   assert.equal(controller.run("align-right"), true);
+  assert.equal(controller.run("cell-text-accent"), true);
 
   assert.deepEqual(calls, [
     ["setCellAttribute", "align", null],
@@ -594,6 +611,8 @@ test("Tiptap table toolbar sets cell alignment attributes", () => {
     ["setCellAttribute", "align", "center"],
     ["focus"],
     ["setCellAttribute", "align", "right"],
+    ["focus"],
+    ["setSelectedTableCellTextColor", "var(--mn-accent)"],
     ["focus"],
   ]);
 });

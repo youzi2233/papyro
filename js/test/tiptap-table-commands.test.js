@@ -40,6 +40,10 @@ test("Tiptap table commands expose stable enterprise command metadata", () => {
       ["Align", "align-left", "setCellAttribute"],
       ["Align", "align-center", "setCellAttribute"],
       ["Align", "align-right", "setCellAttribute"],
+      ["Text color", "cell-text-clear", "setSelectedTableCellTextColor"],
+      ["Text color", "cell-text-muted", "setSelectedTableCellTextColor"],
+      ["Text color", "cell-text-accent", "setSelectedTableCellTextColor"],
+      ["Text color", "cell-text-danger", "setSelectedTableCellTextColor"],
       ["Cell color", "cell-bg-clear", "setCellAttribute"],
       ["Cell color", "cell-bg-yellow", "setCellAttribute"],
       ["Cell color", "cell-bg-blue", "setCellAttribute"],
@@ -64,6 +68,10 @@ test("Tiptap table command scope keeps cell menus focused", () => {
     "align-left",
     "align-center",
     "align-right",
+    "cell-text-clear",
+    "cell-text-muted",
+    "cell-text-accent",
+    "cell-text-danger",
     "cell-bg-clear",
     "cell-bg-yellow",
     "cell-bg-blue",
@@ -76,6 +84,10 @@ test("Tiptap table command scope keeps cell menus focused", () => {
     "align-left",
     "align-center",
     "align-right",
+    "cell-text-clear",
+    "cell-text-muted",
+    "cell-text-accent",
+    "cell-text-danger",
     "cell-bg-clear",
     "cell-bg-yellow",
     "cell-bg-blue",
@@ -111,8 +123,10 @@ test("Tiptap table command scope orders row column and table menus by intent", (
 test("Tiptap table commands expose layout groups and keyboard helpers", () => {
   assert.equal(tableCommandVariant({ group: "Align" }), "icon");
   assert.equal(tableCommandVariant({ group: "Cell color" }), "swatch");
+  assert.equal(tableCommandVariant({ group: "Text color" }), "text-swatch");
   assert.equal(tableCommandVariant({ group: "Rows" }), "text");
   assert.equal(tableCommandLayoutGroup({ id: "align-center", group: "Align" }), "align");
+  assert.equal(tableCommandLayoutGroup({ id: "cell-text-accent", group: "Text color" }), "text-color");
   assert.equal(tableCommandLayoutGroup({ id: "cell-bg-blue", group: "Cell color" }), "cell-color");
   assert.equal(tableCommandLayoutGroup({ id: "delete-row", group: "Rows", tone: "danger" }), "danger");
   assert.equal(tableCommandLayoutGroup({ id: "toggle-header-row", group: "Headers" }), "actions");

@@ -5,6 +5,10 @@ export const TABLE_CELL_MENU_COMMAND_IDS = new Set([
   "align-left",
   "align-center",
   "align-right",
+  "cell-text-clear",
+  "cell-text-muted",
+  "cell-text-accent",
+  "cell-text-danger",
   "cell-bg-clear",
   "cell-bg-yellow",
   "cell-bg-blue",
@@ -157,6 +161,46 @@ export const TABLE_COMMANDS = Object.freeze([
     variant: "icon",
   },
   {
+    id: "cell-text-clear",
+    group: "Text color",
+    title: "Clear cell text color",
+    label: "Default",
+    command: "setSelectedTableCellTextColor",
+    args: [null],
+    icon: "text-color-clear",
+    variant: "text-swatch",
+  },
+  {
+    id: "cell-text-muted",
+    group: "Text color",
+    title: "Use muted cell text",
+    label: "Muted",
+    command: "setSelectedTableCellTextColor",
+    args: ["var(--mn-ink-3)"],
+    icon: "text-color-muted",
+    variant: "text-swatch",
+  },
+  {
+    id: "cell-text-accent",
+    group: "Text color",
+    title: "Use accent cell text",
+    label: "Accent",
+    command: "setSelectedTableCellTextColor",
+    args: ["var(--mn-accent)"],
+    icon: "text-color-accent",
+    variant: "text-swatch",
+  },
+  {
+    id: "cell-text-danger",
+    group: "Text color",
+    title: "Use danger cell text",
+    label: "Danger",
+    command: "setSelectedTableCellTextColor",
+    args: ["var(--mn-danger)"],
+    icon: "text-color-danger",
+    variant: "text-swatch",
+  },
+  {
     id: "cell-bg-clear",
     group: "Cell color",
     title: "Clear cell background",
@@ -240,6 +284,10 @@ export const TABLE_MENU_COMMAND_SCOPE = Object.freeze({
     "align-right",
     "clear-cell-content",
     "clear-cell-style",
+    "cell-text-clear",
+    "cell-text-muted",
+    "cell-text-accent",
+    "cell-text-danger",
     "cell-bg-clear",
     "cell-bg-yellow",
     "cell-bg-blue",
@@ -308,6 +356,10 @@ export const SELECTION_TABLE_COMMAND_IDS = new Set([
   "align-left",
   "align-center",
   "align-right",
+  "cell-text-clear",
+  "cell-text-muted",
+  "cell-text-accent",
+  "cell-text-danger",
   "cell-bg-clear",
   "cell-bg-yellow",
   "cell-bg-blue",
@@ -331,6 +383,10 @@ export const KEYBOARD_TABLE_COMMAND_IDS = new Set([
   "align-left",
   "align-center",
   "align-right",
+  "cell-text-clear",
+  "cell-text-muted",
+  "cell-text-accent",
+  "cell-text-danger",
   "cell-bg-clear",
   "cell-bg-yellow",
   "cell-bg-blue",
@@ -395,6 +451,7 @@ export function tableCommandVariant(command) {
   if (command?.variant) return command.variant;
   const groupKey = command?.groupKey ?? command?.group;
   if (groupKey === "Align") return "icon";
+  if (groupKey === "Text color") return "text-swatch";
   if (groupKey === "Cell color") return "swatch";
   return "text";
 }
@@ -406,6 +463,7 @@ export function tableCommandLayoutGroup(command) {
   if (TABLE_CONTEXT_HEADER_COMMAND_IDS.has(command?.id)) return "actions";
   const variant = tableCommandVariant(command);
   if (variant === "icon") return "align";
+  if (variant === "text-swatch") return "text-color";
   if (variant === "swatch") return "cell-color";
   if (command?.tone === "danger") return "danger";
   return "actions";

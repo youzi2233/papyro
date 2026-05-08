@@ -111,6 +111,7 @@ const TIPTAP_COMMAND_PANEL_REQUIREMENTS = [
   ["Tiptap table command rows", ".mn-tiptap-table-toolbar-button-label", "border-color: color-mix"],
   ["Tiptap table command icons", ".mn-tiptap-table-toolbar-button[data-icon=\"row-below\"]", "mn-tiptap-table-toolbar-button-visual::after"],
   ["Tiptap table merge icon", ".mn-tiptap-table-toolbar-button[data-icon=\"merge\"]", ".mn-tiptap-table-toolbar-button[data-icon=\"split\"]"],
+  ["Tiptap table text color commands", ".mn-tiptap-table-toolbar-button[data-variant=\"text-swatch\"]", "data-icon=\"text-color-accent\""],
   ["Tiptap table cell menu grip", ".mn-tiptap-table-cell-menu-trigger::after", "radial-gradient"],
   ["Tiptap complex insert breakpoint", ".mn-tiptap-complex-block-insert::before", "calc(50% - 28px)"],
   ["Tiptap complex insert button", ".mn-tiptap-complex-block-insert::after", "--mn-editor-bg"],

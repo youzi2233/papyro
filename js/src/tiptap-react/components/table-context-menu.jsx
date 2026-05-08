@@ -38,11 +38,16 @@ function groupTableCommands(commands) {
 
 function TableCommandVisual({ command }) {
   const icon = command.icon ?? command.id;
+  const variant = command.variant ?? tableCommandVariant(command);
   return (
     <CommandIconFrame
       className="mn-tiptap-table-toolbar-button-visual"
       icon=""
       dataIcon={icon}
+      data={{
+        variant,
+        tone: command.tone ?? "default",
+      }}
     />
   );
 }
@@ -61,8 +66,16 @@ function TableCommandButton({
     if (command.disabled) return false;
     return run(command.id);
   });
-  const showVisual = variant === "icon" || variant === "swatch" || mode === "context";
-  const showTextLabel = mode === "context" && variant !== "icon" && variant !== "swatch";
+  const showVisual =
+    variant === "icon" ||
+    variant === "swatch" ||
+    variant === "text-swatch" ||
+    mode === "context";
+  const showTextLabel =
+    mode === "context" &&
+    variant !== "icon" &&
+    variant !== "swatch" &&
+    variant !== "text-swatch";
 
   return (
     <CommandRow

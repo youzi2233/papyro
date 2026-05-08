@@ -10,7 +10,9 @@ import {
   PapyroTableCellContentActions,
   createPapyroTableExtensions,
   resetSelectedTableCellAttrs,
+  setSelectedTableCellTextColor,
 } from "../src/tiptap-table.js";
+import { createPapyroTextStyleExtensions } from "../src/tiptap-text-style.js";
 
 function installDomGlobals(windowRef) {
   const previous = new Map();
@@ -112,6 +114,7 @@ test("Papyro table content actions clear selected cell contents through ProseMir
     const [anchorCell, headCell] = tableCellPositions(editor.state.doc);
 
     assert.equal(typeof editor.commands.clearSelectedTableCells, "function");
+    assert.equal(typeof editor.commands.setSelectedTableCellTextColor, "function");
     assert.equal(
       editor.commands.setCellSelection({ anchorCell, headCell }),
       true,
@@ -121,6 +124,54 @@ test("Papyro table content actions clear selected cell contents through ProseMir
       Array.from(editor.view.dom.querySelectorAll("td,th")).map((cell) => cell.textContent),
       ["", "", "Gamma", "Delta"],
     );
+  } finally {
+    editor?.destroy?.();
+    restoreDomGlobals(previousGlobals);
+    windowRef.close?.();
+  }
+});
+
+test("Papyro table content actions color selected cell text through textStyle marks", () => {
+  const windowRef = new Window({ url: "http://localhost/" });
+  const previousGlobals = installDomGlobals(windowRef);
+  const root = windowRef.document.createElement("div");
+  windowRef.document.body.appendChild(root);
+  let editor = null;
+
+  try {
+    editor = new Editor({
+      element: root,
+      extensions: [
+        StarterKit,
+        ...createPapyroTextStyleExtensions(),
+        ...createPapyroTableExtensions(),
+      ],
+      content:
+        "<table><tbody><tr><td>Alpha</td><td>Beta</td></tr></tbody></table>",
+      injectCSS: false,
+    });
+    const [anchorCell, headCell] = tableCellPositions(editor.state.doc);
+
+    editor.commands.setCellSelection({ anchorCell, headCell });
+    assert.equal(editor.commands.setSelectedTableCellTextColor("var(--mn-accent)"), true);
+
+    const [firstCell, secondCell] = editor.getJSON().content[0].content[0].content;
+    assert.deepEqual(firstCell.content[0].content[0].marks, [
+      {
+        type: "textStyle",
+        attrs: Object.assign(Object.create(null), { color: "var(--mn-accent)" }),
+      },
+    ]);
+    assert.deepEqual(secondCell.content[0].content[0].marks, [
+      {
+        type: "textStyle",
+        attrs: Object.assign(Object.create(null), { color: "var(--mn-accent)" }),
+      },
+    ]);
+
+    assert.equal(editor.commands.setSelectedTableCellTextColor(null), true);
+    const [clearedCell] = editor.getJSON().content[0].content[0].content;
+    assert.equal(clearedCell.content[0].content[0].marks, undefined);
   } finally {
     editor?.destroy?.();
     restoreDomGlobals(previousGlobals);
@@ -173,7 +224,11 @@ test("Papyro table content actions reset selected styles without clearing text",
   try {
     editor = new Editor({
       element: root,
-      extensions: [StarterKit, ...createPapyroTableExtensions()],
+      extensions: [
+        StarterKit,
+        ...createPapyroTextStyleExtensions(),
+        ...createPapyroTableExtensions(),
+      ],
       content:
         "<table><tbody><tr><td style=\"text-align: center; background-color: rgba(59, 130, 246, 0.14)\">Alpha</td></tr></tbody></table>",
       injectCSS: false,
@@ -181,10 +236,12 @@ test("Papyro table content actions reset selected styles without clearing text",
     const [anchorCell] = tableCellPositions(editor.state.doc);
 
     editor.commands.setCellSelection({ anchorCell, headCell: anchorCell });
+    assert.equal(editor.commands.setSelectedTableCellTextColor("var(--mn-danger)"), true);
     assert.equal(editor.commands.resetSelectedTableCellAttrs(), true);
 
     const [firstCell] = editor.getJSON().content[0].content[0].content;
     assert.equal(firstCell.content[0].content[0].text, "Alpha");
+    assert.equal(firstCell.content[0].content[0].marks, undefined);
     assert.equal(firstCell.attrs.align, null);
     assert.equal(firstCell.attrs.backgroundColor, null);
   } finally {
@@ -199,8 +256,10 @@ test("Papyro table content actions expose the expected command name", () => {
 
   assert.equal(typeof commands.clearSelectedTableCells, "function");
   assert.equal(typeof commands.resetSelectedTableCellAttrs, "function");
+  assert.equal(typeof commands.setSelectedTableCellTextColor, "function");
 });
 
 test("Papyro table content actions reject non-cell selections when resetting attributes", () => {
   assert.equal(resetSelectedTableCellAttrs(null, null), false);
+  assert.equal(setSelectedTableCellTextColor(null, null, null, "var(--mn-accent)"), false);
 });

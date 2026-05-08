@@ -40,6 +40,7 @@ const GROUP_LABELS = Object.freeze({
   Selection: "选择",
   Table: "表格",
   Text: "文本",
+  "Text color": "文字颜色",
 });
 
 const BLOCK_ACTION_LABELS = Object.freeze({
@@ -129,6 +130,10 @@ const TABLE_COMMAND_LABELS = Object.freeze({
   "align-left": ["Align current cells left", "当前单元格左对齐", "Left", "左对齐"],
   "align-center": ["Align current cells center", "当前单元格居中", "Center", "居中"],
   "align-right": ["Align current cells right", "当前单元格右对齐", "Right", "右对齐"],
+  "cell-text-clear": ["Clear cell text color", "清除单元格文字颜色", "Default", "默认"],
+  "cell-text-muted": ["Use muted cell text", "使用弱化文字", "Muted", "弱化"],
+  "cell-text-accent": ["Use accent cell text", "使用强调文字", "Accent", "强调"],
+  "cell-text-danger": ["Use danger cell text", "使用危险文字", "Danger", "危险"],
   "cell-bg-clear": ["Clear cell background", "清除单元格背景", "Clear", "清除"],
   "cell-bg-yellow": ["Use a soft yellow cell background", "使用柔和黄色背景", "Yellow", "黄色"],
   "cell-bg-blue": ["Use a soft blue cell background", "使用柔和蓝色背景", "Blue", "蓝色"],
