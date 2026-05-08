@@ -358,6 +358,7 @@ Tasks:
   - Current coverage: link editing now uses a Papyro React/Dioxus-safe popover instead of a native prompt; it reads the current href through `editor.getAttributes("link").href`, restores the selected range, and applies/removes links through Tiptap's official `setLink` and `unsetLink` commands.
 - [ ] Keep toolbar placement stable near viewport edges.
 - [ ] Add keyboard access and focus return.
+  - Current coverage: `Mod+K` opens the Papyro link editor from Hybrid mode, follows Tiptap's documented Link-extension guidance for custom link UI, and expands collapsed link selections with `extendMarkRange("link")` before editing.
 - [ ] Localize labels and tooltips.
   - Current coverage: current toolbar commands provide English and Simplified Chinese titles and accessible labels from the shared Tiptap i18n model.
 

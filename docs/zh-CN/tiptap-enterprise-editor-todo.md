@@ -358,6 +358,7 @@ node scripts/check-tiptap-release-smoke.js
   - 当前覆盖：链接编辑已改用 Papyro React/Dioxus 安全的 popover，不再使用浏览器原生 prompt；它通过 `editor.getAttributes("link").href` 读取当前链接，恢复选区后用 Tiptap 官方 `setLink` 和 `unsetLink` 命令应用或移除链接。
 - [ ] 靠近视口边缘时定位稳定。
 - [ ] 支持键盘访问和焦点回到编辑器。
+  - 当前覆盖：Hybrid 模式下 `Mod+K` 会打开 Papyro 链接编辑器，遵循 Tiptap Link 扩展文档里自定义链接 UI 的建议；当光标折叠在链接内时，会先用 `extendMarkRange("link")` 扩展到整段链接再编辑。
 - [ ] 本地化 label 和 tooltip。
   - 当前覆盖：当前工具栏命令已从共享 Tiptap i18n model 提供英文和简体中文 title 与 accessible label。
 

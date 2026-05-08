@@ -59,18 +59,42 @@ function createDismissDocument() {
   };
 }
 
-function createEditor({ href = "", setLinkResult = true, unsetLinkResult = true } = {}) {
+function createEditor({
+  href = "",
+  selection = { from: 2, to: 8, empty: false },
+  activeLink = false,
+  extendedRange = { from: 1, to: 12, empty: false },
+  setLinkResult = true,
+  unsetLinkResult = true,
+} = {}) {
   const calls = [];
-  return {
+  const editor = {
     calls,
+    state: {
+      selection: { ...selection },
+    },
+    isActive(name) {
+      calls.push(["isActive", name]);
+      return name === "link" && activeLink;
+    },
     getAttributes(name) {
       calls.push(["getAttributes", name]);
       return { href };
     },
     commands: {
+      extendMarkRange: (name) => {
+        calls.push(["extendMarkRange", name]);
+        editor.state.selection = { ...extendedRange };
+        return true;
+      },
       focus: () => calls.push(["focus"]),
       setTextSelection: (range) => {
         calls.push(["setTextSelection", range]);
+        editor.state.selection = {
+          from: range.from,
+          to: range.to,
+          empty: range.from === range.to,
+        };
         return true;
       },
       setLink: (attrs) => {
@@ -90,7 +114,7 @@ function createEditor({ href = "", setLinkResult = true, unsetLinkResult = true 
         bottom: 100,
       }),
       dom: {
-        ownerDocument: {
+      ownerDocument: {
           documentElement: {
             clientWidth: 1000,
             clientHeight: 800,
@@ -99,6 +123,7 @@ function createEditor({ href = "", setLinkResult = true, unsetLinkResult = true 
       },
     },
   };
+  return editor;
 }
 
 test("Tiptap link editor opens with the active link href", () => {
@@ -146,6 +171,40 @@ test("Tiptap link editor applies a link after restoring selection", () => {
     ["focus"],
   ]);
   assert.deepEqual(view.calls.slice(-1), [["hide"]]);
+});
+
+test("Tiptap link editor opens from the current selection", () => {
+  const editor = createEditor({
+    selection: { from: 6, to: 12, empty: false },
+  });
+  const view = createViewSpy();
+  const controller = createTiptapLinkEditorController({ view });
+  controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
+
+  assert.equal(controller.openFromEditor(), true);
+
+  assert.deepEqual(controller.state.range, { from: 6, to: 12 });
+  assert.deepEqual(editor.calls, [["getAttributes", "link"]]);
+});
+
+test("Tiptap link editor extends collapsed link selections before opening", () => {
+  const editor = createEditor({
+    activeLink: true,
+    selection: { from: 7, to: 7, empty: true },
+    extendedRange: { from: 3, to: 15, empty: false },
+    href: "https://tiptap.dev",
+  });
+  const controller = createTiptapLinkEditorController({ view: createViewSpy() });
+  controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
+
+  assert.equal(controller.openFromEditor(), true);
+
+  assert.deepEqual(controller.state.range, { from: 3, to: 15 });
+  assert.deepEqual(editor.calls, [
+    ["isActive", "link"],
+    ["extendMarkRange", "link"],
+    ["getAttributes", "link"],
+  ]);
 });
 
 test("Tiptap link editor removes links when submitted href is empty", () => {

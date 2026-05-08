@@ -33,6 +33,18 @@ function linkAttributes(editor) {
   return editor?.getAttributes?.("link") ?? {};
 }
 
+function currentSelectionRange(editor) {
+  const selection = editor?.state?.selection ?? editor?.view?.state?.selection;
+  if (!selection || typeof selection.from !== "number" || typeof selection.to !== "number") {
+    return null;
+  }
+
+  return {
+    from: selection.from,
+    to: selection.to,
+  };
+}
+
 function selectionRect(editor, range) {
   const view = editor?.view;
   if (!view || typeof view.coordsAtPos !== "function" || !range) return null;
@@ -223,6 +235,23 @@ export class TiptapLinkEditorController {
     this.#editor = editor ?? null;
     this.#entry = entry ?? null;
     this.#view.mount?.(root);
+  }
+
+  openFromEditor({ editor = this.#editor, entry = this.#entry } = {}) {
+    if (!editor || !entry || entry.viewMode !== "hybrid") return false;
+
+    const initialRange = currentSelectionRange(editor);
+    if (!initialRange) return false;
+
+    if (initialRange.from === initialRange.to && editor.isActive?.("link")) {
+      editor.commands?.extendMarkRange?.("link");
+    }
+
+    return this.open({
+      editor,
+      entry,
+      range: currentSelectionRange(editor) ?? initialRange,
+    });
   }
 
   open({ editor = this.#editor, entry = this.#entry, range = null } = {}) {

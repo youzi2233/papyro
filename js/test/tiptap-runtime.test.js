@@ -97,6 +97,7 @@ function createRuntimeHarness({
       close: () => {},
       contains: () => false,
       destroy: () => {},
+      openFromEditor: () => true,
     }));
 
   const createPasteController =
@@ -1168,6 +1169,42 @@ test("Tiptap runtime sends save requests from editor shortcuts", () => {
   assert.equal(handled, true);
   assert.deepEqual(calls, [["preventDefault"]]);
   assert.deepEqual(messages, [{ type: "save_requested", tab_id: "tab-a" }]);
+});
+
+test("Tiptap runtime opens the link editor from Mod K", () => {
+  const linkCalls = [];
+  const linkEditorControllerFactory = () => ({
+    attach: ({ root }) => linkCalls.push(["attach", root.className]),
+    close: () => linkCalls.push(["close"]),
+    contains: () => false,
+    destroy: () => linkCalls.push(["destroy"]),
+    openFromEditor: ({ editor, entry, source }) => {
+      linkCalls.push(["openFromEditor", editor.markdown, entry.viewMode, source]);
+      return true;
+    },
+  });
+  const { calls, registry, runtime } = createRuntimeHarness({ linkEditorControllerFactory });
+  runtime.ensureEditor({
+    tabId: "tab-a",
+    containerId: "editor-root",
+    initialContent: "# Note",
+    viewMode: "hybrid",
+  });
+  calls.length = 0;
+
+  const event = {
+    key: "k",
+    ctrlKey: true,
+    preventDefault: () => calls.push(["preventDefault"]),
+  };
+  const handled = registry.get("tab-a").editor.options.editorProps.handleKeyDown(null, event);
+
+  assert.equal(handled, true);
+  assert.deepEqual(calls, [["preventDefault"]]);
+  assert.deepEqual(linkCalls, [
+    ["attach", "mn-tiptap-runtime"],
+    ["openFromEditor", "# Note", "hybrid", "keyboard"],
+  ]);
 });
 
 test("Tiptap runtime sends image paste requests through the Rust protocol", async () => {

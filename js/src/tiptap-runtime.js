@@ -66,6 +66,12 @@ function isSaveShortcut(event) {
   return key === "s" && (event.ctrlKey || event.metaKey);
 }
 
+function isLinkShortcut(event) {
+  if (!event || event.altKey) return false;
+  const key = String(event.key ?? "").toLowerCase();
+  return key === "k" && (event.ctrlKey || event.metaKey);
+}
+
 function requestSave(entry, tabId, event) {
   if (!entry) return false;
 
@@ -73,6 +79,18 @@ function requestSave(entry, tabId, event) {
   entry.dioxus?.send?.({
     type: "save_requested",
     tab_id: tabId,
+  });
+  return true;
+}
+
+function requestLinkEditor(entry, event) {
+  if (!entry || entry.viewMode !== "hybrid") return false;
+
+  event?.preventDefault?.();
+  entry.linkEditor?.openFromEditor?.({
+    editor: entry.editor,
+    entry,
+    source: "keyboard",
   });
   return true;
 }
@@ -128,6 +146,9 @@ function defaultEditorOptions({
       handleKeyDown: (_view, event) => {
         const entry = registry.get(tabId);
         if (isSaveShortcut(event) && requestSave(entry, tabId, event)) {
+          return true;
+        }
+        if (isLinkShortcut(event) && requestLinkEditor(entry, event)) {
           return true;
         }
         if (isComposingKeyboardEvent(event)) {
