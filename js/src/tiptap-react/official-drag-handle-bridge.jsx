@@ -4,6 +4,7 @@ import { DragHandle } from "@tiptap/extension-drag-handle-react";
 import { createPapyroOfficialDragHandleConfig } from "../tiptap-official-drag-handle.js";
 import { PapyroBlockHandle } from "./components/block-handle.jsx";
 import {
+  createOfficialDragHandleClickTracker,
   officialDragHandleBridgeState,
   officialDragHandleControlsHidden,
 } from "./official-drag-handle-bridge-state.js";
@@ -36,11 +37,13 @@ export function PapyroOfficialDragHandleBridge({ editor, entry = null }) {
   const bridgeState = officialDragHandleBridgeState({ editor, entry });
   const handleState = useBlockHandleViewState(entry);
   const entryRef = useRef(entry);
+  const clickTrackerRef = useRef(createOfficialDragHandleClickTracker());
   entryRef.current = entry;
   const handleNodeChange = useCallback((data) => {
     entryRef.current?.blockHandle?.handleOfficialNodeChange?.(data);
   }, []);
   const handleElementDragEnd = useCallback(() => {
+    clickTrackerRef.current.cancel();
     entryRef.current?.blockHandle?.finishOfficialNativeDrag?.();
     entryRef.current?.blockHandle?.cancelDrag?.();
   }, []);
@@ -52,6 +55,14 @@ export function PapyroOfficialDragHandleBridge({ editor, entry = null }) {
     event?.stopPropagation?.();
     entryRef.current?.blockHandle?.clickAction?.(event);
   }, []);
+  const openActionsFromBridgeClick = useCallback((event) => {
+    if (clickTrackerRef.current.click()) {
+      openActionsFromBridge(event);
+    } else {
+      event?.preventDefault?.();
+      event?.stopPropagation?.();
+    }
+  }, [openActionsFromBridge]);
   const openContextActionsFromBridge = useCallback((event) => {
     event?.preventDefault?.();
     event?.stopPropagation?.();
@@ -62,10 +73,16 @@ export function PapyroOfficialDragHandleBridge({ editor, entry = null }) {
     event?.stopPropagation?.();
   }, []);
   const allowOfficialDragFromBridge = useCallback((event) => {
+    clickTrackerRef.current.begin(event);
     if (event?.button === 2) {
       openContextActionsFromBridge(event);
     }
   }, [openContextActionsFromBridge]);
+  const openActionsFromBridgePointerUp = useCallback((event) => {
+    if (clickTrackerRef.current.end(event)) {
+      openActionsFromBridge(event);
+    }
+  }, [openActionsFromBridge]);
   const hidden = officialDragHandleControlsHidden(handleState);
 
   if (!bridgeState.active) return null;
@@ -86,8 +103,8 @@ export function PapyroOfficialDragHandleBridge({ editor, entry = null }) {
           ...(handleState ?? {}),
           hidden,
           onActionPointerDown: allowOfficialDragFromBridge,
-          onActionPointerUp: undefined,
-          onActionClick: openActionsFromBridge,
+          onActionPointerUp: openActionsFromBridgePointerUp,
+          onActionClick: openActionsFromBridgeClick,
           onActionContextMenu: openContextActionsFromBridge,
           onAuxClick: ignoreAuxActionFromBridge,
           rootProps: {

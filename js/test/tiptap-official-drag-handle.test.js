@@ -10,6 +10,7 @@ import {
   papyroTableOverlayRule,
 } from "../src/tiptap-official-drag-handle.js";
 import {
+  createOfficialDragHandleClickTracker,
   officialDragHandleControlsHidden,
   officialDragHandleBridgeState as reactBridgeState,
 } from "../src/tiptap-react/official-drag-handle-bridge-state.js";
@@ -144,4 +145,26 @@ test("Papyro React drag handle keeps official controls visible while hiding only
     }),
     false,
   );
+});
+
+test("Papyro React drag handle click tracker opens actions only for short primary clicks", () => {
+  const tracker = createOfficialDragHandleClickTracker({ threshold: 4 });
+
+  assert.equal(tracker.begin({ button: 0, clientX: 10, clientY: 20 }), true);
+  assert.equal(tracker.end({ button: 0, clientX: 12, clientY: 22 }), true);
+  assert.equal(tracker.click(), true);
+
+  assert.equal(tracker.begin({ button: 0, clientX: 10, clientY: 20 }), true);
+  assert.equal(tracker.end({ button: 0, clientX: 18, clientY: 20 }), false);
+  assert.equal(tracker.click(), false);
+  assert.equal(tracker.click(), true);
+
+  assert.equal(tracker.begin({ button: 2, clientX: 10, clientY: 20 }), false);
+  assert.equal(tracker.end({ button: 2, clientX: 10, clientY: 20 }), false);
+  assert.equal(tracker.click(), true);
+
+  assert.equal(tracker.begin({ button: 0, clientX: 10, clientY: 20 }), true);
+  tracker.cancel();
+  assert.equal(tracker.end({ button: 0, clientX: 10, clientY: 20 }), false);
+  assert.equal(tracker.click(), false);
 });

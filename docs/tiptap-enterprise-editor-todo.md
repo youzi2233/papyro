@@ -229,6 +229,7 @@ Tasks:
   - Current polish: the `+` and action handle spacing, hit boxes, and idle/active styling are quieter and more separated, avoiding the cramped two-icon cluster that previously made their responsibilities feel ambiguous.
   - Still required: move drag reorder execution fully onto the official drag/drop path and reduce the compatibility controller further.
 - [ ] Open the block action menu on normal click beside the pointer, not after long press.
+  - Current coverage: the official React DragHandle bridge now tracks pointer down/up distance, opens the block action menu immediately for short primary clicks, suppresses click fallback after drag-like movement, and keeps real drag gestures on the official drag path.
 - [ ] Block native WebView context menus on right-click and show only Papyro actions.
 - [ ] Highlight the whole semantic block, including inline code and mixed marks.
 - [ ] Implement reliable drag reorder with a drop indicator and transaction-level tests.

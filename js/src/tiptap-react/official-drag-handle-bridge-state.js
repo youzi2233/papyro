@@ -34,3 +34,67 @@ export function officialDragHandleBridgeState({ editor = null, entry = null } = 
 export function officialDragHandleControlsHidden(handleState = null) {
   return !handleState?.open || !handleState?.target;
 }
+
+export function createOfficialDragHandleClickTracker({
+  threshold = 4,
+} = {}) {
+  let start = null;
+  let suppressNextClick = false;
+
+  return {
+    begin(event = {}) {
+      const button = Number(event?.button ?? 0);
+      if (button !== 0) {
+        start = null;
+        suppressNextClick = false;
+        return false;
+      }
+
+      const clientX = Number(event?.clientX);
+      const clientY = Number(event?.clientY);
+      if (!Number.isFinite(clientX) || !Number.isFinite(clientY)) {
+        start = null;
+        return false;
+      }
+
+      start = { clientX, clientY };
+      return true;
+    },
+
+    end(event = {}) {
+      if (!start) return false;
+
+      const current = start;
+      start = null;
+      const button = Number(event?.button ?? 0);
+      const clientX = Number(event?.clientX);
+      const clientY = Number(event?.clientY);
+      if (
+        button !== 0 ||
+        !Number.isFinite(clientX) ||
+        !Number.isFinite(clientY)
+      ) {
+        suppressNextClick = false;
+        return false;
+      }
+
+      const shortClick =
+        Math.hypot(clientX - current.clientX, clientY - current.clientY) <= threshold;
+      suppressNextClick = !shortClick;
+      return shortClick;
+    },
+
+    click() {
+      if (suppressNextClick) {
+        suppressNextClick = false;
+        return false;
+      }
+      return true;
+    },
+
+    cancel() {
+      start = null;
+      suppressNextClick = true;
+    },
+  };
+}
