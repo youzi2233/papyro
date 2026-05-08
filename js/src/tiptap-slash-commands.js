@@ -7,6 +7,8 @@ import { normalizeCodeBlockLanguage } from "./tiptap-code-block.js";
 import { localizeSlashCommand, normalizeTiptapLanguage } from "./tiptap-i18n.js";
 
 const DEFAULT_LIMIT = 8;
+const DEFAULT_RECENT_LIMIT = 4;
+const RECENT_GROUP = "Recent";
 
 function normalizeText(value) {
   return String(value ?? "").trim().toLowerCase();
@@ -94,6 +96,42 @@ function scoreCommand(command, query) {
   if (keywords.some((keyword) => keyword.startsWith(normalizedQuery))) return 5;
   if (haystack.includes(normalizedQuery)) return 6;
   return null;
+}
+
+function sortCommandMatches(matches, query, recentCommandIds = []) {
+  const normalizedQuery = normalizeText(query);
+  const recentOrder = new Map(recentCommandIds.map((id, index) => [id, index]));
+  return [...matches].sort((a, b) => {
+    if (!normalizedQuery) {
+      const leftRecent = recentOrder.has(a.command.id)
+        ? recentOrder.get(a.command.id)
+        : Number.POSITIVE_INFINITY;
+      const rightRecent = recentOrder.has(b.command.id)
+        ? recentOrder.get(b.command.id)
+        : Number.POSITIVE_INFINITY;
+      if (leftRecent !== rightRecent) return leftRecent - rightRecent;
+    }
+    return a.score - b.score || a.command.priority - b.command.priority || a.index - b.index;
+  });
+}
+
+function localizeQueryMatch(match, visibleIndex, { locale, recentCommandIds = [], query = "" } = {}) {
+  const normalizedQuery = normalizeText(query);
+  const recent = !normalizedQuery && recentCommandIds.includes(match.command.id);
+  const command = recent
+    ? {
+        ...match.command,
+        group: RECENT_GROUP,
+        sourceGroup: match.command.group,
+      }
+    : match.command;
+
+  return {
+    ...localizeSlashCommand(command, locale),
+    index: visibleIndex,
+    sourceIndex: match.index,
+    recent,
+  };
 }
 
 function createCommand({
@@ -337,14 +375,21 @@ export const PAPYRO_TIPTAP_SLASH_COMMANDS = Object.freeze([
 export class TiptapSlashCommandController {
   #commands;
   #language;
+  #recentCommandIds = [];
+  #recentLimit;
 
-  constructor(commands = PAPYRO_TIPTAP_SLASH_COMMANDS, { language = "english" } = {}) {
+  constructor(commands = PAPYRO_TIPTAP_SLASH_COMMANDS, { language = "english", recentLimit = DEFAULT_RECENT_LIMIT } = {}) {
     this.#commands = Object.freeze([...commands]);
     this.#language = normalizeTiptapLanguage(language);
+    this.#recentLimit = Math.max(0, Number(recentLimit) || 0);
   }
 
   get commands() {
     return this.#commands;
+  }
+
+  get recentCommandIds() {
+    return [...this.#recentCommandIds];
   }
 
   find(commandId) {
@@ -356,21 +401,39 @@ export class TiptapSlashCommandController {
     this.#language = normalizeTiptapLanguage(language);
   }
 
+  recordUsage(commandId) {
+    const command = this.find(commandId);
+    if (!command || this.#recentLimit <= 0) {
+      return this.recentCommandIds;
+    }
+
+    this.#recentCommandIds = [
+      command.id,
+      ...this.#recentCommandIds.filter((id) => id !== command.id),
+    ].slice(0, this.#recentLimit);
+    return this.recentCommandIds;
+  }
+
   query(query, { limit = DEFAULT_LIMIT, language = this.#language } = {}) {
     const locale = normalizeTiptapLanguage(language);
-    return this.#commands
+    const matches = this.#commands
       .map((command, index) => ({
         command,
         index,
         score: scoreCommand(command, query),
       }))
       .filter((match) => match.score !== null)
-      .sort((a, b) => a.score - b.score || a.command.priority - b.command.priority || a.index - b.index)
+      .sort((a, b) => a.index - b.index);
+
+    return sortCommandMatches(matches, query, this.#recentCommandIds)
       .slice(0, Math.max(0, limit))
-      .map((match) => ({
-        ...localizeSlashCommand(match.command, locale),
-        index: match.index,
-      }));
+      .map((match, visibleIndex) =>
+        localizeQueryMatch(match, visibleIndex, {
+          locale,
+          query,
+          recentCommandIds: this.#recentCommandIds,
+        }),
+      );
   }
 
   run(commandId, context = {}) {
@@ -385,6 +448,7 @@ export class TiptapSlashCommandController {
 
     const ok = command.run(context) !== false;
     if (ok) {
+      this.recordUsage(command.id);
       focusEditor(context.editor);
     }
 

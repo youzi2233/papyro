@@ -249,7 +249,7 @@ function syncActiveCommand(root, ownerId, commands, selectedIndex, { scroll = tr
   });
   menuCommandItems(root).forEach((item) => {
     const itemIndex = Number(item.dataset?.commandIndex);
-    const command = commands.find((candidate) => candidate?.index === itemIndex);
+    const command = commands[itemIndex];
     const panel = commandMenuSidePanel(command);
     if (panel !== "none") {
       item.setAttribute?.("aria-expanded", String(command?.index === selectedIndex));
@@ -483,6 +483,9 @@ class TiptapSlashMenuView {
         }
         item.dataset.commandId = command.id;
         item.dataset.commandIndex = String(command.index);
+        if (command.recent) {
+          item.dataset.recent = "true";
+        }
         item.dataset.group = command.group ?? "";
         item.dataset.sidePanel = sidePanel;
         item.tabIndex = -1;

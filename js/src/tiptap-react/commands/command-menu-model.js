@@ -1,4 +1,6 @@
 const COMMAND_GROUP_ORDER = Object.freeze([
+  "Recent",
+  "最近使用",
   "Text",
   "文本",
   "Lists",
@@ -23,12 +25,20 @@ export function commandMenuGroupTone(command = {}) {
   const commandId = String(command?.id ?? "").trim().toLowerCase();
   const searchable = `${groupName} ${commandId}`;
   const tones = new Map([
+    ["recent", "recent"],
+    ["最近使用", "recent"],
     ["text", "text"],
+    ["文本", "text"],
     ["lists", "lists"],
+    ["列表", "lists"],
     ["blocks", "blocks"],
+    ["块", "blocks"],
     ["data", "data"],
+    ["数据", "data"],
     ["media", "media"],
+    ["媒体", "media"],
     ["advanced", "advanced"],
+    ["高级", "advanced"],
   ]);
   const byLabel = tones.get(groupName);
   if (byLabel) return byLabel;

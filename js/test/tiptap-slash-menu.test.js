@@ -540,6 +540,60 @@ test("Tiptap slash menu runs selected command and removes trigger text", () => {
   ]);
 });
 
+test("Tiptap slash menu renders recently used commands before the full insert list", () => {
+  const { editor } = createEditor("/table");
+  const documentRef = createDocument();
+  const controller = createTiptapSlashMenuController({
+    dom: { document: documentRef },
+  });
+  controller.attach({ editor, root: {} });
+
+  assert.equal(controller.choose("table"), true);
+  editor.state.doc = createDoc("/");
+  editor.state.selection = {
+    empty: true,
+    from: 1,
+    $from: {
+      start: () => 0,
+    },
+  };
+
+  controller.refresh(editor);
+
+  assert.equal(controller.state.open, true);
+  assert.deepEqual(
+    controller.state.commands.slice(0, 3).map((command) => ({
+      id: command.id,
+      index: command.index,
+      sourceIndex: command.sourceIndex,
+      recent: command.recent,
+    })),
+    [
+      { id: "table", index: 0, sourceIndex: 11, recent: true },
+      { id: "paragraph", index: 1, sourceIndex: 0, recent: false },
+      { id: "heading-1", index: 2, sourceIndex: 1, recent: false },
+    ],
+  );
+
+  const menu = documentRef.body.children[0];
+  const list = findElementByClass(menu, "mn-tiptap-slash-menu-list");
+  const recentSection = list.children[0];
+  const recentItem = slashMenuCommandItem(menu, "table");
+
+  assert.equal(recentSection["aria-label"], "Recent");
+  assert.equal(recentItem.dataset.recent, "true");
+  assert.equal(recentItem.dataset.commandIndex, "0");
+  assert.equal(recentItem.id, "mn-tiptap-slash-menu-item-0");
+
+  controller.moveSelection(1);
+
+  assert.equal(slashMenuCommandItem(menu, "paragraph")["aria-selected"], "true");
+  assert.deepEqual(documentRef.scrollCalls.at(-1), [
+    "mn-tiptap-slash-menu-item-1",
+    { block: "nearest", inline: "nearest" },
+  ]);
+});
+
 test("Tiptap slash menu yields keyboard handling during IME composition", () => {
   const { calls, editor } = createEditor("/h2");
   const view = createViewSpy();

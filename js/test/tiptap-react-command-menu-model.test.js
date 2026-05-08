@@ -43,10 +43,11 @@ test("React command menu model applies the canonical command group order", () =>
     groupCommandsForMenu([
       { id: "math-block", group: "Advanced", index: 12 },
       { id: "paragraph", group: "Text", index: 0 },
+      { id: "code-block", group: "Recent", index: 2 },
       { id: "image", group: "Media", index: 13 },
       { id: "table", group: "Data", index: 11 },
     ]).map((group) => group.name),
-    ["Text", "Data", "Media", "Advanced"],
+    ["Recent", "Text", "Data", "Media", "Advanced"],
   );
 });
 
@@ -77,6 +78,7 @@ test("React command menu model exposes side panel contracts", () => {
 });
 
 test("React command menu model exposes semantic icon group tones", () => {
+  assert.equal(commandMenuGroupTone({ id: "code-block", group: "Recent" }), "recent");
   assert.equal(commandMenuGroupTone({ id: "paragraph", group: "Text" }), "text");
   assert.equal(commandMenuGroupTone({ id: "task-list", group: "Lists" }), "lists");
   assert.equal(commandMenuGroupTone({ id: "code-block", group: "Blocks" }), "blocks");

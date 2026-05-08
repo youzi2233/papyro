@@ -72,6 +72,7 @@ function SlashCommandItem({ command, ownerId, selected, activePanel, activate, c
       data={{
         "command-id": command.id,
         "command-index": command.index,
+        recent: command.recent ? "true" : undefined,
         group: command.group ?? "",
         "side-panel": panel,
       }}

@@ -35,6 +35,7 @@ const GROUP_LABELS = Object.freeze({
   Lists: "列表",
   Media: "媒体",
   Navigate: "导航",
+  Recent: "最近使用",
   Rows: "行",
   Selection: "选择",
   Table: "表格",
@@ -154,11 +155,16 @@ export function localizeBlockAction(command, language) {
 
 export function localizeSlashCommand(command, language) {
   const labels = SLASH_COMMAND_LABELS[command.id];
+  const group = command.sourceGroup
+    ? localizedGroup(command.group, language)
+    : labels
+      ? localizedText(language, labels[4], labels[5])
+      : localizedGroup(command.group, language);
   return {
     ...command,
     title: labels ? localizedText(language, labels[0], labels[1]) : command.title,
     description: labels ? localizedText(language, labels[2], labels[3]) : command.description,
-    group: labels ? localizedText(language, labels[4], labels[5]) : localizedGroup(command.group, language),
+    group,
     icon: command.icon ?? "paragraph",
   };
 }

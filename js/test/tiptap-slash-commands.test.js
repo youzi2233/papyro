@@ -125,11 +125,53 @@ test("Tiptap slash command query localizes visible command labels", () => {
     keywords: ["heading", "headline", "标题", "一级标题"],
     priority: 20,
     run: englishCommand.run,
-    index: 1,
+    index: 0,
+    sourceIndex: 1,
+    recent: false,
   });
 
   assert.equal(controller.query("table", { language: "Chinese" })[0].group, "数据");
   assert.equal(controller.query("image", { language: "Chinese" })[0].group, "媒体");
+});
+
+test("Tiptap slash command query separates visible and source indexes", () => {
+  const controller = createTiptapSlashCommandController();
+
+  assert.deepEqual(
+    controller.query("table", { limit: 1 }).map((command) => ({
+      id: command.id,
+      index: command.index,
+      sourceIndex: command.sourceIndex,
+    })),
+    [{ id: "table", index: 0, sourceIndex: 11 }],
+  );
+});
+
+test("Tiptap slash commands promote recent commands in empty insert menus", () => {
+  const { editor } = createFakeEditor();
+  const controller = createTiptapSlashCommandController();
+
+  controller.run("table", { editor });
+  controller.run("code-block", { editor, codeLanguage: "rust" });
+
+  assert.deepEqual(controller.recentCommandIds, ["code-block", "table"]);
+  assert.deepEqual(
+    controller.query("", { limit: 4 }).map((command) => ({
+      id: command.id,
+      group: command.group,
+      recent: command.recent,
+      index: command.index,
+      sourceIndex: command.sourceIndex,
+    })),
+    [
+      { id: "code-block", group: "Recent", recent: true, index: 0, sourceIndex: 9 },
+      { id: "table", group: "Recent", recent: true, index: 1, sourceIndex: 11 },
+      { id: "paragraph", group: "Text", recent: false, index: 2, sourceIndex: 0 },
+      { id: "heading-1", group: "Text", recent: false, index: 3, sourceIndex: 1 },
+    ],
+  );
+  assert.equal(controller.query("", { language: "Chinese", limit: 1 })[0].group, "最近使用");
+  assert.equal(controller.query("table", { limit: 1 })[0].group, "Data");
 });
 
 test("Tiptap slash commands call rich editor commands when available", () => {
