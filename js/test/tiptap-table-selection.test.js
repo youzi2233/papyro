@@ -7,6 +7,14 @@ function createHarness() {
   const calls = [];
   const listeners = new Map();
   const documentListeners = new Map();
+  const containsTarget = (owner, target) => {
+    let current = target;
+    while (current) {
+      if (current === owner) return true;
+      current = current.parentElement ?? current.parentNode ?? null;
+    }
+    return false;
+  };
   const pushEvent = (events, name) => (event) => {
     events.push(name);
     event?.();
@@ -39,9 +47,12 @@ function createHarness() {
         get parentNode() {
           return cell.parentElement;
         },
+        contains(target) {
+          return containsTarget(cell, target);
+        },
         closest(selector) {
           if (selector === "th,td") return cell;
-          if (selector.includes("table")) return table;
+          if (selector.includes(".mn-tiptap-table") || selector.includes(", table")) return table;
           return null;
         },
         getBoundingClientRect: () => ({
@@ -58,6 +69,10 @@ function createHarness() {
     });
     return {
       cells: rowCells,
+      parentElement: null,
+      get parentNode() {
+        return this.parentElement;
+      },
       getBoundingClientRect: () => ({
         left: 100,
         top: 80 + rowIndex * 36,
@@ -98,7 +113,7 @@ function createHarness() {
   const root = {
     ownerDocument: documentRef,
     listeners,
-    contains: (target) => target === table || cells.includes(target),
+    contains: (target) => containsTarget(root, target),
     parentElement: null,
     addEventListener(type, listener) {
       listeners.set(type, listener);
@@ -117,12 +132,12 @@ function createHarness() {
       },
     },
     closest(selector) {
-      return selector.includes("table") ? table : null;
+      return selector.includes(".mn-tiptap-table") || selector.includes(", table") ? table : null;
     },
     get parentNode() {
       return table.parentElement;
     },
-    contains: (target) => target === table || cells.includes(target),
+    contains: (target) => containsTarget(table, target),
     getBoundingClientRect: () => ({ left: 100, top: 80, right: 280, bottom: 152 }),
     querySelectorAll(selector) {
       if (selector === "tr") return rows;
@@ -136,6 +151,9 @@ function createHarness() {
       return [];
     },
   };
+  rows.forEach((row) => {
+    row.parentElement = table;
+  });
   const editor = {
     state: { selection: { from: 4 } },
     view: {
@@ -190,12 +208,17 @@ function createHarness() {
   return { calls, cells, documentListeners, documentRef, editor, pushEvent, root, table };
 }
 
-test("Tiptap table inline content pointerdown preserves native text editing", () => {
+test("Tiptap table inline text content clicks focus and preview the whole cell", () => {
   const { calls, cells, documentListeners, editor, pushEvent, root, table } = createHarness();
   const inline = {
+    nodeType: 1,
+    tagName: "SPAN",
+    parentElement: cells[1],
+    parentNode: cells[1],
+    textContent: "inline",
     closest(selector) {
       if (selector === "th,td") return cells[1];
-      if (selector.includes("table")) return table;
+      if (selector.includes(".mn-tiptap-table") || selector.includes(", table")) return table;
       return null;
     },
   };
@@ -224,16 +247,18 @@ test("Tiptap table inline content pointerdown preserves native text editing", ()
   });
 
   assert.deepEqual(events, []);
-  assert.deepEqual(calls, []);
-  assert.equal(cells[1].classes.has("mn-tiptap-table-cell-selected"), false);
-  assert.equal(controller.state.selection.positions.size, 0);
+  assert.deepEqual(calls, [["setTextSelection", 12], ["focus"]]);
+  assert.deepEqual([...controller.state.selection.positions], [11]);
   assert.equal(documentListeners.has("pointermove"), false);
 });
 
 test("Tiptap table empty paragraph surface focuses like the whole cell", () => {
   const { calls, cells, documentListeners, editor, pushEvent, root, table } = createHarness();
   const paragraph = {
+    nodeType: 1,
     tagName: "P",
+    parentElement: cells[1],
+    parentNode: cells[1],
     textContent: "",
     closest(selector) {
       if (selector === "th,td") return cells[1];
@@ -334,7 +359,7 @@ test("Tiptap table cell clicks preview the active cell immediately", () => {
 
   assert.equal(controller.state.cell, cells[3]);
   assert.equal(controller.state.hover.cell, cells[3]);
-  assert.equal(controller.state.selection.positions.size, 0);
+  assert.deepEqual([...controller.state.selection.positions], [13]);
 
   documentListeners.get("pointerup").at(-1)({
     target: cells[3],
@@ -344,12 +369,17 @@ test("Tiptap table cell clicks preview the active cell immediately", () => {
   assert.deepEqual(calls, [["setTextSelection", 14], ["focus"]]);
 });
 
-test("Tiptap table inline content clicks stay native", () => {
+test("Tiptap table interactive inline content clicks stay native", () => {
   const { calls, cells, documentListeners, editor, root, table } = createHarness();
   const inline = {
+    nodeType: 1,
+    tagName: "A",
+    parentElement: cells[1],
+    parentNode: cells[1],
     closest(selector) {
+      if (selector.includes("a")) return inline;
       if (selector === "th,td") return cells[1];
-      if (selector.includes("table")) return table;
+      if (selector.includes(".mn-tiptap-table") || selector.includes(", table")) return table;
       return null;
     },
   };
@@ -369,7 +399,7 @@ test("Tiptap table inline content clicks stay native", () => {
     clientY: 96,
   });
 
-  documentListeners.get("pointerup").at(-1)({
+  documentListeners.get("pointerup")?.at(-1)?.({
     target: inline,
     clientX: 220,
     clientY: 96,
@@ -378,10 +408,13 @@ test("Tiptap table inline content clicks stay native", () => {
   assert.deepEqual(calls, []);
 });
 
-test("Tiptap table filled paragraph content does not start table selection drag", () => {
+test("Tiptap table filled paragraph content can start table selection drag", () => {
   const { calls, cells, documentListeners, editor, pushEvent, root, table } = createHarness();
   const paragraph = {
+    nodeType: 1,
     tagName: "P",
+    parentElement: cells[0],
+    parentNode: cells[0],
     textContent: "Revenue",
     closest(selector) {
       if (selector === "th,td") return cells[0];
@@ -404,12 +437,12 @@ test("Tiptap table filled paragraph content does not start table selection drag"
     stopPropagation: pushEvent(events, "stopPropagation:down"),
   });
 
-  assert.equal(documentListeners.has("pointermove"), false);
-  assert.equal(documentListeners.get("pointerup")?.length, 1);
+  assert.equal(documentListeners.has("pointermove"), true);
+  assert.equal(documentListeners.get("pointerup")?.length, 2);
   assert.deepEqual(events, []);
   assert.deepEqual(calls, []);
   assert.equal(controller.state.cell, cells[0]);
-  assert.equal(controller.state.selection.positions.size, 0);
+  assert.deepEqual([...controller.state.selection.positions], [10]);
 });
 
 test("Tiptap table cell drag extends the selected cell range", () => {

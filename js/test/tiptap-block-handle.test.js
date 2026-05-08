@@ -36,6 +36,7 @@ function createElement({ tagName = "P", parent = null, rect = null } = {}) {
     nodeType: 1,
     tagName,
     parentNode: parent,
+    parentElement: parent,
     listeners: new Map(),
     addEventListener(type, listener) {
       this.listeners.set(type, listener);
@@ -436,6 +437,25 @@ test("Tiptap block handle rejects official table structure node targets", () => 
       null,
     );
   }
+});
+
+test("Tiptap block handle ignores official child blocks inside tables", () => {
+  const { editor, root } = createEditor();
+  const table = createElement({ tagName: "TABLE", parent: root });
+  table.classList.add("mn-tiptap-table");
+  const row = createElement({ tagName: "TR", parent: table });
+  const cell = createElement({ tagName: "TD", parent: row });
+  const paragraph = createElement({ tagName: "P", parent: cell });
+  editor.view.nodeDOM = (pos) => (pos === 7 ? paragraph : null);
+
+  assert.equal(
+    blockTargetFromOfficialDragHandle({
+      editor,
+      node: { nodeSize: 6, type: { name: "paragraph" } },
+      pos: 7,
+    }),
+    null,
+  );
 });
 
 test("Tiptap block handle opens from official drag handle node changes", () => {
@@ -1198,6 +1218,7 @@ test("Tiptap block handle retargets open menus after ProseMirror remounts block 
   controller.handlePointerMove({ target: block });
   view.openActions();
   block.parentNode = null;
+  block.parentElement = null;
 
   controller.handlePointerMove({ target: { id: "outside" } });
 
@@ -1216,6 +1237,7 @@ test("Tiptap block handle keeps the action menu open while a block DOM is tempor
   controller.handlePointerMove({ target: block });
   view.openActions();
   block.parentNode = null;
+  block.parentElement = null;
 
   controller.handlePointerMove({ target: { id: "outside" } });
 
@@ -1233,6 +1255,7 @@ test("Tiptap block handle keeps the insert menu open while a block DOM is tempor
   controller.handlePointerMove({ target: block });
   view.openInsert();
   block.parentNode = null;
+  block.parentElement = null;
 
   controller.handlePointerMove({ target: { id: "outside" } });
 

@@ -54,15 +54,21 @@ const PARAGRAPH_SLASH_NODE = Object.freeze({
 });
 
 function isElement(value) {
-  return value && value.nodeType === 1;
+  return value && (value.nodeType === 1 || typeof value.closest === "function");
+}
+
+function elementFromTarget(target) {
+  if (isElement(target)) return target;
+  return target?.parentElement ?? (isElement(target?.parentNode) ? target.parentNode : null);
 }
 
 function closestBlockElement(target, editorDom) {
-  if (!isElement(target) || !isElement(editorDom)) {
+  const element = elementFromTarget(target);
+  if (!isElement(element) || !isElement(editorDom)) {
     return null;
   }
 
-  const complexBlock = target.closest?.(COMPLEX_BLOCK_SELECTOR) ?? null;
+  const complexBlock = element.closest?.(COMPLEX_BLOCK_SELECTOR) ?? null;
   if (
     complexBlock &&
     complexBlock !== editorDom &&
@@ -71,7 +77,7 @@ function closestBlockElement(target, editorDom) {
     return complexBlock;
   }
 
-  const block = target.closest?.(BLOCK_SELECTOR) ?? null;
+  const block = element.closest?.(BLOCK_SELECTOR) ?? null;
   if (!block || block === editorDom || !editorDom.contains?.(block)) {
     return null;
   }
@@ -162,8 +168,22 @@ export function blockTargetFromOfficialDragHandle({ editor, node = null, pos = n
     return null;
   }
 
+  const rawElement = rawElementFromPosition(editor, officialPos);
+  const rawTableAncestor = rawElement?.closest?.(".mn-tiptap-table, table") ?? null;
+  if (
+    rawTableAncestor &&
+    rawElement !== rawTableAncestor &&
+    !rawElement?.matches?.(".mn-tiptap-table, table")
+  ) {
+    return null;
+  }
+
   const block = blockElementFromPosition(editor, officialPos);
   if (!block) return null;
+  const tableAncestor = block.closest?.(".mn-tiptap-table, table") ?? null;
+  if (tableAncestor && tableAncestor !== block) {
+    return null;
+  }
 
   return {
     block,
@@ -194,6 +214,20 @@ function blockElementFromPosition(editor, pos) {
 
   const element = isElement(node) ? node : node?.parentElement;
   return closestBlockElement(element, editorDom);
+}
+
+function rawElementFromPosition(editor, pos) {
+  const editorDom = editor?.view?.dom;
+  if (!isElement(editorDom) || !Number.isFinite(pos)) return null;
+
+  try {
+    const node = typeof editor?.view?.nodeDOM === "function" ? editor.view.nodeDOM(pos) : null;
+    if (!node) return null;
+    const element = elementFromTarget(node);
+    return isElement(element) && editorDom.contains?.(element) ? element : null;
+  } catch (_error) {
+    return null;
+  }
 }
 
 function refreshTargetFromPosition(target, editor) {

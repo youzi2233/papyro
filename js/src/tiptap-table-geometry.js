@@ -4,16 +4,24 @@ const COMPLEX_BLOCK_INSERT_HOT_ZONE_PX = 18;
 const TABLE_CELL_MENU_EDGE_HOT_ZONE_PX = 4;
 const TABLE_CELL_MENU_CENTER_HOT_ZONE_PX = 8;
 
+function elementFromTarget(target) {
+  if (!target) return null;
+  if (target.nodeType === 1 || typeof target.closest === "function") return target;
+  return target.parentElement ?? (target.parentNode?.nodeType === 1 ? target.parentNode : null);
+}
+
 export function closestTableElement(target, editorDom) {
-  if (!target?.closest || !editorDom?.contains) return null;
-  const table = target.closest(".mn-tiptap-table, table");
+  const element = elementFromTarget(target);
+  if (!element?.closest || !editorDom?.contains) return null;
+  const table = element.closest(".mn-tiptap-table, table");
   return table && editorDom.contains(table) ? table : null;
 }
 
 export function closestTableCellElement(target) {
-  const tagName = String(target?.tagName ?? "").toLowerCase();
-  if (tagName === "td" || tagName === "th") return target;
-  return target?.closest?.("th,td") ?? null;
+  const element = elementFromTarget(target);
+  const tagName = String(element?.tagName ?? "").toLowerCase();
+  if (tagName === "td" || tagName === "th") return element;
+  return element?.closest?.("th,td") ?? null;
 }
 
 export function tableRows(table) {
@@ -424,8 +432,9 @@ export function activeTableContext(editor) {
 }
 
 export function closestComplexBlockElement(target, editorDom) {
-  if (!target?.closest || !editorDom?.contains) return null;
-  const block = target.closest(COMPLEX_BLOCK_SELECTOR);
+  const element = elementFromTarget(target);
+  if (!element?.closest || !editorDom?.contains) return null;
+  const block = element.closest(COMPLEX_BLOCK_SELECTOR);
   return block && editorDom.contains(block) ? block : null;
 }
 
@@ -530,9 +539,10 @@ export function insertParagraphAfterComplexBlock(editor, block) {
 }
 
 export function tableHoverContext(target, table, grid) {
-  const cell = closestTableCellElement(target);
+  const element = elementFromTarget(target);
+  const cell = closestTableCellElement(element);
   if (!cell || !table?.contains?.(cell)) {
-    return table?.contains?.(target)
+    return table?.contains?.(element)
       ? { table: true, rowIndex: null, columnIndex: null, cell: null }
       : null;
   }

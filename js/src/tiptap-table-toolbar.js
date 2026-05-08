@@ -84,19 +84,28 @@ function isDirectTableCellTarget(target, cell) {
   return (tagName === "td" || tagName === "th") && target === cell;
 }
 
+function elementFromTarget(target) {
+  if (!target) return null;
+  if (target.nodeType === 1 || typeof target.closest === "function") return target;
+  return target.parentElement ?? (target.parentNode?.nodeType === 1 ? target.parentNode : null);
+}
+
+function isInteractiveCellContent(target, cell) {
+  const element = elementFromTarget(target);
+  if (!element || !cell || element?.closest?.("th,td") !== cell) return false;
+
+  const interactive = element.closest?.(
+    "a,button,input,textarea,select,summary,[role=\"button\"],[contenteditable=\"false\"]",
+  );
+  return Boolean(interactive && interactive !== cell);
+}
+
 function isEditableTableCellSurfaceTarget(target, cell) {
   if (isDirectTableCellTarget(target, cell)) return true;
-  if (!target || !cell || target?.closest?.("th,td") !== cell) return false;
+  const element = elementFromTarget(target);
+  if (!element || !cell || element?.closest?.("th,td") !== cell) return false;
 
-  const tagName = String(target?.tagName ?? "").toLowerCase();
-  if (tagName !== "p" && tagName !== "div") return false;
-
-  const interactive = target.closest?.(
-    "a,button,input,textarea,select,code,pre,img,svg,[contenteditable=\"false\"]",
-  );
-  if (interactive && interactive !== cell) return false;
-
-  return String(target.textContent ?? "").trim().length === 0;
+  return !isInteractiveCellContent(element, cell);
 }
 
 function tableContextFromElement(editor, table) {
@@ -606,9 +615,11 @@ export class TiptapTableToolbarController {
     const selectable = typeof this.#editor?.commands?.setCellSelection === "function";
     if (!selectable) return false;
 
-    const blankClick = isEditableTableCellSurfaceTarget(event?.target, cell);
+    if (isInteractiveCellContent(event?.target, cell)) return false;
+
+    const cellSurfaceClick = isEditableTableCellSurfaceTarget(event?.target, cell);
     this.#previewActiveCellFromPointer(context, start, event);
-    if (!blankClick) return false;
+    if (!cellSurfaceClick) return false;
 
     this.#cellDrag = {
       table,
@@ -616,7 +627,7 @@ export class TiptapTableToolbarController {
       head: start,
       moved: false,
       selected: false,
-      blankClick,
+      cellSurfaceClick,
       startX: Number(event?.clientX),
       startY: Number(event?.clientY),
       removeListeners: [],
@@ -641,7 +652,10 @@ export class TiptapTableToolbarController {
       menuRect: null,
       menuAnchorRect: null,
       grid: context.grid ?? [],
-      selection: tableSelectionState(null, context.grid ?? []),
+      selection: {
+        ...tableSelectionState(null, context.grid ?? []),
+        positions: new Set([start.pos]),
+      },
       hover: hoverFromTableCell(start, event, context.table),
       complexBlock: context.table,
       complexRect: context.rect,
@@ -734,13 +748,13 @@ export class TiptapTableToolbarController {
     if (drag.selected) {
       event?.preventDefault?.();
       event?.stopPropagation?.();
-    } else if (drag.blankClick) {
-      this.#focusBlankCellClick(drag, event);
+    } else if (drag.cellSurfaceClick) {
+      this.#focusCellClick(drag, event);
     }
     return true;
   }
 
-  #focusBlankCellClick(drag, event) {
+  #focusCellClick(drag, event) {
     if (!drag?.anchor?.cell || !this.#editor) return false;
     const view = this.#editor.view;
     let targetPos = null;
@@ -776,7 +790,11 @@ export class TiptapTableToolbarController {
       this.#editor.commands.setTextSelection(targetPos);
     }
     this.#editor.commands?.focus?.();
-    this.refresh(this.#editor);
+    this.#previewActiveCellFromPointer(
+      tableContextFromElement(this.#editor, drag.table),
+      drag.anchor,
+      event,
+    );
     return true;
   }
 
@@ -925,7 +943,7 @@ export class TiptapTableToolbarController {
     if (!this.#state.open) return false;
     const isPlainCellContext =
       this.#state.selection?.kind === "cell" &&
-      (this.#state.selection?.positions?.size ?? 0) === 0;
+      (this.#state.selection?.positions?.size ?? 0) <= 1;
     const pos = isPlainCellContext
       ? cellPosition(this.#state.grid, cell ?? this.#state.hover?.cell ?? this.#state.cell)
       : null;

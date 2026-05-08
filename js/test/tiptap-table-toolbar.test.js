@@ -40,7 +40,9 @@ function createTableHarness(commandOverrides = {}) {
           },
         },
         closest(selector) {
-          return selector.includes("table") ? table : null;
+          return selector.includes(".mn-tiptap-table") || selector.includes(", table")
+            ? table
+            : null;
         },
         getAttribute(name) {
           return this.attributes.get(name) ?? null;
@@ -56,6 +58,14 @@ function createTableHarness(commandOverrides = {}) {
           right: 200 + columnIndex * 80,
           bottom: 124 + rowIndex * 34,
         }),
+        contains(target) {
+          let current = target;
+          while (current) {
+            if (current === cell) return true;
+            current = current.parentElement ?? current.parentNode ?? null;
+          }
+          return false;
+        },
       };
       cells.push(cell);
       return cell;
@@ -272,8 +282,10 @@ function createViewSpy() {
 
 function createDocument() {
   const created = [];
+  const listeners = new Map();
   const documentRef = {
     activeElement: null,
+    listeners,
     createElement(tagName) {
       const element = {
         tagName,
@@ -340,6 +352,14 @@ function createDocument() {
       appendChild(child) {
         this.children.push(child);
       },
+    },
+    addEventListener(type, listener) {
+      listeners.set(type, listener);
+    },
+    removeEventListener(type, listener) {
+      if (listeners.get(type) === listener) {
+        listeners.delete(type);
+      }
     },
   };
 
@@ -2353,6 +2373,116 @@ test("Tiptap table toolbar anchors right-click menus to the pointer", () => {
   assert.equal(controller.state.menuAnchorRect.top, 240);
   assert.equal(root.style.left, "222px");
   assert.equal(root.style.top, "248px");
+});
+
+test("Tiptap table toolbar previews selected cells from any editable cell surface", () => {
+  const { created, documentRef } = createDocument();
+  const { calls, cells, editor } = createTableHarness({
+    mergeCells: () => true,
+    setCellAttribute: () => true,
+  });
+  editor.view.posAtCoords = ({ left, top }) => {
+    calls.push(["posAtCoords", left, top]);
+    return { pos: 12 };
+  };
+  editor.commands.setTextSelection = (position) => {
+    calls.push(["setTextSelection", position]);
+    return true;
+  };
+  const paragraph = {
+    nodeType: 1,
+    tagName: "P",
+    parentElement: cells[0],
+    parentNode: cells[0],
+    textContent: "Alpha",
+    closest(selector) {
+      if (selector === "th,td") return cells[0];
+      if (selector.includes(".mn-tiptap-table") || selector.includes(", table")) {
+        return cells[0].closest(selector);
+      }
+      return null;
+    },
+    contains(target) {
+      return target === this;
+    },
+  };
+  const textNode = {
+    nodeType: 3,
+    parentElement: paragraph,
+    parentNode: paragraph,
+  };
+  const controller = createTiptapTableToolbarController({
+    dom: { document: documentRef },
+  });
+
+  controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
+  assert.equal(
+    editor.view.dom.listeners.get("pointerdown")({
+      target: textNode,
+      button: 0,
+      clientX: 146,
+      clientY: 104,
+    }),
+    false,
+  );
+
+  assert.equal(controller.state.selection.kind, "cell");
+  assert.deepEqual([...controller.state.selection.positions], [10]);
+  assert.equal(cells[0].classes.has("mn-tiptap-table-cell-selected"), true);
+  const trigger = created.find((element) =>
+    String(element.className).includes("mn-tiptap-table-cell-menu-trigger"),
+  );
+  assert.equal(trigger.hidden, false);
+  assert.equal(trigger.style.left, "200px");
+  assert.equal(trigger.style.top, "107px");
+
+  documentRef.listeners.get("pointerup")?.({
+    target: textNode,
+    clientX: 146,
+    clientY: 104,
+  });
+  assert.deepEqual(calls.slice(-3), [
+    ["posAtCoords", 146, 104],
+    ["setTextSelection", 12],
+    ["focus"],
+  ]);
+  assert.equal(controller.state.selection.positions.size, 1);
+});
+
+test("Tiptap table toolbar keeps native controls inside cells interactive", () => {
+  const { documentRef } = createDocument();
+  const { calls, cells, editor } = createTableHarness();
+  const link = {
+    nodeType: 1,
+    tagName: "A",
+    parentElement: cells[0],
+    parentNode: cells[0],
+    closest(selector) {
+      if (selector.includes("a")) return link;
+      if (selector === "th,td") return cells[0];
+      if (selector.includes(".mn-tiptap-table") || selector.includes(", table")) {
+        return cells[0].closest(selector);
+      }
+      return null;
+    },
+  };
+  const controller = createTiptapTableToolbarController({
+    dom: { document: documentRef },
+  });
+
+  controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
+
+  assert.equal(
+    editor.view.dom.listeners.get("pointerdown")({
+      target: link,
+      button: 0,
+      clientX: 146,
+      clientY: 104,
+    }),
+    false,
+  );
+  assert.deepEqual(calls, []);
+  assert.equal(controller.state.selection.positions.size, 0);
 });
 
 test("selectTableAxis rejects missing table selection commands", () => {
