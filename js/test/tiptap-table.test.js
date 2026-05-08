@@ -5,6 +5,7 @@ import { StarterKit } from "@tiptap/starter-kit";
 import { Window } from "happy-dom";
 
 import {
+  PapyroTable,
   PAPYRO_TABLE_CELL_RESET_ATTRS,
   PapyroTableCellBackground,
   PapyroTableCellContentActions,
@@ -70,13 +71,75 @@ test("Papyro table extensions expose the TableKit boundary", () => {
 
   assert.deepEqual(
     extensions.map((extension) => extension.name),
-    ["tableKit", "papyroTableCellBackground", "papyroTableCellContentActions"],
+    ["table", "tableKit", "papyroTableCellBackground", "papyroTableCellContentActions"],
   );
-  assert.equal(extensions[0].options.table.resizable, true);
-  assert.equal(extensions[0].options.table.handleWidth, 6);
-  assert.equal(extensions[0].options.table.cellMinWidth, 96);
-  assert.equal(extensions[0].options.table.lastColumnResizable, true);
-  assert.equal(extensions[0].options.table.allowTableNodeSelection, false);
+  assert.equal(extensions[0].options.resizable, true);
+  assert.equal(extensions[0].options.handleWidth, 6);
+  assert.equal(extensions[0].options.cellMinWidth, 96);
+  assert.equal(extensions[0].options.lastColumnResizable, true);
+  assert.equal(extensions[0].options.allowTableNodeSelection, false);
+  assert.equal(extensions[1].options.table, false);
+});
+
+test("Papyro table Markdown renderer keeps pipe tables when Markdown is lossless", () => {
+  const markdown = PapyroTable.config.renderMarkdown(
+    {
+      type: "table",
+      content: [
+        {
+          type: "tableRow",
+          content: [
+            { type: "tableHeader", attrs: { align: null }, content: [{ type: "paragraph", content: [{ type: "text", text: "Name" }] }] },
+            { type: "tableHeader", attrs: { align: "center" }, content: [{ type: "paragraph", content: [{ type: "text", text: "Status" }] }] },
+          ],
+        },
+        {
+          type: "tableRow",
+          content: [
+            { type: "tableCell", attrs: { align: null }, content: [{ type: "paragraph", content: [{ type: "text", text: "Papyro" }] }] },
+            { type: "tableCell", attrs: { align: "center" }, content: [{ type: "paragraph", content: [{ type: "text", text: "Ready" }] }] },
+          ],
+        },
+      ],
+    },
+    { renderChildren: (nodes) => nodes.map((node) => node.content?.[0]?.text ?? node.text ?? "").join("") },
+  );
+
+  assert.equal(
+    markdown,
+    "\n| Name   | Status |\n| ------ | :------: |\n| Papyro | Ready  |\n",
+  );
+});
+
+test("Papyro table Markdown renderer falls back to HTML when table attributes would be lost", () => {
+  const markdown = PapyroTable.config.renderMarkdown(
+    {
+      type: "table",
+      content: [
+        {
+          type: "tableRow",
+          content: [
+            {
+              type: "tableHeader",
+              attrs: {
+                align: "center",
+                backgroundColor: "rgba(245, 158, 11, 0.16)",
+                colspan: 2,
+                rowspan: 1,
+              },
+              content: [{ type: "paragraph", content: [{ type: "text", text: "Title" }] }],
+            },
+          ],
+        },
+      ],
+    },
+    { renderChildren: (nodes) => nodes.map((node) => node.content?.[0]?.text ?? node.text ?? "").join("") },
+  );
+
+  assert.equal(
+    markdown,
+    '<table><tbody><tr><th data-cell-background="rgba(245, 158, 11, 0.16)" colspan="2" style="text-align: center; background-color: rgba(245, 158, 11, 0.16)">Title</th></tr></tbody></table>',
+  );
 });
 
 test("Papyro table cell background extension adds cell attributes", () => {

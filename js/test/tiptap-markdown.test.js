@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { Window } from "happy-dom";
 
 import {
   createPapyroMarkdownManager,
@@ -120,6 +121,9 @@ function collectTables(node, tables = []) {
         (row.content ?? []).map((cell) => ({
           type: cell.type,
           align: cell.attrs?.align ?? null,
+          backgroundColor: cell.attrs?.backgroundColor ?? null,
+          colspan: cell.attrs?.colspan ?? 1,
+          rowspan: cell.attrs?.rowspan ?? 1,
           text: plainText(cell),
         })),
       ),
@@ -131,6 +135,50 @@ function collectTables(node, tables = []) {
   }
 
   return tables;
+}
+
+function compactTables(tables) {
+  return tables.map((table) =>
+    table.map((row) =>
+      row.map((cell) => ({
+        type: cell.type,
+        align: cell.align,
+        text: cell.text,
+      })),
+    ),
+  );
+}
+
+function installDomGlobals(windowRef) {
+  const previous = new Map();
+  for (const [name, value] of Object.entries({
+    window: windowRef,
+    document: windowRef.document,
+    navigator: windowRef.navigator,
+    HTMLElement: windowRef.HTMLElement,
+    Element: windowRef.Element,
+    Document: windowRef.Document,
+    Node: windowRef.Node,
+    DOMParser: windowRef.DOMParser,
+    getComputedStyle: windowRef.getComputedStyle.bind(windowRef),
+  })) {
+    previous.set(name, {
+      exists: Object.prototype.hasOwnProperty.call(globalThis, name),
+      value: globalThis[name],
+    });
+    globalThis[name] = value;
+  }
+  return previous;
+}
+
+function restoreDomGlobals(previous) {
+  for (const [name, record] of previous.entries()) {
+    if (record.exists) {
+      globalThis[name] = record.value;
+    } else {
+      delete globalThis[name];
+    }
+  }
 }
 
 function collectMath(node, math = []) {
@@ -255,7 +303,7 @@ test("Tiptap Markdown manager parses the baseline Markdown blocks", () => {
     { checked: false, text: "Draft task" },
     { checked: true, text: "Reviewed task" },
   ]);
-  assert.deepEqual(tables, [
+  assert.deepEqual(compactTables(tables), [
     [
       [
         { type: "tableHeader", align: null, text: "Feature" },
@@ -343,7 +391,7 @@ test("Tiptap release smoke fixture preserves editor-critical block semantics", (
     { checked: false, text: "Unchecked task" },
     { checked: true, text: "Checked task" },
   ]);
-  assert.deepEqual(tables, [
+  assert.deepEqual(compactTables(tables), [
     [
       [
         { type: "tableHeader", align: "left", text: "Name" },
@@ -445,7 +493,7 @@ test("Tiptap Markdown pipe tables round trip headers, cells, and alignment", () 
   ].join("\n");
   const { parsed, serialized, reparsed } = roundTripTiptapMarkdown(markdown);
 
-  assert.deepEqual(collectTables(parsed), [
+  assert.deepEqual(compactTables(collectTables(parsed)), [
     [
       [
         { type: "tableHeader", align: null, text: "Feature" },
@@ -463,7 +511,129 @@ test("Tiptap Markdown pipe tables round trip headers, cells, and alignment", () 
   ]);
   assert.match(serialized, /^\| Feature | Status \|/m);
   assert.match(serialized, /^\| ------- | :------: \|/m);
-  assert.deepEqual(collectTables(reparsed), collectTables(parsed));
+  assert.deepEqual(compactTables(collectTables(reparsed)), compactTables(collectTables(parsed)));
+});
+
+test("Tiptap Markdown preserves styled table cells through the HTML table fallback", () => {
+  const windowRef = new Window({ url: "http://localhost/" });
+  const previousGlobals = installDomGlobals(windowRef);
+
+  try {
+    const doc = {
+      type: "doc",
+      content: [
+        {
+          type: "table",
+          content: [
+            {
+              type: "tableRow",
+              content: [
+                {
+                  type: "tableHeader",
+                  attrs: {
+                    align: "center",
+                    backgroundColor: "rgba(245, 158, 11, 0.16)",
+                    colspan: 1,
+                    rowspan: 1,
+                    colwidth: null,
+                  },
+                  content: [{ type: "paragraph", content: [{ type: "text", text: "Feature" }] }],
+                },
+                {
+                  type: "tableHeader",
+                  attrs: {
+                    align: null,
+                    backgroundColor: null,
+                    colspan: 1,
+                    rowspan: 1,
+                    colwidth: null,
+                  },
+                  content: [{ type: "paragraph", content: [{ type: "text", text: "Status" }] }],
+                },
+              ],
+            },
+            {
+              type: "tableRow",
+              content: [
+                {
+                  type: "tableCell",
+                  attrs: {
+                    align: "right",
+                    backgroundColor: null,
+                    colspan: 1,
+                    rowspan: 1,
+                    colwidth: null,
+                  },
+                  content: [{ type: "paragraph", content: [{ type: "text", text: "Source" }] }],
+                },
+                {
+                  type: "tableCell",
+                  attrs: {
+                    align: null,
+                    backgroundColor: "rgba(59, 130, 246, 0.14)",
+                    colspan: 2,
+                    rowspan: 1,
+                    colwidth: null,
+                  },
+                  content: [{ type: "paragraph", content: [{ type: "text", text: "Done" }] }],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+
+    const serialized = serializeTiptapMarkdown(doc);
+    const reparsedTables = collectTables(parseTiptapMarkdown(serialized));
+
+    assert.match(serialized, /^<table><tbody><tr><th /);
+    assert.match(serialized, /data-cell-background="rgba\(245, 158, 11, 0\.16\)"/);
+    assert.match(serialized, /colspan="2"/);
+    assert.deepEqual(reparsedTables, [
+      [
+        [
+          {
+            type: "tableHeader",
+            align: "center",
+            backgroundColor: "rgba(245, 158, 11, 0.16)",
+            colspan: 1,
+            rowspan: 1,
+            text: "Feature",
+          },
+          {
+            type: "tableHeader",
+            align: null,
+            backgroundColor: null,
+            colspan: 1,
+            rowspan: 1,
+            text: "Status",
+          },
+        ],
+        [
+          {
+            type: "tableCell",
+            align: "right",
+            backgroundColor: null,
+            colspan: 1,
+            rowspan: 1,
+            text: "Source",
+          },
+          {
+            type: "tableCell",
+            align: null,
+            backgroundColor: "rgba(59, 130, 246, 0.14)",
+            colspan: 2,
+            rowspan: 1,
+            text: "Done",
+          },
+        ],
+      ],
+    ]);
+  } finally {
+    restoreDomGlobals(previousGlobals);
+    windowRef.close?.();
+  }
 });
 
 test("Tiptap Markdown math round trips inline, display, and single-line syntax", () => {

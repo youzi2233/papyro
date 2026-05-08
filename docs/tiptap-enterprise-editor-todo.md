@@ -295,6 +295,7 @@ Tasks:
 - [ ] Keep table controls hidden for adjacent code blocks or other non-table content.
   - Current coverage: quick-add row/column rails now require a table-owned target or explicit editor rail target, so adjacent code blocks and other complex blocks cannot accidentally display table insertion chrome.
 - [ ] Add Markdown round-trip fixtures for alignment, header rows, merged-cell fallback, and cell background metadata if supported.
+  - Current coverage: lossless tables still serialize as readable pipe tables, while tables with cell background, per-cell alignment, colspan/rowspan, column widths, or non-leading header cells serialize as HTML tables so Markdown save/reopen preserves the Tiptap table attributes instead of silently dropping them.
 
 Acceptance criteria:
 

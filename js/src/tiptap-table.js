@@ -1,4 +1,8 @@
-import { TableKit } from "@tiptap/extension-table";
+import {
+  Table,
+  TableKit,
+  renderTableToMarkdown,
+} from "@tiptap/extension-table";
 import { Extension } from "@tiptap/core";
 import {
   deleteCellSelection,
@@ -11,6 +15,110 @@ export const PAPYRO_TABLE_CELL_RESET_ATTRS = Object.freeze([
   "align",
   "backgroundColor",
 ]);
+
+function escapeHtmlAttribute(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function normalizeCellAlign(value) {
+  const align = String(value ?? "").trim().toLowerCase();
+  return align === "left" || align === "center" || align === "right" ? align : null;
+}
+
+function tableCellNodes(rowNode) {
+  return Array.isArray(rowNode?.content) ? rowNode.content : [];
+}
+
+function isDefaultSpan(value) {
+  return value === null || value === undefined || value === 1;
+}
+
+function hasColumnWidth(cellNode) {
+  return Array.isArray(cellNode?.attrs?.colwidth) &&
+    cellNode.attrs.colwidth.some((width) => Number.isFinite(Number(width)));
+}
+
+function tableNeedsHtmlMarkdown(node) {
+  const rows = Array.isArray(node?.content) ? node.content : [];
+  if (rows.length === 0) return false;
+
+  const firstRowCells = tableCellNodes(rows[0]);
+  const firstRowIsHeader = firstRowCells.length > 0 &&
+    firstRowCells.every((cell) => cell?.type === "tableHeader");
+  if (!firstRowIsHeader) return true;
+
+  const columnAlignments = [];
+
+  for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1) {
+    const cells = tableCellNodes(rows[rowIndex]);
+    for (let columnIndex = 0; columnIndex < cells.length; columnIndex += 1) {
+      const cell = cells[columnIndex];
+      const attrs = cell?.attrs ?? {};
+      const isHeader = cell?.type === "tableHeader";
+
+      if (rowIndex > 0 && isHeader) return true;
+      if (!isDefaultSpan(attrs.colspan) || !isDefaultSpan(attrs.rowspan)) return true;
+      if (hasColumnWidth(cell)) return true;
+      if (attrs.backgroundColor) return true;
+
+      const align = normalizeCellAlign(attrs.align);
+      if (columnAlignments[columnIndex] === undefined) {
+        columnAlignments[columnIndex] = align;
+      } else if (columnAlignments[columnIndex] !== align) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+function htmlAttributes(attributes) {
+  const rendered = Object.entries(attributes)
+    .filter(([, value]) => value !== null && value !== undefined && value !== "")
+    .map(([name, value]) => `${name}="${escapeHtmlAttribute(value)}"`);
+  return rendered.length > 0 ? ` ${rendered.join(" ")}` : "";
+}
+
+function renderHtmlTableCell(cellNode, helpers) {
+  const attrs = cellNode?.attrs ?? {};
+  const tag = cellNode?.type === "tableHeader" ? "th" : "td";
+  const style = [];
+  const align = normalizeCellAlign(attrs.align);
+  const backgroundColor = attrs.backgroundColor ?? null;
+  const htmlAttrs = {};
+
+  if (align) style.push(`text-align: ${align}`);
+  if (backgroundColor) {
+    style.push(`background-color: ${backgroundColor}`);
+    htmlAttrs["data-cell-background"] = backgroundColor;
+  }
+  if (!isDefaultSpan(attrs.colspan)) htmlAttrs.colspan = attrs.colspan;
+  if (!isDefaultSpan(attrs.rowspan)) htmlAttrs.rowspan = attrs.rowspan;
+  if (hasColumnWidth(cellNode)) htmlAttrs.colwidth = attrs.colwidth.join(",");
+  if (style.length > 0) htmlAttrs.style = style.join("; ");
+
+  const content = Array.isArray(cellNode?.content)
+    ? helpers.renderChildren(cellNode.content, "<br>")
+    : "";
+  return `<${tag}${htmlAttributes(htmlAttrs)}>${content}</${tag}>`;
+}
+
+function renderHtmlTableMarkdown(node, helpers) {
+  const rows = Array.isArray(node?.content) ? node.content : [];
+  const body = rows
+    .map((rowNode) =>
+      `<tr>${tableCellNodes(rowNode)
+        .map((cellNode) => renderHtmlTableCell(cellNode, helpers))
+        .join("")}</tr>`,
+    )
+    .join("");
+  return `<table><tbody>${body}</tbody></table>`;
+}
 
 function parseCellBackgroundColor(element) {
   return (
@@ -303,19 +411,27 @@ export const PapyroTableCellContentActions = Extension.create({
   },
 });
 
+export const PapyroTable = Table.extend({
+  renderMarkdown: (node, helpers) =>
+    tableNeedsHtmlMarkdown(node)
+      ? renderHtmlTableMarkdown(node, helpers)
+      : renderTableToMarkdown(node, helpers),
+});
+
 export function createPapyroTableExtensions({ writeText = null } = {}) {
   return [
-    TableKit.configure({
-      table: {
-        HTMLAttributes: {
-          class: "mn-tiptap-table",
-        },
-        resizable: true,
-        handleWidth: 6,
-        cellMinWidth: 96,
-        lastColumnResizable: true,
-        allowTableNodeSelection: false,
+    PapyroTable.configure({
+      HTMLAttributes: {
+        class: "mn-tiptap-table",
       },
+      resizable: true,
+      handleWidth: 6,
+      cellMinWidth: 96,
+      lastColumnResizable: true,
+      allowTableNodeSelection: false,
+    }),
+    TableKit.configure({
+      table: false,
       tableRow: {
         HTMLAttributes: {
           class: "mn-tiptap-table-row",
