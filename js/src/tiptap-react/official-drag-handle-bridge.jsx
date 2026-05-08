@@ -5,6 +5,8 @@ import { createPapyroOfficialDragHandleConfig } from "../tiptap-official-drag-ha
 import { PapyroBlockHandle } from "./components/block-handle.jsx";
 import {
   createOfficialDragHandleClickTracker,
+  consumeOfficialDragHandleNativeMenu,
+  isOfficialDragHandlePrimaryPointer,
   officialDragHandleBridgeState,
   officialDragHandleControlsHidden,
 } from "./official-drag-handle-bridge-state.js";
@@ -51,8 +53,7 @@ export function PapyroOfficialDragHandleBridge({ editor, entry = null }) {
     entryRef.current?.blockHandle?.startOfficialNativeDrag?.(event);
   }, []);
   const openActionsFromBridge = useCallback((event) => {
-    event?.preventDefault?.();
-    event?.stopPropagation?.();
+    consumeOfficialDragHandleNativeMenu(event);
     entryRef.current?.blockHandle?.clickAction?.(event);
   }, []);
   const openActionsFromBridgeClick = useCallback((event) => {
@@ -64,14 +65,17 @@ export function PapyroOfficialDragHandleBridge({ editor, entry = null }) {
     }
   }, [openActionsFromBridge]);
   const openContextActionsFromBridge = useCallback((event) => {
-    event?.preventDefault?.();
-    event?.stopPropagation?.();
+    consumeOfficialDragHandleNativeMenu(event);
     entryRef.current?.blockHandle?.openActions?.(event);
   }, []);
-  const ignoreAuxActionFromBridge = useCallback((event) => {
-    event?.preventDefault?.();
-    event?.stopPropagation?.();
+  const openInsertFromBridge = useCallback((event) => {
+    consumeOfficialDragHandleNativeMenu(event);
+    entryRef.current?.blockHandle?.openInsert?.(event);
   }, []);
+  const ignoreAuxActionFromBridge = useCallback(
+    (event) => consumeOfficialDragHandleNativeMenu(event),
+    [],
+  );
   const allowOfficialDragFromBridge = useCallback((event) => {
     clickTrackerRef.current.begin(event);
     if (event?.button === 2) {
@@ -83,6 +87,12 @@ export function PapyroOfficialDragHandleBridge({ editor, entry = null }) {
       openActionsFromBridge(event);
     }
   }, [openActionsFromBridge]);
+  const openInsertFromBridgePointerDown = useCallback((event) => {
+    if (!isOfficialDragHandlePrimaryPointer(event)) {
+      return consumeOfficialDragHandleNativeMenu(event);
+    }
+    return openInsertFromBridge(event);
+  }, [openInsertFromBridge]);
   const hidden = officialDragHandleControlsHidden(handleState);
 
   if (!bridgeState.active) return null;
@@ -102,6 +112,9 @@ export function PapyroOfficialDragHandleBridge({ editor, entry = null }) {
         state={{
           ...(handleState ?? {}),
           hidden,
+          onInsertPointerDown: openInsertFromBridgePointerDown,
+          onInsertClick: ignoreAuxActionFromBridge,
+          onInsertContextMenu: ignoreAuxActionFromBridge,
           onActionPointerDown: allowOfficialDragFromBridge,
           onActionPointerUp: openActionsFromBridgePointerUp,
           onActionClick: openActionsFromBridgeClick,
@@ -110,6 +123,7 @@ export function PapyroOfficialDragHandleBridge({ editor, entry = null }) {
           rootProps: {
             "data-view-mode": bridgeState.viewMode,
             "data-state": bridgeState.reason,
+            onContextMenu: ignoreAuxActionFromBridge,
           },
         }}
       />

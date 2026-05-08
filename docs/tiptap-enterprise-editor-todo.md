@@ -231,6 +231,7 @@ Tasks:
 - [ ] Open the block action menu on normal click beside the pointer, not after long press.
   - Current coverage: the official React DragHandle bridge now tracks pointer down/up distance, opens the block action menu immediately for short primary clicks, suppresses click fallback after drag-like movement, and keeps real drag gestures on the official drag path.
 - [ ] Block native WebView context menus on right-click and show only Papyro actions.
+  - Current coverage: the official React DragHandle bridge now consumes `contextmenu` and auxiliary clicks on the handle root, action handle, and insert handle. Right-click opens Papyro block actions without leaking the WebView refresh/inspect menu, while non-primary insert clicks are swallowed instead of triggering native browser chrome.
 - [ ] Highlight the whole semantic block, including inline code and mixed marks.
   - Current coverage: block-handle actions now prefer Tiptap's official `setNodeSelection` for the semantic block and only fall back to a full textblock range when node selection is unavailable, so mixed inline marks and inline code no longer define the perceived selection boundary.
 - [ ] Implement reliable drag reorder with a drop indicator and transaction-level tests.

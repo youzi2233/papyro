@@ -10,7 +10,9 @@ import {
   papyroTableOverlayRule,
 } from "../src/tiptap-official-drag-handle.js";
 import {
+  consumeOfficialDragHandleNativeMenu,
   createOfficialDragHandleClickTracker,
+  isOfficialDragHandlePrimaryPointer,
   officialDragHandleControlsHidden,
   officialDragHandleBridgeState as reactBridgeState,
 } from "../src/tiptap-react/official-drag-handle-bridge-state.js";
@@ -167,4 +169,22 @@ test("Papyro React drag handle click tracker opens actions only for short primar
   tracker.cancel();
   assert.equal(tracker.end({ button: 0, clientX: 10, clientY: 20 }), false);
   assert.equal(tracker.click(), false);
+});
+
+test("Papyro React drag handle consumes native context menu events", () => {
+  const calls = [];
+  const event = {
+    preventDefault: () => calls.push("preventDefault"),
+    stopPropagation: () => calls.push("stopPropagation"),
+  };
+
+  assert.equal(consumeOfficialDragHandleNativeMenu(event), true);
+  assert.deepEqual(calls, ["preventDefault", "stopPropagation"]);
+});
+
+test("Papyro React drag handle treats only primary pointer as insert activation", () => {
+  assert.equal(isOfficialDragHandlePrimaryPointer({ button: 0 }), true);
+  assert.equal(isOfficialDragHandlePrimaryPointer({ button: undefined }), true);
+  assert.equal(isOfficialDragHandlePrimaryPointer({ button: 1 }), false);
+  assert.equal(isOfficialDragHandlePrimaryPointer({ button: 2 }), false);
 });

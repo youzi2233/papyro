@@ -229,6 +229,7 @@ node scripts/check-editor-markdown-gate.js
 - [ ] 普通点击时在点击点右侧打开块操作菜单，而不是长按才可能打开。
   - 当前覆盖：官方 React DragHandle bridge 现在会记录 pointer down/up 距离，短按主键会立即打开块操作菜单；发生拖拽倾向后会抑制 click fallback，真实拖拽继续交给官方 drag path。
 - [ ] 右键阻止 WebView 原生菜单，只展示 Papyro 动作。
+  - 当前覆盖：官方 React DragHandle bridge 现在会在句柄根节点、动作句柄和插入句柄上吞掉 `contextmenu` 与辅助键点击。右键只打开 Papyro 块操作菜单，不再漏出 WebView 的刷新/检查菜单；插入句柄上的非主键点击也会被吞掉，不触发原生浏览器 chrome。
 - [ ] 高亮完整语义 block，包括行内代码和混合 mark。
   - 当前覆盖：块句柄动作现在优先使用 Tiptap 官方 `setNodeSelection` 选中语义块；只有节点选中不可用时才回退到完整 textblock range，因此混合行内 mark 和行内代码不再决定用户感知到的选区边界。
 - [ ] 实现可靠拖拽排序、drop indicator 和 transaction 级测试。

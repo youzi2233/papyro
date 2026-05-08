@@ -35,6 +35,16 @@ export function officialDragHandleControlsHidden(handleState = null) {
   return !handleState?.open || !handleState?.target;
 }
 
+export function consumeOfficialDragHandleNativeMenu(event = {}) {
+  event?.preventDefault?.();
+  event?.stopPropagation?.();
+  return true;
+}
+
+export function isOfficialDragHandlePrimaryPointer(event = {}) {
+  return Number(event?.button ?? 0) === 0;
+}
+
 export function createOfficialDragHandleClickTracker({
   threshold = 4,
 } = {}) {
