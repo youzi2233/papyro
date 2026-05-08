@@ -11,7 +11,7 @@ import {
   tableCommandVariant,
 } from "../../tiptap-table-commands.js";
 import { usePointerActivation } from "../hooks/use-pointer-activation.js";
-import { CommandIconFrame, CommandRow } from "./primitives.jsx";
+import { CommandIconFrame, CommandRow, CommandText } from "./primitives.jsx";
 
 function groupTableCommands(commands) {
   const groups = [];
@@ -109,9 +109,13 @@ function TableCommandButton({
     >
       {showVisual ? <TableCommandVisual command={command} /> : null}
       {showTextLabel ? (
-        <span className="mn-tiptap-table-toolbar-button-label">
-          {command.title}
-        </span>
+        <CommandText
+          className="mn-tiptap-table-toolbar-button-copy"
+          titleClassName="mn-tiptap-table-toolbar-button-label"
+          descriptionClassName="mn-tiptap-table-toolbar-button-description"
+          title={command.title}
+          description={command.description}
+        />
       ) : null}
       {!showVisual && !showTextLabel ? command.label : null}
     </CommandRow>

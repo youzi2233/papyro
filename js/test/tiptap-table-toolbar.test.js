@@ -203,6 +203,22 @@ function toolbarCommandButton(created, commandId) {
   return find(root);
 }
 
+function toolbarCommandCopy(element) {
+  const copy =
+    (element?.children ?? []).find((child) =>
+      String(child?.className ?? "").includes("mn-tiptap-table-toolbar-button-copy"),
+    ) ?? element?.children?.[1] ?? null;
+  const title =
+    (copy?.children ?? []).find((child) =>
+      String(child?.className ?? "").includes("mn-tiptap-table-toolbar-button-label"),
+    )?.textContent ?? copy?.textContent ?? "";
+  const description =
+    (copy?.children ?? []).find((child) =>
+      String(child?.className ?? "").includes("mn-tiptap-table-toolbar-button-description"),
+    )?.textContent ?? "";
+  return { copy, title, description };
+}
+
 function latestAxisHandle(created, axis, index = null) {
   return [...created].reverse().find((element) =>
     String(element.className).includes(`mn-tiptap-table-axis-handle ${axis}`) &&
@@ -2506,9 +2522,14 @@ test("Tiptap table context menu renders text commands as command rows", () => {
   const deleteRow = toolbarCommandButton(created, "delete-row");
 
   assert.equal(moveUp.children[0].dataset.icon, "move-row-up");
-  assert.equal(moveUp.children[1].textContent, "Move row up");
+  assert.equal(toolbarCommandCopy(moveUp).title, "Move row up");
+  assert.equal(toolbarCommandCopy(moveUp).description, "Move the selected row one position up.");
   assert.equal(sortAsc.children[0].dataset.icon, "sort-asc");
-  assert.equal(sortAsc.children[1].textContent, "Sort columns A to Z");
+  assert.equal(toolbarCommandCopy(sortAsc).title, "Sort columns A to Z");
+  assert.equal(
+    toolbarCommandCopy(sortAsc).description,
+    "Sort columns by this row; header columns stay fixed.",
+  );
   assert.equal(insertBelow.dataset.variant, "text");
   assert.equal(insertBelow.children.length, 2);
   assert.equal(
@@ -2517,22 +2538,30 @@ test("Tiptap table context menu renders text commands as command rows", () => {
   );
   assert.equal(insertBelow.children[0].dataset.icon, "row-below");
   assert.equal(
-    String(insertBelow.children[1].className).includes("mn-tiptap-table-toolbar-button-label"),
+    String(insertBelow.children[1].className).includes("mn-tiptap-table-toolbar-button-copy"),
     true,
   );
-  assert.equal(insertBelow.children[1].textContent, "Insert row below");
+  assert.equal(toolbarCommandCopy(insertBelow).title, "Insert row below");
+  assert.equal(toolbarCommandCopy(insertBelow).description, "Add a row below the selected row.");
   assert.equal(duplicateRow.children[0].dataset.icon, "duplicate-row");
-  assert.equal(duplicateRow.children[1].textContent, "Duplicate current row");
+  assert.equal(toolbarCommandCopy(duplicateRow).title, "Duplicate current row");
+  assert.equal(toolbarCommandCopy(duplicateRow).description, "Copy the selected row below itself.");
   assert.equal(copyContent.children[0].dataset.icon, "copy-cell");
-  assert.equal(copyContent.children[1].textContent, "Copy cell content");
+  assert.equal(toolbarCommandCopy(copyContent).title, "Copy cell content");
+  assert.equal(toolbarCommandCopy(copyContent).description, "Copy selected cells as tab-separated text.");
   assert.equal(clearContent.children[0].dataset.icon, "clear-content");
-  assert.equal(clearContent.children[1].textContent, "Clear cell content");
+  assert.equal(toolbarCommandCopy(clearContent).title, "Clear cell content");
+  assert.equal(toolbarCommandCopy(clearContent).description, "Clear text while keeping the table structure.");
   assert.equal(clearStyle.children[0].dataset.icon, "clear-style");
-  assert.equal(clearStyle.children[1].textContent, "Clear cell style");
+  assert.equal(toolbarCommandCopy(clearStyle).title, "Clear cell style");
+  assert.equal(toolbarCommandCopy(clearStyle).description, "Remove alignment, colors, and text styling.");
   assert.equal(headerRow.children[0].dataset.icon, "header-row");
-  assert.equal(headerRow.children[1].textContent, "Toggle header row");
+  assert.equal(toolbarCommandCopy(headerRow).title, "Toggle header row");
+  assert.equal(toolbarCommandCopy(headerRow).description, "Turn the current row into a header row.");
   assert.equal(deleteRow.children[0].dataset.icon, "delete-row");
-  assert.equal(deleteRow.children[1].textContent, "Delete current row");
+  assert.equal(toolbarCommandCopy(deleteRow).title, "Delete current row");
+  assert.equal(toolbarCommandCopy(deleteRow).description, "Remove the selected row and its content.");
+  assert.equal(deleteRow["aria-label"], "Delete current row. Remove the selected row and its content.");
 });
 
 test("Tiptap table range context menu keeps merge commands visually explicit", () => {
@@ -2567,7 +2596,8 @@ test("Tiptap table range context menu keeps merge commands visually explicit", (
     String(mergeCells.children[0].className).includes("mn-tiptap-table-toolbar-button-visual"),
     true,
   );
-  assert.equal(mergeCells.children[1].textContent, "Merge selected cells");
+  assert.equal(toolbarCommandCopy(mergeCells).title, "Merge selected cells");
+  assert.equal(toolbarCommandCopy(mergeCells).description, "Combine the selected cells into one cell.");
 });
 
 test("Tiptap table toolbar keeps cell and axis context menus focused", () => {

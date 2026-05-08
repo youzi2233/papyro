@@ -56,6 +56,7 @@ test("Tiptap table commands expose readable Chinese labels", () => {
   assert.equal(command.group, "对齐");
   assert.equal(command.title, "当前单元格居中");
   assert.equal(command.label, "居中");
+  assert.equal(command.description, "将选中单元格文字居中。");
 });
 
 test("Tiptap floating chrome exposes readable Chinese labels", () => {

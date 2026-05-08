@@ -405,7 +405,10 @@ export class TiptapTableToolbarView {
       button.id = commandElementId(TABLE_TOOLBAR_OWNER_ID, commandIndex);
       button.role = state.mode === "context" ? "menuitem" : "button";
       button.title = command.title;
-      button.setAttribute("aria-label", command.title);
+      button.setAttribute(
+        "aria-label",
+        command.description ? `${command.title}. ${command.description}` : command.title,
+      );
       button.textContent = state.mode === "context" ? command.title : command.label;
       button.dataset.commandId = command.id;
       button.dataset.commandIndex = String(commandIndex);
@@ -442,14 +445,31 @@ export class TiptapTableToolbarView {
         ) {
           button.replaceChildren(visual);
         } else if (state.mode === "context") {
+          const copy = createElement(
+            this.#document,
+            "span",
+            "mn-tiptap-table-toolbar-button-copy",
+          );
           const label = createElement(
             this.#document,
             "span",
             "mn-tiptap-table-toolbar-button-label",
           );
-          if (label) {
+          const description = command.description
+            ? createElement(
+                this.#document,
+                "span",
+                "mn-tiptap-table-toolbar-button-description",
+              )
+            : null;
+          if (copy && label) {
             label.textContent = command.title;
-            button.replaceChildren(visual, label);
+            copy.appendChild(label);
+            if (description) {
+              description.textContent = command.description;
+              copy.appendChild(description);
+            }
+            button.replaceChildren(visual, copy);
           }
         }
       }

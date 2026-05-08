@@ -191,6 +191,169 @@ const PAPYRO_TABLE_COMMAND_LABELS = Object.freeze({
   ],
 });
 
+const TABLE_COMMAND_DESCRIPTIONS = Object.freeze({
+  "add-column-before": [
+    "Add a column before the selected column.",
+    "\u5728\u5f53\u524d\u5217\u5de6\u4fa7\u63d2\u5165\u4e00\u5217\u3002",
+  ],
+  "add-column-after": [
+    "Add a column after the selected column.",
+    "\u5728\u5f53\u524d\u5217\u53f3\u4fa7\u63d2\u5165\u4e00\u5217\u3002",
+  ],
+  "delete-column": [
+    "Remove the selected column and its content.",
+    "\u5220\u9664\u5f53\u524d\u5217\u53ca\u5176\u5185\u5bb9\u3002",
+  ],
+  "move-column-left": [
+    "Move the selected column one position left.",
+    "\u5c06\u5f53\u524d\u5217\u5411\u5de6\u79fb\u52a8\u4e00\u4f4d\u3002",
+  ],
+  "move-column-right": [
+    "Move the selected column one position right.",
+    "\u5c06\u5f53\u524d\u5217\u5411\u53f3\u79fb\u52a8\u4e00\u4f4d\u3002",
+  ],
+  "sort-rows-asc": [
+    "Sort rows by this column; header rows stay fixed.",
+    "\u6309\u5f53\u524d\u5217\u5347\u5e8f\u6392\u5217\u884c\uff0c\u8868\u5934\u884c\u4fdd\u6301\u4e0d\u52a8\u3002",
+  ],
+  "sort-rows-desc": [
+    "Sort rows by this column in reverse order.",
+    "\u6309\u5f53\u524d\u5217\u964d\u5e8f\u6392\u5217\u884c\u3002",
+  ],
+  "duplicate-column": [
+    "Copy the selected column next to itself.",
+    "\u5728\u76f8\u90bb\u4f4d\u7f6e\u590d\u5236\u5f53\u524d\u5217\u3002",
+  ],
+  "add-row-before": [
+    "Add a row above the selected row.",
+    "\u5728\u5f53\u524d\u884c\u4e0a\u65b9\u63d2\u5165\u4e00\u884c\u3002",
+  ],
+  "add-row-after": [
+    "Add a row below the selected row.",
+    "\u5728\u5f53\u524d\u884c\u4e0b\u65b9\u63d2\u5165\u4e00\u884c\u3002",
+  ],
+  "delete-row": [
+    "Remove the selected row and its content.",
+    "\u5220\u9664\u5f53\u524d\u884c\u53ca\u5176\u5185\u5bb9\u3002",
+  ],
+  "move-row-up": [
+    "Move the selected row one position up.",
+    "\u5c06\u5f53\u524d\u884c\u5411\u4e0a\u79fb\u52a8\u4e00\u4f4d\u3002",
+  ],
+  "move-row-down": [
+    "Move the selected row one position down.",
+    "\u5c06\u5f53\u524d\u884c\u5411\u4e0b\u79fb\u52a8\u4e00\u4f4d\u3002",
+  ],
+  "sort-columns-asc": [
+    "Sort columns by this row; header columns stay fixed.",
+    "\u6309\u5f53\u524d\u884c\u5347\u5e8f\u6392\u5217\u5217\uff0c\u8868\u5934\u5217\u4fdd\u6301\u4e0d\u52a8\u3002",
+  ],
+  "sort-columns-desc": [
+    "Sort columns by this row in reverse order.",
+    "\u6309\u5f53\u524d\u884c\u964d\u5e8f\u6392\u5217\u5217\u3002",
+  ],
+  "duplicate-row": [
+    "Copy the selected row below itself.",
+    "\u5728\u4e0b\u65b9\u590d\u5236\u5f53\u524d\u884c\u3002",
+  ],
+  "merge-cells": [
+    "Combine the selected cells into one cell.",
+    "\u5c06\u9009\u4e2d\u5355\u5143\u683c\u5408\u5e76\u4e3a\u4e00\u4e2a\u5355\u5143\u683c\u3002",
+  ],
+  "split-cell": [
+    "Split a previously merged cell back into cells.",
+    "\u5c06\u5df2\u5408\u5e76\u7684\u5355\u5143\u683c\u62c6\u56de\u666e\u901a\u5355\u5143\u683c\u3002",
+  ],
+  "copy-cell-content": [
+    "Copy selected cells as tab-separated text.",
+    "\u4ee5\u5236\u8868\u7b26\u6587\u672c\u590d\u5236\u9009\u4e2d\u5355\u5143\u683c\u3002",
+  ],
+  "clear-cell-content": [
+    "Clear text while keeping the table structure.",
+    "\u6e05\u7a7a\u5185\u5bb9\uff0c\u4fdd\u7559\u8868\u683c\u7ed3\u6784\u3002",
+  ],
+  "clear-cell-style": [
+    "Remove alignment, colors, and text styling.",
+    "\u79fb\u9664\u5bf9\u9f50\u3001\u989c\u8272\u548c\u6587\u5b57\u6837\u5f0f\u3002",
+  ],
+  "merge-or-split": [
+    "Automatically merge or split based on selection.",
+    "\u6839\u636e\u9009\u533a\u81ea\u52a8\u5408\u5e76\u6216\u62c6\u5206\u3002",
+  ],
+  "toggle-header-row": [
+    "Turn the current row into a header row.",
+    "\u5c06\u5f53\u524d\u884c\u5207\u6362\u4e3a\u8868\u5934\u884c\u3002",
+  ],
+  "toggle-header-column": [
+    "Turn the current column into a header column.",
+    "\u5c06\u5f53\u524d\u5217\u5207\u6362\u4e3a\u8868\u5934\u5217\u3002",
+  ],
+  "toggle-header-cell": [
+    "Toggle header styling for the current cell.",
+    "\u5207\u6362\u5f53\u524d\u5355\u5143\u683c\u7684\u8868\u5934\u6837\u5f0f\u3002",
+  ],
+  "align-left": [
+    "Align selected cell text to the left.",
+    "\u5c06\u9009\u4e2d\u5355\u5143\u683c\u6587\u5b57\u5de6\u5bf9\u9f50\u3002",
+  ],
+  "align-center": [
+    "Center selected cell text.",
+    "\u5c06\u9009\u4e2d\u5355\u5143\u683c\u6587\u5b57\u5c45\u4e2d\u3002",
+  ],
+  "align-right": [
+    "Align selected cell text to the right.",
+    "\u5c06\u9009\u4e2d\u5355\u5143\u683c\u6587\u5b57\u53f3\u5bf9\u9f50\u3002",
+  ],
+  "cell-text-clear": [
+    "Use the default editor text color.",
+    "\u4f7f\u7528\u9ed8\u8ba4\u7f16\u8f91\u5668\u6587\u5b57\u989c\u8272\u3002",
+  ],
+  "cell-text-muted": [
+    "Use a quieter text color for selected cells.",
+    "\u4e3a\u9009\u4e2d\u5355\u5143\u683c\u4f7f\u7528\u5f31\u5316\u6587\u5b57\u989c\u8272\u3002",
+  ],
+  "cell-text-accent": [
+    "Use the accent text color for selected cells.",
+    "\u4e3a\u9009\u4e2d\u5355\u5143\u683c\u4f7f\u7528\u5f3a\u8c03\u6587\u5b57\u989c\u8272\u3002",
+  ],
+  "cell-text-danger": [
+    "Use the danger text color for selected cells.",
+    "\u4e3a\u9009\u4e2d\u5355\u5143\u683c\u4f7f\u7528\u5371\u9669\u6587\u5b57\u989c\u8272\u3002",
+  ],
+  "cell-bg-clear": [
+    "Remove the selected cell background.",
+    "\u79fb\u9664\u9009\u4e2d\u5355\u5143\u683c\u80cc\u666f\u8272\u3002",
+  ],
+  "cell-bg-yellow": [
+    "Apply a soft yellow cell background.",
+    "\u5e94\u7528\u67d4\u548c\u7684\u9ec4\u8272\u5355\u5143\u683c\u80cc\u666f\u3002",
+  ],
+  "cell-bg-blue": [
+    "Apply a soft blue cell background.",
+    "\u5e94\u7528\u67d4\u548c\u7684\u84dd\u8272\u5355\u5143\u683c\u80cc\u666f\u3002",
+  ],
+  "cell-bg-green": [
+    "Apply a soft green cell background.",
+    "\u5e94\u7528\u67d4\u548c\u7684\u7eff\u8272\u5355\u5143\u683c\u80cc\u666f\u3002",
+  ],
+  "previous-cell": [
+    "Move focus to the previous table cell.",
+    "\u5c06\u7126\u70b9\u79fb\u5230\u4e0a\u4e00\u4e2a\u5355\u5143\u683c\u3002",
+  ],
+  "next-cell": [
+    "Move focus to the next table cell.",
+    "\u5c06\u7126\u70b9\u79fb\u5230\u4e0b\u4e00\u4e2a\u5355\u5143\u683c\u3002",
+  ],
+  "fix-table": [
+    "Repair inconsistent table structure if needed.",
+    "\u5fc5\u8981\u65f6\u4fee\u590d\u4e0d\u4e00\u81f4\u7684\u8868\u683c\u7ed3\u6784\u3002",
+  ],
+  "delete-table": [
+    "Remove the whole table from the note.",
+    "\u4ece\u7b14\u8bb0\u4e2d\u5220\u9664\u6574\u5f20\u8868\u683c\u3002",
+  ],
+});
+
 function localizedGroup(group, language) {
   return localizedText(language, group, GROUP_LABELS[group] ?? group);
 }
@@ -223,12 +386,16 @@ export function localizeSlashCommand(command, language) {
 
 export function localizeTableCommand(command, language) {
   const labels = TABLE_COMMAND_LABELS[command.id] ?? PAPYRO_TABLE_COMMAND_LABELS[command.id];
+  const description = TABLE_COMMAND_DESCRIPTIONS[command.id];
   return {
     ...command,
     groupKey: command.groupKey ?? command.group,
     group: localizedGroup(command.group, language),
     title: labels ? localizedText(language, labels[0], labels[1]) : command.title,
     label: labels ? localizedText(language, labels[2], labels[3]) : command.label,
+    description: description
+      ? localizedText(language, description[0], description[1])
+      : command.description,
   };
 }
 
