@@ -637,12 +637,14 @@ export class TiptapTableToolbarView {
     const hoverRowIndex =
       state.hover?.cell &&
       !hoverSelected &&
+      state.hover?.edge === "row-handle" &&
       state.hover?.columnIndex === 0
         ? state.hover.rowIndex
         : null;
     const hoverColumnIndex =
       state.hover?.cell &&
       !hoverSelected &&
+      state.hover?.edge === "column-handle" &&
       state.hover?.rowIndex === 0
         ? state.hover.columnIndex
         : null;

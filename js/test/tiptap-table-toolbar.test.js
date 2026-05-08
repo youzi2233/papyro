@@ -1739,8 +1739,9 @@ test("Tiptap table toolbar axis handles select rows and columns", () => {
   rowHandle.onpointerdown({ preventDefault() {}, stopPropagation() {} });
 
   editor.state.selection = { from: 4 };
+  controller.toggleMenu("context", { open: false });
   controller.refresh(editor);
-  editor.view.dom.listeners.get("pointermove")({ target: editor.view.dom, clientX: 124, clientY: 76 });
+  editor.view.dom.listeners.get("pointermove")({ target: editor.view.dom, clientX: 124, clientY: 68 });
   const columnHandle = latestAxisHandle(created, "column", 0);
   assert.ok(columnHandle, "expected a column handle for the first column");
   columnHandle.onpointerdown({ preventDefault() {}, stopPropagation() {} });
@@ -1772,11 +1773,19 @@ test("Tiptap table axis handles reveal only for the hovered first row or column 
   assert.equal(visibleAxisHandles("row").length, 0);
   assert.equal(visibleAxisHandles("column").length, 0);
 
-  editor.view.dom.listeners.get("pointermove")({ target: cells[3], clientX: 122, clientY: 128 });
+  editor.view.dom.listeners.get("pointermove")({ target: cells[3], clientX: 126, clientY: 128 });
+  assert.equal(visibleAxisHandles("row").length, 0);
+  assert.equal(visibleAxisHandles("column").length, 0);
+
+  editor.view.dom.listeners.get("pointermove")({ target: cells[3], clientX: 124, clientY: 128 });
   assert.equal(visibleAxisHandles("row").length, 1);
   assert.equal(visibleAxisHandles("column").length, 0);
 
-  editor.view.dom.listeners.get("pointermove")({ target: cells[1], clientX: 204, clientY: 92 });
+  editor.view.dom.listeners.get("pointermove")({ target: cells[1], clientX: 204, clientY: 97 });
+  assert.equal(visibleAxisHandles("row").length, 0);
+  assert.equal(visibleAxisHandles("column").length, 0);
+
+  editor.view.dom.listeners.get("pointermove")({ target: cells[1], clientX: 204, clientY: 95 });
   assert.equal(visibleAxisHandles("row").length, 0);
   assert.equal(visibleAxisHandles("column").length, 1);
 });
@@ -1790,15 +1799,15 @@ test("Tiptap table row and column handles stay outside editable cells while trac
 
   controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
 
-  editor.view.dom.listeners.get("pointermove")({ target: cells[3], clientX: 122, clientY: 128 });
+  editor.view.dom.listeners.get("pointermove")({ target: cells[3], clientX: 126, clientY: 128 });
   assert.equal(controller.state.hover.edge, "cell");
-  editor.view.dom.listeners.get("pointermove")({ target: cells[1], clientX: 204, clientY: 92 });
+  editor.view.dom.listeners.get("pointermove")({ target: cells[1], clientX: 204, clientY: 97 });
   assert.equal(controller.state.hover.edge, "cell");
 
-  editor.view.dom.listeners.get("pointermove")({ target: cells[3], clientX: 108, clientY: 128 });
+  editor.view.dom.listeners.get("pointermove")({ target: cells[3], clientX: 124, clientY: 128 });
   assert.equal(controller.state.hover.edge, "row-handle");
   const rowHandle = latestAxisHandle(created, "row", 1);
-  editor.view.dom.listeners.get("pointermove")({ target: cells[1], clientX: 204, clientY: 76 });
+  editor.view.dom.listeners.get("pointermove")({ target: cells[1], clientX: 204, clientY: 95 });
   assert.equal(controller.state.hover.edge, "column-handle");
   const columnHandle = latestAxisHandle(created, "column", 1);
   assert.equal(rowHandle.style.left, "98px");
