@@ -1,5 +1,6 @@
 import { TableKit } from "@tiptap/extension-table";
 import { Extension } from "@tiptap/core";
+import { deleteCellSelection } from "@tiptap/pm/tables";
 
 function parseCellBackgroundColor(element) {
   return (
@@ -40,6 +41,19 @@ export const PapyroTableCellBackground = Extension.create({
   },
 });
 
+export const PapyroTableCellContentActions = Extension.create({
+  name: "papyroTableCellContentActions",
+
+  addCommands() {
+    return {
+      clearSelectedTableCells:
+        () =>
+        ({ state, dispatch }) =>
+          deleteCellSelection(state, dispatch),
+    };
+  },
+});
+
 export function createPapyroTableExtensions() {
   return [
     TableKit.configure({
@@ -70,5 +84,6 @@ export function createPapyroTableExtensions() {
       },
     }),
     PapyroTableCellBackground,
+    PapyroTableCellContentActions,
   ];
 }

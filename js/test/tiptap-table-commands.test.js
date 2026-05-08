@@ -31,6 +31,7 @@ test("Tiptap table commands expose stable enterprise command metadata", () => {
       ["Rows", "delete-row", "deleteRow"],
       ["Cells", "merge-cells", "mergeCells"],
       ["Cells", "split-cell", "splitCell"],
+      ["Cells", "clear-cell-content", "clearSelectedTableCells"],
       ["Cells", "merge-or-split", "mergeOrSplit"],
       ["Headers", "toggle-header-row", "toggleHeaderRow"],
       ["Headers", "toggle-header-column", "toggleHeaderColumn"],
@@ -57,6 +58,7 @@ test("Tiptap table command scope keeps cell menus focused", () => {
   }));
 
   assert.deepEqual(commandIds(visibleTableCommands(commands, "context", "cell")), [
+    "clear-cell-content",
     "align-left",
     "align-center",
     "align-right",
@@ -67,6 +69,7 @@ test("Tiptap table command scope keeps cell menus focused", () => {
   ]);
   assert.deepEqual(commandIds(visibleTableCommands(commands, "context", "cells")), [
     "merge-cells",
+    "clear-cell-content",
     "align-left",
     "align-center",
     "align-right",
@@ -106,6 +109,7 @@ test("Tiptap table commands expose layout groups and keyboard helpers", () => {
   assert.equal(tableCommandLayoutGroup({ id: "cell-bg-blue", group: "Cell color" }), "cell-color");
   assert.equal(tableCommandLayoutGroup({ id: "delete-row", group: "Rows", tone: "danger" }), "danger");
   assert.equal(tableCommandLayoutGroup({ id: "toggle-header-row", group: "Headers" }), "actions");
+  assert.equal(tableCommandLayoutGroup({ id: "clear-cell-content", group: "Cells" }), "actions");
 
   const keyboardCommands = TABLE_COMMANDS.map((command) => ({
     ...command,
