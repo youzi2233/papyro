@@ -375,7 +375,11 @@ function pointerAnchorRect(event, fallbackRect = null) {
 }
 
 export function insertSlashParagraphAfterBlock(editor, target) {
-  const position = targetEndPos(target);
+  return insertSlashParagraphAtBlockEdge(editor, target, "after");
+}
+
+export function insertSlashParagraphAtBlockEdge(editor, target, edge = "after") {
+  const position = edge === "before" ? target?.pos : targetEndPos(target);
   if (!Number.isFinite(position)) return null;
 
   const inserted = editor?.commands?.insertContentAt?.(

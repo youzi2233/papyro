@@ -128,7 +128,7 @@ function TableCellMenuTrigger({ state, onOpenCellMenu }) {
 
 function TableComplexBlockInsert({ chrome, label, onInsert }) {
   const activation = usePointerActivation(() =>
-    onInsert?.(chrome?.block) !== false,
+    onInsert?.(chrome?.block, { edge: chrome?.edge }) !== false,
   );
   if (!chrome?.block || !chrome.rect) return null;
 
@@ -142,6 +142,7 @@ function TableComplexBlockInsert({ chrome, label, onInsert }) {
       title={label}
       aria-label={label}
       data-edge="after-block"
+      data-insert-edge={chrome.edge}
       data-block-kind={chrome.blockKind}
       {...chromeVisibilityProps(chrome.visible)}
       style={{

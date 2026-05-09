@@ -273,4 +273,18 @@ test("table chrome model positions selection backdrop and complex block insert r
   assert.deepEqual(insert.rect, { left: 160, top: 222, width: 360 });
   assert.equal(insert.visible, true);
   assert.equal(insert.blockKind, "complex");
+  assert.equal(insert.edge, "after");
+
+  const beforeInsert = createComplexBlockInsertChromeState(baseState({
+    table: null,
+    complexBlock: block,
+    complexRect: rect(160, 140, 360, 80),
+    hover: {
+      edge: "block-before",
+      block,
+    },
+  }));
+  assert.deepEqual(beforeInsert.rect, { left: 160, top: 120, width: 360 });
+  assert.equal(beforeInsert.visible, true);
+  assert.equal(beforeInsert.edge, "before");
 });

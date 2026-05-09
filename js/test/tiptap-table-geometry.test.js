@@ -7,7 +7,9 @@ import {
   tableCellMenuTriggerGeometry,
   tableHoverWithIntent,
   tableQuickAddGeometry,
+  complexBlockInsertEdge,
   hoverIsNearComplexBlockBottom,
+  hoverIsNearComplexBlockTop,
   sameTableHover,
 } from "../src/tiptap-table-geometry.js";
 
@@ -275,6 +277,19 @@ test("Tiptap complex block insert uses a forgiving independent bottom zone", () 
   assert.equal(hoverIsNearComplexBlockBottom(blockRect, 158), true);
   assert.equal(hoverIsNearComplexBlockBottom(blockRect, 176), true);
   assert.equal(hoverIsNearComplexBlockBottom(blockRect, 177), false);
+});
+
+test("Tiptap complex block insert distinguishes top and bottom edges", () => {
+  const blockRect = normalizedRect(rect(120, 90, 240, 68));
+
+  assert.equal(hoverIsNearComplexBlockTop(blockRect, 71), false);
+  assert.equal(hoverIsNearComplexBlockTop(blockRect, 72), true);
+  assert.equal(hoverIsNearComplexBlockTop(blockRect, 90), true);
+  assert.equal(hoverIsNearComplexBlockTop(blockRect, 108), true);
+  assert.equal(hoverIsNearComplexBlockTop(blockRect, 109), false);
+  assert.equal(complexBlockInsertEdge(blockRect, 92), "before");
+  assert.equal(complexBlockInsertEdge(blockRect, 156), "after");
+  assert.equal(complexBlockInsertEdge(blockRect, 120), null);
 });
 
 test("Tiptap table geometry positions quick add rails on real grid edges", () => {

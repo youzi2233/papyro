@@ -468,6 +468,28 @@ export function hoverIsNearComplexBlockBottom(rect, y) {
   );
 }
 
+export function hoverIsNearComplexBlockTop(rect, y) {
+  return (
+    rect &&
+    Number.isFinite(y) &&
+    y >= rect.top - COMPLEX_BLOCK_INSERT_HOT_ZONE_PX &&
+    y <= rect.top + COMPLEX_BLOCK_INSERT_HOT_ZONE_PX
+  );
+}
+
+export function complexBlockInsertEdge(rect, y) {
+  if (!rect || !Number.isFinite(y)) return null;
+  const nearTop = hoverIsNearComplexBlockTop(rect, y);
+  const nearBottom = hoverIsNearComplexBlockBottom(rect, y);
+  if (!nearTop && !nearBottom) return null;
+  if (nearTop && nearBottom) {
+    const topDistance = Math.abs(y - rect.top);
+    const bottomDistance = Math.abs(rect.bottom - y);
+    return topDistance <= bottomDistance ? "before" : "after";
+  }
+  return nearTop ? "before" : "after";
+}
+
 function complexBlockElementPosition(view, block) {
   if (!block || typeof view?.posAtDOM !== "function") return null;
   const doc = view.state?.doc;
@@ -582,6 +604,32 @@ export function insertParagraphAfterComplexBlock(editor, block) {
   editor.commands?.setTextSelection?.(insertPos + 1);
   editor.commands?.focus?.();
   return true;
+}
+
+export function insertParagraphBeforeComplexBlock(editor, block) {
+  const doc = editor?.state?.doc;
+  const view = editor?.view;
+  if (!doc || !block) return false;
+
+  const blockPos = complexBlockElementPosition(view, block);
+  if (!Number.isFinite(blockPos)) return false;
+
+  const ok = editor?.commands?.insertContentAt?.(
+    blockPos,
+    { type: "paragraph" },
+    { updateSelection: true },
+  ) !== false;
+  if (!ok) return false;
+
+  editor.commands?.setTextSelection?.(blockPos + 1);
+  editor.commands?.focus?.();
+  return true;
+}
+
+export function insertParagraphAtComplexBlockEdge(editor, block, edge = "after") {
+  return edge === "before"
+    ? insertParagraphBeforeComplexBlock(editor, block)
+    : insertParagraphAfterComplexBlock(editor, block);
 }
 
 export function tableHoverContext(target, table, grid) {

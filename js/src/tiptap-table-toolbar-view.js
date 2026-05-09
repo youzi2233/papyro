@@ -581,13 +581,11 @@ export class TiptapTableToolbarView {
     this.#blockInsertButton.style.top = `${insertState.rect.top}px`;
     this.#blockInsertButton.style.width = `${insertState.rect.width}px`;
     this.#blockInsertButton.dataset.edge = "after-block";
+    this.#blockInsertButton.dataset.insertEdge = insertState.edge;
     this.#blockInsertButton.dataset.blockKind = insertState.blockKind;
     this.#blockInsertButton._mnRun = () =>
-      state.insertParagraphAfterBlock?.(insertState.block) !== false;
-    if (!this.#blockInsertButton._mnBound) {
-      bindPointerCommand(this.#blockInsertButton, null, () => this.#blockInsertButton?._mnRun?.());
-      this.#blockInsertButton._mnBound = true;
-    }
+      state.insertParagraphAfterBlock?.(insertState.block, { edge: insertState.edge }) !== false;
+    bindPointerCommand(this.#blockInsertButton, null, () => this.#blockInsertButton?._mnRun?.());
 
     setTableChromeHidden(this.#blockInsertButton, !insertState.visible);
   }

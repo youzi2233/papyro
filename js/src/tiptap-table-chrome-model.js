@@ -138,18 +138,22 @@ export function createComplexBlockInsertChromeState(state) {
     };
   }
 
+  const edge = state?.hover?.edge === "block-before" ? "before" : "after";
+  const top = edge === "before" ? blockRect.top - 20 : blockRect.bottom + 2;
+
   return {
     visible: Boolean(
-      state?.hover?.edge === "block-after" &&
+      (state?.hover?.edge === "block-after" || state?.hover?.edge === "block-before") &&
         state?.hover?.block === block &&
         block !== state?.table &&
         !state?.menuOpen,
     ),
     block,
     blockKind: block === state?.table ? "table" : "complex",
+    edge,
     rect: {
       left: blockRect.left,
-      top: blockRect.bottom + 2,
+      top,
       width: Math.max(42, blockRect.width),
     },
   };

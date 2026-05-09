@@ -15,7 +15,7 @@ import {
   slashQueryMenuTitleLabel,
   tableSizeLabel,
 } from "./tiptap-i18n.js";
-import { insertSlashParagraphAfterBlock } from "./tiptap-block-handle.js";
+import { insertSlashParagraphAtBlockEdge } from "./tiptap-block-handle.js";
 import {
   commandMenuGroupTone,
   commandMenuSidePanel,
@@ -114,7 +114,7 @@ function coordsRectAtPos(editor, pos) {
   }
 }
 
-function blockInsertAnchorRect(target) {
+function blockInsertAnchorRect(target, edge = "after") {
   const rect = target?.block?.getBoundingClientRect?.();
   if (!rect) return null;
 
@@ -122,13 +122,14 @@ function blockInsertAnchorRect(target) {
   const top = Number(rect.top);
   const height = Number(rect.height ?? 0);
   const bottom = Number(rect.bottom ?? (Number.isFinite(top) ? top + height : NaN));
-  if (![left, bottom].every(Number.isFinite)) return null;
+  const anchorTop = edge === "before" ? top : bottom;
+  if (![left, anchorTop].every(Number.isFinite)) return null;
 
   return {
     left,
     right: left,
-    top: bottom,
-    bottom,
+    top: anchorTop,
+    bottom: anchorTop,
     width: 0,
     height: 0,
   };
@@ -142,8 +143,8 @@ function isSuspiciousOriginCaretRect(rect) {
   return left <= 1 && top <= 1 && width <= 2;
 }
 
-function blockInsertMenuAnchorRect(slashRect, target, fallbackRect = null) {
-  const blockAnchor = blockInsertAnchorRect(target);
+function blockInsertMenuAnchorRect(slashRect, target, fallbackRect = null, edge = "after") {
+  const blockAnchor = blockInsertAnchorRect(target, edge);
   const fallback = usableAnchorRect(blockAnchor) ? blockAnchor : fallbackRect;
   if (
     usableAnchorRect(slashRect) &&
@@ -930,13 +931,13 @@ export class TiptapSlashMenuController {
     return this.state;
   }
 
-  openAtBlock(target, { anchorRect = null } = {}) {
+  openAtBlock(target, { anchorRect = null, edge = "after" } = {}) {
     if (!this.#editor || (this.#entry && this.#entry.viewMode !== "hybrid")) {
       this.close();
       return this.state;
     }
 
-    const range = insertSlashParagraphAfterBlock(this.#editor, target);
+    const range = insertSlashParagraphAtBlockEdge(this.#editor, target, edge);
     if (!range) {
       this.close();
       return this.state;
@@ -959,7 +960,7 @@ export class TiptapSlashMenuController {
       tableSize: this.#state.tableSize ?? DEFAULT_TABLE_SIZE,
       deleteRangeBeforeRun: true,
       cleanupRangeOnClose: true,
-      anchorRect: blockInsertMenuAnchorRect(slashRect, target, anchorRect),
+      anchorRect: blockInsertMenuAnchorRect(slashRect, target, anchorRect, edge),
       placement: "bottom",
     };
     this.#view.update?.(

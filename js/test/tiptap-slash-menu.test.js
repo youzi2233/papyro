@@ -408,6 +408,45 @@ test("Tiptap block insert menu keyboard selection can reach table after recent c
   ]);
 });
 
+test("Tiptap block insert menu can insert the slash paragraph before a block", () => {
+  const { calls, editor } = createEditor("plain");
+  const view = createViewSpy();
+  const controller = createTiptapSlashMenuController({ view });
+  const block = {
+    getBoundingClientRect: () => ({
+      left: 220,
+      top: 180,
+      right: 520,
+      bottom: 260,
+      width: 300,
+      height: 80,
+    }),
+  };
+  controller.attach({ editor, root: {} });
+
+  controller.openAtBlock({
+    pos: 7,
+    block,
+    node: {
+      nodeSize: 6,
+    },
+  }, { edge: "before" });
+
+  assert.deepEqual(calls.slice(0, 4), [
+    [
+      "insertContentAt",
+      7,
+      { type: "paragraph", content: [{ type: "text", text: "/" }] },
+      { updateSelection: true },
+    ],
+    ["setTextSelection", 9],
+    ["focus"],
+    ["coordsAtPos", 9],
+  ]);
+  assert.equal(controller.state.range.from, 8);
+  assert.equal(controller.state.range.to, 9);
+});
+
 test("Tiptap slash menu keyboard controls the nested table size panel", () => {
   const { calls, editor } = createEditor("/");
   const view = createViewSpy();

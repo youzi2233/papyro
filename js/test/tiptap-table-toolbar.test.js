@@ -1097,7 +1097,7 @@ test("Tiptap table quick add rails ignore adjacent complex block targets", () =>
   editor.view.dom.listeners.get("pointermove")({
     target: codeBlock,
     clientX: 240,
-    clientY: 160,
+    clientY: 190,
   });
   assert.equal(rowButton.hidden, true);
   assert.equal(columnButton.hidden, true);

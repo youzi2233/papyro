@@ -384,6 +384,7 @@ Tasks:
 - [ ] Add insertion affordance before and after code blocks, especially when adjacent to tables.
   - Current coverage: the complex-block insert rail has an independent, more forgiving bottom hot zone for table/code adjacency without widening table resize or quick-add intent.
   - Current coverage: code-block continuation now prefers Tiptap's official `exitCode()` command before falling back to explicit paragraph insertion.
+  - Current coverage: complex block insertion now supports both top and bottom rails. Hovering the top edge of a code/table-like complex block opens the shared slash insert flow before that block, so a table immediately followed by a code block can receive a new paragraph or inserted Markdown block between them without relying on fragile double-click placement.
 
 Acceptance criteria:
 

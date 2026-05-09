@@ -6,10 +6,10 @@ import {
   closestComplexBlockElement,
   closestTableCellElement,
   closestTableElement,
+  complexBlockInsertEdge,
   complexBlockTarget,
   complexBlockHoverContext,
-  hoverIsNearComplexBlockBottom,
-  insertParagraphAfterComplexBlock,
+  insertParagraphAtComplexBlockEdge,
   normalizedRect,
   pointerAnchorRect,
   sameTableHover,
@@ -283,7 +283,7 @@ export class TiptapTableToolbarController {
       ...this.#state,
       run: (commandId) => this.run(commandId),
       selectAxis: (axis, index) => this.selectAxis(axis, index),
-      insertParagraphAfterBlock: (block) => this.insertParagraphAfterBlock(block),
+      insertParagraphAfterBlock: (block, options) => this.insertParagraphAfterBlock(block, options),
       toggleMenu: (mode, options) => this.toggleMenu(mode, options),
       openCellMenu: (mode, options) => this.openCellMenu(mode, options),
       setActiveCommand: (commandId, options) => this.setActiveCommand(commandId, options),
@@ -609,11 +609,13 @@ export class TiptapTableToolbarController {
     const complexHover = complexBlockHoverContext(event?.target, this.#editor?.view?.dom);
     if (complexHover && complexHover.block !== this.#state.table) {
       const y = Number(event?.clientY);
-      const hover = hoverIsNearComplexBlockBottom(complexHover.rect, y)
+      const insertEdge = complexBlockInsertEdge(complexHover.rect, y);
+      const hover = insertEdge
         ? {
             table: false,
             block: complexHover.block,
-            edge: "block-after",
+            edge: insertEdge === "before" ? "block-before" : "block-after",
+            insertEdge,
             clientX: Number.isFinite(Number(event?.clientX)) ? Number(event.clientX) : null,
             clientY: Number.isFinite(y) ? y : null,
           }
@@ -977,7 +979,7 @@ export class TiptapTableToolbarController {
     return ok;
   }
 
-  insertParagraphAfterBlock(block = null, { useInsertMenu = true } = {}) {
+  insertParagraphAfterBlock(block = null, { useInsertMenu = true, edge = "after" } = {}) {
     const targetBlock = block ?? this.#state.table;
     const target = complexBlockTarget(this.#editor, targetBlock);
     if (useInsertMenu && target && typeof this.#insertMenu?.openAtBlock === "function") {
@@ -988,13 +990,14 @@ export class TiptapTableToolbarController {
       this.#render();
       const result = this.#insertMenu.openAtBlock(target, {
         anchorRect: targetBlock?.getBoundingClientRect?.(),
+        edge,
       });
       if (result?.open === true) {
         return true;
       }
     }
 
-    const ok = insertParagraphAfterComplexBlock(this.#editor, targetBlock);
+    const ok = insertParagraphAtComplexBlockEdge(this.#editor, targetBlock, edge);
     if (!ok) return false;
     this.refresh(this.#editor);
     return true;
