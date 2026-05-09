@@ -1588,7 +1588,7 @@ test("Tiptap table toolbar axis handles keep menus closed when selection fails",
   assert.equal(root.hidden, true);
 });
 
-test("Tiptap table axis handles reveal only for the hovered first row or column cell", () => {
+test("Tiptap table axis handles reveal for the hovered row and column", () => {
   const { created, documentRef } = createDocument();
   const { cells, editor } = createTableHarness();
   const controller = createTiptapTableToolbarController({
@@ -1604,24 +1604,24 @@ test("Tiptap table axis handles reveal only for the hovered first row or column 
   controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
 
   editor.view.dom.listeners.get("pointermove")({ target: cells[4], clientX: 202, clientY: 128 });
-  assert.equal(visibleAxisHandles("row").length, 0);
-  assert.equal(visibleAxisHandles("column").length, 0);
+  assert.deepEqual(visibleAxisHandles("row").map((handle) => handle.dataset.index), ["1"]);
+  assert.deepEqual(visibleAxisHandles("column").map((handle) => handle.dataset.index), ["1"]);
 
   editor.view.dom.listeners.get("pointermove")({ target: cells[0], clientX: 122, clientY: 92 });
   assert.equal(visibleAxisHandles("row").length, 1);
   assert.equal(visibleAxisHandles("column").length, 1);
 
   editor.view.dom.listeners.get("pointermove")({ target: cells[3], clientX: 126, clientY: 128 });
-  assert.equal(visibleAxisHandles("row").length, 0);
-  assert.equal(visibleAxisHandles("column").length, 0);
+  assert.deepEqual(visibleAxisHandles("row").map((handle) => handle.dataset.index), ["1"]);
+  assert.deepEqual(visibleAxisHandles("column").map((handle) => handle.dataset.index), ["0"]);
 
   editor.view.dom.listeners.get("pointermove")({ target: cells[3], clientX: 124, clientY: 128 });
   assert.equal(visibleAxisHandles("row").length, 1);
   assert.equal(visibleAxisHandles("column").length, 0);
 
   editor.view.dom.listeners.get("pointermove")({ target: cells[1], clientX: 204, clientY: 97 });
-  assert.equal(visibleAxisHandles("row").length, 0);
-  assert.equal(visibleAxisHandles("column").length, 0);
+  assert.deepEqual(visibleAxisHandles("row").map((handle) => handle.dataset.index), ["0"]);
+  assert.deepEqual(visibleAxisHandles("column").map((handle) => handle.dataset.index), ["1"]);
 
   editor.view.dom.listeners.get("pointermove")({ target: cells[1], clientX: 204, clientY: 95 });
   assert.equal(visibleAxisHandles("row").length, 0);
@@ -1640,11 +1640,11 @@ test("Tiptap table row and column handles stay outside editable cells while trac
   editor.view.dom.listeners.get("pointermove")({ target: cells[3], clientX: 126, clientY: 128 });
   assert.equal(controller.state.hover.edge, "cell");
   const rowHandleFromCell = latestAxisHandle(created, "row", 1);
-  assert.equal(rowHandleFromCell, undefined);
+  assert.equal(rowHandleFromCell.hidden, false);
   editor.view.dom.listeners.get("pointermove")({ target: cells[1], clientX: 204, clientY: 97 });
   assert.equal(controller.state.hover.edge, "cell");
   const columnHandleFromCell = latestAxisHandle(created, "column", 1);
-  assert.equal(columnHandleFromCell, undefined);
+  assert.equal(columnHandleFromCell.hidden, false);
 
   editor.view.dom.listeners.get("pointermove")({ target: cells[3], clientX: 124, clientY: 128 });
   assert.equal(controller.state.hover.edge, "row-handle");

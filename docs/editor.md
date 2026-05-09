@@ -128,7 +128,11 @@ The command palette includes insertion commands for common writing structures: t
 
 Hybrid table widgets support direct cell editing, Tab/Shift+Tab cell navigation, and row/column actions relative to the focused cell. The Markdown source remains the storage format, but normal table edits should not require hand-aligning pipe syntax.
 
+Hybrid and Preview share the same document rhythm. The editor, source pane, fallback editor, and Preview scroller keep at least 24px of padding, and Hybrid unordered/ordered lists use the same indent and list-item spacing tokens as Preview.
+
 Clicking blank space inside a table cell should focus the editable cell through Tiptap/ProseMirror coordinates and refresh the active-cell chrome. Clicking text or inline content inside the cell stays on the native text-editing path, and dragging across cells is the explicit range-selection gesture.
+
+Selecting a single table cell should show a visible theme border around that cell. Hovering a table cell reveals row and column axis handles outside the grid; those handles span the hovered row height or column width, select the whole axis on click, and open the scoped table menu only after the ProseMirror row or column selection succeeds.
 
 Block handles must target semantic block owners. Tables, code blocks, images, display math, and Mermaid blocks expose one outer block-level handle; hovering inside table cells or inside complex block controls must not create child paragraph or child-control handles. Table-specific row, column, cell, and range controls belong to the table overlay, not to the generic block handle.
 

@@ -133,6 +133,31 @@ test("table chrome model applies and clears cell visual state", () => {
     fixture,
     cell: cells[0].cell,
     selection: {
+      kind: "cell",
+      positions: new Set([11]),
+      rows: [],
+      columns: [],
+    },
+  }));
+  assert.deepEqual(
+    cellElements.map((cell) => [
+      cell.classes.has("mn-tiptap-table-cell-selected"),
+      cell.classes.has("mn-tiptap-table-cell-active"),
+    ]),
+    [
+      [false, false],
+      [true, true],
+      [false, false],
+      [false, false],
+      [false, false],
+      [false, false],
+    ],
+  );
+
+  applyTableCellVisualState(baseState({
+    fixture,
+    cell: cells[0].cell,
+    selection: {
       kind: "cells",
       positions: new Set([10, 11]),
       rows: [],
@@ -328,7 +353,7 @@ test("table chrome model exposes semantic action scopes for axis selections", ()
   assert.equal(table.trigger.top, 124);
 });
 
-test("table chrome model limits axis handles to the hovered first row or column cell", () => {
+test("table chrome model reveals row and column handles from the hovered cell", () => {
   const fixture = createGrid();
   const { cells } = fixture;
   const rowIdle = createTableAxisHandleChromeState(baseState({
@@ -340,8 +365,8 @@ test("table chrome model limits axis handles to the hovered first row or column 
       cell: cells[3].cell,
     },
   }));
-  assert.deepEqual(rowIdle.rows, []);
-  assert.deepEqual(rowIdle.columns, []);
+  assert.deepEqual(rowIdle.rows.map((handle) => handle.index), [1]);
+  assert.deepEqual(rowIdle.columns.map((handle) => handle.index), [0]);
 
   const row = createTableAxisHandleChromeState(baseState({
     fixture,
@@ -364,8 +389,8 @@ test("table chrome model limits axis handles to the hovered first row or column 
       cell: cells[2].cell,
     },
   }));
-  assert.deepEqual(columnIdle.rows, []);
-  assert.deepEqual(columnIdle.columns, []);
+  assert.deepEqual(columnIdle.rows.map((handle) => handle.index), [0]);
+  assert.deepEqual(columnIdle.columns.map((handle) => handle.index), [2]);
 
   const column = createTableAxisHandleChromeState(baseState({
     fixture,
@@ -408,7 +433,8 @@ test("table chrome model limits axis handles to the hovered first row or column 
   });
   const selectedHover = createTableAxisHandleChromeState(selectedHoverState);
   assert.equal(hoveredTableCellIsSelected(selectedHoverState), true);
-  assert.deepEqual(selectedHover.rows, []);
+  assert.deepEqual(selectedHover.rows.map((handle) => handle.index), [1]);
+  assert.deepEqual(selectedHover.columns, []);
 });
 
 test("table chrome model positions selection backdrop and complex block insert rail", () => {

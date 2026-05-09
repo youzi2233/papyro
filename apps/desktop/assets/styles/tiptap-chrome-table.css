@@ -835,14 +835,17 @@
     z-index: 161;
     display: grid;
     place-items: center;
-    width: 18px;
-    height: 18px;
     border: 1px solid transparent;
-    border-radius: 7px;
+    border-radius: 4px;
     background: transparent;
     color: color-mix(in srgb, var(--mn-ink-3) 66%, transparent);
     box-shadow: none;
     padding: 0;
+    transition:
+        background-color var(--mn-transition-fast),
+        border-color var(--mn-transition-fast),
+        box-shadow var(--mn-transition-fast),
+        color var(--mn-transition-fast);
 }
 
 .mn-tiptap-table-selection-backdrop {
@@ -880,7 +883,7 @@
 .mn-tiptap-table-axis-handle.row,
 .mn-tiptap-table-axis-handle.column {
     border-color: color-mix(in srgb, var(--mn-border) 44%, transparent);
-    background: color-mix(in srgb, var(--mn-surface-raised) 96%, transparent);
+    background: color-mix(in srgb, var(--mn-surface-raised) 90%, transparent);
     color: color-mix(in srgb, var(--mn-ink-3) 72%, transparent);
     opacity: .98;
     backdrop-filter: blur(10px);
@@ -888,13 +891,13 @@
 }
 
 .mn-tiptap-table-axis-handle.row {
-    width: 18px;
-    border-radius: 999px;
+    min-width: 20px;
+    border-radius: 5px 0 0 5px;
 }
 
 .mn-tiptap-table-axis-handle.column {
-    height: 18px;
-    border-radius: 999px;
+    min-height: 20px;
+    border-radius: 5px 5px 0 0;
 }
 
 .mn-tiptap-table-axis-handle::before {

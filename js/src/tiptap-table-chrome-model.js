@@ -44,6 +44,10 @@ function selectedCellRect(state) {
   return normalizedRect(selected?.rect ?? selected?.cell?.getBoundingClientRect?.());
 }
 
+function selectedCellElement(state) {
+  return selectedCellEntry(state)?.cell ?? null;
+}
+
 function tableGridCells(state) {
   return (state?.grid ?? []).flatMap((row) => row.cells ?? []);
 }
@@ -71,12 +75,13 @@ export function applyTableCellVisualState(state) {
     );
   });
 
-  const showActive =
-    state?.selection?.kind === "cell" &&
-    selectedPositions.size === 0 &&
-    state?.cell;
-  if (showActive) {
-    state.cell.classList?.add?.(TABLE_ACTIVE_CELL_CLASS);
+  const activeCell =
+    state?.selection?.kind === "cell"
+      ? selectedCellElement(state) ??
+        (selectedPositions.size === 0 ? state?.cell ?? null : null)
+      : null;
+  if (activeCell) {
+    activeCell.classList?.add?.(TABLE_ACTIVE_CELL_CLASS);
   }
 
   return true;
@@ -264,24 +269,22 @@ export function createTableAxisHandleChromeState(state, {
     rowHandleWidth,
     columnHandleHeight,
   });
-  const hoverSelected = hoveredTableCellIsSelected(state);
   const hoverEdge = state?.hover?.edge;
   const axisHoverAllowed = Boolean(
     state?.hover?.cell &&
-      !hoverSelected &&
       state?.selection?.kind === "cell" &&
       !["add-row", "add-column", "cell-menu"].includes(hoverEdge),
   );
   const hoverRowIndex =
     axisHoverAllowed &&
-    (hoverEdge === "row-handle" || hoverEdge === "axis-corner") &&
-    state?.hover?.columnIndex === 0
+    Number.isInteger(state?.hover?.rowIndex) &&
+    !["column-handle"].includes(hoverEdge)
       ? state.hover.rowIndex
       : null;
   const hoverColumnIndex =
     axisHoverAllowed &&
-    (hoverEdge === "column-handle" || hoverEdge === "axis-corner") &&
-    state?.hover?.rowIndex === 0
+    Number.isInteger(state?.hover?.columnIndex) &&
+    !["row-handle"].includes(hoverEdge)
       ? state.hover.columnIndex
       : null;
 

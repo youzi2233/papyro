@@ -287,8 +287,8 @@ Tasks:
 
 - [x] Remove the top-left whole-table selector unless a clear product action requires it.
   - Current coverage: the table overlay no longer renders a whole-table corner handle; geometry now returns `table: null`, leaving row/column handles as the only axis affordances.
-- [ ] Remove visible handles by default. Show row/column handles only on intentional hover near the first row or first column.
-  - Current coverage: row and column handles now stay hidden by default, but become discoverable when hovering any cell in the first column or first row. The handle remains outside the editable cell surface, so users get official-style axis affordances without losing normal cell text editing.
+- [ ] Remove visible handles by default. Show row/column handles only on intentional table hover, with a full-span affordance for the hovered row or column.
+  - Current coverage: row and column handles now stay hidden by default, but hovering a table cell reveals the matching row handle at the row edge and the matching column handle above that column. The handle dimensions track the row height or column width, so the affordance reads like the official axis chrome without covering editable cell text.
   - Current architecture: quick-add rails, cell action trigger, selection backdrop, complex-block insert rail, row/column axis handles, and context-menu anchoring now share a pure table chrome model in `js/src/tiptap-table-chrome-model.js`. The migration DOM view consumes that model, so the remaining React table overlay can reuse the same visibility and geometry contract instead of reimplementing hover rules.
   - Current architecture: non-menu table chrome now has a React renderer injected through `tableChromeRendererFactory`; when that renderer is available, the runtime no longer mounts the legacy quick-add, cell-action, insert-rail, axis-handle, or backdrop DOM nodes. The old DOM renderer remains only as a fallback/test path while future row/column/cell affordance work moves into reusable React components.
   - Current architecture: selected/active cell visual state now shares the same table chrome model. The real React chrome applies and clears the cell classes during its lifecycle, while the DOM view keeps this only as a fallback path, reducing the remaining legacy controller ownership of visible table state.
@@ -300,8 +300,10 @@ Tasks:
 - [x] Ensure cells have no visual gaps, so selection and resize borders look continuous.
   - Current coverage: Tiptap table cells use collapsed borders, border-box background painting, and a style smoke guard for the continuous cell surface.
   - Current polish: table grid painting is isolated from the editor background, selected cells keep a restrained active border, and selected/active cells keep resize rails available without adding always-visible chrome.
+  - Current polish: Hybrid table wrappers no longer add interior padding around the grid, so the rendered table surface starts at the actual collapsed-border table edge instead of showing a small editor-background gutter.
 - [x] On cell click, show a theme-colored active border around that cell.
   - Current coverage: active and selected cells now use a quieter continuous theme border, the cell menu trigger is anchored to the true vertical cell center, and hover feedback stays secondary to selection.
+  - Current polish: a single selected ProseMirror table cell now also receives the active-cell class and outline, so cell selection is visible as a real border rather than only the edge action dot.
 - [ ] On cell selection range, show a restrained overlay and a small action trigger on the range edge.
   - Current coverage: the table cell action trigger idles as a small edge dot and expands into a compact four-dot grip only on hover, focus, or open state.
   - Current polish: the single-cell trigger now has a tested right-edge center intent zone. Ordinary cell hover stays clean, selected cells get a restrained border and right-edge rail, and only deliberate edge hover or an active selection reveals the action point.
@@ -321,7 +323,7 @@ Tasks:
 - [ ] Add row and column action menus from slim edge handles.
   - Current coverage: row and column context menus now expose the same clear-content and clear-style actions as cell selections, so axis selections can reuse the official table clear/reset semantics without switching back to a cell menu.
   - Current polish: slim row/column handles freeze their own geometry before selecting the axis, so the context menu opens from the clicked handle instead of drifting after the table chrome re-renders.
-  - Current polish: row/column handles now require an explicit edge or gutter hover intent. Ordinary hover inside first-row or first-column cell content keeps the table clean and editable.
+  - Current polish: row/column handles are full-span strips outside the table grid. Ordinary cell hover reveals the relevant axis entries, and explicit gutter/edge hover still narrows intent to the directly hovered axis.
   - Current polish: gutter hover intent now uses the same geometry as the visible slim handles, so the gap between a handle and the table no longer behaves like an invisible row/column selector.
   - Current polish: the first cell's top-left corner is now a deliberate dual-axis intent zone, so users can reveal both the first-row and first-column handles without making ordinary cell hover noisy.
   - Current polish: row/column handle menus now open only after the underlying table axis selection succeeds, avoiding a misleading menu when ProseMirror rejects the selection.
@@ -495,6 +497,7 @@ Tasks:
 - [ ] Ensure Source edits do not emit duplicate dirty events for unchanged content.
 - [ ] Ensure Hybrid changes produce canonical Markdown.
 - [ ] Ensure Preview uses the same Markdown styling language as Hybrid.
+  - Current polish: Source, Hybrid, fallback editing, and Preview surfaces now enforce at least 24px of document padding, and Hybrid unordered/ordered lists reuse the Preview list indent and item rhythm tokens.
 - [ ] Add conflict behavior tests for save failures and external file changes.
 - [ ] Keep `window.papyroEditor` stable during refactors.
 
