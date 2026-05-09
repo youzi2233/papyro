@@ -1,0 +1,494 @@
+/* Papyro Tiptap code-block chrome: language controls, copy/wrap toolbar, and highlight tokens. */
+
+/* Papyro Tiptap runtime chrome: command panels, handles, table controls, and code-block controls. */
+
+.mn-tiptap-code-block[data-has-language-control="true"] {
+    padding-top: calc(var(--mn-markdown-code-block-pad-y) + 34px);
+}
+
+.mn-tiptap-code-block-inner {
+    display: contents;
+}
+
+.mn-tiptap-code-block::before {
+    content: attr(data-code-language-label);
+    position: absolute;
+    top: 9px;
+    left: 12px;
+    display: inline-flex;
+    align-items: center;
+    max-width: min(220px, calc(100% - 132px));
+    height: 21px;
+    border-radius: 5px;
+    border: 1px solid color-mix(in srgb, var(--mn-code-token-comment) 16%, transparent);
+    background: color-mix(in srgb, var(--mn-code-block-surface) 86%, var(--mn-surface-raised));
+    color: color-mix(in srgb, var(--mn-code-ink) 58%, transparent);
+    padding: 0 7px;
+    overflow: hidden;
+    font-family: var(--mn-font-ui);
+    font-size: 10px;
+    font-weight: var(--mn-weight-medium);
+    line-height: 1;
+    text-overflow: ellipsis;
+    text-transform: uppercase;
+    white-space: nowrap;
+    user-select: none;
+    pointer-events: none;
+}
+
+.mn-tiptap-code-block[data-has-language-control="true"]::before {
+    display: none;
+}
+
+.mn-tiptap-code-language-button {
+    position: absolute;
+    top: 9px;
+    left: 12px;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 7px;
+    max-width: min(236px, calc(100% - 122px));
+    min-width: 102px;
+    height: 28px;
+    border: 1px solid color-mix(in srgb, var(--mn-code-token-comment) 20%, var(--mn-border));
+    border-radius: 7px;
+    background: color-mix(in srgb, var(--mn-code-block-surface) 74%, var(--mn-surface-raised));
+    color: color-mix(in srgb, var(--mn-code-ink) 80%, transparent);
+    padding: 0 9px 0 5px;
+    overflow: hidden;
+    font-family: var(--mn-font-ui);
+    font-size: 11px;
+    font-weight: var(--mn-weight-semibold);
+    line-height: 1;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    user-select: none;
+    cursor: pointer;
+    transition:
+        background-color var(--mn-transition-fast),
+        border-color var(--mn-transition-fast),
+        color var(--mn-transition-fast),
+        box-shadow var(--mn-transition-fast);
+}
+
+.mn-tiptap-code-language-button::before {
+    content: attr(data-language-badge);
+    display: inline-grid;
+    place-items: center;
+    min-width: 34px;
+    height: 20px;
+    border: 1px solid color-mix(in srgb, var(--mn-accent) 22%, transparent);
+    border-radius: 5px;
+    background: color-mix(in srgb, var(--mn-accent) 9%, var(--mn-code-block-surface));
+    color: color-mix(in srgb, var(--mn-accent) 76%, var(--mn-code-ink));
+    font-family: var(--mn-markdown-mono-font);
+    font-size: 9.5px;
+    font-weight: var(--mn-weight-semibold);
+    line-height: 1;
+    text-transform: uppercase;
+}
+
+.mn-tiptap-code-language-button::after {
+    content: "";
+    width: 5px;
+    height: 5px;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: translateY(-1px) rotate(45deg);
+    opacity: .62;
+    justify-self: end;
+}
+
+.mn-tiptap-code-language-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.mn-tiptap-code-language-button:hover,
+.mn-tiptap-code-language-button:focus-visible,
+.mn-tiptap-code-language-button[aria-expanded="true"] {
+    outline: 0;
+    border-color: color-mix(in srgb, var(--mn-accent) 34%, var(--mn-border));
+    background: color-mix(in srgb, var(--mn-surface-raised) 88%, var(--mn-accent) 8%);
+    color: color-mix(in srgb, var(--mn-accent) 78%, var(--mn-code-ink));
+    box-shadow: 0 4px 12px color-mix(in srgb, #000 8%, transparent);
+}
+
+.mn-tiptap-code-block[data-code-language-mode="auto"] .mn-tiptap-code-language-button {
+    color: color-mix(in srgb, var(--mn-code-token-comment) 82%, var(--mn-code-ink));
+}
+
+.mn-tiptap-code-toolbar {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px;
+    border: 1px solid color-mix(in srgb, var(--mn-code-token-comment) 12%, transparent);
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--mn-code-block-surface) 88%, var(--mn-surface-raised));
+    box-shadow: 0 1px 2px color-mix(in srgb, #000 4%, transparent);
+    opacity: .78;
+    transition:
+        opacity var(--mn-transition-fast),
+        background-color var(--mn-transition-fast),
+        border-color var(--mn-transition-fast);
+}
+
+.mn-tiptap-code-block:hover .mn-tiptap-code-toolbar,
+.mn-tiptap-code-toolbar:focus-within {
+    opacity: 1;
+}
+
+.mn-tiptap-code-toolbar-button {
+    position: relative;
+    display: inline-grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 5px;
+    color: color-mix(in srgb, var(--mn-code-ink) 66%, transparent);
+    background: transparent;
+    cursor: pointer;
+    transition:
+        background-color var(--mn-transition-fast),
+        color var(--mn-transition-fast),
+        box-shadow var(--mn-transition-fast);
+}
+
+.mn-tiptap-code-toolbar-button:hover,
+.mn-tiptap-code-toolbar-button:focus-visible,
+.mn-tiptap-code-toolbar-button[aria-pressed="true"],
+.mn-tiptap-code-toolbar-button[data-state="copied"] {
+    outline: 0;
+    background: color-mix(in srgb, var(--mn-accent) 10%, transparent);
+    color: color-mix(in srgb, var(--mn-accent) 82%, var(--mn-code-ink));
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mn-accent) 14%, transparent);
+}
+
+.mn-tiptap-code-toolbar-button[data-state="failed"] {
+    background: color-mix(in srgb, var(--mn-danger) 10%, transparent);
+    color: var(--mn-danger);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mn-danger) 18%, transparent);
+}
+
+.mn-tiptap-code-toolbar-button::before,
+.mn-tiptap-code-toolbar-button::after {
+    content: "";
+    position: absolute;
+    box-sizing: border-box;
+    pointer-events: none;
+}
+
+.mn-tiptap-code-toolbar-button[data-action="copy"]::before {
+    width: 9px;
+    height: 10px;
+    border: 1.4px solid currentColor;
+    border-radius: 2px;
+    transform: translate(2px, -2px);
+}
+
+.mn-tiptap-code-toolbar-button[data-action="copy"]::after {
+    width: 9px;
+    height: 10px;
+    border: 1.4px solid currentColor;
+    border-radius: 2px;
+    transform: translate(-2px, 2px);
+    opacity: .72;
+}
+
+.mn-tiptap-code-toolbar-button[data-state="copied"]::before {
+    width: 7px;
+    height: 11px;
+    border: 0;
+    border-right: 1.8px solid currentColor;
+    border-bottom: 1.8px solid currentColor;
+    border-radius: 0;
+    transform: translateY(-1px) rotate(45deg);
+}
+
+.mn-tiptap-code-toolbar-button[data-state="copied"]::after {
+    display: none;
+}
+
+.mn-tiptap-code-toolbar-button[data-action="wrap"]::before {
+    width: 13px;
+    height: 8px;
+    border-top: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: translateY(-2px);
+}
+
+.mn-tiptap-code-toolbar-button[data-action="wrap"]::after {
+    width: 8px;
+    height: 8px;
+    border-right: 1.6px solid currentColor;
+    border-bottom: 1.6px solid currentColor;
+    transform: translate(3px, 3px) rotate(-45deg);
+}
+
+.mn-tiptap-code-block[data-code-wrap="true"] code {
+    min-width: 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.mn-tiptap-code-language-menu {
+    position: fixed;
+    z-index: 166;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    width: 238px;
+    max-height: min(326px, calc(100vh - 20px));
+    padding: 8px;
+    border: var(--mn-border-default);
+    border-radius: 10px;
+    background: var(--mn-surface-raised);
+    color: var(--mn-ink);
+    box-shadow: 0 18px 38px color-mix(in srgb, #000 13%, transparent), var(--mn-shadow-lg);
+    overflow: hidden;
+    font-family: var(--mn-font-ui);
+    user-select: none;
+}
+
+.mn-tiptap-code-language-menu:focus {
+    outline: 0;
+}
+
+.mn-tiptap-code-language-menu.hidden {
+    display: none;
+}
+
+.mn-tiptap-code-language-menu-inline {
+    position: absolute;
+    top: 40px;
+    left: 12px;
+    z-index: 2;
+    max-height: min(326px, calc(100% - 48px));
+}
+
+.mn-tiptap-code-language-menu-header {
+    padding: 5px 8px 6px;
+    color: var(--mn-ink-3);
+    font-size: 10px;
+    font-weight: var(--mn-weight-semibold);
+    letter-spacing: .06em;
+    line-height: var(--mn-line-caption);
+    text-transform: uppercase;
+}
+
+.mn-tiptap-code-language-menu-list {
+    display: grid;
+    gap: 4px;
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+}
+
+.mn-tiptap-code-language-menu-item {
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1fr) 14px;
+    grid-template-rows: auto auto;
+    align-items: center;
+    column-gap: 8px;
+    row-gap: 2px;
+    min-height: 40px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--mn-ink-2);
+    padding: 5px 8px 5px 5px;
+    text-align: left;
+    font: inherit;
+    font-size: 11px;
+    cursor: pointer;
+    transition:
+        background-color var(--mn-transition-fast),
+        border-color var(--mn-transition-fast),
+        color var(--mn-transition-fast);
+}
+
+.mn-tiptap-code-language-menu-item::before {
+    content: attr(data-language-token);
+    display: inline-grid;
+    place-items: center;
+    grid-row: 1 / 3;
+    width: 36px;
+    height: 22px;
+    border: var(--mn-border-subtle);
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--mn-surface-sunken) 82%, transparent);
+    color: color-mix(in srgb, var(--mn-ink-3) 88%, transparent);
+    font-family: var(--mn-markdown-mono-font);
+    font-size: 8.75px;
+    font-weight: var(--mn-weight-semibold);
+    letter-spacing: 0;
+    line-height: 1;
+}
+
+.mn-tiptap-code-language-menu-item::after {
+    content: "";
+    grid-row: 1 / 3;
+    width: 6px;
+    height: 10px;
+    border-right: 1.7px solid currentColor;
+    border-bottom: 1.7px solid currentColor;
+    opacity: 0;
+    transform: rotate(45deg);
+    justify-self: center;
+}
+
+.mn-tiptap-code-language-menu-item-title,
+.mn-tiptap-code-language-menu-item-description {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.mn-tiptap-code-language-menu-item-title {
+    color: var(--mn-ink);
+    font-size: 11.5px;
+    font-weight: var(--mn-weight-semibold);
+    line-height: 1.15;
+}
+
+.mn-tiptap-code-language-menu-item-description {
+    color: var(--mn-ink-3);
+    font-size: 10px;
+    font-weight: var(--mn-weight-medium);
+    line-height: 1.15;
+}
+
+.mn-tiptap-code-language-menu-item:hover,
+.mn-tiptap-code-language-menu-item:focus-visible,
+.mn-tiptap-code-language-menu-item.keyboard-active,
+.mn-tiptap-code-language-menu-item[data-keyboard-active="true"],
+.mn-tiptap-code-language-menu-item[data-active="true"] {
+    outline: 0;
+    border-color: color-mix(in srgb, var(--mn-accent) 14%, transparent);
+    background: color-mix(in srgb, var(--mn-accent) 7%, transparent);
+    color: var(--mn-ink);
+}
+
+.mn-tiptap-code-language-menu-item:hover .mn-tiptap-code-language-menu-item-description,
+.mn-tiptap-code-language-menu-item:focus-visible .mn-tiptap-code-language-menu-item-description,
+.mn-tiptap-code-language-menu-item.keyboard-active .mn-tiptap-code-language-menu-item-description,
+.mn-tiptap-code-language-menu-item[data-keyboard-active="true"] .mn-tiptap-code-language-menu-item-description,
+.mn-tiptap-code-language-menu-item[data-active="true"] .mn-tiptap-code-language-menu-item-description {
+    color: color-mix(in srgb, var(--mn-accent) 58%, var(--mn-ink-3));
+}
+
+.mn-tiptap-code-language-menu-item[data-active="true"]::after {
+    opacity: 1;
+    color: var(--mn-accent);
+}
+
+.mn-tiptap-code-language-menu-item[data-active="true"]::before,
+.mn-tiptap-code-language-menu-item:hover::before,
+.mn-tiptap-code-language-menu-item.keyboard-active::before,
+.mn-tiptap-code-language-menu-item[data-keyboard-active="true"]::before {
+    border-color: color-mix(in srgb, var(--mn-accent) 28%, var(--mn-border));
+    background: color-mix(in srgb, var(--mn-accent) 10%, var(--mn-surface-raised));
+    color: color-mix(in srgb, var(--mn-accent) 78%, var(--mn-ink));
+}
+
+.mn-tiptap-code-block .hljs-comment,
+.mn-tiptap-code-block .hljs-quote {
+    color: var(--mn-code-token-comment, color-mix(in srgb, var(--mn-code-ink) 54%, transparent));
+    font-style: italic;
+}
+.mn-tiptap-code-block .hljs-keyword,
+.mn-tiptap-code-block .hljs-selector-tag,
+.mn-tiptap-code-block .hljs-doctag {
+    color: var(--mn-code-token-keyword, color-mix(in srgb, var(--mn-accent-strong) 74%, var(--mn-code-ink)));
+    font-weight: var(--mn-weight-semibold);
+}
+.mn-tiptap-code-block .hljs-string,
+.mn-tiptap-code-block .hljs-regexp,
+.mn-tiptap-code-block .hljs-symbol,
+.mn-tiptap-code-block .hljs-bullet,
+.mn-tiptap-code-block .hljs-link {
+    color: var(--mn-code-token-string, color-mix(in srgb, var(--mn-success) 80%, var(--mn-code-ink)));
+}
+.mn-tiptap-code-block .hljs-number,
+.mn-tiptap-code-block .hljs-literal,
+.mn-tiptap-code-block .hljs-variable.constant_,
+.mn-tiptap-code-block .hljs-deletion {
+    color: var(--mn-code-token-number, color-mix(in srgb, var(--mn-warning) 80%, var(--mn-code-ink)));
+}
+.mn-tiptap-code-block .hljs-title,
+.mn-tiptap-code-block .hljs-title.function_,
+.mn-tiptap-code-block .hljs-title.class_,
+.mn-tiptap-code-block .hljs-section,
+.mn-tiptap-code-block .hljs-function {
+    color: var(--mn-code-token-title, color-mix(in srgb, var(--mn-accent) 72%, var(--mn-code-ink)));
+}
+.mn-tiptap-code-block .hljs-attr,
+.mn-tiptap-code-block .hljs-attribute,
+.mn-tiptap-code-block .hljs-property,
+.mn-tiptap-code-block .hljs-meta,
+.mn-tiptap-code-block .hljs-params,
+.mn-tiptap-code-block .hljs-subst,
+.mn-tiptap-code-block .hljs-selector-attr,
+.mn-tiptap-code-block .hljs-selector-pseudo {
+    color: var(--mn-code-token-attribute, color-mix(in srgb, var(--mn-danger) 72%, var(--mn-code-ink)));
+}
+.mn-tiptap-code-block .hljs-type,
+.mn-tiptap-code-block .hljs-class .hljs-title,
+.mn-tiptap-code-block .hljs-tag,
+.mn-tiptap-code-block .hljs-name,
+.mn-tiptap-code-block .hljs-built_in,
+.mn-tiptap-code-block .hljs-selector-id,
+.mn-tiptap-code-block .hljs-selector-class {
+    color: var(--mn-code-token-type, color-mix(in srgb, var(--mn-code-token-title) 84%, var(--mn-code-ink)));
+}
+.mn-tiptap-code-block .hljs-operator,
+.mn-tiptap-code-block .hljs-punctuation {
+    color: var(--mn-code-token-operator, color-mix(in srgb, var(--mn-code-ink) 78%, transparent));
+}
+.mn-tiptap-code-block .hljs-variable.language_,
+.mn-tiptap-code-block .hljs-keyword.operator_ {
+    color: var(--mn-code-token-keyword, color-mix(in srgb, var(--mn-accent-strong) 74%, var(--mn-code-ink)));
+}
+.mn-tiptap-code-block .hljs-template-tag,
+.mn-tiptap-code-block .hljs-template-variable {
+    color: var(--mn-code-token-attribute, color-mix(in srgb, var(--mn-danger) 72%, var(--mn-code-ink)));
+}
+.mn-tiptap-code-block .hljs-variable {
+    color: var(--mn-code-token-attribute, color-mix(in srgb, var(--mn-danger) 62%, var(--mn-code-ink)));
+}
+.mn-tiptap-code-block .hljs-addition {
+    color: var(--mn-code-token-string, color-mix(in srgb, var(--mn-success) 80%, var(--mn-code-ink)));
+}
+.mn-tiptap-code-block .hljs-emphasis { font-style: italic; }
+.mn-tiptap-code-block .hljs-strong { font-weight: var(--mn-weight-semibold); }
+
+:root[data-theme="light"] .mn-tiptap-code-block,
+:root[data-theme="github_light"] .mn-tiptap-code-block,
+:root[data-theme="warm_reading"] .mn-tiptap-code-block {
+    --mn-code-language-chip-surface: color-mix(in srgb, var(--mn-code-block-surface) 82%, #fff);
+    --mn-code-language-chip-border: color-mix(in srgb, var(--mn-code-token-comment) 24%, var(--mn-border));
+}
+
+:root[data-theme="light"] .mn-tiptap-code-language-button,
+:root[data-theme="github_light"] .mn-tiptap-code-language-button,
+:root[data-theme="warm_reading"] .mn-tiptap-code-language-button {
+    background: var(--mn-code-language-chip-surface);
+    border-color: var(--mn-code-language-chip-border);
+    box-shadow: 0 1px 2px color-mix(in srgb, #000 5%, transparent);
+}
+
+:root[data-theme="light"] .mn-tiptap-code-language-button:hover,
+:root[data-theme="light"] .mn-tiptap-code-language-button:focus-visible,
+:root[data-theme="light"] .mn-tiptap-code-language-button[aria-expanded="true"],
+:root[data-theme="github_light"] .mn-tiptap-code-language-button:hover,
+:root[data-theme="github_light"] .mn-tiptap-code-language-button:focus-visible,
+:root[data-theme="github_light"] .mn-tiptap-code-language-button[aria-expanded="true"],
+:root[data-theme="warm_reading"] .mn-tiptap-code-language-button:hover,
+:root[data-theme="warm_reading"] .mn-tiptap-code-language-button:focus-visible,
+:root[data-theme="warm_reading"] .mn-tiptap-code-language-button[aria-expanded="true"] {
+    background: color-mix(in srgb, #fff 86%, var(--mn-accent) 7%);
+}

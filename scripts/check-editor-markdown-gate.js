@@ -37,11 +37,22 @@ const BUNDLE_COPIES = [
   ["assets/editor.js", "apps/mobile/assets/editor.js"],
 ];
 
+const TIPTAP_STYLE_MODULES = [
+  "tiptap-chrome.css",
+  "tiptap-chrome-code.css",
+  "tiptap-chrome-base.css",
+  "tiptap-chrome-command.css",
+  "tiptap-chrome-table.css",
+  "tiptap-chrome-block.css",
+];
+
 const RUNTIME_STYLE_COPIES = [
   ["assets/styles/markdown.css", "apps/desktop/assets/styles/markdown.css"],
-  ["assets/styles/tiptap-chrome.css", "apps/desktop/assets/styles/tiptap-chrome.css"],
   ["assets/styles/markdown.css", "apps/mobile/assets/styles/markdown.css"],
-  ["assets/styles/tiptap-chrome.css", "apps/mobile/assets/styles/tiptap-chrome.css"],
+  ...TIPTAP_STYLE_MODULES.flatMap((file) => [
+    [`assets/styles/${file}`, `apps/desktop/assets/styles/${file}`],
+    [`assets/styles/${file}`, `apps/mobile/assets/styles/${file}`],
+  ]),
 ];
 
 function main() {

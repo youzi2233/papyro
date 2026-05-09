@@ -85,8 +85,18 @@ Generated files must be committed with the source change:
 - `apps/mobile/assets/editor.js`
 - `apps/desktop/assets/styles/markdown.css`
 - `apps/desktop/assets/styles/tiptap-chrome.css`
+- `apps/desktop/assets/styles/tiptap-chrome-code.css`
+- `apps/desktop/assets/styles/tiptap-chrome-base.css`
+- `apps/desktop/assets/styles/tiptap-chrome-command.css`
+- `apps/desktop/assets/styles/tiptap-chrome-table.css`
+- `apps/desktop/assets/styles/tiptap-chrome-block.css`
 - `apps/mobile/assets/styles/markdown.css`
 - `apps/mobile/assets/styles/tiptap-chrome.css`
+- `apps/mobile/assets/styles/tiptap-chrome-code.css`
+- `apps/mobile/assets/styles/tiptap-chrome-base.css`
+- `apps/mobile/assets/styles/tiptap-chrome-command.css`
+- `apps/mobile/assets/styles/tiptap-chrome-table.css`
+- `apps/mobile/assets/styles/tiptap-chrome-block.css`
 
 ## Documentation Rules
 

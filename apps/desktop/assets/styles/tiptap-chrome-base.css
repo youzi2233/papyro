@@ -1,0 +1,133 @@
+/* Papyro Tiptap editor selection, base table surfaces, and shared ProseMirror chrome. */
+
+.mn-tiptap-editor > *:first-child { margin-top: 0; }
+.mn-tiptap-editor > *:last-child { margin-bottom: 0; }
+.mn-tiptap-block-selected {
+    display: block;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+    border-radius: 7px;
+    background:
+        linear-gradient(
+            90deg,
+            color-mix(in srgb, var(--mn-accent) 6%, transparent),
+            color-mix(in srgb, var(--mn-accent) 3%, transparent)
+        );
+    box-shadow:
+        inset 2px 0 0 color-mix(in srgb, var(--mn-accent) 38%, transparent),
+        0 0 0 1px color-mix(in srgb, var(--mn-accent) 10%, transparent),
+        0 0 0 3px color-mix(in srgb, var(--mn-accent) 4%, transparent);
+    outline: 1px solid color-mix(in srgb, var(--mn-accent) 10%, transparent);
+    outline-offset: 2px;
+}
+.mn-tiptap-block-selected > * {
+    position: relative;
+    z-index: 1;
+}
+.mn-tiptap-block-selected :where(code, .mn-tiptap-inline-math) {
+    background: color-mix(in srgb, var(--mn-accent) 12%, var(--mn-code-surface));
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--mn-accent) 14%, transparent);
+}
+
+.mn-tiptap-editor.ProseMirror-noderangeselection *::selection {
+    background: transparent;
+}
+
+.mn-tiptap-editor.ProseMirror-noderangeselection * {
+    caret-color: transparent;
+}
+
+.mn-tiptap-editor :where(.ProseMirror-selectednode, .ProseMirror-selectednoderange) {
+    position: relative;
+}
+
+.mn-tiptap-editor :where(.ProseMirror-selectednode, .ProseMirror-selectednoderange)::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: -4px -8px;
+    border-radius: 7px;
+    background: color-mix(in srgb, var(--mn-accent) 10%, transparent);
+    box-shadow:
+        inset 2px 0 0 color-mix(in srgb, var(--mn-accent) 42%, transparent),
+        0 0 0 1px color-mix(in srgb, var(--mn-accent) 14%, transparent),
+        0 0 0 3px color-mix(in srgb, var(--mn-accent) 5%, transparent);
+    pointer-events: none;
+}
+
+.mn-tiptap-editor .tableWrapper {
+    overflow-x: auto;
+}
+
+.mn-tiptap-editor .mn-tiptap-table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+.mn-tiptap-editor :where(.mn-tiptap-table-cell, .mn-tiptap-table-header) {
+    position: relative;
+    box-sizing: border-box;
+    background-clip: padding-box;
+}
+
+.mn-tiptap-editor :where(.mn-tiptap-table-cell, .mn-tiptap-table-header) > * {
+    position: relative;
+    z-index: 2;
+}
+
+.mn-tiptap-editor :where(.mn-tiptap-table-cell-active, .mn-tiptap-table-cell-selected)::after,
+.mn-tiptap-editor :where(.mn-tiptap-table-cell, .mn-tiptap-table-header).selectedCell::after {
+    content: "";
+    position: absolute;
+    z-index: 1;
+    inset: -1px;
+    border-radius: 3px;
+    pointer-events: none;
+    background:
+        linear-gradient(
+            180deg,
+            color-mix(in srgb, var(--mn-accent) 10%, transparent),
+            color-mix(in srgb, var(--mn-accent) 6%, transparent)
+        );
+    box-shadow:
+        inset 0 0 0 1.5px color-mix(in srgb, var(--mn-accent) 66%, transparent),
+        0 0 0 1px color-mix(in srgb, var(--mn-accent) 18%, transparent);
+}
+
+.mn-tiptap-table-cell.mn-tiptap-table-cell-active::after,
+.mn-tiptap-table-header.mn-tiptap-table-cell-active::after,
+.mn-tiptap-table-cell.mn-tiptap-table-cell-selected::after,
+.mn-tiptap-table-header.mn-tiptap-table-cell-selected::after {
+    box-shadow:
+        inset 0 0 0 1.5px color-mix(in srgb, var(--mn-accent) 66%, transparent),
+        0 0 0 1px color-mix(in srgb, var(--mn-accent) 18%, transparent);
+}
+
+.mn-tiptap-editor :where(.mn-tiptap-table-cell-active, .mn-tiptap-table-cell-selected)::before,
+.mn-tiptap-editor :where(.mn-tiptap-table-cell, .mn-tiptap-table-header).selectedCell::before {
+    content: "";
+    position: absolute;
+    z-index: 3;
+    top: 50%;
+    right: -1px;
+    width: 1.5px;
+    height: min(24px, calc(100% - 8px));
+    border-radius: var(--mn-radius-round);
+    background: color-mix(in srgb, var(--mn-accent) 74%, transparent);
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.mn-tiptap-block-dragging {
+    cursor: grabbing;
+}
+
+.mn-tiptap-official-drag-handle-bridge {
+    z-index: 155;
+    width: auto;
+    height: 24px;
+    opacity: 1;
+    overflow: visible;
+    pointer-events: auto;
+    user-select: none;
+}

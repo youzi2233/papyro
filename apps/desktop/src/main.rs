@@ -15,7 +15,15 @@ const MAIN_CSS: &str = concat!(
     "\n",
     include_str!("../assets/styles/markdown.css"),
     "\n",
-    include_str!("../assets/styles/tiptap-chrome.css"),
+    include_str!("../assets/styles/tiptap-chrome-code.css"),
+    "\n",
+    include_str!("../assets/styles/tiptap-chrome-base.css"),
+    "\n",
+    include_str!("../assets/styles/tiptap-chrome-command.css"),
+    "\n",
+    include_str!("../assets/styles/tiptap-chrome-table.css"),
+    "\n",
+    include_str!("../assets/styles/tiptap-chrome-block.css"),
     "\n",
     include_str!("../assets/main.css")
 );

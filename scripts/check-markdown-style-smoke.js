@@ -1,17 +1,30 @@
 #!/usr/bin/env node
 import { readFileSync } from "node:fs";
 
+const TIPTAP_STYLE_MODULES = [
+  "tiptap-chrome.css",
+  "tiptap-chrome-code.css",
+  "tiptap-chrome-base.css",
+  "tiptap-chrome-command.css",
+  "tiptap-chrome-table.css",
+  "tiptap-chrome-block.css",
+];
+
 const DEFAULT_CSS_GROUPS = [
-  ["assets/main.css", "assets/styles/markdown.css", "assets/styles/tiptap-chrome.css"],
+  [
+    "assets/main.css",
+    "assets/styles/markdown.css",
+    ...TIPTAP_STYLE_MODULES.map((file) => `assets/styles/${file}`),
+  ],
   [
     "apps/desktop/assets/main.css",
     "apps/desktop/assets/styles/markdown.css",
-    "apps/desktop/assets/styles/tiptap-chrome.css",
+    ...TIPTAP_STYLE_MODULES.map((file) => `apps/desktop/assets/styles/${file}`),
   ],
   [
     "apps/mobile/assets/main.css",
     "apps/mobile/assets/styles/markdown.css",
-    "apps/mobile/assets/styles/tiptap-chrome.css",
+    ...TIPTAP_STYLE_MODULES.map((file) => `apps/mobile/assets/styles/${file}`),
   ],
 ];
 
