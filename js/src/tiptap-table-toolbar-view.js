@@ -668,6 +668,8 @@ export class TiptapTableToolbarView {
     this.#selectionBackdrop.style.top = `${rect.top}px`;
     this.#selectionBackdrop.style.width = `${Math.max(0, rect.width)}px`;
     this.#selectionBackdrop.style.height = `${Math.max(0, rect.height)}px`;
+    this.#selectionBackdrop.dataset.selectionKind = backdrop.selectionKind;
+    this.#selectionBackdrop.dataset.selectedCount = String(backdrop.selectedCount ?? 0);
     setTableDecorationHidden(this.#selectionBackdrop, false);
   }
 

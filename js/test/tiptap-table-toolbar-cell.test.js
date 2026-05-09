@@ -99,7 +99,7 @@ test("Tiptap table toolbar keeps the cell menu trigger hidden until the edge is 
   assert.equal(trigger["aria-expanded"], "false");
 });
 
-test("Tiptap table toolbar reveals the cell trigger after selecting a cell", () => {
+test("Tiptap table toolbar reveals the cell trigger only after selecting a cell", () => {
   const { created, documentRef } = createDocument();
   const { cells, editor } = createTableHarness({ setCellAttribute: () => true });
   editor.commands.addColumnAfter = () => true;
@@ -131,14 +131,8 @@ test("Tiptap table toolbar reveals the cell trigger after selecting a cell", () 
     clientX: 197,
     clientY: 107,
   });
-  assert.equal(trigger.hidden, false);
-  assert.equal(trigger.dataset.visible, "true");
-  assert.equal(trigger["aria-hidden"], undefined);
-  assert.equal(trigger.style.left, "200px");
-  assert.equal(trigger.style.top, "107px");
-  assert.equal(trigger.dataset.edgeIntent, "true");
-  assert.equal(trigger.dataset.actionScope, "cell");
-  assert.equal(trigger.dataset.placement, "edge");
+  assert.equal(trigger.hidden, true);
+  assert.equal(trigger.dataset.visible, "false");
 
   editor.commands.setCellSelection({ anchorCell: 10, headCell: 10 });
   controller.refresh(editor);

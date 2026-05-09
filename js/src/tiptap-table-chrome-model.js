@@ -183,12 +183,6 @@ export function createTableCellMenuTriggerChromeState(state) {
     selectionKind === "cell" &&
     selectedCount === 1 &&
     (selectedRect || state?.cellRect || state?.cell);
-  const hoveredEdgeCell =
-    selectionKind === "cell" &&
-    selectedCount === 0 &&
-    edgeIntent &&
-    state?.hover?.cell &&
-    (state?.hover?.cellRect || state?.hover?.cell);
   const selectionRect =
     selectedCount > 1
       ? state?.menuRect ?? state?.selectionRect
@@ -200,20 +194,17 @@ export function createTableCellMenuTriggerChromeState(state) {
     (singleSelectedCell && selectionKind === "cell"
       ? selectedRect ?? normalizedRect(state?.cellRect ?? state?.cell?.getBoundingClientRect?.())
       : null) ??
-    (hoveredEdgeCell
-      ? normalizedRect(state?.hover?.cellRect ?? state?.hover?.cell?.getBoundingClientRect?.())
-      : null) ??
     normalizedRect(selectionRect);
 
   const trigger = tableCellMenuTriggerGeometry({
     rect,
     selectionKind,
-    edgeHovered: edgeIntent || menuOpen,
+    edgeHovered: selectedCount > 0 && (edgeIntent || menuOpen),
     selectedCount,
   });
   const visible = Boolean(
     trigger &&
-      (state?.menuOpen || singleSelectedCell || hoveredEdgeCell || selectedCount > 1),
+      (state?.menuOpen || singleSelectedCell || selectedCount > 1),
   );
 
   return {
@@ -262,12 +253,17 @@ export function createComplexBlockInsertChromeState(state) {
 
 export function createTableSelectionBackdropChromeState(state) {
   const rect = normalizedRect(state?.selectionRect);
+  const selectedCount = state?.selection?.positions?.size ?? 0;
   const visible = Boolean(
     rect &&
-      state?.selection?.kind !== "cell" &&
-      (state?.selection?.positions?.size ?? 0) > 0,
+      selectedCount > 0,
   );
-  return { visible, rect };
+  return {
+    visible,
+    rect,
+    selectionKind: state?.selection?.kind ?? "cell",
+    selectedCount,
+  };
 }
 
 export function hoveredTableCellIsSelected(state) {

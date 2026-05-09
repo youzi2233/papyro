@@ -75,6 +75,16 @@ function createGrid() {
           cell.classes.has("mn-tiptap-table-cell-active"),
         );
       }
+      if (selector === ".mn-tiptap-table-cell-hovered-row") {
+        return cellElements.filter((cell) =>
+          cell.classes.has("mn-tiptap-table-cell-hovered-row"),
+        );
+      }
+      if (selector === ".mn-tiptap-table-cell-hovered-column") {
+        return cellElements.filter((cell) =>
+          cell.classes.has("mn-tiptap-table-cell-hovered-column"),
+        );
+      }
       return [];
     },
   };
@@ -238,7 +248,7 @@ test("table chrome model exposes quick-add rails only on intentional table edges
   assert.equal(createTableQuickAddChromeState(columnState).column.width, 20);
 });
 
-test("table chrome model keeps the cell action trigger quiet until selected or edge-hovered", () => {
+test("table chrome model keeps the cell action trigger quiet until selected", () => {
   const fixture = createGrid();
   const { cells } = fixture;
 
@@ -252,11 +262,10 @@ test("table chrome model keeps the cell action trigger quiet until selected or e
       cellRect: cells[0].rect,
     },
   }));
-  assert.equal(edge.visible, true);
+  assert.equal(edge.visible, false);
   assert.equal(edge.actionScope, "cell");
   assert.equal(edge.edgeIntent, true);
-  assert.equal(edge.trigger.left, 200);
-  assert.equal(edge.trigger.placement, "edge");
+  assert.equal(edge.trigger, null);
 
   const selected = createTableCellMenuTriggerChromeState(baseState({
     fixture,
@@ -449,6 +458,22 @@ test("table chrome model positions selection backdrop and complex block insert r
   }));
   assert.equal(backdrop.visible, true);
   assert.equal(backdrop.rect.width, 240);
+  assert.equal(backdrop.selectionKind, "row");
+  assert.equal(backdrop.selectedCount, 3);
+
+  const singleCellBackdrop = createTableSelectionBackdropChromeState(baseState({
+    selection: {
+      kind: "cell",
+      positions: new Set([11]),
+      rows: [],
+      columns: [],
+    },
+    selectionRect: rect(200, 90, 80, 34),
+  }));
+  assert.equal(singleCellBackdrop.visible, true);
+  assert.equal(singleCellBackdrop.selectionKind, "cell");
+  assert.equal(singleCellBackdrop.selectedCount, 1);
+  assert.equal(singleCellBackdrop.rect.left, 200);
 
   const block = { id: "code" };
   const insert = createComplexBlockInsertChromeState(baseState({

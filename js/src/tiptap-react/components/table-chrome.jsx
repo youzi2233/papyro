@@ -188,6 +188,8 @@ function TableSelectionBackdrop({ chrome }) {
       ].filter(Boolean).join(" ")}
       aria-hidden="true"
       data-visible={chrome.visible ? "true" : "false"}
+      data-selection-kind={chrome.selectionKind}
+      data-selected-count={String(chrome.selectedCount ?? 0)}
       style={fixedRectStyle(chrome.rect)}
     />
   );

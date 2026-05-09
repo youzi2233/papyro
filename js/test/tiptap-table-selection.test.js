@@ -561,7 +561,7 @@ test("Tiptap table interactive inline content clicks stay native", () => {
   assert.deepEqual(calls, []);
 });
 
-test("Tiptap table filled paragraph content preserves native text selection", () => {
+test("Tiptap table filled paragraph short clicks select the cell object", () => {
   const { calls, cells, documentListeners, editor, pushEvent, root, table } = createHarness();
   const paragraph = {
     nodeType: 1,
@@ -596,6 +596,49 @@ test("Tiptap table filled paragraph content preserves native text selection", ()
   assert.deepEqual(calls, []);
   assert.equal(controller.state.cell, cells[0]);
   assert.deepEqual([...controller.state.selection.positions], [10]);
+
+  documentListeners.get("pointerup").at(-1)({
+    target: paragraph,
+    clientX: 120,
+    clientY: 94,
+    preventDefault: pushEvent(events, "preventDefault:up"),
+    stopPropagation: pushEvent(events, "stopPropagation:up"),
+  });
+
+  assert.deepEqual(events, ["preventDefault:up", "stopPropagation:up"]);
+  assert.deepEqual(calls, [["setCellSelection", 10, 10], ["focus"]]);
+  assert.equal(cells[0].classes.has("mn-tiptap-table-cell-selected"), true);
+  assert.equal(cells[0].classes.has("mn-tiptap-table-cell-active"), true);
+});
+
+test("Tiptap table filled paragraph drag preserves native text selection", () => {
+  const { calls, cells, documentListeners, editor, pushEvent, root, table } = createHarness();
+  const paragraph = {
+    nodeType: 1,
+    tagName: "P",
+    parentElement: cells[0],
+    parentNode: cells[0],
+    textContent: "Revenue",
+    closest(selector) {
+      if (selector === "th,td") return cells[0];
+      if (selector === ".mn-tiptap-table, table" || selector === "table") return table;
+      return null;
+    },
+  };
+  const controller = createTiptapTableToolbarController({
+    dom: { document: root.ownerDocument },
+  });
+  const events = [];
+
+  controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
+  root.listeners.get("pointerdown")({
+    target: paragraph,
+    button: 0,
+    clientX: 120,
+    clientY: 94,
+    preventDefault: pushEvent(events, "preventDefault:down"),
+    stopPropagation: pushEvent(events, "stopPropagation:down"),
+  });
 
   documentListeners.get("pointermove").at(-1)({
     target: paragraph,

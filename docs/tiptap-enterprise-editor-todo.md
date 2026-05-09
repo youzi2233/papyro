@@ -302,12 +302,12 @@ Tasks:
   - Current polish: short clicks on the whole-cell surface now commit a single-cell `CellSelection` on pointer-up, while real pointer drags stay native for text selection. This makes a click visibly select the cell with the active border instead of only moving focus to an invisible caret position.
   - Current polish: when a filled-cell text drag becomes intentional, the temporary cell preview is cleared so native text selection is the only visible selection state.
 - [x] Ensure cells have no visual gaps, so selection and resize borders look continuous.
-  - Current coverage: Tiptap table cells use `border-collapse: separate` with `border-spacing: 0`, one-sided grid borders, table margin reset, border-box background painting, and a style smoke guard for the continuous cell surface.
-  - Current polish: table grid painting is isolated from the editor background, selected cells keep a restrained active border, and selected/active cells keep resize rails available without adding always-visible chrome.
+  - Current coverage: Tiptap table cells now match Preview's collapsed-border grid with `border-collapse: collapse`, `border-spacing: 0`, table margin reset, border-box background painting, and a style smoke guard for the continuous cell surface.
+  - Current polish: table grid painting is isolated from the editor background, selected cells keep a restrained active fill, and selected/active cells keep resize rails available without adding always-visible chrome.
   - Current polish: Hybrid table wrappers no longer add interior padding around the grid, so the rendered table surface starts at the actual zero-spacing table edge instead of showing a small editor-background gutter.
 - [x] On cell click, show a theme-colored active border around that cell.
-  - Current coverage: active and selected cells now use a quieter continuous theme border, the cell menu trigger is anchored to the true vertical cell center, and hover feedback stays secondary to selection.
-  - Current polish: a single selected ProseMirror table cell now also receives the active-cell class and outline, so cell selection is visible as a real border rather than only the edge action dot.
+  - Current coverage: active and selected cells now use one shared selection overlay that draws the theme-colored object border around a single cell or the whole selected cell range; the cell menu trigger stays a separate right-edge action affordance.
+  - Current polish: a single selected ProseMirror table cell now receives the same object-selection overlay as multi-cell ranges, so selection is visible as a real border rather than only the edge action dot.
   - Current polish: blank-cell and empty-paragraph short clicks are covered by visual-class tests, so the selected and active cell classes must be applied after the `setCellSelection` command refreshes.
   - Current fix: DOM table cells are resolved back to their real ProseMirror `tableCell` / `tableHeader` node positions before calling `setCellSelection`; real mounted coverage now guards against the earlier false-positive fixture where `posAtDOM(cell, 0)` was incorrectly treated as already selectable.
 - [ ] On cell selection range, show a restrained overlay and a small action trigger on the range edge.

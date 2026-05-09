@@ -119,9 +119,8 @@ function isEmptyParagraphSurfaceTarget(target, cell) {
 }
 
 function shouldStartTableCellRangeDrag(target, cell) {
-  if (isDirectTableCellTarget(target, cell)) return true;
   if (isInteractiveCellContent(target, cell)) return false;
-  return isEmptyParagraphSurfaceTarget(target, cell);
+  return isDirectTableCellTarget(target, cell) || isEmptyParagraphSurfaceTarget(target, cell);
 }
 
 function tableContextFromElement(editor, table) {
@@ -420,8 +419,8 @@ export class TiptapTableToolbarController {
       rect: context.rect,
       cell: context.cell,
       cellRect: context.cell?.getBoundingClientRect?.() ?? null,
-      selectionRect: context.selectionRect,
-      menuRect: context.menuRect,
+      selectionRect: visualCellSelection?.rect ?? context.selectionRect,
+      menuRect: visualCellSelection?.rect ?? context.menuRect,
       menuAnchorRect: previousMenuAnchorRect,
       grid: context.grid,
       selection,
@@ -470,6 +469,7 @@ export class TiptapTableToolbarController {
       table: context.table,
       pos: match.pos,
       cell: match.cell,
+      rect: normalizedRect(match.rect ?? match.cell?.getBoundingClientRect?.()),
     };
     return this.#visualCellSelection;
   }
@@ -732,7 +732,9 @@ export class TiptapTableToolbarController {
       table: context.table,
       pos: start.pos,
       cell: start.cell,
+      rect: normalizedRect(start.rect ?? start.cell.getBoundingClientRect?.()),
     };
+    const selectionRect = normalizedRect(start.rect ?? start.cell.getBoundingClientRect?.());
     this.#state = {
       ...this.#state,
       open: true,
@@ -741,9 +743,9 @@ export class TiptapTableToolbarController {
       table: context.table,
       rect: context.rect,
       cell: start.cell,
-      cellRect: normalizedRect(start.rect ?? start.cell.getBoundingClientRect?.()),
-      selectionRect: null,
-      menuRect: null,
+      cellRect: selectionRect,
+      selectionRect,
+      menuRect: selectionRect,
       menuAnchorRect: null,
       grid: context.grid ?? [],
       selection: {

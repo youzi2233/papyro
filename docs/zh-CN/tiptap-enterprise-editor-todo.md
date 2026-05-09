@@ -296,12 +296,12 @@ node scripts/check-tiptap-release-smoke.js
   - 当前打磨：整格表面短点击现在会在 pointer-up 时提交单个单元格 `CellSelection`，真实拖动仍保留原生文本选择；这样点击会用活跃边框明确选中单元格，而不是只把焦点移到不可见的光标位置。
   - 当前打磨：填充单元格里的文本拖动一旦变成明确拖选，会清掉临时单元格预览态，让原生文本选区成为唯一可见的选择状态。
 - [x] 单元格之间不能有视觉间隙，保证 selection 和 resize border 连续。
-  - 当前覆盖：Tiptap 表格单元格使用 `border-collapse: separate`、`border-spacing: 0`、单侧网格边框、表格 margin 归零和 border-box 背景绘制，并由样式 smoke 守护连续单元格表面。
-  - 当前打磨：表格网格绘制与编辑器背景隔离，选中单元格保持克制的活跃边框，选中/激活状态下仍保留 resize rail，但不额外增加常驻 chrome。
+  - 当前覆盖：Tiptap 表格单元格现在与 Preview 一样使用 collapsed border 网格：`border-collapse: collapse`、`border-spacing: 0`、表格 margin 归零和 border-box 背景绘制，并由样式 smoke 守护连续单元格表面。
+  - 当前打磨：表格网格绘制与编辑器背景隔离，选中单元格保持克制的活跃填充，选中/激活状态下仍保留 resize rail，但不额外增加常驻 chrome。
   - 当前打磨：Hybrid 表格 wrapper 不再给表格网格增加内部 padding，因此渲染表格从真实零间距边缘开始，不再露出一圈编辑器背景缝隙。
 - [x] 点击单元格后，用主题色边框高亮当前单元格。
-  - 当前覆盖：活跃和选中单元格使用更克制、连续的主题色边框；单元格菜单触发点按真实单元格垂直居中锚定，hover 只作为次级反馈。
-  - 当前打磨：单个 ProseMirror 表格单元格被选中时也会获得 active-cell class 和 outline，因此选中反馈会表现为真实边框，而不是只剩边缘操作小点。
+  - 当前覆盖：活跃和选中单元格现在共用一套 selection overlay，为单个单元格或整个单元格范围绘制主题色对象边框；单元格菜单触发点只是右侧操作入口。
+  - 当前打磨：单个 ProseMirror 表格单元格被选中时会和多单元格范围一样显示对象选中外框，因此选中反馈会表现为真实边框，而不是只剩边缘操作小点。
   - 当前打磨：空白单元格和空段落短点击已纳入视觉 class 测试，`setCellSelection` 后必须刷新出 selected/active class。
   - 当前修复：调用 `setCellSelection` 前会把 DOM 表格单元格解析回真实 ProseMirror `tableCell` / `tableHeader` 节点位置；真实挂载测试现在覆盖了之前 fixture 把 `posAtDOM(cell, 0)` 误当作可选中位置的假阳性。
 - [ ] 多单元格框选后显示克制遮罩，并在选区边缘显示小操作触发点。

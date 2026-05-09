@@ -60,7 +60,7 @@
 }
 
 .mn-tiptap-editor .mn-tiptap-table {
-    border-collapse: separate;
+    border-collapse: collapse;
     border-spacing: 0;
     background-clip: border-box;
     empty-cells: show;
@@ -100,22 +100,17 @@
     background:
         linear-gradient(
             180deg,
-            color-mix(in srgb, var(--mn-accent) 10%, transparent),
-            color-mix(in srgb, var(--mn-accent) 6%, transparent)
+            color-mix(in srgb, var(--mn-accent) 5%, transparent),
+            color-mix(in srgb, var(--mn-accent) 2%, transparent)
         );
     box-shadow:
-        inset 0 0 0 2px var(--mn-accent),
-        inset 0 0 0 999px color-mix(in srgb, var(--mn-accent) 3%, transparent),
-        0 0 0 1px color-mix(in srgb, var(--mn-accent) 28%, transparent);
+        inset 0 0 0 999px color-mix(in srgb, var(--mn-accent) 2%, transparent);
 }
 
 .mn-tiptap-editor :where(.mn-tiptap-table-cell-active, .mn-tiptap-table-cell-selected, .selectedCell) {
-    outline: 2.5px solid var(--mn-accent);
-    outline-offset: -2px;
+    outline: 0;
     box-shadow:
-        inset 0 0 0 2px var(--mn-accent),
-        inset 0 0 0 999px color-mix(in srgb, var(--mn-accent) 6%, transparent),
-        0 0 0 1px color-mix(in srgb, var(--mn-accent) 32%, transparent);
+        inset 0 0 0 999px color-mix(in srgb, var(--mn-accent) 5%, transparent);
 }
 
 .mn-tiptap-editor :where(.mn-tiptap-table-cell-hovered-column) {
@@ -137,15 +132,14 @@
 .mn-tiptap-table-cell.mn-tiptap-table-cell-selected::after,
 .mn-tiptap-table-header.mn-tiptap-table-cell-selected::after {
     box-shadow:
-        inset 0 0 0 2px var(--mn-accent),
-        inset 0 0 0 3px color-mix(in srgb, var(--mn-editor-bg) 76%, transparent),
         inset 0 0 0 999px color-mix(in srgb, var(--mn-accent) 2%, transparent),
-        0 0 0 1px color-mix(in srgb, var(--mn-accent) 24%, transparent);
+        inset 0 0 0 1px color-mix(in srgb, var(--mn-accent) 26%, transparent);
 }
 
 .mn-tiptap-editor :where(.mn-tiptap-table-cell-active, .mn-tiptap-table-cell-selected)::before,
 .mn-tiptap-editor :where(.mn-tiptap-table-cell, .mn-tiptap-table-header).selectedCell::before {
     content: "";
+    display: none;
     position: absolute;
     z-index: 3;
     top: 50%;
