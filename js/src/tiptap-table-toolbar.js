@@ -701,6 +701,7 @@ export class TiptapTableToolbarController {
       head: start,
       moved: false,
       selected: false,
+      previewCleared: false,
       cellSurfaceClick,
       rangeSelectable: shouldStartTableCellRangeDrag(event?.target, cell),
       startX: Number(event?.clientX),
@@ -796,7 +797,14 @@ export class TiptapTableToolbarController {
         ? Math.hypot(x - drag.startX, y - drag.startY)
         : 0;
     if (distance > 3) drag.moved = true;
-    if (!drag.rangeSelectable) return false;
+    if (!drag.rangeSelectable) {
+      if (drag.moved && !drag.previewCleared) {
+        drag.previewCleared = true;
+        this.#visualCellSelection = null;
+        this.refresh(this.#editor);
+      }
+      return false;
+    }
 
     const context = activeTableContext(this.#editor);
     if (!context?.table || context.table !== drag.table) return false;

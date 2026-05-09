@@ -3124,7 +3124,8 @@ test("Tiptap table toolbar leaves filled cell drag text selection native", () =>
   });
 
   assert.deepEqual(calls, []);
-  assert.equal(controller.state.selection.positions.size, 1);
+  assert.equal(controller.state.selection.positions.size, 0);
+  assert.equal(cells[0].classes.has("mn-tiptap-table-cell-selected"), false);
 });
 
 test("Tiptap table toolbar keeps native controls inside cells interactive", () => {
