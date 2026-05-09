@@ -4,7 +4,6 @@ const COMPLEX_BLOCK_INSERT_HOT_ZONE_PX = 18;
 const TABLE_AXIS_INNER_HOT_ZONE_PX = 6;
 const TABLE_CELL_MENU_EDGE_HOT_ZONE_PX = 3;
 const TABLE_CELL_MENU_CENTER_HOT_ZONE_PX = 8;
-const TABLE_QUICK_ADD_HOT_ZONE_PX = 12;
 
 function elementFromTarget(target) {
   if (!target) return null;
@@ -383,6 +382,19 @@ export function tableCellMenuTriggerGeometry({
     top,
     placement: centeredCellSelection ? "center" : edgeHovered ? "edge" : "quiet-edge",
   };
+}
+
+function rectContainsPoint(rect, x, y) {
+  const normalized = normalizedRect(rect);
+  return Boolean(
+    normalized &&
+      Number.isFinite(x) &&
+      Number.isFinite(y) &&
+      x >= normalized.left &&
+      x <= normalized.right &&
+      y >= normalized.top &&
+      y <= normalized.bottom,
+  );
 }
 
 export function activeCellFromEditor(editor, grid = []) {
@@ -786,22 +798,9 @@ export function tableHoverWithIntent({
     Number.isFinite(y) &&
     y >= normalizedTableRect.top - columnHandleHeight - 6 &&
     y <= normalizedTableRect.top - 1;
-  const insideBottomRail =
-    normalizedTableRect &&
-    Number.isFinite(x) &&
-    Number.isFinite(y) &&
-    x >= normalizedTableRect.left &&
-    x <= normalizedTableRect.right &&
-    y >= normalizedTableRect.bottom &&
-    y <= normalizedTableRect.bottom + TABLE_QUICK_ADD_HOT_ZONE_PX;
-  const insideRightRail =
-    normalizedTableRect &&
-    Number.isFinite(x) &&
-    Number.isFinite(y) &&
-    x >= normalizedTableRect.right &&
-    x <= normalizedTableRect.right + TABLE_QUICK_ADD_HOT_ZONE_PX &&
-    y >= normalizedTableRect.top &&
-    y <= normalizedTableRect.bottom;
+  const quickAdd = tableQuickAddGeometry(grid, normalizedTableRect);
+  const insideBottomRail = rectContainsPoint(quickAdd.row, x, y);
+  const insideRightRail = rectContainsPoint(quickAdd.column, x, y);
 
   let hover = tableHoverContext(target, table, grid);
 

@@ -158,6 +158,28 @@ test("Tiptap table geometry treats flush table edges as quick add rails", () => 
   assert.equal(classify(table, 373, 140), undefined);
 });
 
+test("Tiptap table geometry keeps quick add intent on real grid rails", () => {
+  const { grid, table } = createTableGeometryHarness();
+  const wrapperRect = normalizedRect(rect(100, 80, 300, 130));
+  const classify = (clientX, clientY) =>
+    tableHoverWithIntent({
+      target: table,
+      table,
+      grid,
+      tableRect: wrapperRect,
+      clientX,
+      clientY,
+      rowHandleWidth: 20,
+      columnHandleHeight: 20,
+      allowRailTarget: true,
+    })?.edge;
+
+  assert.equal(classify(240, 160), "add-row");
+  assert.equal(classify(366, 140), "add-column");
+  assert.equal(classify(240, 214), undefined);
+  assert.equal(classify(406, 140), undefined);
+});
+
 test("Tiptap table geometry treats pointer jitter inside one target as the same hover intent", () => {
   const { cells, grid, table, tableRect } = createTableGeometryHarness();
   const base = tableHoverWithIntent({
