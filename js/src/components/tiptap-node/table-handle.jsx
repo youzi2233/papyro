@@ -23,6 +23,7 @@ import { TableHandleMenu } from "@/components/tiptap-node/table-node/ui/table-ha
  */
 export function TableHandle({
   editor: providedEditor,
+  language = "english",
   rowButton: CustomRowButton,
   columnButton: CustomColumnButton
 }) {
@@ -86,6 +87,7 @@ export function TableHandle({
             editor={editor}
             orientation="row"
             index={state.rowIndex}
+            language={language}
             tablePos={state.blockPos}
             tableNode={state.block}
             onToggleOtherHandle={toggleColumnVisibility}
@@ -99,6 +101,7 @@ export function TableHandle({
             editor={editor}
             orientation="column"
             index={state.colIndex}
+            language={language}
             tablePos={state.blockPos}
             tableNode={state.block}
             onToggleOtherHandle={toggleRowVisibility}

@@ -478,6 +478,10 @@ export const TableSelectionOverlay = ({
   const renderCellMenu = () => {
     if (!CellMenu || !allowsCellSelectionChrome) return null
 
+    const selectionKind = overlayScope === TABLE_SELECTION_OVERLAY_SCOPE.CELLS
+      ? "cells"
+      : "cell"
+
     return (
       <span
         onMouseDown={(e) => e.stopPropagation()}
@@ -485,6 +489,7 @@ export const TableSelectionOverlay = ({
         <CellMenu
           onOpenChange={handleMenuOpenChange}
           editor={editor}
+          selectionKind={selectionKind}
           onResizeStart={createResizeHandler} />
       </span>
     );

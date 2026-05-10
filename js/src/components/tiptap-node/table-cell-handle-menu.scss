@@ -119,3 +119,15 @@
     }
   }
 }
+
+.papyro-table-cell-command-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  .mn-tiptap-table-command-icon-svg {
+    width: 1rem;
+    height: 1rem;
+    color: currentColor;
+  }
+}
