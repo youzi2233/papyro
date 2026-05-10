@@ -112,11 +112,21 @@ test("Papyro table chrome resolves DOM cells to selectable ProseMirror cell posi
         "<table><tbody><tr><th>H1</th><th>H2</th></tr><tr><td>A</td><td>B</td></tr></tbody></table>",
     });
     const table = editor.view.dom.querySelector("table");
+    const wrapper = table.closest(".tableWrapper");
     const cells = Array.from(table.querySelectorAll("th,td"));
     const docCellPositions = tableCellPositions(editor.state.doc);
     const domCellPositions = cells.map((cell) => editor.view.posAtDOM(cell, 0));
     const grid = tableSelectionGrid(table, editor.view);
 
+    assert.equal(wrapper.dataset.contentType, "table");
+    const tableControls = wrapper.querySelector(":scope > .table-controls");
+    const selectionOverlayContainer = wrapper.querySelector(
+      ":scope > .table-selection-overlay-container",
+    );
+    assert.ok(tableControls);
+    assert.ok(selectionOverlayContainer);
+    assert.equal(tableControls.hasAttribute("aria-hidden"), false);
+    assert.equal(selectionOverlayContainer.hasAttribute("aria-hidden"), false);
     assert.deepEqual(
       grid.flatMap((row) => row.cells.map((cell) => cell.pos)),
       docCellPositions,

@@ -191,6 +191,50 @@ test("Tiptap table toolbar does not mount legacy chrome when React chrome is ava
   assert.deepEqual(chromeCalls.slice(-2), [["hide"], ["destroy"]]);
 });
 
+test("Tiptap table chrome bridge syncs visual selection without exposing legacy chrome", () => {
+  const { documentRef } = createDocument();
+  const { cells, editor } = createTableHarness({
+    addRowAfter: () => true,
+    addColumnAfter: () => true,
+    mergeCells: () => true,
+  });
+  const controller = createTiptapTableToolbarController({
+    dom: { document: documentRef },
+    chromeRendererFactory({ root }) {
+      return {
+        render(state) {
+          const selected = state.selection?.positions ?? new Set();
+          cells.forEach((cell, index) => {
+            cell.classList.toggle("mn-tiptap-table-cell-selected", selected.has(index + 10));
+          });
+          root.hidden = true;
+          root.classList.toggle("hidden", true);
+          root.dataset.renderer = "visual-state-bridge";
+          return true;
+        },
+        hide() {},
+        contains: () => false,
+        destroy() {},
+      };
+    },
+  });
+
+  controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
+  controller.selectAxis("row", 1);
+
+  const chromeRoot = documentRef.body.children.find((element) =>
+    String(element.className).includes("mn-tiptap-table-chrome-root"),
+  );
+  assert.equal(chromeRoot.hidden, true);
+  assert.equal(chromeRoot.dataset.renderer, "visual-state-bridge");
+  assert.deepEqual(
+    cells.map((cell) => cell.classes.has("mn-tiptap-table-cell-selected")),
+    [false, false, false, true, true, true],
+  );
+
+  controller.destroy();
+});
+
 test("Tiptap table toolbar keeps focus races inside the editor from dismissing menus", () => {
   const { editor } = createTableHarness({
     mergeCells: () => true,

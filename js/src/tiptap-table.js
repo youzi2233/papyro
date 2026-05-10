@@ -720,13 +720,31 @@ export const PapyroTable = Table.extend({
 class PapyroTableView extends TableView {
   constructor(node, cellMinWidth, view) {
     super(node, cellMinWidth, view);
+    this.#mountOfficialTableContainers();
     this.#syncPapyroTableClass();
   }
 
   update(node) {
     const updated = super.update(node);
-    if (updated) this.#syncPapyroTableClass();
+    if (updated) {
+      this.#mountOfficialTableContainers();
+      this.#syncPapyroTableClass();
+    }
     return updated;
+  }
+
+  #mountOfficialTableContainers() {
+    this.dom.dataset.contentType = "table";
+    if (!this.dom.querySelector?.(":scope > .table-controls")) {
+      const controls = document.createElement("div");
+      controls.className = "table-controls";
+      this.dom.appendChild(controls);
+    }
+    if (!this.dom.querySelector?.(":scope > .table-selection-overlay-container")) {
+      const overlay = document.createElement("div");
+      overlay.className = "table-selection-overlay-container";
+      this.dom.appendChild(overlay);
+    }
   }
 
   #syncPapyroTableClass() {

@@ -160,7 +160,7 @@ node scripts/check-workspace-deps.js
 - [ ] 增加 `js/src/tiptap-react/components/`、`commands/`、`hooks/`、`extensions/`、`utils/` 模块。
 - [ ] 把共享浮层生命周期迁入 React：外部点击、Escape、焦点回流、滚动、窗口变化、WebView body 焦点竞态。
 - [ ] 增加共享 React primitives：`EditorPopover`、`CommandMenu`、`CommandItem`、`CommandSection`、`IconButton`、`ToolbarButton`、`Kbd`、`VisuallyHidden`。
-  - 当前覆盖：共享 primitive 模块已经导出目标 popover、命令菜单、命令项/分组、图标按钮、工具栏按钮、键盘提示和 visually-hidden 基础组件。slash 命令分组和命令项已经使用 `CommandSection`/`CommandItem`；块操作和表格上下文命令行复用同一套 primitive row/text/icon 路径；浮动格式栏也已改用共享 toolbar button 契约。表格几何、选区遮罩、resize 轨道和快捷新增轨道仍由迁移期 controller 管理。
+  - 当前覆盖：共享 primitive 模块已经导出目标 popover、命令菜单、命令项/分组、图标按钮、工具栏按钮、键盘提示和 visually-hidden 基础组件。slash 命令分组和命令项已经使用 `CommandSection`/`CommandItem`；块操作和表格上下文命令行复用同一套 primitive row/text/icon 路径；浮动格式栏也已改用共享 toolbar button 契约。官方 table-node 层现在负责可见的表格句柄、选区 overlay、单元格菜单触发点和扩展按钮；迁移期表格 controller 仍负责命令路由和部分兼容事件处理。
 - [ ] 为 insert、block action、inline format、table、code block 定义 typed command model。
   - 当前覆盖：代码块语言、复制和软换行命令元数据已经进入纯 React command model，slash 侧边面板和 React 代码块 node view 复用同一套 label、token、active state 和 i18n 契约。代码块扩展现在支持注入 node-view renderer，并在 React 挂载生命周期尚未准备好时回退到迁移期 DOM node view。
   - 当前覆盖：块操作菜单的命令准备、子菜单分组、Home/End 行为、子菜单方向键导航和快捷键映射已经进入共享 React 菜单模型。迁移期 DOM fallback 也消费这套模型，降低块操作表面继续迁入 React 时的行为分叉。
@@ -173,6 +173,7 @@ node scripts/check-workspace-deps.js
 - [x] 为可选 React chrome 增加错误边界，避免浮层异常把文档正文一起白屏。
   - 当前覆盖：`BeforeContent`、`AfterContent` 和 `OverlayLayer` 都由 `PapyroTiptapChromeErrorBoundary` 隔离。编辑器正文不在这些边界内，因此表格、句柄或菜单异常时，只会上报 runtime error 并隐藏损坏 chrome，不会移除正文编辑面。
 - [ ] 在 React 替换完成前，把旧 DOM controller 放在 runtime flag 后面，避免双系统同时抢 UI。
+  - 当前覆盖：真实运行时现在注入 table chrome bridge，而不是传入 `tableChromeRendererFactory: null`。这个 bridge 只同步 Papyro 视觉单元格选中 class，并保持旧快捷新增轨道、单元格触发点、行列句柄和遮罩 DOM 隐藏，因此官方 `table-node` 是真实运行时唯一可见的表格 chrome owner。
 
 验收标准：
 
@@ -319,7 +320,8 @@ node scripts/check-tiptap-release-smoke.js
 - [x] 把官方 table-node chrome 接入 React island。
   - 当前覆盖：`js/src/tiptap-react/slots.jsx` 会把官方 table-node overlay 和官方 drag-handle bridge 一起渲染。
   - 当前覆盖：`js/src/tiptap-table.js` 注册官方 `tableHandleExtension`，让官方行/列句柄状态进入 React。
-  - 当前覆盖：editor 入口关闭旧的非菜单 `tableChromeRendererFactory`，避免重复的 hover 句柄、选区 overlay 和单元格操作触发点互相抢状态。
+  - 当前覆盖：`PapyroTableView` 现在会在每个 `.tableWrapper` 内补齐官方 table-node 句柄和选区 overlay 需要的 `.table-controls` 与 `.table-selection-overlay-container` portal 目标。
+  - 当前覆盖：editor 入口注入 `createTiptapReactTableChromeRenderer` 作为视觉状态 bridge，而不是传 `null` 触发迁移期 DOM fallback，避免重复的 hover 句柄、选区 overlay 和单元格操作触发点互相抢状态。
   - 当前覆盖：官方 SCSS import 会被打进 `editor.js`，桌面端和移动端通过现有 editor runtime 脚本获得 table-node 样式。
 - [x] 删除左上角选择整张表格入口，除非有明确产品动作需要它。
   - 当前覆盖：表格 overlay 不再渲染整表角落句柄；geometry 返回 `table: null`，只保留行/列 slim handle 作为轴向操作入口。
@@ -329,7 +331,8 @@ node scripts/check-tiptap-release-smoke.js
   - 当前修复：表格 chrome 现在会在 document 级别继续跟踪浮动行/列句柄上的 hover，因此鼠标从单元格跨到外部句柄时，句柄不会立刻消失。
   - 当前修复：React 和 fallback chrome 现在都会在 hover 轴向上添加透明行/列命中区，所以鼠标从表头或正文单元格移向顶部/左侧浮动句柄时，会保持同一个轴向 hover，不再半路丢失句柄。
   - 当前打磨：hover 单元格只显示行/列句柄；整行/整列的雾蒙层和主题外轮廓只保留给点击轴向句柄后的真实选中态。
-  - 当前架构：选中/活跃单元格的视觉状态现在也进入共享表格 chrome 模型。真实运行时由 React chrome 在生命周期内应用和清理单元格 class，DOM view 只保留 fallback 路径，继续减少旧 controller 对可见表格状态的持有。
+  - 当前架构：官方 table-node 负责可见的行/列句柄、选区 overlay、单元格 handle 菜单和扩展按钮。Papyro 迁移期 table toolbar 退到后台，只作为命令桥和视觉状态同步器。
+  - 当前架构：注入的 table chrome bridge 会同步选中/活跃单元格 class 以维持 Papyro 样式，但它的 root 始终隐藏，不渲染快捷新增、单元格操作触发点、插入轨道、行列句柄或遮罩 DOM；旧 DOM renderer 只保留 fallback 和测试路径。
 - [ ] 整个单元格表面都能进入编辑和聚焦，不应该只有中间一小块能触发。
   - 纠偏要求：短点击不能再提交单个单元格 ProseMirror `CellSelection`。单个单元格选中必须是 Papyro 视觉状态，叠加在正常 ProseMirror 文本选区之上，让光标定位和单元格内文本拖选保持自然。
   - 当前目标：表格范围拖选仍然可以从已有文字、空白单元格表面或空段落开始，但 controller 只在指针跨入另一个单元格后才升级为真实表格范围。
@@ -340,6 +343,7 @@ node scripts/check-tiptap-release-smoke.js
   - 当前打磨：表格网格绘制与编辑器背景隔离，选中单元格保持克制的活跃填充，选中/激活状态下仍保留 resize rail，但不额外增加常驻 chrome。
   - 当前打磨：Hybrid 表格 wrapper 不再给表格网格增加内部 padding，因此渲染表格从真实零间距边缘开始，不再露出一圈编辑器背景缝隙。
   - 当前修复：开启列宽 resize 后，Tiptap 的表格 DOM 由官方 `TableView` 创建；现在 Papyro 自定义 `TableView` 会把 `mn-tiptap-table` 重新加到真实运行时 `<table>` 上，避免零间距表格 CSS 因 selector 打不到而失效。
+  - 当前修复：官方 table-node SCSS 现在被限制在自身 `.tiptap` 模板 selector 和 Papyro 既有 `.mn-tiptap-editor` 表格 wrapper 范围内，避免误改 Hybrid/Preview 的宽度和 padding 一致性。
 - [x] 点击单元格后，用主题色边框高亮当前单元格。
   - 当前目标：活跃和选中单元格共用一套 selection overlay，为单个视觉单元格或整个单元格范围绘制主题色对象边框；单元格菜单触发点只是右侧操作入口。
   - 当前目标：单个点击单元格在不转换为 ProseMirror `CellSelection` 的前提下显示对象选中外框，因此选中反馈表现为真实边框，同时文字编辑保持自然。
@@ -349,8 +353,8 @@ node scripts/check-tiptap-release-smoke.js
 - [ ] 多单元格框选后显示克制遮罩，并在选区边缘显示小操作触发点。
   - 当前覆盖：表格单元格操作触发器默认是边缘小点，只在 hover、focus 或打开状态展开为紧凑四点 grip。
   - 当前打磨：单个单元格的操作触发点现在优先按 ProseMirror 单元格选区在表格网格中的真实位置锚定，而不是沿用过期的 active cell 矩形。打开触发点时也复用这个已选位置，避免用户选中另一个单元格后菜单又跳回之前活跃的单元格。
-  - 当前打磨：React 渲染的表格 chrome 现在暴露共享的 `data-visible` 契约，并把隐藏控件从可访问树和焦点顺序中移除，避免快捷新增轨道、单元格触发点、插入轨道和行列句柄在隐藏态留下不可见焦点目标。
-  - 当前架构：真实运行时注入 React 表格 chrome 时，不再挂载旧的快捷新增、单元格操作触发点、复杂块插入轨道、行列句柄或选区遮罩 DOM；旧 DOM chrome 只保留为 fallback 和测试路径，避免两套 overlay 同时抢状态。
+  - 当前打磨：官方 table-node 层现在提供可见的单元格 handle 菜单触发点。Papyro 隐藏 bridge 会把旧 chrome root 从可访问树和焦点顺序中移除，避免旧快捷新增轨道、单元格触发点、插入轨道和行列句柄在隐藏态留下不可见焦点目标。
+  - 当前架构：真实运行时注入 table chrome bridge 时，不再挂载旧的快捷新增、单元格操作触发点、复杂块插入轨道、行列句柄或选区遮罩 DOM；旧 DOM chrome 只保留为 fallback 和测试路径，避免两套 overlay 同时抢状态。
   - 当前打磨：迁移期 DOM fallback 现在也对表格快捷新增轨道、单元格触发点、行列句柄、复杂块插入轨道和装饰遮罩使用同一套隐藏态契约，保证 React 与 fallback chrome 在继续迁移期间语义一致。
   - 当前纠偏：表格右侧单元格操作触发点现在只服务单个单元格和单元格范围选区；行/列菜单从细轴向句柄打开，整表动作也不再伪装成泛化的单元格操作。
   - 当前打磨：已选单元格的操作触发点默认收敛为更小的边缘圆点，只有 hover、focus 或菜单打开时才展开为完整四点 grip，减少它与官方列宽拖拽 handle 的竞争。

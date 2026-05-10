@@ -1,56 +1,51 @@
-import React from "react";
-import { flushSync } from "react-dom";
-import { createRoot } from "react-dom/client";
-
+import {
+  applyTableCellVisualState,
+  clearTableCellVisualState,
+} from "../tiptap-table-chrome-model.js";
 import { setHidden } from "../tiptap-ui-primitives.js";
-import { PapyroTableChrome } from "./components/table-chrome.jsx";
 
-function canUseReactRoot(root) {
-  return Boolean(
-    root &&
-      root.ownerDocument &&
-      typeof root.addEventListener === "function" &&
-      typeof root.removeEventListener === "function" &&
-      typeof root.querySelector === "function" &&
-      typeof root.nodeType === "number",
-  );
+function canUseChromeBridge(root) {
+  return Boolean(root && root.ownerDocument && typeof root.nodeType === "number");
 }
 
 export class TiptapReactTableChromeRenderer {
   #root = null;
-  #reactRoot = null;
+  #lastTable = null;
 
   constructor({ root = null } = {}) {
-    if (canUseReactRoot(root)) {
+    if (canUseChromeBridge(root)) {
       this.#root = root;
-      this.#reactRoot = createRoot(root);
     }
   }
 
   get enabled() {
-    return Boolean(this.#root && this.#reactRoot);
+    return Boolean(this.#root);
   }
 
   render(state) {
-    if (!this.#root || !this.#reactRoot) return false;
-    flushSync(() => {
-      this.#reactRoot.render(<PapyroTableChrome state={state} />);
-    });
-    setHidden(this.#root, !state?.open);
+    if (!this.#root) return false;
+    if (this.#lastTable && this.#lastTable !== state?.table) {
+      clearTableCellVisualState(this.#lastTable);
+    }
+    if (state?.table) {
+      applyTableCellVisualState(state);
+    }
+    this.#lastTable = state?.table ?? null;
+    setHidden(this.#root, true, { visibilityAttributes: true, inertFocus: true });
     if (this.#root.dataset) {
       this.#root.dataset.open = state?.open ? "true" : "false";
       this.#root.dataset.selectionKind = state?.selection?.kind ?? "cell";
+      this.#root.dataset.renderer = "visual-state-bridge";
     }
     return true;
   }
 
   hide() {
-    if (this.#reactRoot) {
-      flushSync(() => {
-        this.#reactRoot.render(<PapyroTableChrome state={null} />);
-      });
+    if (this.#lastTable) {
+      clearTableCellVisualState(this.#lastTable);
+      this.#lastTable = null;
     }
-    setHidden(this.#root, true);
+    setHidden(this.#root, true, { visibilityAttributes: true, inertFocus: true });
     if (this.#root?.dataset) {
       this.#root.dataset.open = "false";
     }
@@ -61,9 +56,8 @@ export class TiptapReactTableChromeRenderer {
   }
 
   destroy() {
-    this.#reactRoot?.unmount?.();
+    this.hide();
     this.#root = null;
-    this.#reactRoot = null;
   }
 }
 

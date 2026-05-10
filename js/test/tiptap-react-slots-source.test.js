@@ -305,7 +305,8 @@ test("React table context menu and official table-node layer are injected at the
   assert.match(indexSource, /createTiptapReactTableChromeRenderer/u);
   assert.match(indexSource, /createTiptapReactFormatToolbarView/u);
   assert.match(editorEntrySource, /tableMenuRendererFactory:\s*createTiptapReactTableContextMenuRenderer/u);
-  assert.match(editorEntrySource, /tableChromeRendererFactory:\s*null/u);
+  assert.match(editorEntrySource, /tableChromeRendererFactory:\s*createTiptapReactTableChromeRenderer/u);
+  assert.doesNotMatch(editorEntrySource, /tableChromeRendererFactory:\s*null/u);
   assert.match(editorEntrySource, /formatToolbarViewFactory:\s*createTiptapReactFormatToolbarView/u);
   assert.match(slotsSource, /PapyroOfficialTableNodeLayer/u);
   assert.match(tableToolbarViewSource, /menuRendererFactory/u);
@@ -345,20 +346,13 @@ test("React table context menu uses lucide icons in the real runtime", () => {
   assert.match(tableCommandIconsSource, /PaintBucket/u);
 });
 
-test("React table chrome owns the non-menu table overlay rendering path", () => {
-  assert.match(tableChromeRendererSource, /createRoot/u);
-  assert.match(tableChromeRendererSource, /<PapyroTableChrome/u);
-  assert.match(tableChromeSource, /createTableQuickAddChromeState/u);
-  assert.match(tableChromeSource, /createTableCellMenuTriggerChromeState/u);
-  assert.match(tableChromeSource, /createTableAxisHandleChromeState/u);
-  assert.match(tableChromeSource, /mn-tiptap-table-axis-hover-bridge/u);
-  assert.match(tableChromeSource, /createTableSelectionBackdropChromeState/u);
-  assert.match(tableChromeSource, /createComplexBlockInsertChromeState/u);
-  assert.match(tableChromeSource, /--mn-table-quick-add-visual-left/u);
-  assert.match(tableChromeSource, /chrome\.visual\.left - chrome\.left/u);
-  assert.match(tableChromeSource, /--mn-table-quick-add-visual-center-x/u);
-  assert.match(tableChromeSource, /usePointerActivation/u);
-  assert.doesNotMatch(tableChromeSource, /createElement\(/u);
+test("React table chrome bridge suppresses legacy visible chrome in the real runtime", () => {
+  assert.match(tableChromeRendererSource, /applyTableCellVisualState/u);
+  assert.match(tableChromeRendererSource, /clearTableCellVisualState/u);
+  assert.match(tableChromeRendererSource, /visual-state-bridge/u);
+  assert.match(tableChromeRendererSource, /setHidden\(this\.#root,\s*true/u);
+  assert.doesNotMatch(tableChromeRendererSource, /createRoot/u);
+  assert.doesNotMatch(tableChromeRendererSource, /<PapyroTableChrome/u);
 });
 
 test("React table chrome exposes explicit hidden state semantics", () => {

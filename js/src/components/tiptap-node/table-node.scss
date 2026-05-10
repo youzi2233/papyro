@@ -38,6 +38,8 @@
 .tiptap table {
   width: auto !important;
   word-break: break-word;
+  border-collapse: collapse;
+  border-spacing: 0;
 }
 
 .tiptap th,
@@ -50,6 +52,18 @@
   background-color: var(--tt-gray-light-a-100);
   font-weight: 700;
   text-align: left;
+}
+
+.mn-tiptap-editor .tableWrapper {
+  position: relative;
+}
+
+.mn-tiptap-editor .table-controls,
+.mn-tiptap-editor .table-selection-overlay-container {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  pointer-events: none;
 }
 
 .ProseMirror .column-resize-handle {
