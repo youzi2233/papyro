@@ -56,6 +56,12 @@ Unless the project explicitly adds licensed Tiptap Start/Pro output, Papyro shou
 
 This path is slower than integrating paid UI output, but it keeps the codebase legally clean, local-first, and maintainable. The result should be a Papyro editor system that can keep improving without depending on private template internals.
 
+Reusable component licensing note:
+
+- If these editor components stay under the repository MIT license, they are open source in the strict sense and commercial use is allowed.
+- If the goal is non-commercial-only reuse, the component package must be isolated and published under an explicit source-available non-commercial license. Do not describe that package as OSI open source.
+- In either model, the implementation remains clean-room Papyro code built on public Tiptap APIs. Do not copy Tiptap Start/Pro UI source without a license.
+
 Review checkpoints:
 
 - After Milestone 1, confirm the React editor shell and shared primitives feel like the right foundation.
@@ -328,7 +334,7 @@ Tasks:
   - Current polish: single-cell action triggers now anchor from the actual ProseMirror cell-selection position in the table grid, not a stale active-cell rectangle. Opening the trigger reuses that selected position, so the menu no longer jumps back to a previously active cell after the user selects a different cell.
   - Current polish: React-rendered table chrome now exposes a shared `data-visible` contract and removes hidden controls from the accessibility/focus tree, so quick-add rails, cell triggers, insert rails, and row/column axis handles do not leave inactive focus targets behind.
   - Current polish: the migration DOM fallback now uses the same hidden-state contract for table quick-add rails, cell triggers, axis handles, complex-block insert rails, and decorative overlays, keeping React and fallback chrome aligned during the rest of the migration.
-  - Current polish: table action triggers now expose semantic scopes for cell, range, row, column, and whole-table selections, and use the same localized action labels as the context menu header. React chrome and fallback chrome therefore no longer present row/column/table selections as generic cell actions.
+  - Current correction: the right-edge table cell action trigger is now scoped only to single-cell and cell-range selections. Row and column menus open from their slim axis handles, and table-level actions no longer masquerade as generic cell actions.
   - Current polish: the selected-cell action trigger now idles as a smaller dot hit box and only expands to the full four-dot grip on hover, focus, or open state. This keeps the resize border cleaner and reduces competition with the official column-resize handle.
 - [ ] Add cell action menu: merge, split, alignment, text color, background color, clear formatting, copy, delete contents.
   - Current coverage: the table context menu is injected at the editor entry boundary and rendered by React in the real runtime. The headless command model and fake-DOM fallback remain in place while the rest of table chrome migrates.

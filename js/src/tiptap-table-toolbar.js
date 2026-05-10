@@ -530,7 +530,6 @@ export class TiptapTableToolbarController {
       this.#state.mode = "context";
       this.#state.keyboardActive = false;
       this.#state.menuAnchorRect = null;
-      this.#state.hover = null;
     }
     this.#render();
     this.#dismiss.open();

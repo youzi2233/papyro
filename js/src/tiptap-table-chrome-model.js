@@ -21,11 +21,46 @@ export function tableMenuAnchorRect(state) {
   if (state?.mode === "keyboard") return state?.rect ?? null;
 
   const selectionKind = state?.selection?.kind ?? "cell";
+  if (selectionKind === "row") {
+    return axisMenuRectForSelection(state, "row") ?? state?.selectionRect ?? state?.rect ?? null;
+  }
+  if (selectionKind === "column") {
+    return axisMenuRectForSelection(state, "column") ?? state?.selectionRect ?? state?.rect ?? null;
+  }
+  if (selectionKind === "table") {
+    return state?.selectionRect ?? state?.rect ?? null;
+  }
   if (selectionKind === "cell" || selectionKind === "cells") {
     return state?.cellRect ?? state?.menuRect ?? state?.selectionRect ?? state?.rect ?? null;
   }
 
   return state?.menuRect ?? state?.selectionRect ?? state?.cellRect ?? state?.rect ?? null;
+}
+
+export function axisMenuRectForSelection(state, axis) {
+  const tableRect = normalizedRect(state?.rect);
+  const grid = state?.grid ?? [];
+  if (!tableRect || grid.length === 0) return null;
+
+  const geometry = tableAxisHandleGeometry(grid, tableRect, {
+    rowHandleWidth: 20,
+    columnHandleHeight: 20,
+  });
+  if (axis === "row") {
+    const selectedRows = state?.selection?.rows ?? [];
+    const rowIndex = selectedRows.find(Number.isInteger);
+    return Number.isInteger(rowIndex)
+      ? normalizedRect(geometry.rows.find((handle) => handle.index === rowIndex))
+      : null;
+  }
+  if (axis === "column") {
+    const selectedColumns = state?.selection?.columns ?? [];
+    const columnIndex = selectedColumns.find(Number.isInteger);
+    return Number.isInteger(columnIndex)
+      ? normalizedRect(geometry.columns.find((handle) => handle.index === columnIndex))
+      : null;
+  }
+  return null;
 }
 
 function commandById(commands, id) {
@@ -206,9 +241,10 @@ export function createTableQuickAddChromeState(state, {
 
 export function createTableCellMenuTriggerChromeState(state) {
   const selectionKind = state?.selection?.kind ?? "cell";
-  const actionScope = ["cell", "cells", "row", "column", "table"].includes(selectionKind)
+  const actionScope = ["cell", "cells"].includes(selectionKind)
     ? selectionKind
     : "cell";
+  const isCellObjectSelection = ["cell", "cells"].includes(selectionKind);
   const selectedCount = state?.selection?.positions?.size ?? 0;
   const edgeIntent = state?.hover?.edge === "cell-menu";
   const selectedHead = ["cell", "cells"].includes(selectionKind)
@@ -248,6 +284,7 @@ export function createTableCellMenuTriggerChromeState(state) {
   });
   const visible = Boolean(
     trigger &&
+      isCellObjectSelection &&
       (state?.menuOpen || singleSelectedCell || selectedCount > 1),
   );
 
@@ -362,7 +399,7 @@ export function createTableSelectionBackdropChromeState(state) {
   return {
     visible,
     rect,
-    boxes: cellChrome.boxes ?? [],
+    boxes: [],
     selectionKind: state?.selection?.kind ?? "cell",
     selectedCount,
   };
@@ -403,14 +440,12 @@ export function createTableAxisHandleChromeState(state, {
   );
   const hoverRowIndex =
     axisHoverAllowed &&
-    Number.isInteger(state?.hover?.rowIndex) &&
-    !["column-handle"].includes(hoverEdge)
+    Number.isInteger(state?.hover?.rowIndex)
       ? state.hover.rowIndex
       : null;
   const hoverColumnIndex =
     axisHoverAllowed &&
-    Number.isInteger(state?.hover?.columnIndex) &&
-    !["row-handle"].includes(hoverEdge)
+    Number.isInteger(state?.hover?.columnIndex)
       ? state.hover.columnIndex
       : null;
 

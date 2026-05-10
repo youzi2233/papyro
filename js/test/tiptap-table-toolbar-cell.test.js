@@ -139,7 +139,7 @@ test("Tiptap table toolbar reveals the cell trigger only after selecting a cell"
   assert.equal(trigger.hidden, false);
   assert.equal(trigger.style.left, "200px");
   assert.equal(trigger.style.top, "107px");
-  assert.equal(trigger.dataset.placement, "quiet-edge");
+  assert.equal(trigger.dataset.placement, "edge");
   assert.equal(controller.state.selection.kind, "cell");
 });
 
@@ -310,6 +310,7 @@ test("Tiptap table toolbar anchors a selected cell trigger from the grid selecti
   assert.equal(trigger.hidden, false);
   assert.equal(trigger.style.left, "280px");
   assert.equal(trigger.style.top, "107px");
+  assert.equal(trigger.dataset.placement, "quiet-edge");
   assert.equal(cells[1].classes.has("mn-tiptap-table-cell-selected"), true);
   assert.equal(cells[0].classes.has("mn-tiptap-table-cell-selected"), false);
 

@@ -118,7 +118,26 @@ function baseState(overrides = {}) {
 test("table chrome model chooses menu anchors by selection kind", () => {
   assert.equal(tableMenuAnchorRect(baseState({ menuAnchorRect: rect(1, 2, 3, 4) })).left, 1);
   assert.equal(tableMenuAnchorRect(baseState({ mode: "keyboard" })).left, 120);
-  assert.equal(tableMenuAnchorRect(baseState({ selection: { kind: "row" }, menuRect: rect(9, 9, 1, 1) })).left, 9);
+  assert.deepEqual(tableMenuAnchorRect(baseState({
+    selection: {
+      kind: "row",
+      positions: new Set([13, 14, 15]),
+      rows: [1],
+      columns: [],
+    },
+    selectionRect: rect(120, 124, 240, 34),
+    menuRect: rect(9, 9, 1, 1),
+  })), rect(100, 124, 20, 34));
+  assert.deepEqual(tableMenuAnchorRect(baseState({
+    selection: {
+      kind: "column",
+      positions: new Set([11, 14]),
+      rows: [],
+      columns: [1],
+    },
+    selectionRect: rect(200, 90, 80, 68),
+    menuRect: rect(9, 9, 1, 1),
+  })), rect(200, 70, 80, 20));
 });
 
 test("table chrome model applies and clears cell visual state", () => {
@@ -361,7 +380,7 @@ test("table chrome model exposes per-cell fill boxes with a single object outlin
   assert.deepEqual(single.outline, rect(200, 90, 80, 34));
 });
 
-test("table chrome model exposes semantic action scopes for axis selections", () => {
+test("table chrome model keeps cell menu triggers scoped to cell selections", () => {
   const fixture = createGrid();
   const row = createTableCellMenuTriggerChromeState(baseState({
     fixture,
@@ -374,11 +393,8 @@ test("table chrome model exposes semantic action scopes for axis selections", ()
     selectionRect: rect(120, 90, 240, 34),
     menuRect: rect(120, 90, 240, 34),
   }));
-  assert.equal(row.visible, true);
-  assert.equal(row.actionScope, "row");
-  assert.equal(row.trigger.placement, "quiet-edge");
-  assert.equal(row.trigger.left, 360);
-  assert.equal(row.trigger.top, 107);
+  assert.equal(row.visible, false);
+  assert.equal(row.actionScope, "cell");
 
   const column = createTableCellMenuTriggerChromeState(baseState({
     fixture,
@@ -391,10 +407,8 @@ test("table chrome model exposes semantic action scopes for axis selections", ()
     selectionRect: rect(120, 90, 80, 68),
     menuRect: rect(120, 90, 80, 68),
   }));
-  assert.equal(column.visible, true);
-  assert.equal(column.actionScope, "column");
-  assert.equal(column.trigger.left, 200);
-  assert.equal(column.trigger.top, 124);
+  assert.equal(column.visible, false);
+  assert.equal(column.actionScope, "cell");
 
   const table = createTableCellMenuTriggerChromeState(baseState({
     fixture,
@@ -407,10 +421,8 @@ test("table chrome model exposes semantic action scopes for axis selections", ()
     selectionRect: rect(120, 90, 240, 68),
     menuRect: rect(120, 90, 240, 68),
   }));
-  assert.equal(table.visible, true);
-  assert.equal(table.actionScope, "table");
-  assert.equal(table.trigger.left, 360);
-  assert.equal(table.trigger.top, 124);
+  assert.equal(table.visible, false);
+  assert.equal(table.actionScope, "cell");
 });
 
 test("table chrome model reveals row and column handles from the hovered cell", () => {
@@ -446,7 +458,7 @@ test("table chrome model reveals row and column handles from the hovered cell", 
     },
   }));
   assert.deepEqual(row.rows.map((handle) => handle.index), [1]);
-  assert.deepEqual(row.columns, []);
+  assert.deepEqual(row.columns.map((handle) => handle.index), [0]);
 
   const columnIdle = createTableAxisHandleChromeState(baseState({
     fixture,
@@ -469,7 +481,7 @@ test("table chrome model reveals row and column handles from the hovered cell", 
       cell: cells[2].cell,
     },
   }));
-  assert.deepEqual(column.rows, []);
+  assert.deepEqual(column.rows.map((handle) => handle.index), [0]);
   assert.deepEqual(column.columns.map((handle) => handle.index), [2]);
 
   const corner = createTableAxisHandleChromeState(baseState({
@@ -502,7 +514,7 @@ test("table chrome model reveals row and column handles from the hovered cell", 
   const selectedHover = createTableAxisHandleChromeState(selectedHoverState);
   assert.equal(hoveredTableCellIsSelected(selectedHoverState), true);
   assert.deepEqual(selectedHover.rows.map((handle) => handle.index), [1]);
-  assert.deepEqual(selectedHover.columns, []);
+  assert.deepEqual(selectedHover.columns.map((handle) => handle.index), [0]);
 
   const activeRow = createTableAxisHandleChromeState(baseState({
     fixture,
@@ -618,10 +630,7 @@ test("table chrome model positions selection backdrop and complex block insert r
   assert.equal(rangeBackdrop.selectionKind, "cells");
   assert.equal(rangeBackdrop.selectedCount, 2);
   assert.deepEqual(rangeBackdrop.rect, rect(120, 90, 160, 34));
-  assert.deepEqual(rangeBackdrop.boxes.map((box) => [box.left, box.top, box.width, box.height]), [
-    [120, 90, 80, 34],
-    [200, 90, 80, 34],
-  ]);
+  assert.deepEqual(rangeBackdrop.boxes, []);
 
   const block = { id: "code" };
   const insert = createComplexBlockInsertChromeState(baseState({

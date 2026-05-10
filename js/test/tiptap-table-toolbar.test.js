@@ -2439,12 +2439,11 @@ test("Tiptap table toolbar anchors row and column menus to the active selection"
 
   assert.equal(controller.state.selection.kind, "row");
   assert.equal(root.hidden, false);
+  assert.equal(root.style.left, "22px");
   assert.equal(root.style.top, "166px");
-  assert.equal(trigger.style.left, "360px");
-  assert.equal(trigger.style.top, "141px");
-  assert.equal(trigger.title, "Row actions");
-  assert.equal(trigger["aria-label"], "Row actions");
-  assert.equal(trigger.dataset.actionScope, "row");
+  assert.equal(trigger.hidden, true);
+  assert.equal(trigger.dataset.actionScope, "cell");
+  assert.equal(trigger.dataset.visible, "false");
   assert.equal(backdrop.hidden, false);
   assert.equal(backdrop.style.left, "120px");
   assert.equal(backdrop.style.width, "240px");
@@ -2454,12 +2453,11 @@ test("Tiptap table toolbar anchors row and column menus to the active selection"
   controller.toggleMenu("context", { open: true });
 
   assert.equal(controller.state.selection.kind, "column");
-  assert.equal(root.style.top, "166px");
-  assert.equal(trigger.style.left, "200px");
-  assert.equal(trigger.style.top, "124px");
-  assert.equal(trigger.title, "Column actions");
-  assert.equal(trigger["aria-label"], "Column actions");
-  assert.equal(trigger.dataset.actionScope, "column");
+  assert.equal(root.style.left, "72px");
+  assert.equal(root.style.top, "98px");
+  assert.equal(trigger.hidden, true);
+  assert.equal(trigger.dataset.actionScope, "cell");
+  assert.equal(trigger.dataset.visible, "false");
   assert.equal(backdrop.style.left, "120px");
   assert.equal(backdrop.style.width, "80px");
   assert.equal(backdrop.style.height, "68px");
@@ -2851,7 +2849,7 @@ test("Tiptap table toolbar drags filled cell text as a cell range", () => {
       String(element.className).includes("mn-tiptap-table-selection-cell") &&
       !element.removed,
     ),
-    true,
+    false,
   );
 });
 
