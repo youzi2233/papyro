@@ -395,24 +395,6 @@ export function createTableAxisHoverChromeState(state) {
   return { rows, columns };
 }
 
-export function createTableAxisHoverHitChromeState(state) {
-  const axisRects = hoverAxisRects(state);
-  const rowIndex = Number.isInteger(state?.hover?.rowIndex) ? state.hover.rowIndex : null;
-  const columnIndex = Number.isInteger(state?.hover?.columnIndex)
-    ? state.hover.columnIndex
-    : null;
-  return {
-    row:
-      axisRects.row && Number.isInteger(rowIndex)
-        ? { axis: "row", index: rowIndex, rect: axisRects.row }
-        : null,
-    column:
-      axisRects.column && Number.isInteger(columnIndex)
-        ? { axis: "column", index: columnIndex, rect: axisRects.column }
-        : null,
-  };
-}
-
 export function createComplexBlockInsertChromeState(state) {
   const blockRect = normalizedRect(state?.complexRect ?? state?.rect);
   const block = state?.complexBlock ?? state?.table;

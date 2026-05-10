@@ -2,7 +2,7 @@
 
 .mn-tiptap-table-toolbar {
     position: fixed;
-    z-index: 162;
+    z-index: 170;
     display: grid;
     width: max-content;
     max-width: min(640px, calc(100vw - 20px));
@@ -947,7 +947,7 @@
     pointer-events: none;
 }
 
-.mn-tiptap-table-chrome-root :where(button, .mn-tiptap-table-axis-hover-hit) {
+.mn-tiptap-table-chrome-root button {
     pointer-events: auto;
 }
 
@@ -1014,13 +1014,6 @@
     pointer-events: none;
     border-radius: 1px;
     background: color-mix(in srgb, var(--mn-accent) 5%, transparent);
-}
-
-.mn-tiptap-table-axis-hover-hit {
-    position: fixed;
-    z-index: 163;
-    pointer-events: auto;
-    background: transparent;
 }
 
 .mn-tiptap-table-axis-hover-backdrop[data-axis="column"] {

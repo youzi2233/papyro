@@ -1675,6 +1675,28 @@ test("Tiptap table axis handles reveal for the hovered row and column", () => {
   assert.equal(visibleAxisHandles("column").length, 1);
 });
 
+test("Tiptap table axis hover chrome does not create blocking hit areas", () => {
+  const { created, documentRef } = createDocument();
+  const { cells, editor } = createTableHarness();
+  const controller = createTiptapTableToolbarController({
+    dom: { document: documentRef },
+  });
+
+  controller.attach({ editor, root: {}, entry: { viewMode: "hybrid" } });
+
+  editor.view.dom.listeners.get("pointermove")({ target: cells[1], clientX: 204, clientY: 97 });
+
+  assert.equal(latestAxisHandle(created, "column", 1)?.hidden, false);
+  assert.equal(
+    created.some((element) =>
+      String(element.className).includes("mn-tiptap-table-axis-hover-hit") &&
+      !element.removed,
+    ),
+    false,
+  );
+  assert.equal(controller.contains(cells[1]), false);
+});
+
 test("Tiptap table axis handles reveal when editor selection starts outside the table", () => {
   const { created, documentRef } = createDocument();
   const { cells, editor } = createTableHarness();

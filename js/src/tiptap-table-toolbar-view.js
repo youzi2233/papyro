@@ -17,7 +17,6 @@ import {
   applyTableCellVisualState,
   clearTableCellVisualState,
   createComplexBlockInsertChromeState,
-  createTableAxisHoverHitChromeState,
   createTableAxisHoverChromeState,
   createTableAxisHandleChromeState,
   createTableCellMenuTriggerChromeState,
@@ -163,7 +162,6 @@ export class TiptapTableToolbarView {
   #selectionOutline = null;
   #selectionCells = [];
   #axisHoverBackdrops = [];
-  #axisHoverHitAreas = [];
   #chromeRoot = null;
   #reactChrome = null;
   #reactMenu = null;
@@ -406,7 +404,6 @@ export class TiptapTableToolbarView {
       this.#applyActiveCellState(state);
       this.#updateSelectionBackdrop(state);
       this.#updateAxisHoverBackdrop(state);
-      this.#updateAxisHoverHitAreas(state);
       this.#updateQuickAdd(state);
       this.#updateCellMenuTrigger(state);
       this.#updateComplexBlockInsert(state);
@@ -877,28 +874,6 @@ export class TiptapTableToolbarView {
     }
   }
 
-  #updateAxisHoverHitAreas(state) {
-    this.#clearAxisHoverHitAreas();
-    const hover = createTableAxisHoverHitChromeState(state);
-    for (const item of [hover.row, hover.column].filter(Boolean)) {
-      const hit = createElement(this.#document, "div", "mn-tiptap-table-axis-hover-hit");
-      if (!hit) continue;
-      hit.style.left = `${item.rect.left}px`;
-      hit.style.top = `${item.rect.top}px`;
-      hit.style.width = `${Math.max(0, item.rect.width)}px`;
-      hit.style.height = `${Math.max(0, item.rect.height)}px`;
-      hit.dataset.axis = item.axis;
-      hit.dataset.index = String(item.index);
-      mountFloatingRoot(hit, state.table, this.#document);
-      this.#axisHoverHitAreas.push(hit);
-    }
-  }
-
-  #clearAxisHoverHitAreas() {
-    this.#axisHoverHitAreas.forEach((hit) => hit.remove?.());
-    this.#axisHoverHitAreas = [];
-  }
-
   #clearAxisHoverBackdrops() {
     this.#axisHoverBackdrops.forEach((backdrop) => backdrop.remove?.());
     this.#axisHoverBackdrops = [];
@@ -918,7 +893,6 @@ export class TiptapTableToolbarView {
     setTableDecorationHidden(this.#selectionOutline, true);
     this.#clearSelectionCells();
     this.#clearAxisHoverBackdrops();
-    this.#clearAxisHoverHitAreas();
     this.#clearAxisHandles();
   }
 
@@ -963,7 +937,6 @@ export class TiptapTableToolbarView {
       this.#selectionOutline?.contains?.(target) ||
       this.#selectionCells.some((cell) => cell.contains?.(target)) ||
       this.#axisHoverBackdrops.some((backdrop) => backdrop.contains?.(target)) ||
-      this.#axisHoverHitAreas.some((hit) => hit.contains?.(target)) ||
       this.#reactChrome?.contains?.(target) ||
       this.#chromeRoot?.contains?.(target) ||
       this.#rowHandles.some((button) => button.contains?.(target)) ||
@@ -1007,7 +980,6 @@ export class TiptapTableToolbarView {
     this.#chromeRoot?.remove?.();
     this.#clearSelectionCells();
     this.#clearAxisHoverBackdrops();
-    this.#clearAxisHoverHitAreas();
     this.#clearAxisHandles();
     this.#root = null;
     this.#header = null;
