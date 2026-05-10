@@ -6,14 +6,26 @@
 
 ## 当前状态
 
-`feat-tiptap` 分支已经改变了运行时方向，但可见体验还没有完成。
+`feat-tiptap` 分支已经改变了运行时方向，但可见体验还没有完成。当前状态是：
 
 - Hybrid 模式已经使用 Tiptap/ProseMirror，并保留 Dioxus 侧使用的 `window.papyroEditor` facade。
 - `js/src/tiptap-react/` 下已经有 React island 基座。
-- 许多高级编辑器表面仍然来自 `js/src/tiptap-*.js` 里的手写 DOM controller。
-- Tiptap 官方 Notion-like template 目前仍只是体验标尺，不是已经接入的组件系统。
+- React island 使用已安装 `@tiptap/react` 的 composable API，并保持 `Tiptap.Content` 作为唯一正文宿主。
+- 授权路径下的官方 `table-node` UI 源码已经通过 `PapyroOfficialTableNodeLayer` 挂载，但 Papyro 仍需要为本地 Markdown 持久化、i18n 和桌面 WebView 约束做适配。
+- 可选 editor chrome 现在有 React 错误边界保护；表格、句柄或浮层异常时，不应该再把文档正文一起白屏。
+- Slash 插入、块句柄、代码块 chrome、浮动格式栏、链接编辑器和表格菜单已经有 React 路径，但部分几何计算和兼容行为仍依赖迁移期 controller。
 
-所以你现在看到的体验仍然可能像之前那套自研实现。下一步必须把用户能感知到的 editor chrome 迁移到官方 Tiptap React 模式，而不是继续围着 DOM 打补丁。
+所以当前编辑器已经不是纯自研 DOM 编辑器，但也还不是完成态的官方 Notion-like editor。下一步要继续遵循官方 Tiptap React/table-node 模式，同时收掉让可见体验偏离标尺的兼容 controller。
+
+## 当前推进重点
+
+在开始大范围视觉打磨前，优先用这份短清单约束后续实现：
+
+1. 稳定 React island 和 bundle gate，确保任意 chrome 组件异常都不会让已打开文档白屏。
+2. 按官方交互契约完成 table-node 集成：hover 驱动的行/列句柄、不会选中文字的视觉单元格选中、矩形范围选区、菜单、resize 和快捷新增。
+3. 把剩余一次性 DOM 几何所有权迁到 React 组件，或迁到可被 React 消费的纯共享模型。
+4. 继续把 Markdown 作为唯一持久化源；改动表格、代码、图片、公式、Mermaid 序列化前必须先补 fixture。
+5. 每次 editor runtime 提交前都运行真实 bundle smoke，并至少运行 `node scripts/check-editor-markdown-gate.js`。
 
 ## 官方基线
 
@@ -41,6 +53,7 @@ git -C .reference\tiptap-docs pull --ff-only
 
 - 使用稳定版 Tiptap 3，并保持所有 `@tiptap/*` 依赖版本一致。
 - 编辑器 UI 优先使用 React composable API。
+- 修改集成细节前必须核对已安装的 `@tiptap/react` 源码。当前已安装版本里，`<Tiptap editor={editor}>` 是主路径，`instance` 是 deprecated 兼容 prop。
 - Notion-like editor、`table-node`、`drag-context-menu`、`slash-dropdown-menu` 在未授权前按 licensed/non-open UI 处理。
 - 官方开源 package 可以直接用。没有授权源码时，只能在 Papyro 内按相同产品原则重新实现交互。
 
@@ -157,6 +170,8 @@ node scripts/check-workspace-deps.js
 - [ ] 暴露稳定 runtime hooks：editor instance、language、view mode、preferences、command executor、active selection snapshot。
   - 当前覆盖：React runtime context 现在基于纯 runtime model 构建，已经暴露 preferences、command executor 和 active selection snapshot hooks，并把 cursor/range/table 选区归一化，供后续 React block-handle 和 table-chrome 组件复用。code-block 命令模型已经开始脱离迁移期 controller；table 命令模型仍需要继续上提。
   - 当前覆盖：React runtime selection 现在通过 `useSyncExternalStore` 订阅 Tiptap `transaction` 和 `selectionUpdate` 事件，并使用值稳定 snapshot，避免 editor transaction 后 React chrome 继续读取过期选区。
+- [x] 为可选 React chrome 增加错误边界，避免浮层异常把文档正文一起白屏。
+  - 当前覆盖：`BeforeContent`、`AfterContent` 和 `OverlayLayer` 都由 `PapyroTiptapChromeErrorBoundary` 隔离。编辑器正文不在这些边界内，因此表格、句柄或菜单异常时，只会上报 runtime error 并隐藏损坏 chrome，不会移除正文编辑面。
 - [ ] 在 React 替换完成前，把旧 DOM controller 放在 runtime flag 后面，避免双系统同时抢 UI。
 
 验收标准：
@@ -591,6 +606,7 @@ node scripts/check-ui-contrast.js
 - [ ] 重新构建生成 bundle 和桌面/mobile 副本。
 - [ ] 跑完整自动化检查。
 - [ ] 提交编辑器 runtime 改动前，运行真实挂载的编辑器 smoke gate。
+  - 当前覆盖：`js/test/editor-bundle-smoke.test.js` 会在 DOM runtime 中加载生成后的 `assets/editor.js`，并调用 `window.papyroEditor.ensureEditor(...)`，因此 bundle 级 React 挂载崩溃会被 `npm --prefix js test` 捕获。
 - [ ] 在桌面 WebView 执行完整 Tiptap release smoke。
 - [ ] 当免费/开源路径的企业级 Tiptap 编辑体验通过最终验收并得到用户确认后，将 `feat-tiptap` 合并回主分支，作为迁移收口步骤。
 

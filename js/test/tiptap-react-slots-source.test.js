@@ -140,6 +140,22 @@ test("React island loading state uses shared i18n labels", () => {
   assert.doesNotMatch(islandSource, /aria-label="Loading editor"/u);
 });
 
+test("React island isolates optional chrome failures from editor content", () => {
+  assert.match(islandSource, /class PapyroTiptapChromeErrorBoundary extends React\.Component/u);
+  assert.match(islandSource, /static getDerivedStateFromError/u);
+  assert.match(islandSource, /componentDidCatch\(error\)/u);
+  assert.match(islandSource, /type:\s*"runtime_error"/u);
+  assert.match(islandSource, /Editor chrome failed in/u);
+  assert.match(islandSource, /<EditorContent editor=\{editor\} entry=\{entry\} \/>/u);
+  assert.match(islandSource, /name="before-content"/u);
+  assert.match(islandSource, /name="after-content"/u);
+  assert.match(islandSource, /name="overlay"/u);
+  assert.doesNotMatch(
+    islandSource,
+    /<PapyroTiptapChromeErrorBoundary[^>]*>\s*<EditorContent/u,
+  );
+});
+
 test("React runtime context exposes stable editor runtime hooks", () => {
   assert.match(runtimeModelSource, /export function createPapyroTiptapRuntimeModel/u);
   assert.match(runtimeModelSource, /export function createPapyroTiptapSelectionSnapshot/u);

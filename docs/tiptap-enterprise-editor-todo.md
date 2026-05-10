@@ -6,14 +6,26 @@ This document is the execution checklist for turning Papyro's Tiptap editor into
 
 ## Current State
 
-The `feat-tiptap` branch already changed the runtime direction, but the visible experience is not finished.
+The `feat-tiptap` branch already changed the runtime direction, but the visible experience is not finished. The current status is:
 
 - The editor now uses Tiptap/ProseMirror for Hybrid mode and keeps the Dioxus-facing `window.papyroEditor` facade.
 - A React island foundation exists under `js/src/tiptap-react/`.
-- Many advanced surfaces still come from hand-written DOM controllers under `js/src/tiptap-*.js`.
-- The official Tiptap Notion-like template is still a benchmark, not an integrated component set.
+- The React island uses the installed `@tiptap/react` composable API and keeps `Tiptap.Content` as the only editor content host.
+- The official licensed `table-node` UI source is mounted through `PapyroOfficialTableNodeLayer`, but Papyro still adapts it for local Markdown persistence, i18n, and desktop WebView constraints.
+- Optional editor chrome is now guarded by React error boundaries so table, handle, or overlay failures do not remove the document content surface.
+- Slash insert, block handle, code block chrome, format toolbar, link editor, and table menus have React paths, but some geometry and compatibility behavior still depends on migration-era controllers.
 
-That means the current app can still feel like the previous custom implementation. The next work must migrate the user-facing editor chrome into official Tiptap React patterns instead of continuing small DOM patches.
+That means the current app is no longer a pure custom DOM editor, but it is also not yet a finished official Notion-like editor. The next work must keep following official Tiptap React/table-node patterns while retiring the compatibility controllers that still make the visible experience drift from the benchmark.
+
+## Active Execution Focus
+
+Use this short list to steer the next implementation turns before starting broad polish:
+
+1. Stabilize the React island and bundle gate so a broken chrome component can never white-screen an opened document.
+2. Finish the table-node integration against the official interaction contract: hover-owned row/column handles, visual cell selection without text selection, rectangular range selection, menus, resize, and quick add.
+3. Replace remaining one-off DOM geometry ownership with React components or pure shared models consumed by React.
+4. Keep Markdown as the persisted source of truth and add fixtures before changing table/code/image/math/Mermaid serialization.
+5. Run the mounted bundle smoke plus `node scripts/check-editor-markdown-gate.js` before every editor-runtime commit.
 
 ## Official Baseline
 
@@ -41,6 +53,7 @@ Rules:
 
 - Use latest stable Tiptap 3 packages and keep every `@tiptap/*` dependency on the same version.
 - Prefer the React composable API for editor UI.
+- Match the installed `@tiptap/react` source before changing integration details. In the current installed package, `<Tiptap editor={editor}>` is the primary API and `instance` is the deprecated compatibility prop.
 - Treat Notion-like editor, `table-node`, `drag-context-menu`, and `slash-dropdown-menu` as licensed/non-open UI unless licensed source is explicitly added.
 - Use official open packages directly. Re-create product interactions locally only when no licensed source is available.
 
@@ -158,6 +171,8 @@ Tasks:
   - Current coverage: React runtime context now builds from a pure runtime model, exposes preferences, command executor, and active selection snapshot hooks, and normalizes cursor/range/table selections for future React block-handle and table-chrome components. The code-block command model has started moving out of migration controllers; table command models still need to be lifted further.
   - Current coverage: React runtime selection now follows Tiptap `transaction` and `selectionUpdate` events through `useSyncExternalStore`, using value-stable snapshots so React chrome does not read stale selections after editor transactions.
   - Current coverage: the React command executor now exposes a table-action scope routed through `entry.tableToolbar`, giving future React table chrome a stable command path instead of reaching directly into migration controller internals or raw `editor.commands`.
+- [x] Guard optional React chrome with error boundaries so a failed overlay cannot blank the document.
+  - Current coverage: `BeforeContent`, `AfterContent`, and `OverlayLayer` are isolated by `PapyroTiptapChromeErrorBoundary`. The editor content itself stays outside those boundaries, so table/handle/menu failures report a runtime error and hide only the broken chrome.
 - [ ] Keep the existing DOM controllers disabled behind a runtime flag while React replacements are tested.
 
 Acceptance criteria:
@@ -600,6 +615,7 @@ Tasks:
 - [ ] Rebuild generated bundles and desktop/mobile copies.
 - [ ] Run full automated checks.
 - [ ] Run the real mounted editor smoke gate before committing editor runtime changes.
+  - Current coverage: `js/test/editor-bundle-smoke.test.js` loads the generated `assets/editor.js` in a DOM runtime and calls `window.papyroEditor.ensureEditor(...)`, so bundle-level React mount crashes are caught by `npm --prefix js test`.
 - [ ] Execute manual Tiptap release smoke in the desktop WebView.
 - [ ] After the free/open-source enterprise editor experience passes final acceptance and user sign-off, merge `feat-tiptap` back into the main branch as the migration closeout.
 

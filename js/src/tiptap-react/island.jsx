@@ -8,6 +8,28 @@ import {
   renderIslandSlot,
 } from "./slots.jsx";
 
+class PapyroTiptapChromeErrorBoundary extends React.Component {
+  state = { error: null };
+
+  static getDerivedStateFromError(error) {
+    return { error };
+  }
+
+  componentDidCatch(error) {
+    const message = error instanceof Error ? error.message : String(error);
+    this.props.entry?.dioxus?.send?.({
+      type: "runtime_error",
+      tab_id: this.props.entry?.dom?.dataset?.tabId ?? "",
+      message: `Editor chrome failed in ${this.props.name}: ${message}`,
+    });
+  }
+
+  render() {
+    if (this.state.error) return null;
+    return this.props.children;
+  }
+}
+
 export function PapyroTiptapEditorContent({
   className = "mn-tiptap-react-content",
 } = {}) {
@@ -42,10 +64,16 @@ export function PapyroTiptapReactIsland({
   return (
     <Tiptap editor={editor}>
       <PapyroTiptapRuntimeProvider editor={editor} entry={entry}>
-        {renderIslandSlot(BeforeContent, runtime)}
+        <PapyroTiptapChromeErrorBoundary name="before-content" entry={entry}>
+          {renderIslandSlot(BeforeContent, runtime)}
+        </PapyroTiptapChromeErrorBoundary>
         <EditorContent editor={editor} entry={entry} />
-        {renderIslandSlot(AfterContent, runtime)}
-        {renderIslandSlot(OverlayLayer, runtime)}
+        <PapyroTiptapChromeErrorBoundary name="after-content" entry={entry}>
+          {renderIslandSlot(AfterContent, runtime)}
+        </PapyroTiptapChromeErrorBoundary>
+        <PapyroTiptapChromeErrorBoundary name="overlay" entry={entry}>
+          {renderIslandSlot(OverlayLayer, runtime)}
+        </PapyroTiptapChromeErrorBoundary>
       </PapyroTiptapRuntimeProvider>
     </Tiptap>
   );
