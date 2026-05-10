@@ -9,9 +9,12 @@ import { useResizeOverlay } from "@/components/tiptap-node/table-node/ui/table-s
 // --- Lib ---
 import { domCellAround, getTable, rectEq } from "@/components/tiptap-node/table-node/lib/tiptap-table-utils";
 import {
-  findPapyroSelectedTableCell,
+  findPapyroSelectedTableCells,
+  tableSelectionOverlayAllowsCellMenu,
   tableSelectionOverlayMode,
+  tableSelectionOverlayScope,
   TABLE_SELECTION_OVERLAY_MODE,
+  TABLE_SELECTION_OVERLAY_SCOPE,
 } from "@/components/tiptap-node/table-selection-overlay-model.js";
 
 // if an element’s edge is within 5px of the selection edge,
@@ -66,16 +69,70 @@ const getSelectionBoundingRect = (view, selection) => {
 }
 
 const getVisualSelectedCellBoundingRect = (tableDom) => {
-  const cellDom = findPapyroSelectedTableCell(tableDom)
-  if (!cellDom) return null
+  const cellDoms = findPapyroSelectedTableCells(tableDom)
+  if (cellDoms.length === 0) return null
 
-  const rect = cellDom.getBoundingClientRect()
-  return new DOMRect(rect.left, rect.top, rect.width, rect.height);
+  const bounds = {
+    left: Infinity,
+    top: Infinity,
+    right: -Infinity,
+    bottom: -Infinity,
+  }
+
+  cellDoms.forEach((cellDom) => {
+    const rect = cellDom.getBoundingClientRect()
+    bounds.left = Math.min(bounds.left, rect.left)
+    bounds.top = Math.min(bounds.top, rect.top)
+    bounds.right = Math.max(bounds.right, rect.right)
+    bounds.bottom = Math.max(bounds.bottom, rect.bottom)
+  })
+
+  return new DOMRect(
+    bounds.left,
+    bounds.top,
+    bounds.right - bounds.left,
+    bounds.bottom - bounds.top
+  );
 }
 
 const createVirtualReference = (rect) => ({
   getBoundingClientRect: () => rect,
 })
+
+const countSelectedCells = (selection) => {
+  if (typeof selection?.forEachCell !== "function") return 0
+
+  let count = 0
+  try {
+    selection.forEachCell(() => {
+      count += 1
+    })
+  } catch (_error) {
+    return 0
+  }
+  return count
+}
+
+const getCellSelectionTableRect = (selection, table) => {
+  const tableMap = table?.map ?? null
+  const tableStart = Number(table?.start)
+  const anchorPos = Number(selection?.$anchorCell?.pos)
+  const headPos = Number(selection?.$headCell?.pos)
+  if (
+    !tableMap ||
+    !Number.isFinite(tableStart) ||
+    !Number.isFinite(anchorPos) ||
+    !Number.isFinite(headPos)
+  ) {
+    return null
+  }
+
+  try {
+    return tableMap.rectBetween(anchorPos - tableStart, headPos - tableStart)
+  } catch (_error) {
+    return null
+  }
+}
 
 const findCornerCells = (view, selection, selectionRect) => {
   const corners = {
@@ -211,6 +268,7 @@ export const TableSelectionOverlay = ({
   const [activeHandle, setActiveHandle] = useState(null)
   const [tableDom, setTableDom] = useState(null)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [overlayScope, setOverlayScope] = useState(TABLE_SELECTION_OVERLAY_SCOPE.HIDDEN)
 
   const anchorCellRef = useRef(null)
   const activeHandleRef = useRef(null)
@@ -241,14 +299,23 @@ export const TableSelectionOverlay = ({
 
     if (overlayMode === TABLE_SELECTION_OVERLAY_MODE.CELL_SELECTION) {
       const rect = getSelectionBoundingRect(editor.view, selection)
+      const scope = tableSelectionOverlayScope({
+        mode: overlayMode,
+        selectedCellCount: countSelectedCells(selection),
+        selectionRect: getCellSelectionTableRect(selection, table),
+        tableWidth: table?.map?.width,
+        tableHeight: table?.map?.height,
+      })
 
       if (!rect) {
         setIsVisible(false)
         setSelectionRect((prev) => (prev ? null : prev))
+        setOverlayScope(TABLE_SELECTION_OVERLAY_SCOPE.HIDDEN)
         return
       }
 
       setSelectionRect((prev) => (rectEq(prev, rect) ? prev : rect))
+      setOverlayScope(scope)
       setIsVisible(true)
       return
     }
@@ -257,6 +324,10 @@ export const TableSelectionOverlay = ({
       const rect = getVisualSelectedCellBoundingRect(currentTableDom)
 
       if (rect) {
+        setOverlayScope(tableSelectionOverlayScope({
+          mode: overlayMode,
+          selectedCellCount: findPapyroSelectedTableCells(currentTableDom).length,
+        }))
         setSelectionRect((prev) => (rectEq(prev, rect) ? prev : rect))
         setIsVisible(true)
         return
@@ -264,6 +335,7 @@ export const TableSelectionOverlay = ({
     }
 
     setIsVisible(false)
+    setOverlayScope(TABLE_SELECTION_OVERLAY_SCOPE.HIDDEN)
     setSelectionRect((prev) => (prev ? null : prev))
   }, [editor])
 
@@ -275,13 +347,16 @@ export const TableSelectionOverlay = ({
     }
   }, [update, selectionRect])
 
+  const allowsCellSelectionChrome = tableSelectionOverlayAllowsCellMenu(overlayScope)
+
   const createResizeHandler = useCallback((handle) => (event) => {
     if (
       !editor ||
       !handle ||
       !selectionRect ||
       isMenuOpen ||
-      !showResizeHandles
+      !showResizeHandles ||
+      !allowsCellSelectionChrome
     )
       return
 
@@ -346,7 +421,7 @@ export const TableSelectionOverlay = ({
 
     window.addEventListener("mousemove", handleMouseMove)
     window.addEventListener("mouseup", handleMouseUp)
-  }, [editor, selectionRect, isMenuOpen, showResizeHandles])
+  }, [allowsCellSelectionChrome, editor, selectionRect, isMenuOpen, showResizeHandles])
 
   const updateTableDom = useCallback(() => {
     if (!editor) {
@@ -401,7 +476,7 @@ export const TableSelectionOverlay = ({
   if (!editor) return null
 
   const renderCellMenu = () => {
-    if (!CellMenu) return null
+    if (!CellMenu || !allowsCellSelectionChrome) return null
 
     return (
       <span
@@ -451,7 +526,7 @@ export const TableSelectionOverlay = ({
             {renderCellMenu()}
 
             {/* Corner resize handles */}
-            {showResizeHandles && (
+            {showResizeHandles && allowsCellSelectionChrome && (
               <>
                 <div
                   style={createCornerHandleStyles("tl", !activeHandle || activeHandle === "tl", isMenuOpen)}

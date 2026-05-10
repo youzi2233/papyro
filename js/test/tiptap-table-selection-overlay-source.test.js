@@ -17,6 +17,9 @@ test("official table selection overlay does not treat ordinary cell caret as obj
     overlaySource,
     /TABLE_SELECTION_OVERLAY_MODE\.VISUAL_CELL_SELECTION/u,
   );
+  assert.match(overlaySource, /tableSelectionOverlayScope/u);
+  assert.match(overlaySource, /tableSelectionOverlayAllowsCellMenu\(overlayScope\)/u);
+  assert.match(overlaySource, /showResizeHandles && allowsCellSelectionChrome/u);
   assert.doesNotMatch(overlaySource, /getSingleCellBoundingRect/u);
   assert.doesNotMatch(overlaySource, /single cell handling/u);
 });
