@@ -618,6 +618,7 @@ Tasks:
 - [ ] Run full automated checks.
 - [ ] Run the real mounted editor smoke gate before committing editor runtime changes.
   - Current coverage: `js/test/editor-bundle-smoke.test.js` loads the generated `assets/editor.js` in a DOM runtime and calls `window.papyroEditor.ensureEditor(...)`, so bundle-level React mount crashes are caught by `npm --prefix js test`.
+  - Current coverage: `scripts/check-desktop-resource-smoke.js` now also verifies desktop/mobile editor bundle mirrors, logo/favicon mirrors, WebView-relative `/assets/...` URLs, shared header/sidebar logo bindings, settings/logo usage, and tool-window editor script tags. This guards the Windows regressions where editor runtime or logo paths accidentally become local drive paths.
 - [ ] Execute manual Tiptap release smoke in the desktop WebView.
 - [ ] After the free/open-source enterprise editor experience passes final acceptance and user sign-off, merge `feat-tiptap` back into the main branch as the migration closeout.
 

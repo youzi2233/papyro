@@ -611,6 +611,7 @@ node scripts/check-ui-contrast.js
 - [ ] 跑完整自动化检查。
 - [ ] 提交编辑器 runtime 改动前，运行真实挂载的编辑器 smoke gate。
   - 当前覆盖：`js/test/editor-bundle-smoke.test.js` 会在 DOM runtime 中加载生成后的 `assets/editor.js`，并调用 `window.papyroEditor.ensureEditor(...)`，因此 bundle 级 React 挂载崩溃会被 `npm --prefix js test` 捕获。
+  - 当前覆盖：`scripts/check-desktop-resource-smoke.js` 现在也会检查 desktop/mobile editor bundle 镜像、logo/favicon 镜像、WebView 相对 `/assets/...` URL、共享 header/sidebar logo 绑定、设置页 logo 用法，以及工具窗口 editor script 标签。这样可以防止 Windows 下 editor runtime 或 logo 路径意外变成本地盘符路径的回归。
 - [ ] 在桌面 WebView 执行完整 Tiptap release smoke。
 - [ ] 当免费/开源路径的企业级 Tiptap 编辑体验通过最终验收并得到用户确认后，将 `feat-tiptap` 合并回主分支，作为迁移收口步骤。
 

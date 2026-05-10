@@ -1,21 +1,32 @@
 #!/usr/bin/env node
 import { readFileSync } from "node:fs";
 
-const SOURCE = "apps/desktop/src/main.rs";
+const DESKTOP_SOURCE = "apps/desktop/src/main.rs";
+const MOBILE_SOURCE = "apps/mobile/src/main.rs";
+const TOOL_WINDOWS_SOURCE = "crates/app/src/desktop_tool_windows.rs";
+const HEADER_SOURCE = "crates/ui/src/components/header/mod.rs";
+const SIDEBAR_SOURCE = "crates/ui/src/components/sidebar/mod.rs";
+const SETTINGS_SOURCE = "crates/ui/src/components/settings/mod.rs";
 
 const REQUIRED_FILES = [
   ["workspace editor runtime", "assets/editor.js"],
   ["desktop editor runtime", "apps/desktop/assets/editor.js"],
+  ["mobile editor runtime", "apps/mobile/assets/editor.js"],
   ["workspace logo", "assets/logo.png"],
   ["desktop logo", "apps/desktop/assets/logo.png"],
+  ["mobile logo", "apps/mobile/assets/logo.png"],
   ["workspace favicon", "assets/favicon.ico"],
   ["desktop favicon", "apps/desktop/assets/favicon.ico"],
+  ["mobile favicon", "apps/mobile/assets/favicon.ico"],
 ];
 
 const MIRRORED_FILES = [
   ["assets/editor.js", "apps/desktop/assets/editor.js"],
+  ["assets/editor.js", "apps/mobile/assets/editor.js"],
   ["assets/logo.png", "apps/desktop/assets/logo.png"],
+  ["assets/logo.png", "apps/mobile/assets/logo.png"],
   ["assets/favicon.ico", "apps/desktop/assets/favicon.ico"],
+  ["assets/favicon.ico", "apps/mobile/assets/favicon.ico"],
 ];
 
 const DESKTOP_URL_CONSTANTS = [
@@ -24,15 +35,35 @@ const DESKTOP_URL_CONSTANTS = [
   ["EDITOR_JS_SRC", "/assets/editor.js"],
 ];
 
+const TOOL_WINDOW_URL_CONSTANTS = [
+  ["TOOL_WINDOW_FAVICON", "/assets/favicon.ico"],
+  ["TOOL_WINDOW_LOGO_SRC", "/assets/logo.png"],
+  ["TOOL_WINDOW_EDITOR_JS_SRC", "/assets/editor.js"],
+];
+
 function main() {
   const failures = [];
-  const source = readUtf8(SOURCE, failures);
+  const desktopSource = readUtf8(DESKTOP_SOURCE, failures);
+  const toolWindowSource = readUtf8(TOOL_WINDOWS_SOURCE, failures);
+  const mobileSource = readUtf8(MOBILE_SOURCE, failures);
 
   checkRequiredFiles(failures);
   checkMirroredFiles(failures);
   checkImageHeaders(failures);
   checkEditorRuntimeBundle(failures);
-  checkDesktopSourceUrls(source, failures);
+  checkDesktopSourceUrls(desktopSource, failures);
+  checkToolWindowSourceUrls(toolWindowSource, failures);
+  checkLogoSurfaceBindings(
+    {
+      desktopSource,
+      toolWindowSource,
+      mobileSource,
+      headerSource: readUtf8(HEADER_SOURCE, failures),
+      sidebarSource: readUtf8(SIDEBAR_SOURCE, failures),
+      settingsSource: readUtf8(SETTINGS_SOURCE, failures),
+    },
+    failures,
+  );
 
   if (failures.length > 0) {
     console.error("Desktop resource smoke check failed:");
@@ -66,14 +97,23 @@ function checkMirroredFiles(failures) {
 }
 
 function checkImageHeaders(failures) {
-  const png = readBytes("apps/desktop/assets/logo.png", failures);
-  if (png && !png.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) {
-    failures.push("apps/desktop/assets/logo.png is not a valid PNG resource");
+  for (const path of ["apps/desktop/assets/logo.png", "apps/mobile/assets/logo.png"]) {
+    const png = readBytes(path, failures);
+    if (
+      png &&
+      !png
+        .subarray(0, 8)
+        .equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))
+    ) {
+      failures.push(`${path} is not a valid PNG resource`);
+    }
   }
 
-  const ico = readBytes("apps/desktop/assets/favicon.ico", failures);
-  if (ico && !ico.subarray(0, 4).equals(Buffer.from([0x00, 0x00, 0x01, 0x00]))) {
-    failures.push("apps/desktop/assets/favicon.ico is not a valid ICO resource");
+  for (const path of ["apps/desktop/assets/favicon.ico", "apps/mobile/assets/favicon.ico"]) {
+    const ico = readBytes(path, failures);
+    if (ico && !ico.subarray(0, 4).equals(Buffer.from([0x00, 0x00, 0x01, 0x00]))) {
+      failures.push(`${path} is not a valid ICO resource`);
+    }
   }
 }
 
@@ -90,12 +130,7 @@ function checkDesktopSourceUrls(source, failures) {
   if (!source) return;
 
   for (const [constant, url] of DESKTOP_URL_CONSTANTS) {
-    const declaration = new RegExp(
-      `const\\s+${constant}:\\s*&str\\s*=\\s*"${escapeRegex(url)}";`,
-    );
-    if (!declaration.test(source)) {
-      failures.push(`${SOURCE} must define ${constant} as the WebView URL ${url}`);
-    }
+    requireUrlConstant(source, DESKTOP_SOURCE, constant, url, failures);
   }
 
   const forbiddenPatterns = [
@@ -113,6 +148,156 @@ function checkDesktopSourceUrls(source, failures) {
     if (pattern.test(source)) {
       failures.push(message);
     }
+  }
+
+  requireSourcePattern(
+    source,
+    DESKTOP_SOURCE,
+    /use_context_provider\(\|\|\s+BRAND_LOGO_SRC\.to_string\(\)\);/,
+    "desktop root must provide the WebView logo URL to shared UI components",
+    failures,
+  );
+  requireSourcePattern(
+    source,
+    DESKTOP_SOURCE,
+    /sync_runtime_asset_file\(\s*&source_asset_dir\.join\("logo\.png"\),\s*&asset_dir\.join\("logo\.png"\),\s*\)/s,
+    "desktop startup must mirror logo.png next to the running executable",
+    failures,
+  );
+  requireSourcePattern(
+    source,
+    DESKTOP_SOURCE,
+    /sync_runtime_asset_file\(\s*&source_asset_dir\.join\("favicon\.ico"\),\s*&asset_dir\.join\("favicon\.ico"\),\s*\)/s,
+    "desktop startup must mirror favicon.ico next to the running executable",
+    failures,
+  );
+  requireSourcePattern(
+    source,
+    DESKTOP_SOURCE,
+    /src="\{editor_js_attr\}"/,
+    "desktop editor runtime script tag must use the escaped WebView URL attribute",
+    failures,
+  );
+}
+
+function checkToolWindowSourceUrls(source, failures) {
+  if (!source) return;
+
+  for (const [constant, url] of TOOL_WINDOW_URL_CONSTANTS) {
+    requireUrlConstant(source, TOOL_WINDOWS_SOURCE, constant, url, failures);
+  }
+
+  requireSourcePattern(
+    source,
+    TOOL_WINDOWS_SOURCE,
+    /use_context_provider\(\|\|\s+TOOL_WINDOW_LOGO_SRC\.to_string\(\)\);/,
+    "document tool windows must provide the WebView logo URL to shared UI components",
+    failures,
+  );
+  requireSourcePattern(
+    source,
+    TOOL_WINDOWS_SOURCE,
+    /src="\{TOOL_WINDOW_EDITOR_JS_SRC\}"/,
+    "document tool window editor runtime script tag must use /assets/editor.js",
+    failures,
+  );
+  requireSourcePattern(
+    source,
+    TOOL_WINDOWS_SOURCE,
+    /<link rel="icon" href="\{TOOL_WINDOW_FAVICON\}">/,
+    "tool windows must use the WebView favicon URL",
+    failures,
+  );
+}
+
+function checkLogoSurfaceBindings(sources, failures) {
+  const {
+    desktopSource,
+    toolWindowSource,
+    mobileSource,
+    headerSource,
+    sidebarSource,
+    settingsSource,
+  } = sources;
+
+  if (mobileSource) {
+    requireUrlConstant(mobileSource, MOBILE_SOURCE, "BRAND_LOGO_SRC", "/assets/logo.png", failures);
+    requireSourcePattern(
+      mobileSource,
+      MOBILE_SOURCE,
+      /use_context_provider\(\|\|\s+BRAND_LOGO_SRC\.to_string\(\)\);/,
+      "mobile root must provide the WebView logo URL to shared UI components",
+      failures,
+    );
+  }
+
+  if (headerSource) {
+    checkSharedLogoConsumer(headerSource, HEADER_SOURCE, "mn-brand-logo", failures);
+  }
+  if (sidebarSource) {
+    checkSharedLogoConsumer(sidebarSource, SIDEBAR_SOURCE, "mn-sidebar-brand-logo", failures);
+  }
+  if (settingsSource) {
+    requireSourcePattern(
+      settingsSource,
+      SETTINGS_SOURCE,
+      /class:\s*"mn-about-logo"[\s\S]*?src:\s*"\/assets\/logo\.png"/,
+      "settings About logo must use the WebView logo URL",
+      failures,
+    );
+  }
+
+  for (const [path, source] of [
+    [DESKTOP_SOURCE, desktopSource],
+    [TOOL_WINDOWS_SOURCE, toolWindowSource],
+    [MOBILE_SOURCE, mobileSource],
+    [HEADER_SOURCE, headerSource],
+    [SIDEBAR_SOURCE, sidebarSource],
+    [SETTINGS_SOURCE, settingsSource],
+  ]) {
+    if (!source) continue;
+    if (/\\assets\\(?:logo\.png|editor\.js|favicon\.ico)/i.test(source)) {
+      failures.push(`${path} must not use Windows-style asset paths for WebView resources`);
+    }
+  }
+}
+
+function checkSharedLogoConsumer(source, path, className, failures) {
+  requireSourcePattern(
+    source,
+    path,
+    /try_use_context::<String>\(\)\.unwrap_or_else\(\|\|\s+"\/assets\/logo\.png"\.to_string\(\)\)/,
+    `${path} must fall back to the WebView logo URL`,
+    failures,
+  );
+  requireSourcePattern(
+    source,
+    path,
+    new RegExp(`class:\\s*"${escapeRegex(className)}"[\\s\\S]*?src:\\s*brand_logo_src`),
+    `${path} must bind ${className} to the shared logo URL`,
+    failures,
+  );
+  requireSourcePattern(
+    source,
+    path,
+    /alt:\s*"Papyro logo"/,
+    `${path} must keep an accessible Papyro logo label`,
+    failures,
+  );
+}
+
+function requireUrlConstant(source, path, constant, url, failures) {
+  const declaration = new RegExp(
+    `const\\s+${constant}:\\s*&str\\s*=\\s*"${escapeRegex(url)}";`,
+  );
+  if (!declaration.test(source)) {
+    failures.push(`${path} must define ${constant} as the WebView URL ${url}`);
+  }
+}
+
+function requireSourcePattern(source, path, pattern, message, failures) {
+  if (!pattern.test(source)) {
+    failures.push(`${message}: ${path}`);
   }
 }
 
