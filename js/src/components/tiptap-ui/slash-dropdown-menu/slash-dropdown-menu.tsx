@@ -2,9 +2,6 @@
 
 import { useEffect, useMemo, useRef } from "react"
 
-// --- Lib ---
-import { getElementOverflowPosition } from "@/lib/tiptap-collab-utils"
-
 // --- Tiptap UI ---
 import type {
   SuggestionMenuProps,
@@ -67,18 +64,8 @@ const Item = (props: {
   const itemRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
-    const selector = document.querySelector(
-      '[data-selector="tiptap-slash-dropdown-menu"]'
-    ) as HTMLElement
-    if (!itemRef.current || !isSelected || !selector) return
-
-    const overflow = getElementOverflowPosition(itemRef.current, selector)
-
-    if (overflow === "top") {
-      itemRef.current.scrollIntoView(true)
-    } else if (overflow === "bottom") {
-      itemRef.current.scrollIntoView(false)
-    }
+    if (!itemRef.current || !isSelected) return
+    itemRef.current.scrollIntoView({ block: "nearest" })
   }, [isSelected])
 
   const BadgeIcon = item.badge

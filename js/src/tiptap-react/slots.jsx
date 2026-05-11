@@ -2,12 +2,14 @@ import React from "react";
 
 import { PapyroOfficialDragHandleBridge } from "./official-drag-handle-bridge.jsx";
 import { PapyroOfficialTableNodeLayer } from "./official-table-node-layer.jsx";
+import { SlashDropdownMenu } from "@/components/tiptap-ui/slash-dropdown-menu/slash-dropdown-menu.tsx";
 
 function PapyroOverlayLayer(runtime) {
   return (
     <>
       <PapyroOfficialDragHandleBridge {...runtime} />
       <PapyroOfficialTableNodeLayer {...runtime} />
+      <SlashDropdownMenu />
     </>
   );
 }

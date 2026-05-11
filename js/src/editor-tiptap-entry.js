@@ -9,7 +9,6 @@ import {
   createTiptapReactFormatToolbarView,
   createTiptapReactLinkEditorView,
   createTiptapReactMountController,
-  createTiptapReactSlashMenuView,
 } from "./tiptap-react/index.js";
 import { createTiptapTableCommandBridge } from "./tiptap-table-command-bridge.js";
 import { createTiptapEditorRuntime } from "./tiptap-runtime.js";
@@ -35,7 +34,7 @@ const tiptapRuntimeAdapter = createTiptapEditorRuntime({
   formatToolbarViewFactory: createTiptapReactFormatToolbarView,
   linkEditorViewFactory: createTiptapReactLinkEditorView,
   mountControllerFactory: createTiptapReactMountController,
-  slashMenuViewFactory: createTiptapReactSlashMenuView,
+  slashMenuViewFactory: null,
   tableToolbarControllerFactory: createTiptapTableCommandBridge,
   navigation: hostRuntime.navigation,
 });
