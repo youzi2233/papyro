@@ -104,10 +104,10 @@ js/src/
 - [ ] 审查生成的完整文件结构，确认包含所有组件、扩展、hooks、样式
 
 #### 0.2 TypeScript 基础配置
-- [ ] 添加 `typescript`、`@types/react`、`@types/react-dom` 到 `js/package.json` devDependencies
-- [ ] 创建 `js/tsconfig.json`，配置 `allowJs: true`、路径别名 `@` → `src/`
-- [ ] 更新 `js/build.js` 入口为 `.ts` 扩展名，添加 `.ts`/`.tsx` loader 映射
-- [ ] 验证 esbuild 能正常打包混合 JS/TS 文件
+- [x] 添加 `typescript`、`@types/react`、`@types/react-dom` 到 `js/package.json` devDependencies
+- [x] 创建 `js/tsconfig.json`，配置 `allowJs: true`、路径别名 `@` → `src/`
+- [x] 更新 `js/build.js` 入口为 `.ts` 扩展名，添加 `.ts`/`.tsx` loader 映射
+- [x] 验证 esbuild 能正常打包混合 JS/TS 文件
 
 #### 0.3 按官方模板重组目录结构
 - [ ] 对照生成的模板目录结构，在 `js/src/` 下创建对应目录

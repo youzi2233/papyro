@@ -104,10 +104,10 @@ Official recommended path: use the Tiptap CLI to install the complete Notion-lik
 - [ ] Review generated file structure, confirm all components, extensions, hooks, and styles are present
 
 #### 0.2 TypeScript Base Configuration
-- [ ] Add `typescript`, `@types/react`, `@types/react-dom` to `js/package.json` devDependencies
-- [ ] Create `js/tsconfig.json` with `allowJs: true`, path alias `@` → `src/`
-- [ ] Update `js/build.js` entry to `.ts` extension, add `.ts`/`.tsx` loader mappings
-- [ ] Verify esbuild can bundle mixed JS/TS files correctly
+- [x] Add `typescript`, `@types/react`, `@types/react-dom` to `js/package.json` devDependencies
+- [x] Create `js/tsconfig.json` with `allowJs: true`, path alias `@` → `src/`
+- [x] Update `js/build.js` entry to `.ts` extension, add `.ts`/`.tsx` loader mappings
+- [x] Verify esbuild can bundle mixed JS/TS files correctly
 
 #### 0.3 Restructure Directories per Official Template
 - [ ] Create corresponding directories under `js/src/` matching the generated template structure
