@@ -78,10 +78,6 @@ const linkEditorSource = readFileSync(
   new URL("../src/tiptap-react/components/link-editor.jsx", import.meta.url),
   "utf8",
 );
-const slashMenuViewSource = readFileSync(
-  new URL("../src/tiptap-react/slash-menu-view.jsx", import.meta.url),
-  "utf8",
-);
 const linkEditorViewSource = readFileSync(
   new URL("../src/tiptap-react/link-editor-view.jsx", import.meta.url),
   "utf8",
@@ -294,9 +290,7 @@ test("React pointer activation does not retry handled pointer activations", () =
 test("React floating chrome shares positioning utilities", () => {
   assert.match(floatingUtilsSource, /export function positionReactFloatingElement/u);
   assert.match(floatingUtilsSource, /export function shouldFlipFloatingSidePanel/u);
-  assert.match(slashMenuViewSource, /from "\.\/utils\/floating\.js"/u);
   assert.match(blockActionMenuViewSource, /from "\.\/utils\/floating\.js"/u);
-  assert.doesNotMatch(slashMenuViewSource, /positionFloatingElement/u);
   assert.doesNotMatch(blockActionMenuViewSource, /positionFloatingElement/u);
 });
 
