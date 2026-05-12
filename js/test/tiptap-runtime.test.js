@@ -1,6 +1,5 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-
 import { createEditorRuntimeRegistry } from "../src/editor-registry.js";
 import { importBundledModule } from "./helpers/load-esbuild-module.js";
 
@@ -24,67 +23,51 @@ function createElement(tagName) {
     className: "",
     dataset: {},
     parentElement: null,
+    value: "",
+    hidden: false,
+    selectionStart: 0,
+    selectionEnd: 0,
+    attributes: {},
+    listeners: new Map(),
+    appendChild(child) {
+      child.parentElement = this;
+      return child;
+    },
+    setAttribute(name, value) {
+      this.attributes[name] = String(value);
+    },
+    addEventListener(type, handler) {
+      this.listeners.set(type, handler);
+    },
+    removeEventListener(type, handler) {
+      if (this.listeners.get(type) === handler) {
+        this.listeners.delete(type);
+      }
+    },
+    dispatch(type, event = {}) {
+      this.listeners.get(type)?.(event);
+    },
+    setSelectionRange(start, end) {
+      this.selectionStart = start;
+      this.selectionEnd = end;
+    },
+    focus() {},
+    remove() {
+      this.parentElement = null;
+    },
   };
 }
 
 function createRuntimeHarness({
   container = createContainer(),
-  markdownManagerFactory = ({ extensions }) => ({
-    extensions,
-    parse: (markdown) => ({ type: "doc", markdown }),
-  }),
   clipboard,
-  formatCommandControllerFactory,
-  historyCommandControllerFactory,
-  blockHintsControllerFactory,
-  pasteControllerFactory,
-  preferencesControllerFactory,
-  sourcePaneControllerFactory,
-  tableCommandControllerFactory,
-  mountControllerFactory,
+  createEditorHostElement,
+  mountEditorTree,
   layout,
   document: documentOverride,
 } = {}) {
   const calls = [];
   const registry = createEditorRuntimeRegistry();
-
-  const createBlockHintsController =
-    blockHintsControllerFactory ??
-    (() => ({
-      hints: null,
-      attach: (entry) => {
-        calls.push(["blockHintsAttach"]);
-        entry.blockHints = null;
-        return null;
-      },
-      apply: (entry, hints) => {
-        calls.push(["blockHintsApply", hints?.revision ?? null]);
-        entry.blockHints = {
-          revision: hints.revision,
-          fallback: hints.fallback,
-          blocks: hints.blocks,
-        };
-        return { changed: true, error: null, hints: entry.blockHints };
-      },
-    }));
-
-  const createPasteController =
-    pasteControllerFactory ??
-    (() => ({
-      attach: ({ root }) => calls.push(["pasteControllerAttach", root.className]),
-      destroy: () => calls.push(["pasteControllerDestroy"]),
-      handlePaste: ({ event }) => {
-        calls.push(["pasteControllerPaste", event.type]);
-        return event.type === "paste";
-      },
-    }));
-
-  const createTableCommands =
-    tableCommandControllerFactory ??
-    (() => ({
-      attach: ({ root }) => calls.push(["tableCommandsAttach", root.className]),
-      destroy: () => calls.push(["tableCommandsDestroy"]),
-    }));
 
   class FakeTiptapEditor {
     constructor(options) {
@@ -129,12 +112,19 @@ function createRuntimeHarness({
           return true;
         },
         toggleHeading: (attrs) => calls.push(["toggleHeading", attrs.level]),
+        setLink: (attrs) => {
+          calls.push(["setLink", attrs.href]);
+          return true;
+        },
       };
       this.state = {
         selection: {
           from: 1,
           to: 1,
           empty: true,
+        },
+        doc: {
+          textBetween: () => "",
         },
       };
       calls.push([
@@ -178,6 +168,7 @@ function createRuntimeHarness({
     documentOverride ??
     {
       getElementById: (containerId) => (containerId === "editor-root" ? container : null),
+      createElement,
     };
 
   const runtime = createTiptapEditorRuntime({
@@ -187,17 +178,9 @@ function createRuntimeHarness({
       createElement,
     },
     editorConstructor: FakeTiptapEditor,
-    extensionsFactory: () => ["starter-kit"],
-    markdownManagerFactory,
     ...(clipboard ? { clipboard } : {}),
-    blockHintsControllerFactory: createBlockHintsController,
-    ...(formatCommandControllerFactory ? { formatCommandControllerFactory } : {}),
-    ...(historyCommandControllerFactory ? { historyCommandControllerFactory } : {}),
-    pasteControllerFactory: createPasteController,
-    ...(preferencesControllerFactory ? { preferencesControllerFactory } : {}),
-    ...(sourcePaneControllerFactory ? { sourcePaneControllerFactory } : {}),
-    tableCommandControllerFactory: createTableCommands,
-    ...(mountControllerFactory ? { mountControllerFactory } : {}),
+    ...(createEditorHostElement ? { createEditorHostElement } : {}),
+    ...(mountEditorTree ? { mountEditorTree } : {}),
     ...(layout ? { layout } : {}),
     navigation: {
       attachPreviewScroll: () => "preview-scroll",
@@ -234,9 +217,6 @@ test("Tiptap runtime creates an editor instance and registry entry", () => {
     ["constructor", "# Note", "markdown", false, true],
     ["mount", "mn-tiptap-runtime", "tab-a"],
     ["setEditable", true],
-    ["blockHintsAttach"],
-    ["pasteControllerAttach", "mn-tiptap-runtime"],
-    ["tableCommandsAttach", "mn-tiptap-runtime"],
   ]);
 });
 
@@ -311,36 +291,34 @@ test("Tiptap runtime reattaches existing editors without rebuilding", () => {
     ["constructor", "# Note", "markdown", false, true],
     ["mount", "mn-tiptap-runtime", "tab-a"],
     ["setEditable", true],
-    ["blockHintsAttach"],
-    ["pasteControllerAttach", "mn-tiptap-runtime"],
-    ["tableCommandsAttach", "mn-tiptap-runtime"],
     ["setEditable", false],
   ]);
 });
 
-test("Tiptap runtime can mount through a React island controller", () => {
+test("Tiptap runtime can mount through a React island host", () => {
   const mountCalls = [];
-  const mountControllerFactory = () => ({
-    createEditorElement: ({ root }) => {
-      mountCalls.push(["createEditorElement", root.className]);
-      return {
-        className: "mn-tiptap-react-seed",
-      };
-    },
-    mount: ({ root, editor, entry }) => {
-      mountCalls.push(["reactMount", root.className, editor.markdown, entry.viewMode]);
-      return {
-        refresh: (nextEntry) => mountCalls.push([
-          "reactRefresh",
-          nextEntry?.viewMode,
-          nextEntry?.preferences?.language,
-          Boolean(nextEntry?.dioxus),
-        ]),
-        destroy: () => mountCalls.push(["reactDestroy"]),
-      };
-    },
+  const createEditorHostElement = ({ root }) => {
+    mountCalls.push(["createEditorElement", root.className]);
+    return {
+      className: "mn-tiptap-react-seed",
+    };
+  };
+  const mountEditorTree = ({ root, editor, entry }) => {
+    mountCalls.push(["reactMount", root.className, editor.markdown, entry.viewMode]);
+    return {
+      refresh: (nextEntry) => mountCalls.push([
+        "reactRefresh",
+        nextEntry?.viewMode,
+        nextEntry?.preferences?.language,
+        Boolean(nextEntry?.dioxus),
+      ]),
+      destroy: () => mountCalls.push(["reactDestroy"]),
+    };
+  };
+  const { calls, runtime } = createRuntimeHarness({
+    createEditorHostElement,
+    mountEditorTree,
   });
-  const { calls, runtime } = createRuntimeHarness({ mountControllerFactory });
 
   runtime.ensureEditor({
     tabId: "tab-a",
@@ -373,25 +351,19 @@ test("Tiptap runtime can mount through a React island controller", () => {
   assert.deepEqual(
     calls.filter((call) => call[0] === "mount"),
     [],
-  );
+);
 });
 
-test("Tiptap runtime passes the root into injectable mount controllers", () => {
+test("Tiptap runtime passes the root into the React tree mount callback", () => {
   const mountCalls = [];
-  const mountControllerFactory = ({ root }) => {
-    mountCalls.push(["factory", root.className, root.dataset.tabId]);
+  const mountEditorTree = ({ root, editor }) => {
+    mountCalls.push(["mount", root.className, root.dataset.tabId, editor.markdown]);
     return {
-      createEditorElement: () => null,
-      mount: ({ root, editor }) => {
-        mountCalls.push(["mount", root.className, editor.markdown]);
-        return {
-          refresh: () => mountCalls.push(["refresh"]),
-          destroy: () => mountCalls.push(["destroy"]),
-        };
-      },
+      refresh: () => mountCalls.push(["refresh"]),
+      destroy: () => mountCalls.push(["destroy"]),
     };
   };
-  const { runtime } = createRuntimeHarness({ mountControllerFactory });
+  const { runtime } = createRuntimeHarness({ mountEditorTree });
 
   runtime.ensureEditor({
     tabId: "tab-a",
@@ -406,8 +378,7 @@ test("Tiptap runtime passes the root into injectable mount controllers", () => {
   runtime.handleRustMessage("tab-a", { type: "destroy" });
 
   assert.deepEqual(mountCalls, [
-    ["factory", "mn-tiptap-runtime", "tab-a"],
-    ["mount", "mn-tiptap-runtime", "# Island"],
+    ["mount", "mn-tiptap-runtime", "tab-a", "# Island"],
     ["refresh"],
     ["destroy"],
   ]);
@@ -465,8 +436,7 @@ test("Tiptap runtime handles baseline Rust messages", () => {
     ["setEditable", false],
     ["syncOutline", "tab-a", "source"],
     ["setContent", "## Updated", "markdown"],
-    ["insertContent", "\n- item", "markdown"],
-    ["blockHintsApply", 7],
+    ["setContent", "\n- item## Updated", "markdown"],
     ["toggleHeading", 2],
     ["focus"],
     ["toggleBold"],
@@ -475,13 +445,12 @@ test("Tiptap runtime handles baseline Rust messages", () => {
     ["focus"],
     ["redo"],
     ["focus"],
-    ["focus"],
   ]);
   assert.deepEqual(messages, [
     {
       type: "content_changed",
       tab_id: "tab-a",
-      content: "## Updated\n- item",
+      content: "\n- item## Updated",
     },
   ]);
 });
@@ -508,16 +477,7 @@ test("Tiptap runtime preserves set_view_mode protocol state", () => {
 });
 
 test("Tiptap runtime mode contract keeps rich editing Hybrid-only", () => {
-  const sourcePaneCalls = [];
-  const sourcePaneControllerFactory = () => ({
-    attach: ({ entry }) => sourcePaneCalls.push(["attach", entry.viewMode]),
-    applyMode: (entry) => sourcePaneCalls.push(["applyMode", entry.viewMode]),
-    setMarkdown: (markdown) => sourcePaneCalls.push(["setMarkdown", markdown]),
-    insertMarkdown: () => false,
-    focus: () => false,
-    destroy: () => sourcePaneCalls.push(["destroy"]),
-  });
-  const { calls, registry, runtime } = createRuntimeHarness({ sourcePaneControllerFactory });
+  const { calls, registry, runtime } = createRuntimeHarness();
 
   runtime.ensureEditor({
     tabId: "tab-a",
@@ -532,17 +492,15 @@ test("Tiptap runtime mode contract keeps rich editing Hybrid-only", () => {
     ["constructor", "# Note", "markdown", false, false],
     ["mount", "mn-tiptap-runtime", "tab-a"],
     ["setEditable", false],
-    ["blockHintsAttach"],
-    ["pasteControllerAttach", "mn-tiptap-runtime"],
-    ["tableCommandsAttach", "mn-tiptap-runtime"],
   ]);
-  assert.deepEqual(sourcePaneCalls, [["attach", "preview"]]);
+  assert.equal(registry.get("tab-a").sourcePane.textarea.hidden, true);
 
   calls.length = 0;
-  sourcePaneCalls.length = 0;
 
   runtime.handleRustMessage("tab-a", { type: "set_view_mode", mode: "source" });
+  assert.equal(registry.get("tab-a").sourcePane.textarea.hidden, false);
   runtime.handleRustMessage("tab-a", { type: "set_view_mode", mode: "hybrid" });
+  assert.equal(registry.get("tab-a").sourcePane.textarea.hidden, true);
 
   assert.deepEqual(calls, [
     ["setEditable", false],
@@ -550,51 +508,10 @@ test("Tiptap runtime mode contract keeps rich editing Hybrid-only", () => {
     ["setEditable", true],
     ["syncOutline", "tab-a", "hybrid"],
   ]);
-  assert.deepEqual(sourcePaneCalls, [
-    ["applyMode", "source"],
-    ["applyMode", "hybrid"],
-  ]);
 });
 
 test("Tiptap runtime preserves selection snapshots across Source and Hybrid modes", () => {
-  let textarea = null;
-  const sourcePaneCalls = [];
-  const sourcePaneControllerFactory = () => ({
-    get textarea() {
-      return textarea;
-    },
-    attach: ({ entry }) => {
-      textarea = {
-        value: entry.markdownSync.markdown,
-        selectionStart: 0,
-        selectionEnd: 0,
-        setSelectionRange(start, end) {
-          this.selectionStart = start;
-          this.selectionEnd = end;
-          sourcePaneCalls.push(["setSelectionRange", start, end]);
-        },
-        focus() {
-          sourcePaneCalls.push(["sourceFocus"]);
-        },
-      };
-      sourcePaneCalls.push(["attach", entry.viewMode]);
-    },
-    applyMode: (entry) => {
-      sourcePaneCalls.push(["applyMode", entry.viewMode]);
-      if (textarea) {
-        textarea.value = entry.markdownSync.markdown;
-      }
-      return entry.viewMode === "source";
-    },
-    setMarkdown: (markdown) => {
-      sourcePaneCalls.push(["setMarkdown", markdown]);
-      if (textarea) textarea.value = markdown;
-    },
-    insertMarkdown: () => false,
-    focus: () => false,
-    destroy: () => sourcePaneCalls.push(["destroy"]),
-  });
-  const { calls, registry, runtime } = createRuntimeHarness({ sourcePaneControllerFactory });
+  const { calls, registry, runtime } = createRuntimeHarness();
   runtime.ensureEditor({
     tabId: "tab-a",
     containerId: "editor-root",
@@ -602,8 +519,8 @@ test("Tiptap runtime preserves selection snapshots across Source and Hybrid mode
     viewMode: "hybrid",
   });
   const entry = registry.get("tab-a");
+  const textarea = entry.sourcePane.textarea;
   calls.length = 0;
-  sourcePaneCalls.length = 0;
 
   entry.editor.state.selection = { from: 2, to: 5, empty: false };
   entry.editor.emit("selectionUpdate", { editor: entry.editor });
@@ -618,12 +535,8 @@ test("Tiptap runtime preserves selection snapshots across Source and Hybrid mode
     calls.filter((call) => call[0] === "setTextSelection"),
     [["setTextSelection", { from: 2, to: 5 }]],
   );
-  assert.deepEqual(
-    sourcePaneCalls.filter((call) => call[0] === "setSelectionRange"),
-    [
-      ["setSelectionRange", 6, 9],
-    ],
-  );
+  assert.equal(textarea.selectionStart, 6);
+  assert.equal(textarea.selectionEnd, 9);
 });
 
 test("Tiptap runtime mode switching does not emit dirty content changes", () => {
@@ -675,23 +588,8 @@ test("Tiptap runtime preserves insert_markdown protocol updates", () => {
   ]);
 });
 
-test("Tiptap runtime mounts and updates the source pane controller", () => {
-  const sourcePaneCalls = [];
-  const sourcePaneControllerFactory = () => ({
-    attach: ({ root, entry }) => sourcePaneCalls.push(["attach", root.className, entry.viewMode]),
-    applyMode: (entry) => sourcePaneCalls.push(["applyMode", entry.viewMode]),
-    setMarkdown: (markdown) => sourcePaneCalls.push(["setMarkdown", markdown]),
-    insertMarkdown: () => {
-      sourcePaneCalls.push(["insertMarkdown"]);
-      return false;
-    },
-    focus: () => {
-      sourcePaneCalls.push(["focus"]);
-      return false;
-    },
-    destroy: () => sourcePaneCalls.push(["destroy"]),
-  });
-  const { runtime } = createRuntimeHarness({ sourcePaneControllerFactory });
+test("Tiptap runtime mounts and updates the source pane", () => {
+  const { registry, runtime } = createRuntimeHarness();
 
   runtime.ensureEditor({
     tabId: "tab-a",
@@ -699,43 +597,37 @@ test("Tiptap runtime mounts and updates the source pane controller", () => {
     initialContent: "# Note",
     viewMode: "source",
   });
-  runtime.handleRustMessage("tab-a", { type: "set_view_mode", mode: "hybrid" });
-  runtime.handleRustMessage("tab-a", { type: "set_content", content: "## Updated" });
-  runtime.handleRustMessage("tab-a", { type: "destroy" });
+  const entry = registry.get("tab-a");
+  const textarea = entry.sourcePane.textarea;
 
-  assert.deepEqual(sourcePaneCalls, [
-    ["attach", "mn-tiptap-runtime", "source"],
-    ["applyMode", "hybrid"],
-    ["setMarkdown", "## Updated"],
-    ["destroy"],
-  ]);
+  assert.equal(textarea.parentElement, entry.dom);
+  assert.equal(textarea.hidden, false);
+  assert.equal(textarea.value, "# Note");
+
+  runtime.handleRustMessage("tab-a", { type: "set_view_mode", mode: "hybrid" });
+  assert.equal(textarea.hidden, true);
+
+  runtime.handleRustMessage("tab-a", { type: "set_content", content: "## Updated" });
+  assert.equal(textarea.value, "## Updated");
+
+  runtime.handleRustMessage("tab-a", { type: "destroy" });
+  assert.equal(textarea.parentElement, null);
 });
 
 test("Tiptap runtime routes source mode insert and focus through source pane", () => {
-  const sourcePaneCalls = [];
-  const sourcePaneControllerFactory = () => ({
-    attach: () => sourcePaneCalls.push(["attach"]),
-    applyMode: () => sourcePaneCalls.push(["applyMode"]),
-    setMarkdown: () => sourcePaneCalls.push(["setMarkdown"]),
-    insertMarkdown: (_entry, markdown, cursorOffset) => {
-      sourcePaneCalls.push(["insertMarkdown", markdown, cursorOffset]);
-      return true;
-    },
-    focus: () => {
-      sourcePaneCalls.push(["focus"]);
-      return true;
-    },
-    destroy: () => sourcePaneCalls.push(["destroy"]),
-  });
-  const { calls, runtime } = createRuntimeHarness({ sourcePaneControllerFactory });
+  const { calls, registry, runtime } = createRuntimeHarness();
+  const messages = [];
   runtime.ensureEditor({
     tabId: "tab-a",
     containerId: "editor-root",
     initialContent: "# Note",
     viewMode: "source",
   });
+  runtime.attachChannel("tab-a", { send: (message) => messages.push(message) });
+  const textarea = registry.get("tab-a").sourcePane.textarea;
+  textarea.selectionStart = textarea.value.length;
+  textarea.selectionEnd = textarea.value.length;
   calls.length = 0;
-  sourcePaneCalls.length = 0;
 
   runtime.handleRustMessage("tab-a", {
     type: "insert_markdown",
@@ -744,32 +636,21 @@ test("Tiptap runtime routes source mode insert and focus through source pane", (
   });
   runtime.handleRustMessage("tab-a", { type: "focus" });
 
-  assert.deepEqual(sourcePaneCalls, [
-    ["insertMarkdown", "$x$", 2],
-    ["focus"],
+  assert.equal(textarea.value, "# Note$x$");
+  assert.deepEqual(calls, [
+    ["setContent", "# Note$x$", "markdown"],
   ]);
-  assert.deepEqual(calls, []);
+  assert.deepEqual(messages, [
+    {
+      type: "content_changed",
+      tab_id: "tab-a",
+      content: "# Note$x$",
+    },
+  ]);
 });
 
-test("Tiptap runtime applies preferences through the injected controller", () => {
-  const preferenceCalls = [];
-  const preferencesControllerFactory = () => ({
-    preferences: { autoLinkPaste: true, language: "english" },
-    attach(entry) {
-      preferenceCalls.push(["attach"]);
-      entry.preferences = { autoLinkPaste: true, language: "english" };
-      return entry.preferences;
-    },
-    apply(entry, message) {
-      preferenceCalls.push(["apply", message.auto_link_paste, message.language]);
-      entry.preferences = {
-        autoLinkPaste: message.auto_link_paste !== false,
-        language: message.language,
-      };
-      return { changed: true, preferences: entry.preferences };
-    },
-  });
-  const { container, registry, runtime } = createRuntimeHarness({ preferencesControllerFactory });
+test("Tiptap runtime applies preferences through runtime state", () => {
+  const { container, registry, runtime } = createRuntimeHarness();
   runtime.ensureEditor({
     tabId: "tab-a",
     containerId: "editor-root",
@@ -782,7 +663,6 @@ test("Tiptap runtime applies preferences through the injected controller", () =>
     language: "Chinese",
   });
 
-  assert.deepEqual(preferenceCalls, [["attach"], ["apply", false, "Chinese"]]);
   assert.deepEqual(registry.get("tab-a").preferences, {
     autoLinkPaste: false,
     language: "Chinese",
@@ -792,19 +672,20 @@ test("Tiptap runtime applies preferences through the injected controller", () =>
 
 test("Tiptap runtime reports parse failures without touching the editor", () => {
   const messages = [];
-  const { calls, runtime } = createRuntimeHarness({
-    markdownManagerFactory: () => ({
-      parse() {
-        throw new Error("parse failed");
-      },
-    }),
-  });
+  const { calls, registry, runtime } = createRuntimeHarness();
   runtime.ensureEditor({
     tabId: "tab-a",
     containerId: "editor-root",
     initialContent: "# Note",
   });
   runtime.attachChannel("tab-a", { send: (message) => messages.push(message) });
+  registry.get("tab-a").markdownSync = {
+    markdown: "# Note",
+    setMarkdown: () => ({
+      ok: false,
+      error: new Error("parse failed"),
+    }),
+  };
   calls.length = 0;
 
   runtime.handleRustMessage("tab-a", { type: "set_content", content: "broken" });
@@ -886,8 +767,6 @@ test("Tiptap runtime destroys and unregisters editor entries", () => {
 
   assert.equal(registry.has("tab-a"), false);
   assert.deepEqual(calls, [
-    ["pasteControllerDestroy"],
-    ["tableCommandsDestroy"],
     ["destroy"],
   ]);
   assert.deepEqual(detached, ["hybrid", "layout:hybrid"]);
@@ -924,21 +803,8 @@ test("Tiptap runtime ignores stale host destroy messages", () => {
   assert.equal(registry.has("tab-a"), false);
 });
 
-test("Tiptap runtime wires paste handling through editor props", () => {
-  const pasteCalls = [];
-  const pasteControllerFactory = () => ({
-    attach({ root }) {
-      pasteCalls.push(["attach", root.className]);
-    },
-    destroy() {
-      pasteCalls.push(["destroy"]);
-    },
-    handlePaste({ event }) {
-      pasteCalls.push(["paste", event.type]);
-      return true;
-    },
-  });
-  const { registry, runtime } = createRuntimeHarness({ pasteControllerFactory });
+test("Tiptap runtime wires autolink paste handling through editor props", () => {
+  const { calls, registry, runtime } = createRuntimeHarness();
   runtime.ensureEditor({
     tabId: "tab-a",
     containerId: "editor-root",
@@ -946,10 +812,33 @@ test("Tiptap runtime wires paste handling through editor props", () => {
   });
 
   const editor = registry.get("tab-a").editor;
-  const handled = editor.options.editorProps.handlePaste(null, { type: "paste" }, null);
+  editor.state.selection = {
+    from: 2,
+    to: 6,
+    empty: false,
+  };
+  editor.state.doc = {
+    textBetween: () => "Note",
+  };
+  const event = {
+    clipboardData: {
+      getData: () => "https://example.com",
+    },
+    preventDefault: () => calls.push(["preventDefault"]),
+  };
+  const handled = editor.options.editorProps.handlePaste(
+    { state: editor.state },
+    event,
+    null,
+  );
 
   assert.equal(handled, true);
-  assert.deepEqual(pasteCalls, [["attach", "mn-tiptap-runtime"], ["paste", "paste"]]);
+  assert.deepEqual(calls.slice(-4), [
+    ["setTextSelection", { from: 2, to: 6 }],
+    ["setLink", "https://example.com"],
+    ["preventDefault"],
+    ["focus"],
+  ]);
 });
 
 test("Tiptap runtime sends save requests from editor shortcuts", () => {

@@ -233,7 +233,7 @@ js/src/
 
 #### 3.1 简化 editor-runtime
 - [x] 将 `tiptap-runtime.js` 重写为 `editor-runtime.ts`
-- [ ] 移除所有控制器工厂注入，改为 React 组件自行管理状态
+- [x] 移除所有控制器工厂注入，改为 React 组件自行管理状态
 - [ ] 保留核心职责：Editor 实例创建、Rust 协议桥接、Markdown 同步
 - [ ] 运行时只负责：创建 Editor → 挂载 React 树 → 转发 Rust 命令/事件
 

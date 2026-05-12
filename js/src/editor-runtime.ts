@@ -21,6 +21,7 @@ import {
   createPapyroMarkdownManager,
   createPapyroTiptapExtensions,
 } from "./tiptap-markdown.js";
+import { createTiptapTableCommandController } from "./tiptap-table-command-controller.js";
 
 function requireFunction(value, name) {
   if (typeof value !== "function") {
@@ -40,16 +41,15 @@ function defaultDocument() {
   return typeof document === "undefined" ? null : document;
 }
 
-function createLegacyMountController() {
+function createLegacyEditorHostElement() {
+  return null;
+}
+
+function mountLegacyEditorTree({ root, editor } = {}) {
+  editor?.mount?.(root);
   return {
-    createEditorElement: () => null,
-    mount({ root, editor } = {}) {
-      editor?.mount?.(root);
-      return {
-        refresh: () => {},
-        destroy: () => {},
-      };
-    },
+    refresh: () => {},
+    destroy: () => {},
   };
 }
 
@@ -207,23 +207,8 @@ export function createTiptapEditorRuntime({
   dom = {},
   editorConstructor = Editor,
   extensionsFactory = createPapyroTiptapExtensions,
-  markdownManagerFactory = createPapyroMarkdownManager,
-  markdownSyncFactory = createMarkdownSyncController,
-  modeControllerFactory = createTiptapModeController,
-  modeSnapshotControllerFactory = createTiptapModeSnapshotController,
-  blockHintsControllerFactory = createTiptapBlockHintsController,
-  formatCommandControllerFactory = createTiptapFormatCommandController,
-  historyCommandControllerFactory = createTiptapHistoryCommandController,
-  pasteControllerFactory = createTiptapPasteController,
-  preferencesControllerFactory = createTiptapPreferencesController,
-  sourcePaneControllerFactory = createTiptapSourcePaneController,
-  slashCommandControllerFactory = createTiptapSlashCommandController,
-  tableCommandControllerFactory = () => ({
-    attach() {},
-    refresh() {},
-    destroy() {},
-  }),
-  mountControllerFactory = createLegacyMountController,
+  createEditorHostElement = createLegacyEditorHostElement,
+  mountEditorTree = mountLegacyEditorTree,
   clipboard = {},
   layout = {},
   navigation,
@@ -233,54 +218,13 @@ export function createTiptapEditorRuntime({
   const createElement = dom.createElement ?? ((tagName) => documentRef?.createElement?.(tagName));
   const TiptapEditor = requireFunction(editorConstructor, "editorConstructor");
   const createExtensions = requireFunction(extensionsFactory, "extensionsFactory");
-  const createMarkdownManager = requireFunction(
-    markdownManagerFactory,
-    "markdownManagerFactory",
+  const createEditorElement = requireFunction(
+    createEditorHostElement,
+    "createEditorHostElement",
   );
-  const createMarkdownSync = requireFunction(markdownSyncFactory, "markdownSyncFactory");
-  const createModeController = requireFunction(
-    modeControllerFactory,
-    "modeControllerFactory",
-  );
-  const createModeSnapshots = requireFunction(
-    modeSnapshotControllerFactory,
-    "modeSnapshotControllerFactory",
-  );
-  const createBlockHintsController = requireFunction(
-    blockHintsControllerFactory,
-    "blockHintsControllerFactory",
-  );
-  const createFormatCommandController = requireFunction(
-    formatCommandControllerFactory,
-    "formatCommandControllerFactory",
-  );
-  const createHistoryCommandController = requireFunction(
-    historyCommandControllerFactory,
-    "historyCommandControllerFactory",
-  );
-  const createPasteController = requireFunction(
-    pasteControllerFactory,
-    "pasteControllerFactory",
-  );
-  const createPreferencesController = requireFunction(
-    preferencesControllerFactory,
-    "preferencesControllerFactory",
-  );
-  const createSourcePane = requireFunction(
-    sourcePaneControllerFactory,
-    "sourcePaneControllerFactory",
-  );
-  const createSlashCommandController = requireFunction(
-    slashCommandControllerFactory,
-    "slashCommandControllerFactory",
-  );
-  const createTableCommandController = requireFunction(
-    tableCommandControllerFactory,
-    "tableCommandControllerFactory",
-  );
-  const createMountController = requireFunction(
-    mountControllerFactory,
-    "mountControllerFactory",
+  const mountTree = requireFunction(
+    mountEditorTree,
+    "mountEditorTree",
   );
   const transferImage = requireFunction(
     clipboard.imageFileFromTransfer ?? imageFileFromTransfer,
@@ -345,27 +289,26 @@ export function createTiptapEditorRuntime({
     root.className = "mn-tiptap-runtime";
     root.dataset.tabId = tabId;
     container.replaceChildren(root);
-    const mountController = createMountController({ document: documentRef, root });
 
     const extensions = createExtensions();
-    const markdownManager = createMarkdownManager({ extensions });
-    const markdownSync = createMarkdownSync({
+    const markdownManager = createPapyroMarkdownManager({ extensions });
+    const markdownSync = createMarkdownSyncController({
       initialMarkdown: initialContent ?? "",
       manager: markdownManager,
     });
-    const modeController = createModeController(viewMode);
-    const modeSnapshots = createModeSnapshots();
-    const blockHintsController = createBlockHintsController();
-    const formatCommands = createFormatCommandController();
-    const historyCommands = createHistoryCommandController();
-    const pasteController = createPasteController();
-    const preferencesController = createPreferencesController();
-    const sourcePane = createSourcePane({
+    const modeController = createTiptapModeController(viewMode);
+    const modeSnapshots = createTiptapModeSnapshotController();
+    const blockHintsController = createTiptapBlockHintsController();
+    const formatCommands = createTiptapFormatCommandController();
+    const historyCommands = createTiptapHistoryCommandController();
+    const pasteController = createTiptapPasteController();
+    const preferencesController = createTiptapPreferencesController();
+    const sourcePane = createTiptapSourcePaneController({
       document: documentRef,
       onSelectionChange: (entry) => syncOutline(tabId, entry?.viewMode),
     });
-    const slashCommands = createSlashCommandController();
-    const tableCommands = createTableCommandController();
+    const slashCommands = createTiptapSlashCommandController();
+    const tableCommands = createTiptapTableCommandController();
     const editor = new TiptapEditor(
       defaultEditorOptions({
         initialContent: markdownSync.markdown,
@@ -376,9 +319,10 @@ export function createTiptapEditorRuntime({
         transferImage,
         sendImageRequest,
         element:
-          typeof mountController?.createEditorElement === "function"
-            ? mountController.createEditorElement({ root })
-            : null,
+          createEditorElement({
+            document: documentRef,
+            root,
+          }),
       }),
     );
     if (typeof editor.on === "function") {
@@ -417,7 +361,7 @@ export function createTiptapEditorRuntime({
       tableCommands,
       reactMount: null,
     });
-    const reactMount = mountController.mount?.({ root, editor, entry }) ?? null;
+    const reactMount = mountTree({ root, editor, entry }) ?? null;
     entry.reactMount = reactMount;
     modeController.apply(entry, modeController.mode);
     blockHintsController.attach(entry);

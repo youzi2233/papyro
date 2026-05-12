@@ -244,12 +244,14 @@ test("React floating chrome shares positioning utilities", () => {
 
 test("official table-node layer owns visible table chrome at the editor boundary", () => {
   assert.doesNotMatch(indexSource, /createTiptapReactFormatToolbarView/u);
-  assert.match(editorRuntimeDefaultsSource, /createTiptapTableCommandController/u);
+  assert.doesNotMatch(editorRuntimeDefaultsSource, /createTiptapTableCommandController/u);
+  assert.doesNotMatch(editorRuntimeDefaultsSource, /tableCommandControllerFactory/u);
+  assert.match(editorRuntimeSource, /createTiptapTableCommandController/u);
   assert.match(
-    editorRuntimeDefaultsSource,
-    /tableCommandControllerFactory\s*=\s*createTiptapTableCommandController/u,
+    editorRuntimeSource,
+    /const tableCommands = createTiptapTableCommandController\(\)/u,
   );
-  assert.doesNotMatch(editorRuntimeSource, /from "\.\/tiptap-table-command-controller\.js"/u);
+  assert.match(editorRuntimeSource, /from "\.\/tiptap-table-command-controller\.js"/u);
   assert.doesNotMatch(editorRuntimeSource, /tableToolbarControllerFactory/u);
   assert.doesNotMatch(editorRuntimeSource, /tableToolbar/u);
   assert.doesNotMatch(editorRuntimeSource, /from "\.\/tiptap-table-toolbar\.js"/u);

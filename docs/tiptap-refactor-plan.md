@@ -233,7 +233,7 @@ The current `tiptap-runtime.js` creates many controllers via dependency injectio
 
 #### 3.1 Simplify editor-runtime
 - [x] Rewrite `tiptap-runtime.js` as `editor-runtime.ts`
-- [ ] Remove all controller factory injection, let React components manage their own state
+- [x] Remove all controller factory injection, let React components manage their own state
 - [ ] Keep core responsibilities: Editor instance creation, Rust protocol bridge, Markdown sync
 - [ ] Runtime only does: create Editor → mount React tree → forward Rust commands/events
 
