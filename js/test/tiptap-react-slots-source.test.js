@@ -38,10 +38,6 @@ const officialDragHandleBridgeSource = readFileSync(
   new URL("../src/tiptap-react/official-drag-handle-bridge.jsx", import.meta.url),
   "utf8",
 );
-const blockHandleComponentSource = readFileSync(
-  new URL("../src/tiptap-react/components/block-handle.jsx", import.meta.url),
-  "utf8",
-);
 const commandMenuSource = readFileSync(
   new URL("../src/tiptap-react/components/command-menu.jsx", import.meta.url),
   "utf8",
@@ -52,10 +48,6 @@ const hoverIntentHookSource = readFileSync(
 );
 const pointerActivationHookSource = readFileSync(
   new URL("../src/tiptap-react/hooks/use-pointer-activation.js", import.meta.url),
-  "utf8",
-);
-const blockActionMenuSource = readFileSync(
-  new URL("../src/tiptap-react/components/block-action-menu.jsx", import.meta.url),
   "utf8",
 );
 const tableContextMenuSource = readFileSync(
@@ -80,10 +72,6 @@ const linkEditorSource = readFileSync(
 );
 const linkEditorViewSource = readFileSync(
   new URL("../src/tiptap-react/link-editor-view.jsx", import.meta.url),
-  "utf8",
-);
-const blockActionMenuViewSource = readFileSync(
-  new URL("../src/tiptap-react/block-action-menu-view.jsx", import.meta.url),
   "utf8",
 );
 const floatingUtilsSource = readFileSync(
@@ -227,10 +215,6 @@ test("official drag handle bridge keeps Tiptap callbacks stable across renders",
   assert.match(officialDragHandleBridgeSource, /blockHandle\?\.viewState/u);
   assert.match(officialDragHandleBridgeSource, /allowOfficialDragFromBridge/u);
   assert.match(officialDragHandleBridgeSource, /clickAction\?\.\(event\)/u);
-  assert.match(blockHandleComponentSource, /mn-tiptap-block-handle-controls/u);
-  assert.match(blockHandleComponentSource, /rootProps/u);
-  assert.match(blockHandleComponentSource, /officialDragging/u);
-  assert.match(blockHandleComponentSource, /data-official-dragging/u);
 });
 
 test("React command chrome uses shared menu primitives", () => {
@@ -249,9 +233,6 @@ test("React command chrome uses shared menu primitives", () => {
   assert.match(commandMenuSource, /CommandItem as PrimitiveCommandItem/u);
   assert.match(commandMenuSource, /<PrimitiveCommandItem/u);
   assert.match(commandMenuSource, /<CommandSection/u);
-  assert.match(blockActionMenuSource, /from "\.\/primitives\.jsx"/u);
-  assert.match(blockActionMenuSource, /<CommandRow/u);
-  assert.match(blockActionMenuSource, /<CommandText/u);
   assert.match(tableContextMenuSource, /from "\.\/primitives\.jsx"/u);
   assert.match(tableContextMenuSource, /<CommandRow/u);
   assert.match(tableContextMenuSource, /createTableCommandMenuModel/u);
@@ -290,8 +271,6 @@ test("React pointer activation does not retry handled pointer activations", () =
 test("React floating chrome shares positioning utilities", () => {
   assert.match(floatingUtilsSource, /export function positionReactFloatingElement/u);
   assert.match(floatingUtilsSource, /export function shouldFlipFloatingSidePanel/u);
-  assert.match(blockActionMenuViewSource, /from "\.\/utils\/floating\.js"/u);
-  assert.doesNotMatch(blockActionMenuViewSource, /positionFloatingElement/u);
 });
 
 test("official table-node layer owns visible table chrome at the editor boundary", () => {

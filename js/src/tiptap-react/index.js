@@ -42,14 +42,6 @@ export {
   createTiptapReactMountController,
 } from "./mount-controller.jsx";
 export {
-  createTiptapReactBlockActionMenuView,
-  TiptapReactBlockActionMenuView,
-} from "./block-action-menu-view.jsx";
-export {
-  createTiptapReactBlockHandleView,
-  TiptapReactBlockHandleView,
-} from "./block-handle-view.jsx";
-export {
   createTiptapReactTableChromeRenderer,
   TiptapReactTableChromeRenderer,
 } from "./table-chrome-renderer.jsx";
