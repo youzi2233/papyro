@@ -91,6 +91,7 @@ Generated files must be committed with the source change:
 - `apps/desktop/assets/styles/tiptap-chrome-command.css`
 - `apps/desktop/assets/styles/tiptap-chrome-table.css`
 - `apps/desktop/assets/styles/tiptap-chrome-block.css`
+- `apps/desktop/assets/styles/tiptap-chrome-papyro.css`
 - `apps/mobile/assets/styles/markdown.css`
 - `apps/mobile/assets/styles/tiptap-chrome.css`
 - `apps/mobile/assets/styles/tiptap-chrome-code.css`
@@ -98,6 +99,7 @@ Generated files must be committed with the source change:
 - `apps/mobile/assets/styles/tiptap-chrome-command.css`
 - `apps/mobile/assets/styles/tiptap-chrome-table.css`
 - `apps/mobile/assets/styles/tiptap-chrome-block.css`
+- `apps/mobile/assets/styles/tiptap-chrome-papyro.css`
 
 ## Documentation Rules
 

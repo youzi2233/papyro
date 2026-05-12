@@ -8,6 +8,7 @@ const TIPTAP_STYLE_MODULES = [
   "tiptap-chrome-command.css",
   "tiptap-chrome-table.css",
   "tiptap-chrome-block.css",
+  "tiptap-chrome-papyro.css",
 ];
 
 const DEFAULT_CSS_GROUPS = [
@@ -185,6 +186,17 @@ const TIPTAP_CODE_HIGHLIGHT_REQUIREMENTS = [
   ["operator", ".mn-tiptap-code-block .hljs-operator", "--mn-code-token-operator"],
 ];
 
+const PAPYRO_FEATURE_REQUIREMENTS = [
+  ["Papyro source pane", ".mn-tiptap-source-pane", "--mn-document-code-font"],
+  ["Papyro source mode hides editor", ".mn-tiptap-runtime[data-view-mode=\"source\"] .mn-tiptap-editor", "display: none"],
+  ["Papyro source pane selection", ".mn-tiptap-source-pane::selection", "--mn-hybrid-selection"],
+  ["Papyro KaTeX inline math", ".mn-tiptap-inline-math", "--mn-markdown-inline-math-font"],
+  ["Papyro KaTeX source editor", ".mn-tiptap-math-source", "--mn-markdown-mono-font"],
+  ["Papyro Mermaid source editor", ".mn-tiptap-mermaid-source", "--mn-markdown-code-block-pad-y"],
+  ["Papyro Mermaid preview block", ".mn-mermaid-block", "--mn-markdown-code-block-bg"],
+  ["Papyro Mermaid status", ".mn-mermaid-status", "--mn-type-small"],
+];
+
 function main() {
   const args = process.argv.slice(2);
 
@@ -293,6 +305,14 @@ function checkCssText(source) {
       failures.push(`Tiptap code highlight ${label} missing token ${token}`);
     }
   }
+  for (const [label, selector, token] of PAPYRO_FEATURE_REQUIREMENTS) {
+    if (!includesCssFragment(source, compactSource, selector)) {
+      failures.push(`${label} missing selector ${selector}`);
+    }
+    if (!includesCssFragment(source, compactSource, token)) {
+      failures.push(`${label} missing token ${token}`);
+    }
+  }
   return failures;
 }
 
@@ -331,6 +351,9 @@ ${TIPTAP_COMMAND_PANEL_REQUIREMENTS.map(
 ${TIPTAP_CODE_HIGHLIGHT_REQUIREMENTS.map(
   ([, selector, token]) => `${selector} { color: var(${token}); }`,
 ).join("\n")}
+${PAPYRO_FEATURE_REQUIREMENTS.map(
+  ([, selector, token]) => `${selector} { color: var(${token}); }`,
+).join("\n")}
 `;
 
   assert(checkCssText(css).length === 0);
@@ -359,6 +382,13 @@ ${TIPTAP_CODE_HIGHLIGHT_REQUIREMENTS.map(
   assert(
     checkCssText(missingHighlight).some((failure) =>
       failure.includes("Tiptap code highlight keyword"),
+    ),
+  );
+
+  const missingPapyroFeature = css.replaceAll(".mn-tiptap-source-pane", ".mn-source-pane");
+  assert(
+    checkCssText(missingPapyroFeature).some((failure) =>
+      failure.includes("Papyro source pane"),
     ),
   );
 

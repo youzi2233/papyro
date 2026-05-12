@@ -91,6 +91,7 @@ diff assets/styles/tiptap-chrome-base.css apps/desktop/assets/styles/tiptap-chro
 diff assets/styles/tiptap-chrome-command.css apps/desktop/assets/styles/tiptap-chrome-command.css
 diff assets/styles/tiptap-chrome-table.css apps/desktop/assets/styles/tiptap-chrome-table.css
 diff assets/styles/tiptap-chrome-block.css apps/desktop/assets/styles/tiptap-chrome-block.css
+diff assets/styles/tiptap-chrome-papyro.css apps/desktop/assets/styles/tiptap-chrome-papyro.css
 diff assets/styles/markdown.css apps/mobile/assets/styles/markdown.css
 diff assets/styles/tiptap-chrome.css apps/mobile/assets/styles/tiptap-chrome.css
 diff assets/styles/tiptap-chrome-code.css apps/mobile/assets/styles/tiptap-chrome-code.css
@@ -98,6 +99,7 @@ diff assets/styles/tiptap-chrome-base.css apps/mobile/assets/styles/tiptap-chrom
 diff assets/styles/tiptap-chrome-command.css apps/mobile/assets/styles/tiptap-chrome-command.css
 diff assets/styles/tiptap-chrome-table.css apps/mobile/assets/styles/tiptap-chrome-table.css
 diff assets/styles/tiptap-chrome-block.css apps/mobile/assets/styles/tiptap-chrome-block.css
+diff assets/styles/tiptap-chrome-papyro.css apps/mobile/assets/styles/tiptap-chrome-papyro.css
 
 echo "=== performance trace note ==="
 echo "Runtime interaction traces are manual: PAPYRO_PERF=1 cargo run -p papyro-desktop"

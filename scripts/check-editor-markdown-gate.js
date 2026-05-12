@@ -49,6 +49,7 @@ const TIPTAP_STYLE_MODULES = [
   "tiptap-chrome-command.css",
   "tiptap-chrome-table.css",
   "tiptap-chrome-block.css",
+  "tiptap-chrome-papyro.css",
 ];
 
 const RUNTIME_STYLE_COPIES = [

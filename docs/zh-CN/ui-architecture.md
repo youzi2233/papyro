@@ -28,6 +28,7 @@ flowchart TD
 - `apps/desktop/assets/main.css` 是桌面端运行时副本；`apps/mobile/assets/main.css` 负责移动端 shell 布局和移动端 token 桥接。
 - `assets/styles/markdown.css` 与 `assets/styles/tiptap-chrome.css` 的桌面端、移动端 runtime 副本在共享编辑器 CSS 改动时必须同步。
 - `tiptap-chrome.css` ??? Tiptap chrome ???????????? `tiptap-chrome-code.css`?`tiptap-chrome-base.css`?`tiptap-chrome-command.css`?`tiptap-chrome-table.css` ? `tiptap-chrome-block.css`????? CSS ???????????
+- `tiptap-chrome-papyro.css` 承载 Papyro 专属源码模式、KaTeX 数学和 Mermaid 编辑/渲染样式，与官方 Tiptap 组件 SCSS 分开维护。
 - `crates/ui/src/components/primitives.rs` 拥有可复用 Dioxus 控件，并重新导出 `primitives/buttons.rs`、`primitives/empty.rs`、`primitives/feedback.rs`、`primitives/forms.rs`、`primitives/layout.rs`、`primitives/navigation.rs`、`primitives/overlays.rs`、`primitives/results.rs`、`primitives/settings.rs`、`primitives/tabs.rs` 等聚焦的基础组件子模块。
 - 产品组件组合基础组件，不应该重新发明控件行为。
 - layout 模块负责排列产品区域，不拥有按钮、菜单或表单字段样式。

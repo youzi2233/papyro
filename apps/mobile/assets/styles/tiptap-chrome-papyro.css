@@ -1,0 +1,218 @@
+/* Papyro-owned Tiptap feature styles.
+   Official component SCSS stays bundled through editor.js; this file covers
+   local source mode, KaTeX math node views, and Mermaid rendering surfaces. */
+
+.mn-tiptap-source-pane {
+    box-sizing: border-box;
+    display: block;
+    flex: 1;
+    min-height: 0;
+    height: 100%;
+    width: 100%;
+    max-width: var(--mn-document-measure);
+    margin-inline: auto;
+    padding:
+        max(24px, var(--mn-document-pad-top))
+        max(24px, var(--mn-document-pad-x))
+        max(24px, var(--mn-document-pad-bottom));
+    border: 0;
+    outline: 0;
+    resize: none;
+    background: var(--mn-editor-bg);
+    color: var(--mn-editor-ink);
+    caret-color: var(--mn-accent);
+    font-family: var(--mn-document-code-font);
+    font-size: var(--mn-document-body-size);
+    line-height: var(--mn-document-line-height);
+    tab-size: 4;
+    white-space: pre-wrap;
+    overflow: auto;
+}
+
+.mn-tiptap-source-pane[hidden] {
+    display: none;
+}
+
+.mn-tiptap-runtime[data-view-mode="source"] .mn-tiptap-editor {
+    display: none;
+}
+
+.mn-tiptap-source-pane::selection {
+    background: var(--mn-hybrid-selection, var(--mn-selection-bg, rgba(100, 116, 139, .26)));
+}
+
+.mn-tiptap-inline-math,
+.mn-tiptap-math-block {
+    color: var(--mn-editor-ink);
+    font-family: var(--mn-markdown-inline-math-font, Georgia, "Times New Roman", serif);
+}
+
+.mn-tiptap-inline-math {
+    display: inline-flex;
+    align-items: baseline;
+    min-width: 1.5ch;
+    border-radius: var(--mn-radius-xs);
+    padding: 0 2px;
+    vertical-align: baseline;
+}
+
+.mn-tiptap-inline-math-preview {
+    display: inline-flex;
+    align-items: baseline;
+}
+
+.mn-tiptap-math-block {
+    display: block;
+    box-sizing: border-box;
+    min-width: 0;
+    margin: 0 0 var(--mn-markdown-block-gap);
+    padding: 14px 16px;
+    border: var(--mn-border-subtle);
+    border-radius: var(--mn-markdown-code-radius);
+    background: var(--mn-markdown-code-block-bg);
+    overflow-x: auto;
+}
+
+.mn-tiptap-math-preview {
+    display: flex;
+    justify-content: center;
+    min-width: max-content;
+}
+
+.mn-tiptap-inline-math[data-math-editing="true"],
+.mn-tiptap-math-block[data-math-editing="true"] {
+    border-color: color-mix(in srgb, var(--mn-accent) 44%, var(--mn-border));
+    box-shadow: var(--mn-focus-ring-sm);
+}
+
+.mn-tiptap-inline-math-source,
+.mn-tiptap-math-source {
+    box-sizing: border-box;
+    width: 100%;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--mn-editor-ink);
+    caret-color: var(--mn-accent);
+    font-family: var(--mn-markdown-mono-font);
+    font-size: var(--mn-markdown-code-block-size);
+    line-height: var(--mn-markdown-code-block-line);
+}
+
+.mn-tiptap-inline-math-source {
+    min-width: 12ch;
+}
+
+.mn-tiptap-math-source {
+    min-height: 96px;
+    resize: vertical;
+}
+
+.mn-tiptap-math-error {
+    color: var(--mn-danger);
+    font-family: var(--mn-markdown-mono-font);
+    font-size: .92em;
+    white-space: pre-wrap;
+}
+
+.mn-tiptap-mermaid-block {
+    cursor: default;
+}
+
+.mn-tiptap-mermaid-block[data-mermaid-editing="true"] {
+    display: grid;
+    min-height: 220px;
+    padding: 0;
+    overflow: hidden;
+}
+
+.mn-tiptap-mermaid-preview {
+    min-width: 0;
+}
+
+.mn-tiptap-mermaid-editor {
+    display: grid;
+    grid-template-columns: minmax(220px, .9fr) minmax(260px, 1.1fr);
+    min-height: 220px;
+}
+
+.mn-tiptap-mermaid-source {
+    width: 100%;
+    min-width: 0;
+    min-height: 220px;
+    resize: none;
+    border: 0;
+    border-right: var(--mn-border-subtle);
+    outline: 0;
+    background: transparent;
+    color: var(--mn-editor-ink);
+    caret-color: var(--mn-accent);
+    padding: var(--mn-markdown-code-block-pad-y) var(--mn-markdown-code-block-pad-x);
+    font-family: var(--mn-markdown-mono-font);
+    font-size: var(--mn-markdown-code-block-size);
+    line-height: var(--mn-markdown-code-block-line);
+}
+
+.mn-tiptap-mermaid-preview-pane {
+    min-width: 0;
+    padding: var(--mn-markdown-code-block-pad-y) var(--mn-markdown-code-block-pad-x);
+    overflow: auto;
+}
+
+@media (max-width: 760px) {
+    .mn-tiptap-mermaid-editor {
+        grid-template-columns: 1fr;
+    }
+
+    .mn-tiptap-mermaid-source {
+        border-right: 0;
+        border-bottom: var(--mn-border-subtle);
+    }
+}
+
+.mn-mermaid-block {
+    box-sizing: border-box;
+    min-width: 0;
+    max-width: 100%;
+    margin: 0 0 var(--mn-markdown-block-gap);
+    padding: var(--mn-markdown-code-block-pad-y) var(--mn-markdown-code-block-pad-x);
+    border: var(--mn-border-subtle);
+    border-radius: var(--mn-markdown-code-radius);
+    background: var(--mn-markdown-code-block-bg);
+    color: var(--mn-ink);
+    overflow-x: auto;
+}
+
+.mn-mermaid-svg {
+    display: flex;
+    justify-content: center;
+    min-width: max-content;
+}
+
+.mn-mermaid-svg svg {
+    max-width: 100%;
+    height: auto;
+}
+
+.mn-mermaid-status {
+    display: grid;
+    gap: 6px;
+    color: var(--mn-ink-3);
+    font-family: var(--mn-font-ui);
+    font-size: var(--mn-type-small);
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+
+.mn-mermaid-status-error { color: var(--mn-accent-strong); }
+.mn-mermaid-label { font-weight: var(--mn-weight-bold); }
+.mn-mermaid-detail { color: var(--mn-ink-2); }
+
+.mn-mermaid-source {
+    margin: 0;
+    white-space: pre-wrap;
+    font-family: var(--mn-markdown-mono-font);
+    font-size: var(--mn-markdown-code-block-size);
+    line-height: var(--mn-markdown-code-block-line);
+    color: var(--mn-ink-2);
+}

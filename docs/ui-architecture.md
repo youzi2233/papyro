@@ -25,7 +25,7 @@ flowchart TD
 Rules:
 
 - `assets/main.css` is the shared visual source; `assets/styles/markdown.css` keeps document surface, outline, Preview, and rendered Markdown styles out of the main chrome budget, while `assets/styles/tiptap-chrome.css` is the Tiptap chrome entry file.
-- Tiptap chrome implementation styles are split into `tiptap-chrome-code.css`, `tiptap-chrome-base.css`, `tiptap-chrome-command.css`, `tiptap-chrome-table.css`, and `tiptap-chrome-block.css` so code-block controls, base ProseMirror chrome, command panels, table affordances, and block handles can evolve independently.
+- Tiptap chrome implementation styles are split into `tiptap-chrome-code.css`, `tiptap-chrome-base.css`, `tiptap-chrome-command.css`, `tiptap-chrome-table.css`, `tiptap-chrome-block.css`, and `tiptap-chrome-papyro.css` so code-block controls, base ProseMirror chrome, command panels, table affordances, block handles, and Papyro-only source/math/Mermaid surfaces can evolve independently.
 - `apps/desktop/assets/main.css` mirrors the desktop runtime copy; `apps/mobile/assets/main.css` owns mobile shell layout and mobile token bridges.
 - Desktop and mobile runtime copies of `assets/styles/markdown.css` and every Tiptap chrome stylesheet must stay synchronized whenever shared editor CSS changes.
 - `crates/ui/src/components/primitives.rs` owns reusable Dioxus controls and re-exports focused primitive submodules such as `primitives/buttons.rs`, `primitives/empty.rs`, `primitives/feedback.rs`, `primitives/forms.rs`, `primitives/layout.rs`, `primitives/navigation.rs`, `primitives/overlays.rs`, `primitives/results.rs`, `primitives/settings.rs`, and `primitives/tabs.rs`.
