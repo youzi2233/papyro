@@ -414,6 +414,8 @@ node scripts/check-tiptap-release-smoke.js
   - 当前覆盖：快捷新增轨道已贴着真实表格网格边缘，使用 12px 的紧凑 chrome，在亮色/暗色主题下保持对比度，但不再像调试 overlay。
   - 当前打磨：快捷新增轨道意图热区收紧到 12px，可见轨道收敛为 14px，减少在表格与相邻块之间移动时误露出新增行/列控件；表格 hover 比较也会忽略同一语义目标内的普通鼠标抖动，避免 overlay 重复重绘。
   - 当前打磨：快捷新增 chrome 现在在共享模型中区分可见的细轨道和稍大的命中区，React chrome 与迁移期 DOM fallback 共用同一套 visual-rect CSS 契约。
+  - 当前修复：tableWrapper 现在使用 `overflow: hidden`（而非仅 `overflow-y: hidden`），防止通过 portal 注入的 extend 按钮因 `offset(4)` 超出 padding 区域导致水平滚动条。
+  - 当前修复：菜单和下拉菜单原语容器的 z-index 从 50 提升到 200，确保渲染在表格 chrome 元素（z-index 158–170）之上。
 - [ ] 表格控件不能出现在相邻代码块或其它非表格内容下面。
   - 当前覆盖：快捷新增行/列轨道现在要求 target 属于表格自身，或是明确的 editor rail 目标；相邻代码块和其它复杂块不能再借用表格坐标误显示表格新增 chrome。
 - [x] 为对齐、表头、合并单元格 fallback、单元格背景 metadata 补 Markdown round-trip fixtures。

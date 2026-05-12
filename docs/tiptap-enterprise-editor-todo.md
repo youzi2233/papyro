@@ -421,6 +421,8 @@ Tasks:
   - Current polish: quick-add rails keep the same slim visual rail but now use a larger 18px pointer hit area and treat the table's real bottom/right edge as part of the affordance, so users do not need to hunt for an off-by-one outside gap.
   - Current polish: the quick-add rail intent zone is now tightened to 12px and the visible rail is 14px, which reduces accidental row/column add controls when moving between adjacent blocks while keeping the edge discoverable. Table hover comparisons ignore ordinary pointer jitter inside the same semantic target, preventing redundant overlay re-renders.
   - Current polish: quick-add chrome now separates its visible slim rail from a slightly larger hit target in the shared model, and both React chrome and the migration DOM fallback consume the same visual-rect CSS contract.
+  - Current fix: tableWrapper now uses `overflow: hidden` (not just `overflow-y: hidden`) to prevent horizontal scrollbars caused by extend buttons portaled inside with `offset(4)` pushing content beyond the padded area.
+  - Current fix: menu and dropdown-menu primitive containers elevated from z-index 50 to 200 so they render above table chrome elements (z-index 158–170).
 - [ ] Keep table controls hidden for adjacent code blocks or other non-table content.
   - Current coverage: quick-add row/column rails now require a table-owned target or explicit editor rail target, so adjacent code blocks and other complex blocks cannot accidentally display table insertion chrome.
 - [x] Add Markdown round-trip fixtures for alignment, header rows, merged-cell fallback, and cell background metadata if supported.
