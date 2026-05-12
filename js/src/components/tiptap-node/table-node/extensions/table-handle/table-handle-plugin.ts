@@ -19,7 +19,7 @@ import {
   safeClosest,
   selectCellsByCoords,
 } from "../../lib/tiptap-table-utils"
-import { isValidPosition } from "../../../../../lib/tiptap-utils.js"
+import { isValidPosition } from "../../../../../lib/tiptap-utils"
 import { createTableDragImage } from "./helpers/create-image"
 
 function hideElements(selector, rootEl) {

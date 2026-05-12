@@ -287,7 +287,7 @@ Migrate by module priority, one module at a time:
 - [x] All hooks under `hooks/`
 
 #### 5.3 Utilities and Tests
-- [ ] Utility functions under `lib/`
+- [x] Utility functions under `lib/`
 - [ ] Test file migration (keep `node --test` runner)
 
 ---
