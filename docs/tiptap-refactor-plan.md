@@ -255,7 +255,7 @@ The current `tiptap-runtime.js` creates many controllers via dependency injectio
 
 The table-node is partially integrated, needs completion:
 
-- [ ] Confirm all official table-node interactions are correctly mounted:
+- [x] Confirm all official table-node interactions are correctly mounted:
   - Row/column handles (show on hover)
   - Cell selection overlay
   - Row/column extend buttons
@@ -263,7 +263,7 @@ The table-node is partially integrated, needs completion:
   - Column width resize
 - [x] Remove redundant bridging logic in `tiptap-table-command-controller.js`
 - [ ] Remove code in `tiptap-table.js` replaced by official components
-- [ ] Ensure table Markdown serialization is correct (GFM table format)
+- [x] Ensure table Markdown serialization is correct (GFM table format)
 
 ---
 

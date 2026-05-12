@@ -255,7 +255,7 @@ js/src/
 
 当前 table-node 已部分集成，需要完善：
 
-- [ ] 确认官方 table-node 的所有交互已正确挂载：
+- [x] 确认官方 table-node 的所有交互已正确挂载：
   - 行/列 handle（hover 显示）
   - 单元格选择覆盖层
   - 行/列扩展按钮
@@ -263,7 +263,7 @@ js/src/
   - 列宽调整
 - [x] 移除 `tiptap-table-command-controller.js` 中的冗余桥接逻辑
 - [ ] 移除 `tiptap-table.js` 中被官方组件替代的代码
-- [ ] 确保表格 Markdown 序列化正确（GFM table 格式）
+- [x] 确保表格 Markdown 序列化正确（GFM table 格式）
 
 ---
 

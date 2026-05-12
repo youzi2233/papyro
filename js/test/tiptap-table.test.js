@@ -141,7 +141,7 @@ test("Papyro table view exposes official table-node portal containers only", () 
   }
 });
 
-test("Papyro table Markdown renderer keeps pipe tables when Markdown is lossless", () => {
+test("Papyro table Markdown renderer keeps GFM pipe tables when Markdown is lossless", () => {
   const markdown = PapyroTable.config.renderMarkdown(
     {
       type: "table",
@@ -151,6 +151,7 @@ test("Papyro table Markdown renderer keeps pipe tables when Markdown is lossless
           content: [
             { type: "tableHeader", attrs: { align: null }, content: [{ type: "paragraph", content: [{ type: "text", text: "Name" }] }] },
             { type: "tableHeader", attrs: { align: "center" }, content: [{ type: "paragraph", content: [{ type: "text", text: "Status" }] }] },
+            { type: "tableHeader", attrs: { align: "right" }, content: [{ type: "paragraph", content: [{ type: "text", text: "Owner" }] }] },
           ],
         },
         {
@@ -158,6 +159,7 @@ test("Papyro table Markdown renderer keeps pipe tables when Markdown is lossless
           content: [
             { type: "tableCell", attrs: { align: null }, content: [{ type: "paragraph", content: [{ type: "text", text: "Papyro" }] }] },
             { type: "tableCell", attrs: { align: "center" }, content: [{ type: "paragraph", content: [{ type: "text", text: "Ready" }] }] },
+            { type: "tableCell", attrs: { align: "right" }, content: [{ type: "paragraph", content: [{ type: "text", text: "Team" }] }] },
           ],
         },
       ],
@@ -167,8 +169,9 @@ test("Papyro table Markdown renderer keeps pipe tables when Markdown is lossless
 
   assert.equal(
     markdown,
-    "\n| Name   | Status |\n| ------ | :------: |\n| Papyro | Ready  |\n",
+    "\n| Name   | Status | Owner |\n| ------ | :------: | -----: |\n| Papyro | Ready  | Team  |\n",
   );
+  assert.match(markdown, /^\| ------ \| :------: \| -----: \|$/m);
 });
 
 test("Papyro table Markdown renderer falls back to HTML when table attributes would be lost", () => {
