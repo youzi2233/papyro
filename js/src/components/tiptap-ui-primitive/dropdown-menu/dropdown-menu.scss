@@ -23,7 +23,7 @@
   --padding: 0.375rem;
 
   position: relative;
-  z-index: 50;
+  z-index: 200;
   min-width: 8rem;
   max-height: var(--radix-dropdown-menu-content-available-height);
   overflow-x: hidden;
@@ -66,7 +66,7 @@
   --slide-y: 0px;
   --padding: 0.375rem;
 
-  z-index: 50;
+  z-index: 200;
   min-width: 6rem;
   overflow: hidden;
   border-radius: calc(var(--padding) + var(--tt-radius-lg));
