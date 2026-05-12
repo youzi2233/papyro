@@ -243,10 +243,10 @@ The current `tiptap-runtime.js` creates many controllers via dependency injectio
 - [ ] Entry only does: create runtime → install on `window.papyroEditor`
 
 #### 3.3 React Island Refactoring
-- [ ] Keep `island.jsx` → migrate to `island.tsx`
-- [ ] Keep slot architecture (BeforeContent / EditorContent / AfterContent / OverlayLayer)
-- [ ] Keep `runtime-context` → migrate to TS, simplify interface
-- [ ] Keep `mount-controller` → migrate to TS
+- [x] Keep `island.jsx` → migrate to `island.tsx`
+- [x] Keep slot architecture (BeforeContent / EditorContent / AfterContent / OverlayLayer)
+- [x] Keep `runtime-context` → migrate to TS, simplify interface
+- [x] Keep `mount-controller` → migrate to TS
 - [ ] Remove unused slot definitions from `slots.jsx`
 
 ---
@@ -274,10 +274,10 @@ Migrate by module priority, one module at a time:
 #### 5.1 Core Modules (Priority)
 - [ ] `editor-runtime.js` → `editor-runtime.ts`
 - [x] `editor-tiptap-entry.js` → `editor-entry.ts`
-- [ ] `tiptap-react/runtime-context.jsx` → `.tsx`
-- [ ] `tiptap-react/runtime-model.js` → `.ts`
-- [ ] `tiptap-react/island.jsx` → `.tsx`
-- [ ] `tiptap-react/mount-controller.jsx` → `.tsx`
+- [x] `tiptap-react/runtime-context.jsx` → `.tsx`
+- [x] `tiptap-react/runtime-model.js` → `.ts`
+- [x] `tiptap-react/island.jsx` → `.tsx`
+- [x] `tiptap-react/mount-controller.jsx` → `.tsx`
 
 #### 5.2 Component Modules
 - [ ] All components under `tiptap-ui/` (official source is already TSX)

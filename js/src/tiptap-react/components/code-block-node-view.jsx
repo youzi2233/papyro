@@ -18,7 +18,7 @@ import {
   createCodeBlockLanguageCommands,
   nextCodeBlockLanguageCommandIndex,
 } from "../commands/code-block-command-model.js";
-import { usePapyroTiptapLanguage } from "../runtime-context.jsx";
+import { usePapyroTiptapLanguage } from "../runtime-context.tsx";
 
 const COPY_FEEDBACK_MS = 1400;
 const CODE_LANGUAGE_MENU_OWNER_ID = "mn-tiptap-react-code-language-menu";

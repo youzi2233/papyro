@@ -1,11 +1,11 @@
 export {
   PapyroTiptapEditorContent,
   PapyroTiptapReactIsland,
-} from "./island.jsx";
+} from "./island.tsx";
 export {
   createPapyroTiptapReactComponents,
   renderIslandSlot,
-} from "./slots.jsx";
+} from "./slots.tsx";
 export {
   createPapyroTiptapCommandExecutor,
   createPapyroTiptapFormatSnapshot,
@@ -25,7 +25,7 @@ export {
   usePapyroTiptapSelection,
   usePapyroTiptapSelectionSnapshot,
   usePapyroTiptapViewMode,
-} from "./runtime-context.jsx";
+} from "./runtime-context.tsx";
 export {
   activeCodeBlockLanguageCommandIndex,
   codeBlockLanguagePickerLabel,
@@ -40,7 +40,7 @@ export {
 export {
   createTiptapLegacyMountController,
   createTiptapReactMountController,
-} from "./mount-controller.jsx";
+} from "./mount-controller.tsx";
 export {
   DragContextMenu,
 } from "../components/tiptap-ui/drag-context-menu/drag-context-menu.tsx";

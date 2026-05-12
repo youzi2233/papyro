@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
 const slotsSource = readFileSync(
-  new URL("../src/tiptap-react/slots.jsx", import.meta.url),
+  new URL("../src/tiptap-react/slots.tsx", import.meta.url),
   "utf8",
 );
 const indexSource = readFileSync(
@@ -11,15 +11,15 @@ const indexSource = readFileSync(
   "utf8",
 );
 const runtimeContextSource = readFileSync(
-  new URL("../src/tiptap-react/runtime-context.jsx", import.meta.url),
+  new URL("../src/tiptap-react/runtime-context.tsx", import.meta.url),
   "utf8",
 );
 const islandSource = readFileSync(
-  new URL("../src/tiptap-react/island.jsx", import.meta.url),
+  new URL("../src/tiptap-react/island.tsx", import.meta.url),
   "utf8",
 );
 const runtimeModelSource = readFileSync(
-  new URL("../src/tiptap-react/runtime-model.js", import.meta.url),
+  new URL("../src/tiptap-react/runtime-model.ts", import.meta.url),
   "utf8",
 );
 const codeBlockCommandModelSource = readFileSync(

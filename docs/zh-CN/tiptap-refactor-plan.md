@@ -243,10 +243,10 @@ js/src/
 - [ ] 入口只做：创建 runtime → 安装到 `window.papyroEditor`
 
 #### 3.3 React 岛重构
-- [ ] 保留 `island.jsx` → 迁移为 `island.tsx`
-- [ ] 保留 slot 架构（BeforeContent / EditorContent / AfterContent / OverlayLayer）
-- [ ] 保留 `runtime-context` → 迁移为 TS，简化接口
-- [ ] 保留 `mount-controller` → 迁移为 TS
+- [x] 保留 `island.jsx` → 迁移为 `island.tsx`
+- [x] 保留 slot 架构（BeforeContent / EditorContent / AfterContent / OverlayLayer）
+- [x] 保留 `runtime-context` → 迁移为 TS，简化接口
+- [x] 保留 `mount-controller` → 迁移为 TS
 - [ ] 删除 `slots.jsx` 中不再使用的 slot 定义
 
 ---
@@ -274,10 +274,10 @@ js/src/
 #### 5.1 核心模块（优先）
 - [ ] `editor-runtime.js` → `editor-runtime.ts`
 - [x] `editor-tiptap-entry.js` → `editor-entry.ts`
-- [ ] `tiptap-react/runtime-context.jsx` → `.tsx`
-- [ ] `tiptap-react/runtime-model.js` → `.ts`
-- [ ] `tiptap-react/island.jsx` → `.tsx`
-- [ ] `tiptap-react/mount-controller.jsx` → `.tsx`
+- [x] `tiptap-react/runtime-context.jsx` → `.tsx`
+- [x] `tiptap-react/runtime-model.js` → `.ts`
+- [x] `tiptap-react/island.jsx` → `.tsx`
+- [x] `tiptap-react/mount-controller.jsx` → `.tsx`
 
 #### 5.2 组件模块
 - [ ] 所有 `tiptap-ui/` 下的组件（官方源码本身就是 TSX）

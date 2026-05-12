@@ -1,7 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import {
+import { importBundledModule } from "./helpers/load-esbuild-module.js";
+
+const {
   createPapyroTiptapCommandExecutor,
   createPapyroTiptapFormatSnapshot,
   createPapyroTiptapRuntimeModel,
@@ -10,7 +12,9 @@ import {
   normalizePapyroTiptapViewMode,
   samePapyroTiptapFormatSnapshot,
   samePapyroTiptapSelectionSnapshot,
-} from "../src/tiptap-react/runtime-model.js";
+} = await importBundledModule(
+  new URL("../src/tiptap-react/runtime-model.ts", import.meta.url),
+);
 
 test("Tiptap React runtime model normalizes host language and view mode", () => {
   assert.equal(normalizePapyroTiptapLanguage("zh-CN"), "chinese");
