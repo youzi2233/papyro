@@ -62,10 +62,6 @@ export {
   TiptapReactTableContextMenuRenderer,
 } from "./table-context-menu-renderer.jsx";
 export {
-  createTiptapReactFormatToolbarView,
-  TiptapReactFormatToolbarView,
-} from "./format-toolbar-view.jsx";
-export {
   createTiptapReactLinkEditorView,
   TiptapReactLinkEditorView,
 } from "./link-editor-view.jsx";

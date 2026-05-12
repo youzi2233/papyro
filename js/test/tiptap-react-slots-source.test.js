@@ -74,20 +74,12 @@ const tableChromeRendererSource = readFileSync(
   new URL("../src/tiptap-react/table-chrome-renderer.jsx", import.meta.url),
   "utf8",
 );
-const formatToolbarSource = readFileSync(
-  new URL("../src/tiptap-react/components/format-toolbar.jsx", import.meta.url),
-  "utf8",
-);
 const linkEditorSource = readFileSync(
   new URL("../src/tiptap-react/components/link-editor.jsx", import.meta.url),
   "utf8",
 );
 const slashMenuViewSource = readFileSync(
   new URL("../src/tiptap-react/slash-menu-view.jsx", import.meta.url),
-  "utf8",
-);
-const formatToolbarViewSource = readFileSync(
-  new URL("../src/tiptap-react/format-toolbar-view.jsx", import.meta.url),
   "utf8",
 );
 const linkEditorViewSource = readFileSync(
@@ -309,7 +301,7 @@ test("React floating chrome shares positioning utilities", () => {
 });
 
 test("official table-node layer owns visible table chrome at the editor boundary", () => {
-  assert.match(indexSource, /createTiptapReactFormatToolbarView/u);
+  assert.doesNotMatch(indexSource, /createTiptapReactFormatToolbarView/u);
   assert.match(editorEntrySource, /createTiptapTableCommandBridge/u);
   assert.match(editorEntrySource, /tableToolbarControllerFactory:\s*createTiptapTableCommandBridge/u);
   assert.match(tiptapRuntimeSource, /from "\.\/tiptap-table-command-bridge\.js"/u);
@@ -393,32 +385,6 @@ test("React table axis handles open menus only after selection succeeds", () => 
   );
   assert.match(tableChromeSource, /if \(!selected\) return false/u);
   assert.doesNotMatch(tableChromeSource, /onSelectAxis\?\.\(handle\.axis, handle\.index\);\s*return onSelectAxis/u);
-});
-
-test("React format toolbar is injected without changing the runtime command controller", () => {
-  assert.match(formatToolbarSource, /export function PapyroFormatToolbar/u);
-  assert.match(formatToolbarSource, /blockActionSubmenuLabel/u);
-  assert.match(formatToolbarSource, /usePointerActivation/u);
-  assert.match(formatToolbarSource, /ToolbarButton/u);
-  assert.match(formatToolbarSource, /"keyboard-active":\s*keyboardActive \? "true" : "false"/u);
-  assert.match(formatToolbarSource, /pressed=\{command\.active\}/u);
-  assert.match(formatToolbarSource, /FORMAT_TOOLBAR_SUBMENU_OWNER_ID/u);
-  assert.match(formatToolbarSource, /role="menu"/u);
-  assert.match(formatToolbarSource, /"submenu-command-index":\s*commandIndex/u);
-  assert.match(formatToolbarSource, /"aria-controls":\s*submenuExpanded \? submenuOwnerId : undefined/u);
-  assert.match(formatToolbarViewSource, /createRoot/u);
-  assert.match(formatToolbarViewSource, /positionReactFloatingElement/u);
-  assert.match(formatToolbarViewSource, /formatToolbarLabel/u);
-  assert.match(formatToolbarViewSource, /syncMenuActiveDescendant/u);
-  assert.match(formatToolbarViewSource, /indexDataset:\s*state\.submenuOpen \? "submenuCommandIndex" : "commandIndex"/u);
-  assert.equal(
-    formatToolbarViewSource.includes("state.submenuOpen ? this.#submenuOwnerId : this.#ownerId"),
-    true,
-  );
-  assert.match(formatToolbarViewSource, /focusCommand/u);
-  assert.match(formatToolbarViewSource, /role = "toolbar"/u);
-  assert.doesNotMatch(formatToolbarSource, /Turn into/u);
-  assert.doesNotMatch(formatToolbarViewSource, /createElement\(/u);
 });
 
 test("React link editor popover is injected at the editor entry boundary", () => {
