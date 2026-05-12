@@ -11,10 +11,7 @@ This directory is intentionally small. Older phase notes, duplicated design draf
 | Understand the product | [Roadmap](roadmap.md) |
 | Understand the codebase | [Architecture](architecture.md) |
 | Start coding safely | [Development standards](development-standards.md) |
-| Work on Markdown editing | [Editor guide](editor.md) |
-| Evolve the Tiptap React editor UI | [Tiptap React runtime plan](tiptap-react-runtime-plan.md) |
-| Choose the official-first Tiptap path | [Tiptap official React strategy](tiptap-official-react-strategy.md) |
-| Execute the enterprise Tiptap editor plan | [Tiptap enterprise editor TODO](tiptap-enterprise-editor-todo.md) |
+| Work on the Tiptap editor refactoring | [Tiptap refactor plan](tiptap-refactor-plan.md) |
 | Validate the Tiptap editor runtime | [Tiptap release smoke checklist](tiptap-release-smoke.md) |
 | Change themes or Markdown styles | [Theme system](theme-system.md) |
 | Choose Markdown style references | [Markdown style references](markdown-style-references.md) |
@@ -40,7 +37,7 @@ flowchart LR
     roadmap["Roadmap<br/>what matters now"]
     architecture["Architecture<br/>how code is shaped"]
     development["Development standards<br/>how to change it"]
-    editor["Editor guide<br/>if touching Markdown"]
+    editor["Tiptap refactor plan<br/>if touching editor"]
     themes["Theme system<br/>if touching visual tokens"]
     references["Style references<br/>before adopting external CSS"]
     performance["Performance budget<br/>if touching render paths"]

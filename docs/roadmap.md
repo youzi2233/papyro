@@ -50,7 +50,7 @@ mindmap
 - `crates/editor` owns Markdown summary, rendering, block analysis, and protocol structs.
 - `js/` owns the Tiptap/ProseMirror runtime, the React editor island, Markdown interaction helpers, and the generated editor bundle.
 
-See [architecture.md](architecture.md) for the current map.
+See [architecture.md](architecture.md) for the current map. See [Tiptap Refactor Plan](tiptap-refactor-plan.md) for the editor refactoring execution plan.
 
 ## Phase 1 - Foundation And Data Safety
 
@@ -185,7 +185,7 @@ Goal: make Hybrid mode useful for real writing, not just decorated source text.
 - [x] Define pointer behavior precisely: hovering text should enter edit semantics, hovering line-gap whitespace should stay in normal semantics, gap selection should target the next line's text, text-area selection should target the current line, and selection backgrounds should cover glyph runs instead of full line-gap blocks.
 - [x] Make code block, inline code, links, lists, and Mermaid editing share consistent selection colors.
 - [ ] Treat cursor offset, wrong-line hit testing, missing selection background, accidental source reveal, and selection leaking into whitespace as architecture-level Hybrid defects, not isolated CSS bugs.
-- [x] Review mainstream editor architecture patterns before continuing Hybrid patches: CodeMirror decorations/widgets, ProseMirror/Tiptap node views, Lexical decorators, Slate void/inline nodes, and Typora-like source/render switching. See [Hybrid Editor Architecture Review](editor-hybrid-architecture.md).
+- [x] Review mainstream editor architecture patterns before continuing Hybrid patches: CodeMirror decorations/widgets, ProseMirror/Tiptap node views, Lexical decorators, Slate void/inline nodes, and Typora-like source/render switching.
 - [x] Decide a stable selection and hit-testing strategy for inline elements, code blocks, tables, math, Mermaid, and links before adding more Markdown block features.
 - [x] Add regression coverage or repeatable smoke scripts for cursor placement, text selection, IME composition, paste replacement, and block edit/render transitions.
 - [x] Align Hybrid editing with modern Markdown writing tools such as Typora and Feishu Docs: inserting tables, math, code blocks, callouts, links, images, and Mermaid should be discoverable and fast.
@@ -195,15 +195,13 @@ Goal: make Hybrid mode useful for real writing, not just decorated source text.
 - [ ] Treat enterprise-grade editing as the bar: predictable paste, undo, selection, IME, keyboard navigation, accessibility, and stable layout are required before calling Hybrid complete.
 - [x] Decide whether long-term Hybrid remains CodeMirror decoration-based or moves toward a richer document model.
 
-See [editor.md](editor.md).
+See [Tiptap Refactor Plan](tiptap-refactor-plan.md).
 
 ## Phase 4.1 - Tiptap Editor Runtime Migration
 
 Goal: use the `feat-tiptap` branch to migrate the interactive editor runtime from CodeMirror to Tiptap/ProseMirror while preserving Markdown files, the Rust/Dioxus protocol, and enterprise-grade maintainability.
 
-See [Tiptap Migration Plan](tiptap-migration-plan.md) and [Tiptap React Runtime Plan](tiptap-react-runtime-plan.md).
-Use [Tiptap Official React Strategy](tiptap-official-react-strategy.md) when deciding whether to use public MIT components, official Tiptap packages, or licensed Start/Pro UI components.
-Use [Tiptap Enterprise Editor TODO](tiptap-enterprise-editor-todo.md) as the step-by-step execution checklist for reaching the official Notion-like quality bar, including the free/open-source wrapper path and product review checkpoints.
+See [Tiptap Refactor Plan](tiptap-refactor-plan.md) for the current execution plan.
 
 Engineering bar:
 

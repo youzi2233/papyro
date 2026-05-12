@@ -11,7 +11,7 @@
 - 编辑器为什么用 Tiptap/React？它和 Rust 怎么通信？
 - 未来做文件关联、多窗口、主题和 Hybrid 编辑体验时，应该沿着什么架构推进？
 
-如果你第一次接触这个仓库，建议按顺序读完本文。之后再根据任务去看 [开发规范](development-standards.md)、[路线图](roadmap.md)、[编辑器指南](editor.md) 和 [性能预算](performance-budget.md)。
+如果你第一次接触这个仓库，建议按顺序读完本文。之后再根据任务去看 [开发规范](development-standards.md)、[路线图](roadmap.md)、[Tiptap 重构计划](tiptap-refactor-plan.md) 和 [性能预算](performance-budget.md)。
 
 ## 1. 一句话理解 Papyro
 
@@ -845,7 +845,7 @@ Document window 复用同一套进程级窗口模式，但和 settings 不同，
 5. 如需给 JS 插入 Markdown，使用 `EditorRuntimeCommandQueue`。
 6. 在 JS 侧处理 `insert_markdown` 或新增协议命令。
 7. 给 JS core 行为加测试。
-8. 更新 [编辑器指南](editor.md)。
+8. 更新 [Tiptap 重构计划](tiptap-refactor-plan.md)。
 9. 跑相关检查。
 
 不要一上来就在 UI 组件里直接改文件或直接操作 storage。
@@ -861,7 +861,7 @@ Document window 复用同一套进程级窗口模式，但和 settings 不同，
 5. JS 发事件时使用 `dioxus.send(...)`。
 6. Rust 在 `EditorHost` 的 event match 里处理新事件。
 7. 加 Rust 或 JS 测试。
-8. 更新本文和 [编辑器指南](editor.md)。
+8. 更新本文和 [Tiptap 重构计划](tiptap-refactor-plan.md)。
 
 协议字段要稳定，不要传 Tiptap、ProseMirror、React 或 DOM 内部对象。
 

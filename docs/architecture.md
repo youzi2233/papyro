@@ -11,7 +11,7 @@ This guide is meant to teach the project, not just list folders. After reading i
 - how Rust and the Tiptap/React JavaScript runtime communicate
 - where future work such as file association, multi-window mode, theming, and Hybrid editing belongs
 
-If this is your first time in the repository, read this guide in order. Then use [development standards](development-standards.md), [roadmap](roadmap.md), [editor guide](editor.md), and [performance budget](performance-budget.md) for task-specific work.
+If this is your first time in the repository, read this guide in order. Then use [development standards](development-standards.md), [roadmap](roadmap.md), [tiptap refactor plan](tiptap-refactor-plan.md), and [performance budget](performance-budget.md) for task-specific work.
 
 ## 1. One Sentence
 
@@ -759,7 +759,7 @@ Example: adding a callout block.
 5. Use `EditorRuntimeCommandQueue` if Rust needs JS to insert Markdown.
 6. Handle the command in JS.
 7. Add JS core tests when behavior changes.
-8. Update [editor guide](editor.md).
+8. Update [tiptap-refactor-plan.md](tiptap-refactor-plan.md).
 9. Run relevant validation.
 
 Do not make UI components write files directly.
@@ -775,7 +775,7 @@ When Rust and JS need a new message:
 5. send JS events with `dioxus.send(...)`
 6. handle events in the Rust `EditorHost` match
 7. add Rust or JS tests
-8. update this guide and [editor.md](editor.md)
+8. update this guide and [tiptap-refactor-plan.md](tiptap-refactor-plan.md)
 
 Protocol messages should use stable data. Do not pass Tiptap, ProseMirror, React, or DOM internal objects.
 

@@ -103,12 +103,12 @@ Generated files must be committed with the source change:
 - README is for visitors and quick start.
 - [architecture.md](architecture.md) is the current code map.
 - [roadmap.md](roadmap.md) is the current product and engineering priority.
-- [editor.md](editor.md) is the Markdown/editor contract.
+- [tiptap-refactor-plan.md](tiptap-refactor-plan.md) is the editor refactoring contract.
 - [performance-budget.md](performance-budget.md) must mention every trace checked by `scripts/check-perf-docs.js`.
 - Keep Chinese docs aligned when contributor-facing behavior changes.
 - Finishing a task includes updating existing documentation that the task changes. Do not leave roadmap, architecture, editor, performance, README, or skills documents describing the old behavior.
 - Architecture-affecting roadmap work must update [architecture.md](architecture.md) in the same task or explicitly explain why no architecture document change is needed.
-- Editor behavior changes must update [editor.md](editor.md) when protocol, Hybrid behavior, Preview behavior, Markdown rendering, or JS/Rust responsibilities change.
+- Editor behavior changes must update [tiptap-refactor-plan.md](tiptap-refactor-plan.md) when protocol, Hybrid behavior, Preview behavior, Markdown rendering, or JS/Rust responsibilities change.
 - Performance-sensitive changes must update [performance-budget.md](performance-budget.md) when trace names, budgets, large-document policy, or render-path ownership changes.
 - Broad UI redesign work should run `node scripts/report-ui-tokens.js` and update [ui-token-audit.md](ui-token-audit.md) when token debt changes materially.
 - AI workflow changes must update [ai-skills.md](ai-skills.md) and the relevant `skills/*/SKILL.md` file.

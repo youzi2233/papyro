@@ -13,7 +13,7 @@ Use this skill when implementing or reviewing a scoped change.
 2. Read the smallest relevant docs:
    - `docs/development-standards.md`
    - `docs/architecture.md`
-   - `docs/editor.md` for Markdown/editor work
+   - `docs/tiptap-refactor-plan.md` for Markdown/editor work
    - `docs/performance-budget.md` for render or interaction work
 3. Identify the owner module before editing.
 

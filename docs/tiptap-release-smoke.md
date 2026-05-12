@@ -1,6 +1,6 @@
 # Tiptap Release Smoke Checklist
 
-[简体中文](zh-CN/tiptap-release-smoke.md) | [Release QA](release-qa.md) | [Tiptap Migration Plan](tiptap-migration-plan.md)
+[简体中文](zh-CN/tiptap-release-smoke.md) | [Release QA](release-qa.md) | [Tiptap Refactor Plan](tiptap-refactor-plan.md)
 
 Use this checklist before merging the `feat-tiptap` branch back to the main release line, tagging a release candidate, or sharing a Tiptap-based desktop build with non-developers.
 

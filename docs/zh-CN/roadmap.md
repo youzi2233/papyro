@@ -173,7 +173,7 @@ flowchart LR
 - [x] 明确 pointer 行为：鼠标 hover 到文字时进入编辑态，hover 到行高空隙时保持普通态；在空隙里选中应命中下一行文字，在当前行文字区域选中应命中当前行；选中背景只覆盖文字字形区域，不要把行高空隙整块染色。
 - [x] 统一代码块、inline code、链接、列表、Mermaid 的选中背景颜色。
 - [ ] 把光标错位、命中到错误行、选中背景缺失、意外恢复源码、选区影响空白区域等问题视为 Hybrid 架构级缺陷，而不是零散 CSS bug。
-- [x] 继续修补 Hybrid 前先调研行业通用编辑器架构：CodeMirror decorations/widgets、ProseMirror/Tiptap node views、Lexical decorators、Slate void/inline nodes、Typora 类源码/渲染切换策略。见 [Hybrid 编辑器架构评审](editor-hybrid-architecture.md)。
+- [x] 继续修补 Hybrid 前先调研行业通用编辑器架构：CodeMirror decorations/widgets、ProseMirror/Tiptap node views、Lexical decorators、Slate void/inline nodes、Typora 类源码/渲染切换策略。
 - [x] 在新增更多 Markdown block 能力前，先确定 inline 元素、代码块、表格、公式、Mermaid、链接的稳定 selection 和 hit-testing 策略。
 - [x] 为光标定位、文本选中、IME composition、粘贴替换、block 编辑/渲染切换增加回归覆盖或可重复 smoke 脚本。
 - [x] 对齐 Typora、飞书文档等现代 Markdown/文档编辑方式，让插入表格、公式、代码块、链接、图片和 Mermaid 足够方便。
@@ -187,7 +187,7 @@ flowchart LR
 
 目标：在 `feat-tiptap` 分支把交互式编辑器从 CodeMirror runtime 迁移到 Tiptap/ProseMirror 文档模型，同时保持 Markdown 文件格式、Rust/Dioxus 协议和企业级可维护性。
 
-迁移计划见 [Tiptap 迁移计划](tiptap-migration-plan.md) 和 [Tiptap React 运行时方案](tiptap-react-runtime-plan.md)。决定使用公开 MIT 组件、官方 Tiptap package，还是授权后的 Start/Pro UI 组件时，先看 [Tiptap 官方优先 React 策略](tiptap-official-react-strategy.md)。达到官方 Notion-like 体验标尺的逐步执行清单见 [Tiptap 企业级编辑器 TODO](tiptap-enterprise-editor-todo.md)，其中包含免费/开源能力封装路线和产品确认节点。
+当前执行计划见 [Tiptap 重构计划](tiptap-refactor-plan.md)。
 
 企业级要求：
 

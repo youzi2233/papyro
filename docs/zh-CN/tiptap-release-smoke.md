@@ -1,6 +1,6 @@
 # Tiptap 发布候选 Smoke 检查清单
 
-[English](../tiptap-release-smoke.md) | [Release QA](release-qa.md) | [Tiptap 迁移计划](tiptap-migration-plan.md)
+[English](../tiptap-release-smoke.md) | [Release QA](release-qa.md) | [Tiptap 重构计划](tiptap-refactor-plan.md)
 
 在把 `feat-tiptap` 分支合回主发布线、打发布候选 tag，或者把基于 Tiptap 的桌面构建交给非开发用户之前，必须使用这份清单。
 

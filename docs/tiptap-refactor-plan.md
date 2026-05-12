@@ -223,9 +223,9 @@ The current `tiptap-runtime.js` creates many controllers via dependency injectio
 - [ ] Keep only Papyro-specific styles (Mermaid, KaTeX, etc.)
 
 #### 2.4 Remove Outdated Documentation
-- [ ] Remove `docs/tiptap-enterprise-editor-todo.md` (replaced by this document)
-- [ ] Remove `docs/zh-CN/tiptap-enterprise-editor-todo.md`
-- [ ] Review other docs files, remove content that no longer applies
+- [x] Remove `docs/tiptap-enterprise-editor-todo.md` (replaced by this document)
+- [x] Remove `docs/zh-CN/tiptap-enterprise-editor-todo.md`
+- [x] Review other docs files, remove content that no longer applies
 
 ---
 

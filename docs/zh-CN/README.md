@@ -11,10 +11,7 @@
 | 理解产品方向 | [路线图](roadmap.md) |
 | 理解代码结构 | [架构导览](architecture.md) |
 | 安全地开始开发 | [开发规范](development-standards.md) |
-| 修改 Markdown 编辑器 | [编辑器指南](editor.md) |
-| 演进 Tiptap React 编辑器 UI | [Tiptap React 运行时方案](tiptap-react-runtime-plan.md) |
-| 选择 Tiptap 官方优先方案 | [Tiptap 官方优先 React 策略](tiptap-official-react-strategy.md) |
-| 执行企业级 Tiptap 编辑器计划 | [Tiptap 企业级编辑器 TODO](tiptap-enterprise-editor-todo.md) |
+| 推进 Tiptap 编辑器重构 | [Tiptap 重构计划](tiptap-refactor-plan.md) |
 | 验收 Tiptap 编辑器运行时 | [Tiptap 发布候选 Smoke 检查清单](tiptap-release-smoke.md) |
 | 修改主题或 Markdown 样式 | [主题系统](theme-system.md) |
 | 选择 Markdown 样式参考 | [Markdown 样式参考调研](markdown-style-references.md) |
@@ -40,7 +37,7 @@ flowchart LR
     roadmap["路线图<br/>当前优先级"]
     architecture["架构<br/>代码如何分层"]
     development["开发规范<br/>如何安全修改"]
-    editor["编辑器指南<br/>Markdown 相关"]
+    editor["Tiptap 重构计划<br/>编辑器相关"]
     themes["主题系统<br/>视觉 token 相关"]
     references["样式参考<br/>采用外部 CSS 前"]
     performance["性能预算<br/>渲染路径相关"]

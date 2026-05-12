@@ -223,9 +223,9 @@ js/src/
 - [ ] 保留仅与 Papyro 特有功能相关的样式（Mermaid、KaTeX 等）
 
 #### 2.4 删除过时文档
-- [ ] 删除 `docs/tiptap-enterprise-editor-todo.md`（被本文档替代）
-- [ ] 删除 `docs/zh-CN/tiptap-enterprise-editor-todo.md`
-- [ ] 审查其他 docs 文件，删除不再适用的内容
+- [x] 删除 `docs/tiptap-enterprise-editor-todo.md`（被本文档替代）
+- [x] 删除 `docs/zh-CN/tiptap-enterprise-editor-todo.md`
+- [x] 审查其他 docs 文件，删除不再适用的内容
 
 ---
 
