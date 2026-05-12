@@ -1,4 +1,4 @@
-import { createPapyroEditorFacade } from "./editor-runtime.js";
+import { createPapyroEditorFacade } from "./editor-runtime-contract.ts";
 import { selectEditorRuntimeAdapter } from "./editor-runtime-selector.js";
 
 export function createEditorRuntimeFacade({

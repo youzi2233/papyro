@@ -345,7 +345,8 @@ The JS directory owns browser editor runtime code.
 | File | Role |
 | --- | --- |
 | `js/src/editor-entry.ts` | bundle entry, registers the Tiptap adapter behind `window.papyroEditor` |
-| `js/src/tiptap-runtime.js` | Tiptap lifecycle, Rust message handling, Markdown sync orchestration |
+| `js/src/editor-runtime.ts` | Tiptap lifecycle, Rust message handling, Markdown sync orchestration |
+| `js/src/editor-runtime-contract.ts` | stable host facade and adapter contract for `window.papyroEditor` |
 | `js/src/tiptap-react/` | React island provider, slots, mount controller, and future editor UI components |
 | `js/src/tiptap-*.js` | focused Tiptap controllers, commands, Markdown handlers, and UI helpers |
 | `js/test/tiptap-*.test.js` | JS unit tests for runtime, commands, tables, Markdown, and UI primitives |
@@ -563,7 +564,7 @@ Most input follows this path:
 ```mermaid
 sequenceDiagram
     participant TT as Tiptap update listener
-    participant JS as tiptap-runtime.js
+    participant JS as editor-runtime.ts
     participant Rust as EditorHost
     participant App as AppCommands
 
@@ -642,7 +643,7 @@ Relevant files:
 
 - `crates/ui/src/components/editor/pane.rs`
 - `crates/ui/src/components/editor/host.rs`
-- `js/src/tiptap-runtime.js`
+- `js/src/editor-runtime.ts`
 - `js/src/tiptap-react/`
 
 ## 19. Workspace, Tabs, And File Association
@@ -743,7 +744,7 @@ Their editor state is local, while storage and settings are supplied through sha
 | Save behavior | `workspace_flow/save.rs` | `crates/storage/src/lib.rs` |
 | File tree behavior | `crates/ui/src/components/sidebar` | `crates/core/src/file_state.rs` |
 | Markdown Preview | `crates/editor/src/renderer/html.rs` | `crates/ui/src/components/editor/preview.rs` |
-| Hybrid editing | `js/src/tiptap-runtime.js`, `js/src/tiptap-*.js` | `js/src/tiptap-react/`, `crates/editor/src/parser/blocks.rs` |
+| Hybrid editing | `js/src/editor-runtime.ts`, `js/src/tiptap-*.js` | `js/src/tiptap-react/`, `crates/editor/src/parser/blocks.rs` |
 | Paste/selection/IME | `js/src/tiptap-paste-controller.js`, `js/src/tiptap-ui-primitives.js` | `js/test/tiptap-*.test.js` |
 | Settings field | `crates/core/src/models.rs` | settings UI and storage settings |
 | OS file open | `apps/desktop/src/main.rs` | `crates/app/src/open_requests.rs`, `dispatcher.rs` |
@@ -771,7 +772,7 @@ When Rust and JS need a new message:
 1. update `crates/editor/src/protocol.rs`
 2. add serde JSON tests
 3. update Rust sender or receiver in `EditorHost`
-4. handle the message in `js/src/tiptap-runtime.js` or a focused `js/src/tiptap-*.js` controller
+4. handle the message in `js/src/editor-runtime.ts` or a focused `js/src/tiptap-*.js` controller
 5. send JS events with `dioxus.send(...)`
 6. handle events in the Rust `EditorHost` match
 7. add Rust or JS tests

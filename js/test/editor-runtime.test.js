@@ -1,7 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import {
+import { importBundledModule } from "./helpers/load-esbuild-module.js";
+
+const {
   EDITOR_RUNTIME_ADAPTER_METHODS,
   EDITOR_RUNTIME_HOST_METHODS,
   assertEditorRuntimeAdapter,
@@ -10,7 +12,9 @@ import {
   createPapyroEditorFacade,
   missingEditorRuntimeHostMethods,
   missingEditorRuntimeAdapterMethods,
-} from "../src/editor-runtime.js";
+} = await importBundledModule(
+  new URL("../src/editor-runtime-contract.ts", import.meta.url),
+);
 
 function createRuntimeAdapter(overrides = {}) {
   return {

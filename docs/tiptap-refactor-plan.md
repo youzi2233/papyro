@@ -232,7 +232,7 @@ The current `tiptap-runtime.js` creates many controllers via dependency injectio
 ### Phase 3: Core Runtime Refactoring
 
 #### 3.1 Simplify editor-runtime
-- [ ] Rewrite `tiptap-runtime.js` as `editor-runtime.ts`
+- [x] Rewrite `tiptap-runtime.js` as `editor-runtime.ts`
 - [ ] Remove all controller factory injection, let React components manage their own state
 - [ ] Keep core responsibilities: Editor instance creation, Rust protocol bridge, Markdown sync
 - [ ] Runtime only does: create Editor → mount React tree → forward Rust commands/events
@@ -272,7 +272,8 @@ The table-node is partially integrated, needs completion:
 Migrate by module priority, one module at a time:
 
 #### 5.1 Core Modules (Priority)
-- [ ] `editor-runtime.js` → `editor-runtime.ts`
+- [x] `tiptap-runtime.js` → `editor-runtime.ts`
+- [x] `editor-runtime.js` → `editor-runtime-contract.ts`
 - [x] `editor-tiptap-entry.js` → `editor-entry.ts`
 - [x] `tiptap-react/runtime-context.jsx` → `.tsx`
 - [x] `tiptap-react/runtime-model.js` → `.ts`

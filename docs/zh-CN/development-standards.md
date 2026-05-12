@@ -55,7 +55,8 @@ node scripts/check-workspace-deps.js
 只手动修改 `js/src/` 下的聚焦源码文件。最常见入口是：
 
 - `js/src/editor-entry.ts`
-- `js/src/tiptap-runtime.js`
+- `js/src/editor-runtime.ts`
+- `js/src/editor-runtime-contract.ts`
 - `js/src/tiptap-*.js`
 - `js/src/tiptap-react/`
 - `js/src/editor-host-runtime.js`

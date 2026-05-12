@@ -232,7 +232,7 @@ js/src/
 ### 阶段 3：核心运行时重构
 
 #### 3.1 简化 editor-runtime
-- [ ] 将 `tiptap-runtime.js` 重写为 `editor-runtime.ts`
+- [x] 将 `tiptap-runtime.js` 重写为 `editor-runtime.ts`
 - [ ] 移除所有控制器工厂注入，改为 React 组件自行管理状态
 - [ ] 保留核心职责：Editor 实例创建、Rust 协议桥接、Markdown 同步
 - [ ] 运行时只负责：创建 Editor → 挂载 React 树 → 转发 Rust 命令/事件
@@ -272,7 +272,8 @@ js/src/
 按模块优先级迁移，每次迁移一个模块：
 
 #### 5.1 核心模块（优先）
-- [ ] `editor-runtime.js` → `editor-runtime.ts`
+- [x] `tiptap-runtime.js` → `editor-runtime.ts`
+- [x] `editor-runtime.js` → `editor-runtime-contract.ts`
 - [x] `editor-tiptap-entry.js` → `editor-entry.ts`
 - [x] `tiptap-react/runtime-context.jsx` → `.tsx`
 - [x] `tiptap-react/runtime-model.js` → `.ts`

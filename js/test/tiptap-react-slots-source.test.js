@@ -62,8 +62,8 @@ const editorEntrySource = readFileSync(
   new URL("../src/editor-entry.ts", import.meta.url),
   "utf8",
 );
-const tiptapRuntimeSource = readFileSync(
-  new URL("../src/tiptap-runtime.js", import.meta.url),
+const editorRuntimeSource = readFileSync(
+  new URL("../src/editor-runtime.ts", import.meta.url),
   "utf8",
 );
 const primitivesSource = readFileSync(
@@ -225,10 +225,10 @@ test("official table-node layer owns visible table chrome at the editor boundary
   assert.doesNotMatch(indexSource, /createTiptapReactFormatToolbarView/u);
   assert.match(editorEntrySource, /createTiptapTableCommandController/u);
   assert.match(editorEntrySource, /tableCommandControllerFactory:\s*createTiptapTableCommandController/u);
-  assert.doesNotMatch(tiptapRuntimeSource, /from "\.\/tiptap-table-command-controller\.js"/u);
-  assert.doesNotMatch(tiptapRuntimeSource, /tableToolbarControllerFactory/u);
-  assert.doesNotMatch(tiptapRuntimeSource, /tableToolbar/u);
-  assert.doesNotMatch(tiptapRuntimeSource, /from "\.\/tiptap-table-toolbar\.js"/u);
+  assert.doesNotMatch(editorRuntimeSource, /from "\.\/tiptap-table-command-controller\.js"/u);
+  assert.doesNotMatch(editorRuntimeSource, /tableToolbarControllerFactory/u);
+  assert.doesNotMatch(editorRuntimeSource, /tableToolbar/u);
+  assert.doesNotMatch(editorRuntimeSource, /from "\.\/tiptap-table-toolbar\.js"/u);
   assert.doesNotMatch(editorEntrySource, /createTiptapReactTableContextMenuRenderer/u);
   assert.doesNotMatch(editorEntrySource, /createTiptapReactTableChromeRenderer/u);
   assert.doesNotMatch(indexSource, /createTiptapReactTableContextMenuRenderer/u);

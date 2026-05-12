@@ -71,9 +71,10 @@ bash scripts/check.sh
 
 ### Rebuild the editor bundle
 
-Edit focused source modules under `js/src/`, such as `tiptap-runtime.js`,
-`tiptap-*` extensions/controllers, `editor-host-runtime.js`,
-`editor-runtime-bootstrap.js`, and shared helpers in `editor-core.js`. Do not edit
+Edit focused source modules under `js/src/`, such as `editor-runtime.ts`,
+`editor-runtime-contract.ts`, `tiptap-*` extensions/controllers,
+`editor-host-runtime.js`, `editor-runtime-bootstrap.js`, and shared helpers in
+`editor-core.js`. Do not edit
 generated bundles by hand. Then run:
 
 ```bash

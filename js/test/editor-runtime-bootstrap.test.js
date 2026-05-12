@@ -1,10 +1,14 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import {
+import { importBundledModule } from "./helpers/load-esbuild-module.js";
+
+const {
   createEditorRuntimeFacade,
   installPapyroEditorRuntime,
-} from "../src/editor-runtime-bootstrap.js";
+} = await importBundledModule(
+  new URL("../src/editor-runtime-bootstrap.js", import.meta.url),
+);
 
 function createRuntimeAdapter(overrides = {}) {
   return {

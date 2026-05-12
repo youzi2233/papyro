@@ -56,7 +56,8 @@ Only edit focused source files under `js/src/` by hand. The most common entry
 points are:
 
 - `js/src/editor-entry.ts`
-- `js/src/tiptap-runtime.js`
+- `js/src/editor-runtime.ts`
+- `js/src/editor-runtime-contract.ts`
 - `js/src/tiptap-*.js`
 - `js/src/tiptap-react/`
 - `js/src/editor-host-runtime.js`

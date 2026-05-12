@@ -36,7 +36,7 @@ const DEFAULT_PATHS = [
   "apps/mobile/assets/styles/tiptap-chrome-command.css",
   "apps/mobile/assets/styles/tiptap-chrome-table.css",
   "apps/mobile/assets/styles/tiptap-chrome-block.css",
-  "js/src/tiptap-runtime.js",
+  "js/src/editor-runtime.ts",
   "js/src/tiptap-ui-primitives.js",
   "crates/ui/src",
 ];
@@ -46,7 +46,7 @@ const SPACING_PATTERN =
 const SELECTOR_PATTERN = /^\s*([^@{}][^{]+)\s*\{/gm;
 const COMPONENT_SELECTOR_PATTERN = /\.mn-[A-Za-z0-9_-]+/g;
 const EXCLUDED_DIRS = new Set([".git", "node_modules", "target"]);
-const SCANNED_EXTENSIONS = new Set([".css", ".js", ".rs"]);
+const SCANNED_EXTENSIONS = new Set([".css", ".js", ".ts", ".rs"]);
 
 function main() {
   const args = process.argv.slice(2);

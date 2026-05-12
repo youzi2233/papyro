@@ -7,7 +7,7 @@ import {
   createTiptapReactMountController,
 } from "./tiptap-react/index.js";
 import { createTiptapTableCommandController } from "./tiptap-table-command-controller.js";
-import { createTiptapEditorRuntime } from "./tiptap-runtime.js";
+import { createTiptapEditorRuntime } from "./editor-runtime.ts";
 
 const editorRegistry = createEditorRuntimeRegistry();
 const hostRuntime = createEditorHostRuntime({ registry: editorRegistry });

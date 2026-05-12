@@ -398,7 +398,8 @@ JS 目录负责浏览器编辑器 runtime。
 | 文件 | 作用 |
 | --- | --- |
 | `js/src/editor-entry.ts` | bundle 入口，把 Tiptap adapter 注册到 `window.papyroEditor` 后面。 |
-| `js/src/tiptap-runtime.js` | Tiptap 生命周期、Rust 消息处理和 Markdown 同步编排。 |
+| `js/src/editor-runtime.ts` | Tiptap 生命周期、Rust 消息处理和 Markdown 同步编排。 |
+| `js/src/editor-runtime-contract.ts` | `window.papyroEditor` 使用的稳定 host facade 和 adapter contract。 |
 | `js/src/tiptap-react/` | React island provider、slots、mount controller 和后续编辑器 UI 组件。 |
 | `js/src/tiptap-*.js` | 聚焦的 Tiptap controller、command、Markdown handler 和 UI helper。 |
 | `js/test/tiptap-*.test.js` | runtime、command、table、Markdown 和 UI primitive 的 JS 单元测试。 |
@@ -630,7 +631,7 @@ Rust 发送命令的位置通常在：
 ```mermaid
 sequenceDiagram
     participant TT as Tiptap update listener
-    participant JS as tiptap-runtime.js
+    participant JS as editor-runtime.ts
     participant Rust as EditorHost
     participant App as AppCommands
 
@@ -725,7 +726,7 @@ Hybrid mode：
 
 - `crates/ui/src/components/editor/pane.rs`
 - `crates/ui/src/components/editor/host.rs`
-- `js/src/tiptap-runtime.js`
+- `js/src/editor-runtime.ts`
 - `js/src/tiptap-react/`
 
 ## 19. 文件树、Tabs 和 Workspace 的关系
@@ -827,7 +828,7 @@ Document window 复用同一套进程级窗口模式，但和 settings 不同，
 | 改保存逻辑 | `workspace_flow/save.rs` | `crates/storage/src/lib.rs` |
 | 改文件树 | `crates/ui/src/components/sidebar` | `crates/core/src/file_state.rs` |
 | 改 Markdown Preview | `crates/editor/src/renderer/html.rs` | `crates/ui/src/components/editor/preview.rs` |
-| 改 Hybrid 编辑 | `js/src/tiptap-runtime.js`, `js/src/tiptap-*.js` | `js/src/tiptap-react/`, `crates/editor/src/parser/blocks.rs` |
+| 改 Hybrid 编辑 | `js/src/editor-runtime.ts`, `js/src/tiptap-*.js` | `js/src/tiptap-react/`, `crates/editor/src/parser/blocks.rs` |
 | 改粘贴/选区/IME | `js/src/tiptap-paste-controller.js`, `js/src/tiptap-ui-primitives.js` | `js/test/tiptap-*.test.js` |
 | 改设置项 | `crates/core/src/models.rs` | settings UI、storage settings |
 | 改系统打开文件 | `apps/desktop/src/main.rs` | `crates/app/src/open_requests.rs`, `dispatcher.rs` |
@@ -857,7 +858,7 @@ Document window 复用同一套进程级窗口模式，但和 settings 不同，
 1. 修改 `crates/editor/src/protocol.rs`。
 2. 给 serde JSON 加测试。
 3. Rust 发送命令时更新 `EditorHost` 或 command queue。
-4. JS 在 `js/src/tiptap-runtime.js` 或聚焦的 `js/src/tiptap-*.js` controller 中处理新命令。
+4. JS 在 `js/src/editor-runtime.ts` 或聚焦的 `js/src/tiptap-*.js` controller 中处理新命令。
 5. JS 发事件时使用 `dioxus.send(...)`。
 6. Rust 在 `EditorHost` 的 event match 里处理新事件。
 7. 加 Rust 或 JS 测试。

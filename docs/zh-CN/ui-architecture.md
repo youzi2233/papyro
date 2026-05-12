@@ -12,7 +12,7 @@ flowchart TD
     primitives["Dioxus 基础组件<br/>crates/ui/src/components/primitives.rs"]
     product["产品组件<br/>crates/ui/src/components/*"]
     layouts["布局<br/>crates/ui/src/layouts/*"]
-    editorjs["编辑器 runtime<br/>js/src/tiptap-runtime.js"]
+    editorjs["编辑器 runtime<br/>js/src/editor-runtime.ts"]
     appassets["镜像资源<br/>apps/*/assets/main.css"]
 
     tokens --> primitives
