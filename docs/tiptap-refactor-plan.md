@@ -294,7 +294,7 @@ Migrate by module priority, one module at a time:
 
 ### Phase 6: Style Unification
 
-- [ ] Establish unified design tokens (CSS variables) aligned with official component style system
+- [x] Establish unified design tokens (CSS variables) aligned with official component style system
 - [ ] Remove all custom SCSS that duplicates official components
 - [ ] Keep Papyro-specific styles: Mermaid diagrams, KaTeX math formulas, source mode
 - [ ] Ensure dark/light theme switches via CSS variables (official components already support this)

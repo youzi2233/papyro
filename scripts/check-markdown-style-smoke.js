@@ -75,6 +75,19 @@ const REQUIRED_MARKDOWN_TOKENS = [
   "--mn-code-border",
 ];
 
+const REQUIRED_TIPTAP_BRIDGE_TOKENS = [
+  ["--tt-bg-color", "var(--mn-editor-bg"],
+  ["--tt-border-color", "var(--mn-divider"],
+  ["--tt-cursor-color", "var(--mn-caret"],
+  ["--tt-selection-color", "var(--mn-selection-bg"],
+  ["--tt-card-bg-color", "var(--mn-surface-raised"],
+  ["--tt-brand-color-500", "var(--mn-accent"],
+  ["--tt-brand-color-600", "var(--mn-accent-strong"],
+  ["--tt-radius-md", "var(--mn-radius-md"],
+  ["--tt-table-border-color", "var(--mn-border"],
+  ["--tt-table-cell-padding", "var(--mn-markdown-table-cell-pad"],
+];
+
 const PREVIEW_REQUIREMENTS = [
   ["preview heading 1 size", ".mn-preview h1", "--mn-markdown-h1-size"],
   ["preview heading 2 size", ".mn-preview h2", "--mn-markdown-h2-size"],
@@ -231,6 +244,14 @@ function checkCssText(source) {
       failures.push(`missing Markdown token ${token}`);
     }
   }
+  for (const [token, declaration] of REQUIRED_TIPTAP_BRIDGE_TOKENS) {
+    if (!tokens.has(token)) {
+      failures.push(`missing Tiptap bridge token ${token}`);
+    }
+    if (!source.includes(`${token}:`) || !source.includes(declaration)) {
+      failures.push(`Tiptap bridge token ${token} is not mapped to ${declaration}`);
+    }
+  }
   for (const [label, selector, token] of PREVIEW_REQUIREMENTS) {
     if (!source.includes(selector)) {
       failures.push(`${label} missing selector ${selector}`);
@@ -279,6 +300,7 @@ function runSelfTest() {
   const css = `
 :root {
 ${REQUIRED_MARKDOWN_TOKENS.map((token) => `  ${token}: #111111;`).join("\n")}
+${REQUIRED_TIPTAP_BRIDGE_TOKENS.map(([token, declaration]) => `  ${token}: ${declaration}, #111111);`).join("\n")}
 }
 ${PREVIEW_REQUIREMENTS.map(
   ([, selector, token]) => `${selector} { color: var(${token}); }`,

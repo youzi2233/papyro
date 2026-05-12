@@ -40,6 +40,7 @@ flowchart TD
 - `assets/styles/tiptap-chrome.css`、`apps/desktop/assets/styles/tiptap-chrome.css` 和 `apps/mobile/assets/styles/tiptap-chrome.css` 放 Tiptap runtime 控件样式，包括命令面板、块句柄、表格 chrome 与代码语言菜单。
 - `tiptap-chrome.css` ? Tiptap chrome ???????????? `tiptap-chrome-code.css`?`tiptap-chrome-base.css`?`tiptap-chrome-command.css`?`tiptap-chrome-table.css` ? `tiptap-chrome-block.css`??????????????????
 - Tiptap node views 通过 Markdown 与 Tiptap chrome 样式中的 CSS class，以及聚焦的 `js/src/tiptap-*.js` 模块消费同一批 token。
+- 官方 Tiptap UI 组件保留上游 `--tt-*` 变量。Papyro 在 `assets/main.css`、`apps/*/assets/main.css` 和 `js/src/styles/_variables.scss` 中将这些变量映射到语义化 `--mn-*` 契约。
 
 如果某个 token 在 app asset 中有副本，同一次提交里必须同步更新。
 
@@ -47,6 +48,7 @@ flowchart TD
 
 - 组件 CSS 优先使用语义 token。写应用界面时用 `--mn-chrome-surface`，不要直接拿 `--mn-surface`。
 - Preview 和 Hybrid 的 Markdown 必须共用 `--mn-markdown-*` 和 `--mn-code-*`。
+- 不要把官方 Tiptap 组件样式直接改成 `--mn-*`。优先扩展桥接层，把官方 `--tt-*` 变量映射到现有语义 token。
 - 不要为了单个组件随手加一个颜色；先判断是否应该补一个语义 token。
 - 不要把行为写成颜色名。用 `--mn-status-warning`，不要用 `--mn-yellow`。
 - 新增主题前，必须确认 token 覆盖 app chrome、editor canvas、Markdown、代码块、selection、focus ring 和状态色。

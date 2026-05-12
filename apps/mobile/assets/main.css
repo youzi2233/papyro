@@ -26,9 +26,11 @@
     --mn-focus-ring-sm: var(--mn-ring-focus-sm);
     --mn-border-default: 1px solid var(--mn-border);
     --mn-border-subtle: 1px solid rgba(25, 26, 23, 0.08);
+    --mn-divider: rgba(25, 26, 23, 0.08);
     --mn-surface: var(--mn-panel);
     --mn-surface-raised: var(--mn-panel);
     --mn-surface-sunken: #f1f2ee;
+    --mn-sidebar-bg: var(--mn-bg);
     --mn-ink: var(--mn-text);
     --mn-ink-2: #454a43;
     --mn-ink-3: var(--mn-muted);
@@ -109,6 +111,8 @@
     --mn-code-token-type: #315d83;
     --mn-code-token-operator: #4b5563;
     --mn-transition-fast: 120ms ease;
+    --mn-motion-theme: 200ms ease;
+    --mn-motion-theme-duration: 200ms;
     --mn-transition-theme: background-color 200ms ease, background 200ms ease, border-color 200ms ease, color 200ms ease, box-shadow 200ms ease;
     --mn-letter-normal: 0;
     --mn-line-body: 1.6;
@@ -130,6 +134,50 @@
     --mn-weight-medium: 500;
     --mn-weight-semibold: 600;
     --mn-weight-bold: 700;
+
+    /* Official Tiptap UI token bridge */
+    --tt-bg-color: var(--mn-editor-bg, #ffffff);
+    --tt-border-color: var(--mn-divider, rgba(37, 39, 45, 0.1));
+    --tt-border-color-tint: color-mix(in srgb, var(--mn-divider, rgba(15, 22, 36, 0.05)) 55%, transparent);
+    --tt-sidebar-bg-color: var(--mn-sidebar-bg, #f7f8fa);
+    --tt-scrollbar-color: color-mix(in srgb, var(--mn-ink-3, #64748b) 32%, transparent);
+    --tt-cursor-color: var(--mn-caret, #2563eb);
+    --tt-selection-color: var(--mn-selection-bg, rgba(37, 99, 235, 0.18));
+    --tt-card-bg-color: var(--mn-surface-raised, #ffffff);
+    --tt-card-border-color: var(--mn-divider, rgba(15, 23, 42, 0.08));
+    --tt-shadow-elevated-md: var(--mn-shadow-md, 0 18px 42px rgba(15, 23, 42, .09));
+    --tt-brand-color-50: color-mix(in srgb, var(--mn-accent, #2563eb) 8%, var(--mn-surface, #ffffff));
+    --tt-brand-color-100: color-mix(in srgb, var(--mn-accent, #2563eb) 12%, var(--mn-surface, #ffffff));
+    --tt-brand-color-200: color-mix(in srgb, var(--mn-accent, #2563eb) 20%, var(--mn-surface, #ffffff));
+    --tt-brand-color-300: color-mix(in srgb, var(--mn-accent, #2563eb) 34%, var(--mn-surface, #ffffff));
+    --tt-brand-color-400: var(--mn-accent, #2563eb);
+    --tt-brand-color-500: var(--mn-accent, #2563eb);
+    --tt-brand-color-600: var(--mn-accent-strong, #1d4ed8);
+    --tt-brand-color-700: color-mix(in srgb, var(--mn-accent-strong, #1d4ed8) 88%, var(--mn-ink, #111827));
+    --tt-brand-color-800: color-mix(in srgb, var(--mn-accent-strong, #1d4ed8) 70%, var(--mn-ink, #111827));
+    --tt-brand-color-900: color-mix(in srgb, var(--mn-accent-strong, #1d4ed8) 52%, var(--mn-ink, #111827));
+    --tt-brand-color-950: color-mix(in srgb, var(--mn-accent-strong, #1d4ed8) 38%, var(--mn-ink, #111827));
+    --tt-radius-xxs: var(--mn-radius-xs, 6px);
+    --tt-radius-xs: var(--mn-radius-xs, 6px);
+    --tt-radius-sm: var(--mn-radius-xs, 6px);
+    --tt-radius-md: var(--mn-radius-sm, 8px);
+    --tt-radius-lg: var(--mn-radius-sm, 8px);
+    --tt-radius-xl: var(--mn-radius-md, 10px);
+    --tt-transition-duration-short: var(--mn-motion-theme-duration, 200ms);
+    --tt-transition-duration-default: var(--mn-motion-theme-duration, 200ms);
+    --tt-transition-easing-default: ease;
+    --tt-table-border-color: var(--mn-border, #e5e7eb);
+    --tt-table-selected-bg: color-mix(in srgb, var(--mn-accent, #2563eb) 16%, transparent);
+    --tt-table-selected-stroke: var(--mn-accent, #2563eb);
+    --tt-table-column-resize-handle-bg: var(--mn-accent, #2563eb);
+    --tt-table-cell-padding: var(--mn-markdown-table-cell-pad, 0.5rem);
+    --tt-table-margin-block: var(--mn-markdown-block-gap, 1.25rem);
+    --tt-table-pad-block-start: 0;
+    --tt-table-pad-block-end: 0;
+    --tt-table-pad-inline-start: 0;
+    --tt-table-pad-inline-end: 0;
+    --tt-table-handle-bg-color: var(--mn-surface-raised, #ffffff);
+    --tt-table-extend-icon-color: var(--mn-ink-3, #64748b);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI Variable Text", "Segoe UI", Aptos, "PingFang SC", "Microsoft YaHei UI", system-ui, sans-serif;
 }
 

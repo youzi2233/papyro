@@ -40,6 +40,7 @@ flowchart TD
 - `assets/styles/tiptap-chrome.css`, `apps/desktop/assets/styles/tiptap-chrome.css`, and `apps/mobile/assets/styles/tiptap-chrome.css` are the Tiptap chrome entry stylesheets.
 - Tiptap chrome implementation styles are split by responsibility into `tiptap-chrome-code.css`, `tiptap-chrome-base.css`, `tiptap-chrome-command.css`, `tiptap-chrome-table.css`, and `tiptap-chrome-block.css`. Keep the shared, desktop, and mobile copies synchronized.
 - Tiptap node views consume the same tokens through CSS classes in the markdown and Tiptap chrome styles plus focused `js/src/tiptap-*.js` modules.
+- Official Tiptap UI components keep their upstream `--tt-*` variables. Papyro maps those variables to the semantic `--mn-*` contract in `assets/main.css`, `apps/*/assets/main.css`, and `js/src/styles/_variables.scss`.
 
 When changing a token that is mirrored in an app asset, update both copies in the same commit.
 
@@ -47,6 +48,7 @@ When changing a token that is mirrored in an app asset, update both copies in th
 
 - Prefer semantic tokens in component CSS. Use `--mn-chrome-surface` instead of `--mn-surface` when styling app chrome.
 - Keep Preview and Hybrid Markdown on the same `--mn-markdown-*` and `--mn-code-*` tokens.
+- Do not rewrite official Tiptap component styles to use `--mn-*` directly. Extend the bridge by mapping the official `--tt-*` variable to an existing semantic token first.
 - Add a semantic token before adding another one-off color to a component.
 - Do not encode behavior in a color name. Use `--mn-status-warning`, not `--mn-yellow`.
 - Do not introduce a new theme until the token contract covers app chrome, editor canvas, Markdown, code blocks, selection, focus rings, and status colors.

@@ -1,7 +1,7 @@
 /* Papyro Tiptap table compatibility for the official table-node UI. */
 
 :root {
-    --tt-table-border-color: var(--mn-markdown-table-border);
+    --tt-table-border-color: var(--mn-border);
     --tt-table-selected-bg: color-mix(in srgb, var(--mn-accent) 16%, transparent);
     --tt-table-selected-stroke: var(--mn-accent);
     --tt-table-column-resize-handle-bg: var(--mn-accent);
@@ -17,7 +17,7 @@
 
 [data-theme="github_dark"],
 .dark {
-    --tt-table-border-color: var(--mn-markdown-table-border);
+    --tt-table-border-color: var(--mn-border);
     --tt-table-selected-bg: color-mix(in srgb, var(--mn-accent) 18%, transparent);
     --tt-table-selected-stroke: var(--mn-accent);
     --tt-table-column-resize-handle-bg: var(--mn-accent);
@@ -60,7 +60,7 @@
     box-sizing: border-box;
     min-width: 96px;
     padding: var(--tt-table-cell-padding);
-    border: var(--tt-table-border-color);
+    border: 1px solid var(--tt-table-border-color);
     background-clip: border-box;
     background-origin: border-box;
     vertical-align: top;

@@ -294,3 +294,55 @@
   --tt-color-highlight-orange-contrast: rgba(233, 126, 37, 0.2);
   --tt-color-highlight-pink-contrast: rgba(220, 76, 145, 0.22);
 }
+
+/* Papyro keeps official Tiptap component CSS intact and maps its public
+   variables to the app's semantic theme contract. */
+:root,
+.mn-tiptap-react-root,
+.mn-tiptap-editor {
+  --tt-bg-color: var(--mn-editor-bg, #ffffff);
+  --tt-border-color: var(--mn-divider, rgba(37, 39, 45, 0.1));
+  --tt-border-color-tint: color-mix(in srgb, var(--mn-divider, rgba(15, 22, 36, 0.05)) 55%, transparent);
+  --tt-sidebar-bg-color: var(--mn-sidebar-bg, #f7f8fa);
+  --tt-scrollbar-color: color-mix(in srgb, var(--mn-ink-3, #64748b) 32%, transparent);
+  --tt-cursor-color: var(--mn-caret, #2563eb);
+  --tt-selection-color: var(--mn-selection-bg, rgba(37, 99, 235, 0.18));
+  --tt-card-bg-color: var(--mn-surface-raised, #ffffff);
+  --tt-card-border-color: var(--mn-divider, rgba(15, 23, 42, 0.08));
+  --tt-shadow-elevated-md: var(--mn-shadow-md, 0 18px 42px rgba(15, 23, 42, 0.09));
+
+  --tt-brand-color-50: color-mix(in srgb, var(--mn-accent, #2563eb) 8%, var(--mn-surface, #ffffff));
+  --tt-brand-color-100: color-mix(in srgb, var(--mn-accent, #2563eb) 12%, var(--mn-surface, #ffffff));
+  --tt-brand-color-200: color-mix(in srgb, var(--mn-accent, #2563eb) 20%, var(--mn-surface, #ffffff));
+  --tt-brand-color-300: color-mix(in srgb, var(--mn-accent, #2563eb) 34%, var(--mn-surface, #ffffff));
+  --tt-brand-color-400: var(--mn-accent, #2563eb);
+  --tt-brand-color-500: var(--mn-accent, #2563eb);
+  --tt-brand-color-600: var(--mn-accent-strong, #1d4ed8);
+  --tt-brand-color-700: color-mix(in srgb, var(--mn-accent-strong, #1d4ed8) 88%, var(--mn-ink, #111827));
+  --tt-brand-color-800: color-mix(in srgb, var(--mn-accent-strong, #1d4ed8) 70%, var(--mn-ink, #111827));
+  --tt-brand-color-900: color-mix(in srgb, var(--mn-accent-strong, #1d4ed8) 52%, var(--mn-ink, #111827));
+  --tt-brand-color-950: color-mix(in srgb, var(--mn-accent-strong, #1d4ed8) 38%, var(--mn-ink, #111827));
+
+  --tt-radius-xxs: var(--mn-radius-xxs, 3px);
+  --tt-radius-xs: var(--mn-radius-xs, 5px);
+  --tt-radius-sm: var(--mn-radius-sm, 6px);
+  --tt-radius-md: var(--mn-radius-md, 8px);
+  --tt-radius-lg: var(--mn-radius-lg, 8px);
+  --tt-radius-xl: var(--mn-radius-xl, 8px);
+  --tt-transition-duration-short: var(--mn-motion-theme-duration, 200ms);
+  --tt-transition-duration-default: var(--mn-motion-theme-duration, 200ms);
+  --tt-transition-easing-default: ease;
+
+  --tt-table-border-color: var(--mn-border, #e5e7eb);
+  --tt-table-selected-bg: color-mix(in srgb, var(--mn-accent, #2563eb) 16%, transparent);
+  --tt-table-selected-stroke: var(--mn-accent, #2563eb);
+  --tt-table-column-resize-handle-bg: var(--mn-accent, #2563eb);
+  --tt-table-cell-padding: var(--mn-markdown-table-cell-pad, 0.5rem);
+  --tt-table-margin-block: var(--mn-markdown-block-gap, 1.25rem);
+  --tt-table-pad-block-start: 0;
+  --tt-table-pad-block-end: 0;
+  --tt-table-pad-inline-start: 0;
+  --tt-table-pad-inline-end: 0;
+  --tt-table-handle-bg-color: var(--mn-surface-raised, #ffffff);
+  --tt-table-extend-icon-color: var(--mn-ink-3, #64748b);
+}
