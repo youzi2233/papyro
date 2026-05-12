@@ -284,7 +284,7 @@ Migrate by module priority, one module at a time:
 - [x] All components under `tiptap-ui/` (official source is already TSX)
 - [x] All primitives under `tiptap-ui-primitive/`
 - [ ] All node components under `tiptap-node/`
-- [ ] All hooks under `hooks/`
+- [x] All hooks under `hooks/`
 
 #### 5.3 Utilities and Tests
 - [ ] Utility functions under `lib/`
