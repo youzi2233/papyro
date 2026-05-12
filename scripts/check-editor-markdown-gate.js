@@ -21,6 +21,11 @@ const STEPS = [
     args: ["scripts/check-markdown-style-smoke.js"],
   },
   {
+    name: "Tiptap theme bridge",
+    command: process.execPath,
+    args: ["scripts/check-tiptap-theme-bridge.js"],
+  },
+  {
     name: "Tiptap release smoke",
     command: process.execPath,
     args: ["scripts/check-tiptap-release-smoke.js"],

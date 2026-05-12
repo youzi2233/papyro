@@ -42,6 +42,7 @@ flowchart TD
 - `tiptap-chrome-papyro.css` owns Papyro-only editor feature styles: Markdown source mode, KaTeX-backed math editing, and Mermaid rendering/editing surfaces.
 - Tiptap node views consume the same tokens through CSS classes in the markdown and Tiptap chrome styles plus focused `js/src/tiptap-*.js` modules.
 - Official Tiptap UI components keep their upstream `--tt-*` variables. Papyro maps those variables to the semantic `--mn-*` contract in `assets/main.css`, `apps/*/assets/main.css`, and `js/src/styles/_variables.scss`.
+- `scripts/check-tiptap-theme-bridge.js` verifies that every shipped theme provides editor-facing `--mn-*` tokens and that the official `--tt-*` bridge derives from those tokens. Run it with the editor gate before changing editor themes.
 
 When changing a token that is mirrored in an app asset, update both copies in the same commit.
 

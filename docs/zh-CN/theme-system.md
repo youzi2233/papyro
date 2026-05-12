@@ -43,6 +43,7 @@ flowchart TD
 - `tiptap-chrome-papyro.css` 只承载 Papyro 专属编辑器功能样式：Markdown 源码模式、KaTeX 数学编辑，以及 Mermaid 渲染/编辑区域。
 - Tiptap node views 通过 Markdown 与 Tiptap chrome 样式中的 CSS class，以及聚焦的 `js/src/tiptap-*.js` 模块消费同一批 token。
 - 官方 Tiptap UI 组件保留上游 `--tt-*` 变量。Papyro 在 `assets/main.css`、`apps/*/assets/main.css` 和 `js/src/styles/_variables.scss` 中将这些变量映射到语义化 `--mn-*` 契约。
+- `scripts/check-tiptap-theme-bridge.js` 会校验每个内置主题都提供编辑器需要的 `--mn-*` token，并确认官方 `--tt-*` 桥接来自这些 token；改编辑器主题前必须随 editor gate 一起运行。
 
 如果某个 token 在 app asset 中有副本，同一次提交里必须同步更新。
 

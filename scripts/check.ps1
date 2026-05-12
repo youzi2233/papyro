@@ -45,6 +45,8 @@ Invoke-Step "UI contrast check self-test" { node scripts/check-ui-contrast.js --
 Invoke-Step "desktop resource smoke check" { node scripts/check-desktop-resource-smoke.js }
 Invoke-Step "Markdown style smoke check" { node scripts/check-markdown-style-smoke.js }
 Invoke-Step "Markdown style smoke check self-test" { node scripts/check-markdown-style-smoke.js --self-test }
+Invoke-Step "Tiptap theme bridge check" { node scripts/check-tiptap-theme-bridge.js }
+Invoke-Step "Tiptap theme bridge check self-test" { node scripts/check-tiptap-theme-bridge.js --self-test }
 Invoke-Step "Tiptap release smoke fixture check" { node scripts/check-tiptap-release-smoke.js }
 Invoke-Step "Tiptap release smoke fixture check self-test" { node scripts/check-tiptap-release-smoke.js --self-test }
 Invoke-Step "Tiptap runtime smoke check" { node scripts/check-tiptap-runtime-smoke.js }

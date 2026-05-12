@@ -49,6 +49,12 @@ node scripts/check-markdown-style-smoke.js
 echo "=== Markdown style smoke check self-test ==="
 node scripts/check-markdown-style-smoke.js --self-test
 
+echo "=== Tiptap theme bridge check ==="
+node scripts/check-tiptap-theme-bridge.js
+
+echo "=== Tiptap theme bridge check self-test ==="
+node scripts/check-tiptap-theme-bridge.js --self-test
+
 echo "=== Tiptap release smoke fixture check ==="
 node scripts/check-tiptap-release-smoke.js
 

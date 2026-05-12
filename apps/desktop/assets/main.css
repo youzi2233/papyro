@@ -379,6 +379,9 @@
     --mn-caret-composing:    var(--mn-warning);
     --mn-composition-halo:   rgba(211, 154, 96, 0.22);
     --mn-composition-line:   rgba(211, 154, 96, 0.11);
+    --mn-markdown-code-bg: #10141c;
+    --mn-markdown-code-block-bg: #10141c;
+    --mn-markdown-code-color: #cbd5e1;
     --mn-code-token-comment:     #8b949e;
     --mn-code-token-keyword:     #ff7b72;
     --mn-code-token-string:      #a5d6ff;
@@ -616,6 +619,9 @@
         --mn-caret-composing:    var(--mn-warning);
         --mn-composition-halo:   rgba(211, 154, 96, 0.22);
         --mn-composition-line:   rgba(211, 154, 96, 0.11);
+        --mn-markdown-code-bg: #10141c;
+        --mn-markdown-code-block-bg: #10141c;
+        --mn-markdown-code-color: #cbd5e1;
         --mn-code-token-comment:     #8b949e;
         --mn-code-token-keyword:     #ff7b72;
         --mn-code-token-string:      #a5d6ff;

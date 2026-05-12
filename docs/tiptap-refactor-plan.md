@@ -297,7 +297,7 @@ Migrate by module priority, one module at a time:
 - [x] Establish unified design tokens (CSS variables) aligned with official component style system
 - [x] Remove all custom SCSS that duplicates official components
 - [x] Keep Papyro-specific styles: Mermaid diagrams, KaTeX math formulas, source mode
-- [ ] Ensure dark/light theme switches via CSS variables (official components already support this)
+- [x] Ensure dark/light theme switches via CSS variables (official components already support this)
 - [x] Audit `table-node.scss`, `table-handle-menu.scss` etc.; keep upstream official SCSS and move Papyro-only table host overrides into `tiptap-chrome-table.css`
 
 ---
