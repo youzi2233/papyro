@@ -247,7 +247,7 @@ js/src/
 - [x] 保留 slot 架构（BeforeContent / EditorContent / AfterContent / OverlayLayer）
 - [x] 保留 `runtime-context` → 迁移为 TS，简化接口
 - [x] 保留 `mount-controller` → 迁移为 TS
-- [ ] 删除 `slots.jsx` 中不再使用的 slot 定义
+- [x] 删除 `slots.tsx` 中不再使用的 slot 定义
 
 ---
 

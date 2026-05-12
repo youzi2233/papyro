@@ -88,6 +88,9 @@ test("React island slots register official editor overlay layers by default", ()
   assert.match(slotsSource, /<DragContextMenu \/>/u);
   assert.match(slotsSource, /<PapyroOfficialTableNodeLayer \{\.\.\.runtime\} \/>/u);
   assert.match(slotsSource, /OverlayLayer:\s*PapyroOverlayLayer/u);
+  assert.doesNotMatch(slotsSource, /BeforeContent:\s*null/u);
+  assert.doesNotMatch(slotsSource, /EditorContent:\s*null/u);
+  assert.doesNotMatch(slotsSource, /AfterContent:\s*null/u);
 });
 
 test("React index exports the official drag context menu", () => {

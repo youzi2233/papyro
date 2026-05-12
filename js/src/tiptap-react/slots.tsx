@@ -35,9 +35,6 @@ export function renderIslandSlot(SlotComponent, runtime) {
 
 export function createPapyroTiptapReactComponents(components = {}) {
   return {
-    BeforeContent: null,
-    EditorContent: null,
-    AfterContent: null,
     OverlayLayer: PapyroOverlayLayer,
     ...components,
   };

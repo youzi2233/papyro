@@ -247,7 +247,7 @@ The current `tiptap-runtime.js` creates many controllers via dependency injectio
 - [x] Keep slot architecture (BeforeContent / EditorContent / AfterContent / OverlayLayer)
 - [x] Keep `runtime-context` → migrate to TS, simplify interface
 - [x] Keep `mount-controller` → migrate to TS
-- [ ] Remove unused slot definitions from `slots.jsx`
+- [x] Remove unused slot definitions from `slots.tsx`
 
 ---
 
