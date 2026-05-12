@@ -262,7 +262,7 @@ The table-node is partially integrated, needs completion:
   - Context menu (insert/delete rows/columns, merge/split cells)
   - Column width resize
 - [x] Remove redundant bridging logic in `tiptap-table-command-controller.js`
-- [ ] Remove code in `tiptap-table.js` replaced by official components
+- [x] Remove code in `tiptap-table.js` replaced by official components
 - [x] Ensure table Markdown serialization is correct (GFM table format)
 
 ---

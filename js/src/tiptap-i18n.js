@@ -121,13 +121,9 @@ const TABLE_COMMAND_LABELS = Object.freeze({
   "add-column-before": ["Insert column left", "左侧插入列", "Left", "左侧"],
   "add-column-after": ["Insert column right", "右侧插入列", "Right", "右侧"],
   "delete-column": ["Delete current column", "删除当前列", "Delete", "删除"],
-  "move-column-left": ["Move column left", "向左移动列", "Left", "左移"],
-  "move-column-right": ["Move column right", "向右移动列", "Right", "右移"],
   "add-row-before": ["Insert row above", "上方插入行", "Above", "上方"],
   "add-row-after": ["Insert row below", "下方插入行", "Below", "下方"],
   "delete-row": ["Delete current row", "删除当前行", "Delete", "删除"],
-  "move-row-up": ["Move row up", "向上移动行", "Up", "上移"],
-  "move-row-down": ["Move row down", "向下移动行", "Down", "下移"],
   "merge-cells": ["Merge selected cells", "合并选中单元格", "Merge", "合并"],
   "split-cell": ["Split merged cell", "拆分合并单元格", "Split", "拆分"],
   "copy-cell-content": ["Copy cell content", "复制单元格内容", "Copy", "复制"],
@@ -154,45 +150,6 @@ const TABLE_COMMAND_LABELS = Object.freeze({
   "delete-table": ["Delete table", "删除表格", "Delete", "删除"],
 });
 
-const PAPYRO_TABLE_COMMAND_LABELS = Object.freeze({
-  "sort-rows-asc": [
-    "Sort rows A to Z",
-    "\u6309\u5f53\u524d\u5217\u5347\u5e8f\u6392\u5217",
-    "A to Z",
-    "\u5347\u5e8f",
-  ],
-  "sort-rows-desc": [
-    "Sort rows Z to A",
-    "\u6309\u5f53\u524d\u5217\u964d\u5e8f\u6392\u5217",
-    "Z to A",
-    "\u964d\u5e8f",
-  ],
-  "sort-columns-asc": [
-    "Sort columns A to Z",
-    "\u6309\u5f53\u524d\u884c\u5347\u5e8f\u6392\u5217",
-    "A to Z",
-    "\u5347\u5e8f",
-  ],
-  "sort-columns-desc": [
-    "Sort columns Z to A",
-    "\u6309\u5f53\u524d\u884c\u964d\u5e8f\u6392\u5217",
-    "Z to A",
-    "\u964d\u5e8f",
-  ],
-  "duplicate-column": [
-    "Duplicate current column",
-    "\u590d\u5236\u5f53\u524d\u5217",
-    "Duplicate",
-    "\u590d\u5236",
-  ],
-  "duplicate-row": [
-    "Duplicate current row",
-    "\u590d\u5236\u5f53\u524d\u884c",
-    "Duplicate",
-    "\u590d\u5236",
-  ],
-});
-
 const TABLE_COMMAND_DESCRIPTIONS = Object.freeze({
   "add-column-before": [
     "Add a column before the selected column.",
@@ -206,26 +163,6 @@ const TABLE_COMMAND_DESCRIPTIONS = Object.freeze({
     "Remove the selected column and its content.",
     "\u5220\u9664\u5f53\u524d\u5217\u53ca\u5176\u5185\u5bb9\u3002",
   ],
-  "move-column-left": [
-    "Move the selected column one position left.",
-    "\u5c06\u5f53\u524d\u5217\u5411\u5de6\u79fb\u52a8\u4e00\u4f4d\u3002",
-  ],
-  "move-column-right": [
-    "Move the selected column one position right.",
-    "\u5c06\u5f53\u524d\u5217\u5411\u53f3\u79fb\u52a8\u4e00\u4f4d\u3002",
-  ],
-  "sort-rows-asc": [
-    "Sort rows by this column; header rows stay fixed.",
-    "\u6309\u5f53\u524d\u5217\u5347\u5e8f\u6392\u5217\u884c\uff0c\u8868\u5934\u884c\u4fdd\u6301\u4e0d\u52a8\u3002",
-  ],
-  "sort-rows-desc": [
-    "Sort rows by this column in reverse order.",
-    "\u6309\u5f53\u524d\u5217\u964d\u5e8f\u6392\u5217\u884c\u3002",
-  ],
-  "duplicate-column": [
-    "Copy the selected column next to itself.",
-    "\u5728\u76f8\u90bb\u4f4d\u7f6e\u590d\u5236\u5f53\u524d\u5217\u3002",
-  ],
   "add-row-before": [
     "Add a row above the selected row.",
     "\u5728\u5f53\u524d\u884c\u4e0a\u65b9\u63d2\u5165\u4e00\u884c\u3002",
@@ -237,26 +174,6 @@ const TABLE_COMMAND_DESCRIPTIONS = Object.freeze({
   "delete-row": [
     "Remove the selected row and its content.",
     "\u5220\u9664\u5f53\u524d\u884c\u53ca\u5176\u5185\u5bb9\u3002",
-  ],
-  "move-row-up": [
-    "Move the selected row one position up.",
-    "\u5c06\u5f53\u524d\u884c\u5411\u4e0a\u79fb\u52a8\u4e00\u4f4d\u3002",
-  ],
-  "move-row-down": [
-    "Move the selected row one position down.",
-    "\u5c06\u5f53\u524d\u884c\u5411\u4e0b\u79fb\u52a8\u4e00\u4f4d\u3002",
-  ],
-  "sort-columns-asc": [
-    "Sort columns by this row; header columns stay fixed.",
-    "\u6309\u5f53\u524d\u884c\u5347\u5e8f\u6392\u5217\u5217\uff0c\u8868\u5934\u5217\u4fdd\u6301\u4e0d\u52a8\u3002",
-  ],
-  "sort-columns-desc": [
-    "Sort columns by this row in reverse order.",
-    "\u6309\u5f53\u524d\u884c\u964d\u5e8f\u6392\u5217\u5217\u3002",
-  ],
-  "duplicate-row": [
-    "Copy the selected row below itself.",
-    "\u5728\u4e0b\u65b9\u590d\u5236\u5f53\u524d\u884c\u3002",
   ],
   "merge-cells": [
     "Combine the selected cells into one cell.",
@@ -387,7 +304,7 @@ export function localizeSlashCommand(command, language) {
 }
 
 export function localizeTableCommand(command, language) {
-  const labels = TABLE_COMMAND_LABELS[command.id] ?? PAPYRO_TABLE_COMMAND_LABELS[command.id];
+  const labels = TABLE_COMMAND_LABELS[command.id];
   const description = TABLE_COMMAND_DESCRIPTIONS[command.id];
   return {
     ...command,

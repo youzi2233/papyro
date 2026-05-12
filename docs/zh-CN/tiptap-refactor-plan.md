@@ -262,7 +262,7 @@ js/src/
   - 右键菜单（插入/删除行列、合并/拆分单元格）
   - 列宽调整
 - [x] 移除 `tiptap-table-command-controller.js` 中的冗余桥接逻辑
-- [ ] 移除 `tiptap-table.js` 中被官方组件替代的代码
+- [x] 移除 `tiptap-table.js` 中被官方组件替代的代码
 - [x] 确保表格 Markdown 序列化正确（GFM table 格式）
 
 ---

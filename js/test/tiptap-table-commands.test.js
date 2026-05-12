@@ -33,19 +33,9 @@ test("Tiptap table commands expose stable enterprise command metadata", () => {
       ["Columns", "add-column-before", "addColumnBefore"],
       ["Columns", "add-column-after", "addColumnAfter"],
       ["Columns", "delete-column", "deleteColumn"],
-      ["Arrange", "move-column-left", "moveSelectedTableColumn"],
-      ["Arrange", "move-column-right", "moveSelectedTableColumn"],
-      ["Arrange", "sort-rows-asc", "sortSelectedTableRows"],
-      ["Arrange", "sort-rows-desc", "sortSelectedTableRows"],
-      ["Columns", "duplicate-column", "duplicateSelectedTableColumn"],
       ["Rows", "add-row-before", "addRowBefore"],
       ["Rows", "add-row-after", "addRowAfter"],
       ["Rows", "delete-row", "deleteRow"],
-      ["Arrange", "move-row-up", "moveSelectedTableRow"],
-      ["Arrange", "move-row-down", "moveSelectedTableRow"],
-      ["Arrange", "sort-columns-asc", "sortSelectedTableColumns"],
-      ["Arrange", "sort-columns-desc", "sortSelectedTableColumns"],
-      ["Rows", "duplicate-row", "duplicateSelectedTableRow"],
       ["Cells", "merge-cells", "mergeCells"],
       ["Cells", "split-cell", "splitCell"],
       ["Cells", "copy-cell-content", "copySelectedTableCells"],
@@ -117,14 +107,9 @@ test("Tiptap table command scope keeps cell menus focused", () => {
 
 test("Tiptap table command scope orders row column and table menus by intent", () => {
   assert.deepEqual(commandIds(visibleTableCommands(TABLE_COMMANDS, "context", "row")), [
-    "move-row-up",
-    "move-row-down",
     "add-row-after",
     "add-row-before",
-    "duplicate-row",
     "toggle-header-row",
-    "sort-columns-asc",
-    "sort-columns-desc",
     "copy-cell-content",
     "clear-cell-content",
     "clear-cell-style",
@@ -142,14 +127,9 @@ test("Tiptap table command scope orders row column and table menus by intent", (
     "delete-row",
   ]);
   assert.deepEqual(commandIds(visibleTableCommands(TABLE_COMMANDS, "context", "column")), [
-    "move-column-left",
-    "move-column-right",
     "add-column-after",
     "add-column-before",
-    "duplicate-column",
     "toggle-header-column",
-    "sort-rows-asc",
-    "sort-rows-desc",
     "copy-cell-content",
     "clear-cell-content",
     "clear-cell-style",
@@ -184,8 +164,6 @@ test("Tiptap table commands expose layout groups and keyboard helpers", () => {
   assert.equal(tableCommandLayoutGroup({ id: "cell-text-accent", group: "Text color" }), "text-color");
   assert.equal(tableCommandLayoutGroup({ id: "cell-bg-blue", group: "Cell color" }), "cell-color");
   assert.equal(tableCommandLayoutGroup({ id: "delete-row", group: "Rows", tone: "danger" }), "danger");
-  assert.equal(tableCommandLayoutGroup({ id: "sort-rows-asc", group: "Arrange" }), "sort");
-  assert.equal(tableCommandLayoutGroup({ id: "sort-columns-desc", group: "Arrange" }), "sort");
   assert.equal(tableCommandLayoutGroup({ id: "toggle-header-row", group: "Headers" }), "actions");
   assert.equal(tableCommandLayoutGroup({ id: "copy-cell-content", group: "Cells" }), "actions");
   assert.equal(tableCommandLayoutGroup({ id: "clear-cell-content", group: "Cells" }), "actions");
@@ -211,7 +189,7 @@ test("Tiptap table commands expose layout groups and keyboard helpers", () => {
 test("Tiptap table command menu state centralizes scope and active command fallback", () => {
   const commands = TABLE_COMMANDS.map((command) => ({
     ...command,
-    disabled: command.id === "delete-table" || command.id === "move-row-up",
+    disabled: command.id === "delete-table" || command.id === "add-row-after",
   }));
 
   assert.equal(normalizeTableMenuMode("floating"), "context");
@@ -220,16 +198,16 @@ test("Tiptap table command menu state centralizes scope and active command fallb
   const rowContext = createTableCommandMenuState(commands, {
     mode: "context",
     selectionKind: "row",
-    activeCommandId: "move-row-up",
+    activeCommandId: "add-row-after",
   });
   assert.equal(rowContext.mode, "context");
   assert.equal(rowContext.selectionKind, "row");
   assert.deepEqual(
     rowContext.commands.slice(0, 4).map((command) => command.id),
-    ["move-row-up", "move-row-down", "add-row-after", "add-row-before"],
+    ["add-row-after", "add-row-before", "toggle-header-row", "copy-cell-content"],
   );
-  assert.equal(rowContext.activeCommandId, "move-row-down");
-  assert.equal(rowContext.enabledCommandIds.includes("move-row-up"), false);
+  assert.equal(rowContext.activeCommandId, "add-row-before");
+  assert.equal(rowContext.enabledCommandIds.includes("add-row-after"), false);
 
   const keyboard = createTableCommandMenuState(commands, {
     mode: "keyboard",
@@ -315,22 +293,7 @@ test("Tiptap table command menu model exposes object-oriented sections", () => {
         "structure",
         "actions",
         true,
-        [
-          "move-row-up",
-          "move-row-down",
-          "add-row-after",
-          "add-row-before",
-          "duplicate-row",
-          "toggle-header-row",
-        ],
-      ],
-      [
-        "structure:sort",
-        "Structure",
-        "structure",
-        "sort",
-        false,
-        ["sort-columns-asc", "sort-columns-desc"],
+        ["add-row-after", "add-row-before", "toggle-header-row"],
       ],
       [
         "content:actions",

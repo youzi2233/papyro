@@ -63,50 +63,6 @@ export const TABLE_COMMANDS = Object.freeze([
     tone: "danger",
   },
   {
-    id: "move-column-left",
-    group: "Arrange",
-    title: "Move column left",
-    label: "Left",
-    command: "moveSelectedTableColumn",
-    args: ["left"],
-    icon: "move-column-left",
-  },
-  {
-    id: "move-column-right",
-    group: "Arrange",
-    title: "Move column right",
-    label: "Right",
-    command: "moveSelectedTableColumn",
-    args: ["right"],
-    icon: "move-column-right",
-  },
-  {
-    id: "sort-rows-asc",
-    group: "Arrange",
-    title: "Sort rows A to Z",
-    label: "A to Z",
-    command: "sortSelectedTableRows",
-    args: ["asc"],
-    icon: "sort-asc",
-  },
-  {
-    id: "sort-rows-desc",
-    group: "Arrange",
-    title: "Sort rows Z to A",
-    label: "Z to A",
-    command: "sortSelectedTableRows",
-    args: ["desc"],
-    icon: "sort-desc",
-  },
-  {
-    id: "duplicate-column",
-    group: "Columns",
-    title: "Duplicate current column",
-    label: "Duplicate",
-    command: "duplicateSelectedTableColumn",
-    icon: "duplicate-column",
-  },
-  {
     id: "add-row-before",
     group: "Rows",
     title: "Insert row above",
@@ -130,50 +86,6 @@ export const TABLE_COMMANDS = Object.freeze([
     command: "deleteRow",
     icon: "delete-row",
     tone: "danger",
-  },
-  {
-    id: "move-row-up",
-    group: "Arrange",
-    title: "Move row up",
-    label: "Up",
-    command: "moveSelectedTableRow",
-    args: ["up"],
-    icon: "move-row-up",
-  },
-  {
-    id: "move-row-down",
-    group: "Arrange",
-    title: "Move row down",
-    label: "Down",
-    command: "moveSelectedTableRow",
-    args: ["down"],
-    icon: "move-row-down",
-  },
-  {
-    id: "sort-columns-asc",
-    group: "Arrange",
-    title: "Sort columns A to Z",
-    label: "A to Z",
-    command: "sortSelectedTableColumns",
-    args: ["asc"],
-    icon: "sort-asc",
-  },
-  {
-    id: "sort-columns-desc",
-    group: "Arrange",
-    title: "Sort columns Z to A",
-    label: "Z to A",
-    command: "sortSelectedTableColumns",
-    args: ["desc"],
-    icon: "sort-desc",
-  },
-  {
-    id: "duplicate-row",
-    group: "Rows",
-    title: "Duplicate current row",
-    label: "Duplicate",
-    command: "duplicateSelectedTableRow",
-    icon: "duplicate-row",
   },
   {
     id: "merge-cells",
@@ -412,13 +324,8 @@ export const TABLE_MENU_COMMAND_SCOPE = Object.freeze({
     "cell-bg-green",
   ]),
   row: new Set([
-    "move-row-up",
-    "move-row-down",
     "add-row-before",
     "add-row-after",
-    "duplicate-row",
-    "sort-columns-asc",
-    "sort-columns-desc",
     "copy-cell-content",
     "clear-cell-content",
     "clear-cell-style",
@@ -427,13 +334,8 @@ export const TABLE_MENU_COMMAND_SCOPE = Object.freeze({
     "toggle-header-row",
   ]),
   column: new Set([
-    "move-column-left",
-    "move-column-right",
     "add-column-before",
     "add-column-after",
-    "duplicate-column",
-    "sort-rows-asc",
-    "sort-rows-desc",
     "copy-cell-content",
     "clear-cell-content",
     "clear-cell-style",
@@ -451,14 +353,9 @@ export const TABLE_MENU_COMMAND_SCOPE = Object.freeze({
 
 export const TABLE_COMMAND_CONTEXT_ORDER = Object.freeze({
   row: [
-    "move-row-up",
-    "move-row-down",
     "add-row-after",
     "add-row-before",
-    "duplicate-row",
     "toggle-header-row",
-    "sort-columns-asc",
-    "sort-columns-desc",
     "copy-cell-content",
     "clear-cell-content",
     "clear-cell-style",
@@ -466,14 +363,9 @@ export const TABLE_COMMAND_CONTEXT_ORDER = Object.freeze({
     "delete-row",
   ],
   column: [
-    "move-column-left",
-    "move-column-right",
     "add-column-after",
     "add-column-before",
-    "duplicate-column",
     "toggle-header-column",
-    "sort-rows-asc",
-    "sort-rows-desc",
     "copy-cell-content",
     "clear-cell-content",
     "clear-cell-style",
@@ -516,19 +408,9 @@ export const SELECTION_TABLE_COMMAND_IDS = new Set([
 export const KEYBOARD_TABLE_COMMAND_IDS = new Set([
   "add-column-before",
   "add-column-after",
-  "move-column-left",
-  "move-column-right",
-  "duplicate-column",
-  "sort-rows-asc",
-  "sort-rows-desc",
   "delete-column",
   "add-row-before",
   "add-row-after",
-  "move-row-up",
-  "move-row-down",
-  "duplicate-row",
-  "sort-columns-asc",
-  "sort-columns-desc",
   "delete-row",
   "merge-cells",
   "split-cell",
@@ -619,12 +501,6 @@ export function tableCommandLayoutGroup(command) {
   if (command?.id === "copy-cell-content") return "actions";
   if (command?.id === "clear-cell-content") return "actions";
   if (command?.id === "clear-cell-style") return "actions";
-  if (command?.id === "duplicate-row") return "actions";
-  if (command?.id === "duplicate-column") return "actions";
-  if (command?.id === "sort-rows-asc") return "sort";
-  if (command?.id === "sort-rows-desc") return "sort";
-  if (command?.id === "sort-columns-asc") return "sort";
-  if (command?.id === "sort-columns-desc") return "sort";
   if (TABLE_CONTEXT_HEADER_COMMAND_IDS.has(command?.id)) return "actions";
   const variant = tableCommandVariant(command);
   if (variant === "icon") return "align";
@@ -635,20 +511,10 @@ export function tableCommandLayoutGroup(command) {
 }
 
 const TABLE_COMMAND_MENU_SECTION_BY_ID = Object.freeze({
-  "move-row-up": "structure",
-  "move-row-down": "structure",
-  "move-column-left": "structure",
-  "move-column-right": "structure",
-  "sort-rows-asc": "structure",
-  "sort-rows-desc": "structure",
-  "sort-columns-asc": "structure",
-  "sort-columns-desc": "structure",
   "add-row-after": "structure",
   "add-row-before": "structure",
   "add-column-after": "structure",
   "add-column-before": "structure",
-  "duplicate-row": "structure",
-  "duplicate-column": "structure",
   "toggle-header-row": "structure",
   "toggle-header-column": "structure",
   "toggle-header-cell": "structure",
