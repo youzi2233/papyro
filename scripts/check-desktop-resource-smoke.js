@@ -124,6 +124,18 @@ function checkEditorRuntimeBundle(failures) {
   if (!bundle.includes("papyroEditor")) {
     failures.push("apps/desktop/assets/editor.js does not register the papyroEditor runtime");
   }
+  if (!bundle.includes("papyro.editor")) {
+    failures.push("apps/desktop/assets/editor.js does not expose the editor facade name");
+  }
+  if (!bundle.includes("protocolVersion")) {
+    failures.push("apps/desktop/assets/editor.js does not expose the editor protocol version");
+  }
+  if (!bundle.includes("runtimeKind")) {
+    failures.push("apps/desktop/assets/editor.js does not expose the editor runtime kind");
+  }
+  if (!bundle.includes("describe")) {
+    failures.push("apps/desktop/assets/editor.js does not expose the editor facade descriptor");
+  }
 }
 
 function checkDesktopSourceUrls(source, failures) {

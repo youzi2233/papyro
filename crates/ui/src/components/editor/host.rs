@@ -11,6 +11,9 @@ use papyro_core::models::{AppLanguage, ViewMode};
 use papyro_editor::parser::MarkdownBlockHintSet;
 use uuid::Uuid;
 
+const EDITOR_FACADE_VERSION: &str = "1.0.0";
+const EDITOR_PROTOCOL_VERSION: u8 = 1;
+
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 struct EditorCommandCache {
     view_mode: Option<ViewMode>,
@@ -81,7 +84,7 @@ pub(super) fn EditorHost(
                 const initialViewMode = {initial_view_mode_json};
 
                 async function ensurePapyroEditorRuntime() {{
-                    if (window.papyroEditor) return;
+                    if (isPapyroEditorRuntimeReady()) return;
 
                     const runtimeSrc = window.__PAPYRO_EDITOR_SCRIPT_SRC__;
                     const hasRuntimeScriptForSrc = (src) => {{
@@ -113,7 +116,7 @@ pub(super) fn EditorHost(
                     }}
 
                     for (let attempt = 0; attempt < 25; attempt++) {{
-                        if (window.papyroEditor) return;
+                        if (isPapyroEditorRuntimeReady()) return;
                         await new Promise(r => setTimeout(r, 20));
                     }}
 
@@ -121,6 +124,32 @@ pub(super) fn EditorHost(
                         window.__PAPYRO_EDITOR_LOAD_ERROR__ ||
                         `script src: ${{runtimeSrc || "not configured"}}`;
                     throw new Error(`papyroEditor runtime not ready (${{detail}})`);
+                }}
+
+                function isPapyroEditorRuntimeReady() {{
+                    const facade = window.papyroEditor;
+                    if (!facade || typeof facade !== "object") return false;
+                    const requiredMethods = [
+                        "ensureEditor",
+                        "attachChannel",
+                        "handleRustMessage",
+                        "describe",
+                    ];
+                    if (requiredMethods.some((method) => typeof facade[method] !== "function")) {{
+                        window.__PAPYRO_EDITOR_LOAD_ERROR__ =
+                            "editor runtime facade is missing required methods";
+                        return false;
+                    }}
+                    if (
+                        facade.name !== "papyro.editor" ||
+                        facade.version !== {facade_version_json} ||
+                        facade.protocolVersion !== {protocol_version_json}
+                    ) {{
+                        window.__PAPYRO_EDITOR_LOAD_ERROR__ =
+                            `editor runtime facade contract mismatch: version=${{facade.version}}, protocol=${{facade.protocolVersion}}`;
+                        return false;
+                    }}
+                    return true;
                 }}
 
                 try {{
@@ -154,6 +183,10 @@ pub(super) fn EditorHost(
                         .unwrap_or_else(|_| "\"\"".to_string()),
                     initial_view_mode_json = serde_json::to_string(&initial_view_mode)
                         .unwrap_or_else(|_| "\"Hybrid\"".to_string()),
+                    facade_version_json = serde_json::to_string(EDITOR_FACADE_VERSION)
+                        .unwrap_or_else(|_| "\"1.0.0\"".to_string()),
+                    protocol_version_json = serde_json::to_string(&EDITOR_PROTOCOL_VERSION)
+                        .unwrap_or_else(|_| "1".to_string()),
                 );
 
                 let eval = document::eval(&script);
@@ -532,5 +565,11 @@ mod tests {
         assert!(!record_block_hints_change(&mut cache, 1));
         assert!(record_block_hints_change(&mut cache, 2));
         assert!(!record_block_hints_change(&mut cache, 2));
+    }
+
+    #[test]
+    fn editor_facade_contract_matches_js_runtime() {
+        assert_eq!(EDITOR_FACADE_VERSION, "1.0.0");
+        assert_eq!(EDITOR_PROTOCOL_VERSION, 1);
     }
 }

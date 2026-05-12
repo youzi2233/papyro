@@ -10,6 +10,15 @@ export const EDITOR_RUNTIME_HOST_METHODS = Object.freeze([
   "renderPreviewMermaid",
 ]);
 
+export const EDITOR_RUNTIME_FACADE_METHODS = Object.freeze([
+  ...EDITOR_RUNTIME_HOST_METHODS,
+  "describe",
+]);
+
+export const PAPYRO_EDITOR_FACADE_NAME = "papyro.editor";
+export const PAPYRO_EDITOR_FACADE_VERSION = "1.0.0";
+export const PAPYRO_EDITOR_PROTOCOL_VERSION = 1;
+
 export const EDITOR_RUNTIME_ADAPTER_METHODS = Object.freeze([
   "mount",
   "attachChannel",
@@ -52,6 +61,16 @@ export function missingEditorRuntimeAdapterMethods(adapter) {
   );
 }
 
+export function missingPapyroEditorFacadeMethods(facade) {
+  if (!facade || typeof facade !== "object") {
+    return [...EDITOR_RUNTIME_FACADE_METHODS];
+  }
+
+  return EDITOR_RUNTIME_FACADE_METHODS.filter(
+    (method) => typeof facade[method] !== "function",
+  );
+}
+
 export function assertEditorRuntimeHostAdapter(adapter) {
   const missing = missingEditorRuntimeHostMethods(adapter);
   if (missing.length > 0) {
@@ -70,6 +89,38 @@ export function assertEditorRuntimeAdapter(adapter) {
     );
   }
   return adapter;
+}
+
+export function assertPapyroEditorFacade(facade) {
+  const missing = missingPapyroEditorFacadeMethods(facade);
+  if (missing.length > 0) {
+    throw new TypeError(
+      `Invalid Papyro editor facade; missing: ${missing.join(", ")}`,
+    );
+  }
+
+  if (facade.name !== PAPYRO_EDITOR_FACADE_NAME) {
+    throw new TypeError("Invalid Papyro editor facade name");
+  }
+  if (facade.version !== PAPYRO_EDITOR_FACADE_VERSION) {
+    throw new TypeError("Invalid Papyro editor facade version");
+  }
+  if (facade.protocolVersion !== PAPYRO_EDITOR_PROTOCOL_VERSION) {
+    throw new TypeError("Invalid Papyro editor protocol version");
+  }
+
+  const descriptor = facade.describe();
+  if (
+    !descriptor ||
+    descriptor.name !== facade.name ||
+    descriptor.version !== facade.version ||
+    descriptor.protocolVersion !== facade.protocolVersion ||
+    descriptor.runtimeKind !== facade.runtimeKind
+  ) {
+    throw new TypeError("Invalid Papyro editor facade descriptor");
+  }
+
+  return facade;
 }
 
 export function createEditorRuntimeAdapterContract(hostAdapter, { getMarkdown } = {}) {
@@ -106,6 +157,16 @@ export function createEditorRuntimeAdapterContract(hostAdapter, { getMarkdown } 
   });
 }
 
+function createFacadeDescriptor(runtimeKind) {
+  return Object.freeze({
+    name: PAPYRO_EDITOR_FACADE_NAME,
+    version: PAPYRO_EDITOR_FACADE_VERSION,
+    protocolVersion: PAPYRO_EDITOR_PROTOCOL_VERSION,
+    runtimeKind,
+    methods: Object.freeze([...EDITOR_RUNTIME_HOST_METHODS]),
+  });
+}
+
 export function createTiptapRuntimeAdapter(adapter) {
   const runtime = assertEditorRuntimeHostAdapter(adapter);
   return Object.freeze({
@@ -116,16 +177,26 @@ export function createTiptapRuntimeAdapter(adapter) {
 
 export function createPapyroEditorFacade(adapter) {
   const runtime = assertEditorRuntimeHostAdapter(adapter);
+  const runtimeKind = typeof runtime.kind === "string" ? runtime.kind : "unknown";
+  const descriptor = createFacadeDescriptor(runtimeKind);
 
-  return Object.freeze({
-    ensureEditor: (...args) => runtime.ensureEditor(...args),
-    attachChannel: (...args) => runtime.attachChannel(...args),
-    handleRustMessage: (...args) => runtime.handleRustMessage(...args),
-    attachPreviewScroll: (...args) => runtime.attachPreviewScroll(...args),
-    navigateOutline: (...args) => runtime.navigateOutline(...args),
-    syncOutline: (...args) => runtime.syncOutline(...args),
-    scrollEditorToLine: (...args) => runtime.scrollEditorToLine(...args),
-    scrollPreviewToHeading: (...args) => runtime.scrollPreviewToHeading(...args),
-    renderPreviewMermaid: (...args) => runtime.renderPreviewMermaid(...args),
-  });
+  return assertPapyroEditorFacade(
+    Object.freeze({
+      name: descriptor.name,
+      version: descriptor.version,
+      protocolVersion: descriptor.protocolVersion,
+      runtimeKind: descriptor.runtimeKind,
+      methods: descriptor.methods,
+      describe: () => descriptor,
+      ensureEditor: (...args) => runtime.ensureEditor(...args),
+      attachChannel: (...args) => runtime.attachChannel(...args),
+      handleRustMessage: (...args) => runtime.handleRustMessage(...args),
+      attachPreviewScroll: (...args) => runtime.attachPreviewScroll(...args),
+      navigateOutline: (...args) => runtime.navigateOutline(...args),
+      syncOutline: (...args) => runtime.syncOutline(...args),
+      scrollEditorToLine: (...args) => runtime.scrollEditorToLine(...args),
+      scrollPreviewToHeading: (...args) => runtime.scrollPreviewToHeading(...args),
+      renderPreviewMermaid: (...args) => runtime.renderPreviewMermaid(...args),
+    }),
+  );
 }

@@ -307,7 +307,7 @@ js/src/
 以下功能是 Papyro 独有的，不在官方模板中，需要保留并适配到新架构：
 
 - [x] Markdown 源码模式（Source/Hybrid/Preview 三模式切换）
-- [ ] Rust 协议桥接（`window.papyroEditor` facade）
+- [x] Rust 协议桥接（`window.papyroEditor` facade）
 - [ ] 本地图片粘贴（通过 Rust 端处理文件保存）
 - [ ] Mermaid 图表渲染
 - [ ] KaTeX 数学公式渲染

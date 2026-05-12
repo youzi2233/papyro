@@ -572,6 +572,12 @@ sequenceDiagram
 
 ```javascript
 window.papyroEditor = {
+  name: "papyro.editor",
+  version: "1.0.0",
+  protocolVersion: 1,
+  runtimeKind: "tiptap",
+  methods: [...],
+  describe() { ... },
   ensureEditor,
   handleRustMessage(tabId, message) { ... },
   attachChannel(tabId, dioxus) { ... },
@@ -584,10 +590,16 @@ window.papyroEditor = {
 };
 ```
 
+这个 facade 会被冻结，并以不可写的 `window.papyroEditor` 属性安装。
+Rust 在挂载 editor 前会校验 facade name、facade version、protocol version
+和必需的 bridge methods。这样 WebView bridge 是可审计的，同时 Tiptap、
+ProseMirror、React、registry 和 DOM 内部对象仍然被明确函数边界隔离。
+
 这些函数的含义：
 
 | 函数 | 作用 |
 | --- | --- |
+| `describe` | 返回冻结的 facade descriptor，供 smoke test 和 host 校验使用。 |
 | `ensureEditor` | 创建或复用 Tiptap editor instance 和 React island。 |
 | `attachChannel` | 保存 Dioxus 通信对象，让 JS 能给 Rust 发事件。 |
 | `handleRustMessage` | 处理 Rust 发来的命令。 |

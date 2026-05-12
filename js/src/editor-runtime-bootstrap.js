@@ -1,4 +1,7 @@
-import { createPapyroEditorFacade } from "./editor-runtime-contract.ts";
+import {
+  assertPapyroEditorFacade,
+  createPapyroEditorFacade,
+} from "./editor-runtime-contract.ts";
 import { selectEditorRuntimeAdapter } from "./editor-runtime-selector.js";
 
 export function createEditorRuntimeFacade({
@@ -12,7 +15,16 @@ export function createEditorRuntimeFacade({
     throw new TypeError("No Papyro editor runtime adapter is available");
   }
 
-  return createFacade(runtimeAdapter);
+  return assertPapyroEditorFacade(createFacade(runtimeAdapter));
+}
+
+function definePapyroEditorFacade(target, facade) {
+  Object.defineProperty(target, "papyroEditor", {
+    configurable: false,
+    enumerable: true,
+    writable: false,
+    value: facade,
+  });
 }
 
 export function installPapyroEditorRuntime(
@@ -22,12 +34,15 @@ export function installPapyroEditorRuntime(
   if (!target || typeof target !== "object") {
     throw new TypeError("Papyro editor runtime requires a host object");
   }
+  if (target.papyroEditor) {
+    return assertPapyroEditorFacade(target.papyroEditor);
+  }
 
   const facade = createEditorRuntimeFacade({
     requestedKind,
     adapters,
     createFacade,
   });
-  target.papyroEditor = facade;
+  definePapyroEditorFacade(target, facade);
   return facade;
 }

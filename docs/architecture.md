@@ -507,6 +507,12 @@ The `dioxus` object is provided by Dioxus eval:
 
 ```javascript
 window.papyroEditor = {
+  name: "papyro.editor",
+  version: "1.0.0",
+  protocolVersion: 1,
+  runtimeKind: "tiptap",
+  methods: [...],
+  describe() { ... },
   ensureEditor,
   handleRustMessage(tabId, message) { ... },
   attachChannel(tabId, dioxus) { ... },
@@ -519,8 +525,15 @@ window.papyroEditor = {
 };
 ```
 
+The facade is frozen and installed as a non-writable `window.papyroEditor`
+property. Rust validates the facade name, facade version, protocol version, and
+required bridge methods before mounting an editor. This keeps the WebView bridge
+auditable while still hiding Tiptap, ProseMirror, React, registry, and DOM
+internals behind explicit functions.
+
 | Function | Purpose |
 | --- | --- |
+| `describe` | return the frozen facade descriptor used by smoke tests and host checks |
 | `ensureEditor` | create or reuse a Tiptap editor instance and its React island |
 | `attachChannel` | store the Dioxus communication object |
 | `handleRustMessage` | handle Rust commands |

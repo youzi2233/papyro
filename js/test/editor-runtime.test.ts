@@ -5,11 +5,17 @@ import { importBundledModule } from "./helpers/load-esbuild-module.js";
 
 const {
   EDITOR_RUNTIME_ADAPTER_METHODS,
+  EDITOR_RUNTIME_FACADE_METHODS,
   EDITOR_RUNTIME_HOST_METHODS,
+  PAPYRO_EDITOR_FACADE_NAME,
+  PAPYRO_EDITOR_FACADE_VERSION,
+  PAPYRO_EDITOR_PROTOCOL_VERSION,
   assertEditorRuntimeAdapter,
   assertEditorRuntimeHostAdapter,
+  assertPapyroEditorFacade,
   createEditorRuntimeAdapterContract,
   createPapyroEditorFacade,
+  missingPapyroEditorFacadeMethods,
   missingEditorRuntimeHostMethods,
   missingEditorRuntimeAdapterMethods,
 } = await importBundledModule(
@@ -49,6 +55,26 @@ test("host runtime adapter validation rejects incomplete adapters", () => {
   assert.throws(
     () => assertEditorRuntimeHostAdapter(createRuntimeAdapter({ syncOutline: undefined })),
     /missing: syncOutline/,
+  );
+});
+
+test("Papyro editor facade validation reports contract gaps", () => {
+  assert.deepEqual(missingPapyroEditorFacadeMethods(null), EDITOR_RUNTIME_FACADE_METHODS);
+  assert.deepEqual(
+    missingPapyroEditorFacadeMethods({
+      ensureEditor: () => {},
+      attachChannel: () => {},
+      handleRustMessage: () => {},
+    }),
+    [
+      "attachPreviewScroll",
+      "navigateOutline",
+      "syncOutline",
+      "scrollEditorToLine",
+      "scrollPreviewToHeading",
+      "renderPreviewMermaid",
+      "describe",
+    ],
   );
 });
 
@@ -122,8 +148,38 @@ test("Papyro editor facade delegates calls without exposing runtime internals", 
   facade.handleRustMessage("tab-a", { type: "set_content" });
 
   assert.equal(facade.kind, undefined);
+  assert.equal(facade.name, PAPYRO_EDITOR_FACADE_NAME);
+  assert.equal(facade.version, PAPYRO_EDITOR_FACADE_VERSION);
+  assert.equal(facade.protocolVersion, PAPYRO_EDITOR_PROTOCOL_VERSION);
+  assert.equal(facade.runtimeKind, "tiptap");
   assert.deepEqual(calls, [
     ["ensureEditor", [{ tabId: "tab-a" }]],
     ["handleRustMessage", ["tab-a", { type: "set_content" }]],
   ]);
+});
+
+test("Papyro editor facade exposes a frozen descriptor", () => {
+  const facade = createPapyroEditorFacade(createRuntimeAdapter({ kind: "tiptap" }));
+  const descriptor = facade.describe();
+
+  assertPapyroEditorFacade(facade);
+  assert.equal(Object.isFrozen(facade), true);
+  assert.equal(Object.isFrozen(descriptor), true);
+  assert.equal(Object.isFrozen(descriptor.methods), true);
+  assert.equal(descriptor.name, PAPYRO_EDITOR_FACADE_NAME);
+  assert.equal(descriptor.version, PAPYRO_EDITOR_FACADE_VERSION);
+  assert.equal(descriptor.protocolVersion, PAPYRO_EDITOR_PROTOCOL_VERSION);
+  assert.equal(descriptor.runtimeKind, "tiptap");
+  assert.deepEqual(descriptor.methods, EDITOR_RUNTIME_HOST_METHODS);
+  assert.deepEqual(facade.methods, EDITOR_RUNTIME_HOST_METHODS);
+});
+
+test("Papyro editor facade validation rejects stale metadata", () => {
+  const facade = createPapyroEditorFacade(createRuntimeAdapter());
+  const stale = {
+    ...facade,
+    version: "0.0.0",
+  };
+
+  assert.throws(() => assertPapyroEditorFacade(stale), /facade version/);
 });

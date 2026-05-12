@@ -109,6 +109,26 @@ test("editor bundle mounts the full Tiptap runtime without a React island crash"
     windowRef.document.body.appendChild(container);
 
     windowRef.eval(readFileSync(EDITOR_BUNDLE_URL, "utf8"));
+    const facade = windowRef.papyroEditor;
+    const descriptor = facade.describe();
+
+    assert.equal(Object.isFrozen(facade), true);
+    assert.equal(descriptor.name, "papyro.editor");
+    assert.equal(descriptor.version, "1.0.0");
+    assert.equal(descriptor.protocolVersion, 1);
+    assert.equal(descriptor.runtimeKind, "tiptap");
+    assert.deepEqual(Array.from(descriptor.methods), [
+      "ensureEditor",
+      "attachChannel",
+      "handleRustMessage",
+      "attachPreviewScroll",
+      "navigateOutline",
+      "syncOutline",
+      "scrollEditorToLine",
+      "scrollPreviewToHeading",
+      "renderPreviewMermaid",
+    ]);
+
     const editor = windowRef.papyroEditor.ensureEditor({
       tabId: "tab-a",
       containerId: "editor-root",
