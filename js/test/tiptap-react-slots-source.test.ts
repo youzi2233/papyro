@@ -78,7 +78,7 @@ const primitivesSource = readFileSync(
 test("React island slots register official editor overlay layers by default", () => {
   assert.match(
     slotsSource,
-    /import\s+\{\s*createPapyroOfficialDragHandleConfig\s*\}\s+from\s+"\.{2}\/tiptap-official-drag-handle\.js";/u,
+    /import\s+\{\s*createPapyroOfficialDragHandleConfig\s*\}\s+from\s+"\.{2}\/tiptap-official-drag-handle\.ts";/u,
   );
   assert.match(
     slotsSource,

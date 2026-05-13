@@ -8,7 +8,7 @@ import {
   papyroComplexBlockRule,
   papyroDragHandlePluginKey,
   papyroTableOverlayRule,
-} from "../src/tiptap-official-drag-handle.js";
+} from "../src/tiptap-official-drag-handle.ts";
 
 function node(name, extra = {}) {
   return {

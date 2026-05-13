@@ -1,6 +1,6 @@
 import React from "react";
 
-import { createPapyroOfficialDragHandleConfig } from "../tiptap-official-drag-handle.js";
+import { createPapyroOfficialDragHandleConfig } from "../tiptap-official-drag-handle.ts";
 import { PapyroOfficialTableNodeLayer } from "./official-table-node-layer";
 import { DragContextMenu } from "@/components/tiptap-ui/drag-context-menu";
 import { SlashDropdownMenu } from "@/components/tiptap-ui/slash-dropdown-menu/slash-dropdown-menu.tsx";

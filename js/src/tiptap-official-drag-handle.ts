@@ -2,6 +2,11 @@ import {
   defaultComputePositionConfig,
   normalizeNestedOptions,
 } from "@tiptap/extension-drag-handle";
+import type {
+  ComputePositionConfig,
+  DragHandleOptions,
+  NestedOptions,
+} from "@tiptap/extension-drag-handle";
 
 const PAPYRO_COMPLEX_NODE_TYPES = new Set([
   "codeBlock",
@@ -28,7 +33,31 @@ const PAPYRO_NESTED_CONTAINERS = Object.freeze([
 
 export const papyroDragHandlePluginKey = "papyro-official-drag-handle";
 
-export function createPapyroDragHandleNestedOptions() {
+type DragHandleRuleContext = {
+  node?: {
+    type?: {
+      name?: string;
+    };
+  } | null;
+  parent?: {
+    type?: {
+      name?: string;
+    };
+  } | null;
+};
+
+type PapyroDragHandleConfigOverrides = Partial<
+  Pick<DragHandleOptions, "pluginKey" | "nested">
+> & {
+  computePositionConfig?: Partial<ComputePositionConfig>;
+};
+
+type PapyroDragHandleConfig = Pick<
+  DragHandleOptions,
+  "pluginKey" | "nested" | "computePositionConfig"
+>;
+
+export function createPapyroDragHandleNestedOptions(): NestedOptions {
   return {
     defaultRules: true,
     allowedContainers: [...PAPYRO_NESTED_CONTAINERS],
@@ -41,7 +70,9 @@ export function createPapyroDragHandleNestedOptions() {
   };
 }
 
-export function createPapyroOfficialDragHandleConfig(overrides = {}) {
+export function createPapyroOfficialDragHandleConfig(
+  overrides: PapyroDragHandleConfigOverrides = {},
+): PapyroDragHandleConfig {
   const nested = overrides.nested ?? createPapyroDragHandleNestedOptions();
 
   return {
@@ -56,11 +87,13 @@ export function createPapyroOfficialDragHandleConfig(overrides = {}) {
   };
 }
 
-export function normalizedPapyroDragHandleNestedOptions(input = createPapyroDragHandleNestedOptions()) {
+export function normalizedPapyroDragHandleNestedOptions(
+  input: NestedOptions = createPapyroDragHandleNestedOptions(),
+) {
   return normalizeNestedOptions(input);
 }
 
-export function papyroComplexBlockRule({ node, parent }) {
+export function papyroComplexBlockRule({ node, parent }: DragHandleRuleContext): number {
   const nodeName = nodeTypeName(node);
   const parentName = nodeTypeName(parent);
 
@@ -75,7 +108,7 @@ export function papyroComplexBlockRule({ node, parent }) {
   return 0;
 }
 
-export function papyroTableOverlayRule({ node, parent }) {
+export function papyroTableOverlayRule({ node, parent }: DragHandleRuleContext): number {
   const nodeName = nodeTypeName(node);
   const parentName = nodeTypeName(parent);
 
@@ -90,6 +123,6 @@ export function papyroTableOverlayRule({ node, parent }) {
   return 0;
 }
 
-function nodeTypeName(node) {
+function nodeTypeName(node: DragHandleRuleContext["node"]): string {
   return String(node?.type?.name ?? "");
 }
