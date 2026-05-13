@@ -360,7 +360,7 @@ js/src/
 - [x] 移除顶部旧 Rust/Dioxus Markdown 插入工具栏
 - [x] 顶栏只保留应用级控制：标签页、侧边栏开关、主题切换、设置、窗口控制和大纲开关
 - [x] 使用官方 Tiptap 浮动工具栏、slash menu、drag context menu 和 table menus 作为格式化入口
-- [ ] 确认没有活跃 React 组件依赖后，删除或隔离旧 `mn-tiptap-format-toolbar`、旧 block handle、旧 block action menu CSS
+- [x] 确认没有活跃 React 组件依赖后，删除或隔离旧 `mn-tiptap-format-toolbar`、旧 block handle、旧 block action menu CSS
 - [ ] 对照官方 Notion-like 工具栏组合审查 `PapyroToolbarFloating`，删除仍在重复官方 toolbar 组件的 Papyro 专属命令模型
 - [ ] 每迁移一个组件后，对照官方 Notion-like 模板审计剩余顶层编辑器布局
 - [ ] 当 desktop WebView smoke 能在 CI 中稳定运行后，为 table handles、cell menu、floating toolbar、slash menu 和 drag handle 补视觉回归覆盖

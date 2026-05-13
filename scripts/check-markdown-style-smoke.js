@@ -146,17 +146,17 @@ const TIPTAP_REQUIREMENTS = [
 ];
 
 const TIPTAP_COMMAND_PANEL_REQUIREMENTS = [
-  ["Tiptap slash command panel", ".mn-tiptap-slash-menu", "user-select: none"],
-  ["Tiptap slash command active rhythm", ".mn-tiptap-slash-menu-item.active", "border-color: color-mix"],
-  ["Tiptap slash command list scrolling", ".mn-tiptap-slash-menu-list", "scrollbar-gutter: stable"],
-  ["Tiptap slash command grouped icons", ".mn-tiptap-slash-menu-icon[data-command-group=\"data\"]", "--mn-command-icon-accent"],
-  ["Tiptap slash recent command tone", ".mn-tiptap-slash-menu-icon[data-command-group=\"recent\"]", "--mn-command-icon-accent"],
-  ["Tiptap slash command icon system", ".mn-tiptap-command-icon-svg", "width: 15.5px"],
-  ["Tiptap slash fallback icon system", ".mn-tiptap-slash-menu-icon[data-icon-source=\"fallback\"]::before", "data-icon=\"table\""],
-  ["Tiptap slash table anchored picker", ".mn-tiptap-table-size-picker", "position: absolute"],
-  ["Tiptap block action panel", ".mn-tiptap-block-action-menu", "user-select: none"],
-  ["Tiptap block action active rhythm", ".mn-tiptap-block-action-menu-item.active", "border-color: color-mix"],
-  ["Tiptap block action list scrolling", ".mn-tiptap-block-action-menu-list", "scrollbar-gutter: stable"],
+  ["Tiptap official suggestion menu", "tiptap-suggestion-menu", "role:\"listbox\""],
+  ["Tiptap official slash card", ".tiptap-slash-card", "min-width:15rem"],
+  ["Tiptap official slash card body", ".tiptap-slash-card-body", "width:100%"],
+  ["Tiptap official card shadow", ".tiptap-card", "box-shadow:var(--tt-shadow-elevated-md)"],
+  ["Tiptap official card surface", ".tiptap-card", "background-color:var(--tiptap-card-bg-color)"],
+  ["Tiptap official menu layering", ".tiptap-menu-content", "z-index:50"],
+  ["Tiptap official menu layout", ".tiptap-menu-content", "display:flex"],
+  ["Tiptap official menu open motion", ".tiptap-menu-content", "animation:popover"],
+  ["Tiptap official menu item width", ".tiptap-menu-item", "width:100%"],
+  ["Tiptap official drag handle motion", ".drag-handle", "transition-property:top"],
+  ["Tiptap official drag handle bridge", ".drag-handle::before", "pointer-events:auto"],
   ["Tiptap official table row handle", ".tiptap-table-handle-menu.row", "--table-handle-ref-height"],
   ["Tiptap official table column handle", ".tiptap-table-handle-menu.column", "--table-handle-ref-width"],
   ["Tiptap official table dragging handle", ".tiptap-table-handle-menu.is-dragging", "cursor: grabbing"],
@@ -366,10 +366,10 @@ ${PAPYRO_FEATURE_REQUIREMENTS.map(
   const missingTiptap = css.replaceAll(".mn-tiptap-editor", ".mn-editor");
   assert(checkCssText(missingTiptap).some((failure) => failure.includes("Tiptap editor")));
 
-  const missingCommandPanel = css.replaceAll("scrollbar-gutter: stable", "scrollbar-width: thin");
+  const missingCommandPanel = css.replaceAll("role:\"listbox\"", "role:\"menu\"");
   assert(
     checkCssText(missingCommandPanel).some((failure) =>
-      failure.includes("Tiptap slash command list scrolling"),
+      failure.includes("Tiptap official suggestion menu"),
     ),
   );
 

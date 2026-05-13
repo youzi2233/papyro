@@ -360,7 +360,7 @@ The editor surface must behave like the official Notion-like template first, wit
 - [x] Remove the legacy Rust/Dioxus Markdown insertion toolbar from the top chrome
 - [x] Keep app-level controls in the titlebar: tabs, sidebar toggle, theme switch, settings, window controls, and outline toggle
 - [x] Use official Tiptap floating toolbar, slash menu, drag context menu, and table menus as the formatting entry points
-- [ ] Remove or quarantine old `mn-tiptap-format-toolbar`, legacy block handle, and legacy block action menu CSS after confirming no mounted React component still depends on it
+- [x] Remove or quarantine old `mn-tiptap-format-toolbar`, legacy block handle, and legacy block action menu CSS after confirming no mounted React component still depends on it
 - [ ] Compare `PapyroToolbarFloating` against the official Notion-like toolbar composition and remove any remaining Papyro-only command model that duplicates official toolbar components
 - [ ] Audit remaining top-level editor layout against the official Notion-like template after each migrated component
 - [ ] Add visual regression coverage for table handles, cell menu, floating toolbar, slash menu, and drag handle once the desktop WebView smoke can run in CI
