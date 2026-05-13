@@ -22,7 +22,6 @@ import { Separator } from "@/components/tiptap-ui-primitive/separator"
 export const TableAlignMenu = ({
   index,
   orientation,
-  contentClassName
 }) => {
   const textAlign = {
     left: useTableAlignCell({
@@ -86,7 +85,7 @@ export const TableAlignMenu = ({
               } />
           } />
       }>
-      <MenuContent className={contentClassName}>
+      <MenuContent>
         <ComboboxList>
           <MenuGroup>
             {Object.values(textAlign).map((align, i) => (

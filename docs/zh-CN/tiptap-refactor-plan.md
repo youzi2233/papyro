@@ -29,7 +29,7 @@
 
 编辑器方向已经回到官方组件体系，但还没有达到官方 Notion-like 模板的体验标准。
 
-- 表格架构：`PapyroOfficialTableNodeLayer` 已经把官方 `TableHandle`、`TableSelectionOverlay`、`TableCellHandleMenu`、`TableExtendRowColumnButtons` 挂在 `EditorContent` 外部，符合官方 table-node 集成契约。剩余问题在宿主 chrome 漂移：Papyro 侧 CSS 对官方 handle 做了过强视觉强化，并通过 `tiptap-table-menu-content` 改写菜单表面，容易让句柄显得厚重、嵌套菜单节奏不一致。
+- 表格架构：`PapyroOfficialTableNodeLayer` 已经把官方 `TableHandle`、`TableSelectionOverlay`、`TableCellHandleMenu`、`TableExtendRowColumnButtons` 挂在 `EditorContent` 外部，符合官方 table-node 集成契约。最新表格跟进已经移除宿主 chrome 漂移：Papyro CSS 不再重绘官方 handle、扩展按钮和单元格操作点；表格专属菜单 CSS 只限制顶层行/列/单元格菜单的层级、视口边界和文本裁剪，嵌套颜色/对齐子菜单回到官方 menu 表面。
 - 表格 UX 目标：官方 table-node SCSS 负责组件外观，Papyro CSS 只做宿主布局、视口安全、主题 token 桥接和 Markdown 持久化约束。行列 handle 应该是接近 Notion-like 的轻量暗示，而不是常驻的开发者工具条控件。
 - JavaScript 存量：`js/src/` 下仍有 29 个被跟踪的 `.js` 文件和 3 个被跟踪的 `.jsx` 文件。它们是源码，不是生成物。它们分三类：需要行为覆盖后类型化的 Papyro 特有 Markdown/媒体适配；仍暴露旧 JS 边界的编辑器交互/协议适配；以及应迁移为 TSX 或在官方组件完全接管后删除的剩余 React 支撑文件。
 - 格式化入口：顶部 shell 工具栏只保留应用级控制。富文本格式化入口应全部来自官方 Tiptap React 表面：`PapyroToolbarFloating`、slash menu、drag context menu、link popover 和 table-node menus。当前活跃的 `PapyroToolbarFloating` 仍与官方 Notion-like 工具栏组合有偏差：文本对齐、撤销/重做和高亮控件常驻展示；它应收敛为官方模板组合，仅移除 AI/Cloud 等 Papyro 暂未实现的能力。
@@ -280,6 +280,7 @@ js/src/
 - [x] 2026-05-13 审计跟进：弱化 Papyro 表格宿主覆盖，让官方 table-node 的 handle、扩展轨道和单元格操作点更接近 Notion-like 参考体验
 - [x] 2026-05-13 审计跟进：让嵌套表格菜单（`ColorMenu`、`TableAlignMenu`）继续使用受限的表格菜单表面，同时不改动 slash/link/drag 菜单样式
 - [x] 2026-05-13 审计跟进：移除 Papyro 专属的 handle、扩展按钮和单元格圆点视觉覆盖，让官方 table-node SCSS 接管 Notion-like 表格 chrome
+- [x] 2026-05-13 审计跟进：不再把表格专属菜单 class 传给嵌套颜色/对齐子菜单，并将 Papyro 表格菜单 CSS 收敛到层级、视口边界和文本裁剪，让官方 menu/combobox 样式接管 Notion-like 表面
 
 ---
 

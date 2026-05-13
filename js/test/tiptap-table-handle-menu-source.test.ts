@@ -48,7 +48,7 @@ test("official paid table-node cell menu remains the visible runtime source", ()
   assert.match(officialCellMenuSource, /ColorMenu/u);
   assert.match(officialCellMenuSource, /TableAlignMenu/u);
   assert.match(officialCellMenuSource, /className="tiptap-table-menu-content"/u);
-  assert.match(officialCellMenuSource, /contentClassName="tiptap-table-menu-content"/u);
+  assert.doesNotMatch(officialCellMenuSource, /contentClassName="tiptap-table-menu-content"/u);
   assert.doesNotMatch(officialCellMenuSource, /PapyroTableCommandMenuContent/u);
   assert.doesNotMatch(officialCellMenuSource, /createTableCellHandleCommandMenuModel/u);
   assert.doesNotMatch(officialCellMenuSource, /from "@\/components\/tiptap-node\/table-cell-handle-menu\.jsx"/u);
@@ -61,10 +61,17 @@ test("official paid table-node row and column menus remain the visible runtime s
   assert.match(officialAxisMenuSource, /ColorMenu/u);
   assert.match(officialAxisMenuSource, /TableAlignMenu/u);
   assert.match(officialAxisMenuSource, /className="tiptap-table-menu-content"/u);
-  assert.match(officialAxisMenuSource, /contentClassName="tiptap-table-menu-content"/u);
+  assert.doesNotMatch(officialAxisMenuSource, /contentClassName="tiptap-table-menu-content"/u);
   assert.doesNotMatch(officialAxisMenuSource, /PapyroTableCommandMenuContent/u);
   assert.doesNotMatch(officialAxisMenuSource, /createPapyroTableCommandMenuModel/u);
   assert.doesNotMatch(officialAxisMenuSource, /from "@\/components\/tiptap-node\/table-handle-menu\.jsx"/u);
+});
+
+test("nested table color and alignment menus keep the official menu surface", () => {
+  assert.match(officialCellMenuSource, /<ColorMenu \/>/u);
+  assert.match(officialCellMenuSource, /<TableAlignMenu \/>/u);
+  assert.match(officialAxisMenuSource, /<ColorMenu \/>/u);
+  assert.match(officialAxisMenuSource, /<TableAlignMenu\s+[\s\S]*?orientation=\{orientation\}[\s\S]*?\/>/u);
 });
 
 test("Papyro table layer mounts official table-node menu paths", () => {

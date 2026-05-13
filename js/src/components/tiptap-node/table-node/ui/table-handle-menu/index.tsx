@@ -525,11 +525,10 @@ const TableActionGroup = () => {
       {/* Actions */}
       <>
         <MenuGroup>
-          <ColorMenu contentClassName="tiptap-table-menu-content" />
+          <ColorMenu />
           <TableAlignMenu
             index={index}
             orientation={orientation}
-            contentClassName="tiptap-table-menu-content"
           />
           {clearContentAction.isVisible && (
             <TableActionItem

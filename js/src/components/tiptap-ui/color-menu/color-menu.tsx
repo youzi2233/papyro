@@ -120,7 +120,6 @@ export interface ColorMenuProps {
    * @default "right"
    */
   placement?: React.ComponentProps<typeof Menu>["placement"]
-  contentClassName?: string
 }
 
 /**
@@ -132,7 +131,6 @@ export const ColorMenu: React.FC<ColorMenuProps> = ({
   trigger,
   label = "Color",
   placement = "right",
-  contentClassName,
 }) => {
   const { editor } = useTiptapEditor(providedEditor)
   const { recentColors, isInitialized } = useRecentColors()
@@ -166,7 +164,7 @@ export const ColorMenu: React.FC<ColorMenuProps> = ({
 
   return (
     <Menu placement={placement} trigger={trigger || defaultTrigger}>
-      <MenuContent className={contentClassName} portal>
+      <MenuContent portal>
         <ComboboxList>
           {/* Recent Colors */}
           {isInitialized && recentColors.length > 0 && (

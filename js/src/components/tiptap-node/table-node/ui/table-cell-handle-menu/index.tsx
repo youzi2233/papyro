@@ -144,8 +144,8 @@ const TableActionMenu = ({
         )}
 
         <MenuGroup>
-          <ColorMenu contentClassName="tiptap-table-menu-content" />
-          <TableAlignMenu contentClassName="tiptap-table-menu-content" />
+          <ColorMenu />
+          <TableAlignMenu />
           {clearAction.isAvailable && <TableActionItem action={clearAction} />}
         </MenuGroup>
       </ComboboxList>

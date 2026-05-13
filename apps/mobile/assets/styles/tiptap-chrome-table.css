@@ -113,54 +113,21 @@
     min-width: 15rem;
     height: auto;
     max-height: min(28rem, var(--popover-available-height, 70vh));
-    padding: 0;
-    border-radius: calc(var(--tt-radius-lg) + 6px);
     outline: none;
     isolation: isolate;
     pointer-events: auto;
 }
 
 .tiptap-table-menu-content .tiptap-combobox-list {
-    width: max-content;
+    width: 100%;
     min-width: 15rem;
-    max-width: min(18rem, calc(100vw - 32px));
+    max-width: min(16rem, calc(100vw - 32px));
     height: auto;
     max-height: min(28rem, var(--popover-available-height, 70vh));
-    margin-block: 0;
-    padding: 6px;
-    border-color: color-mix(in srgb, var(--mn-border) 80%, transparent);
-    border-radius: calc(var(--tt-radius-lg) + 6px);
-    box-shadow: var(--mn-shadow-lg);
-}
-
-.tiptap-table-menu-content .tiptap-menu-group {
-    padding: 2px 0;
-}
-
-.tiptap-table-menu-content .tiptap-menu-item {
-    min-height: 32px;
-}
-
-.tiptap-table-menu-content .tiptap-button {
-    width: 100%;
-    min-width: 0;
-    height: 32px;
-    justify-content: flex-start;
-    padding: 0 8px;
-    gap: 8px;
-    border-radius: var(--mn-radius-sm);
-    white-space: nowrap;
 }
 
 .tiptap-table-menu-content .tiptap-button-text {
     min-width: 0;
-    padding: 0;
     overflow: hidden;
-    line-height: 1.35;
     text-overflow: ellipsis;
-}
-
-.tiptap-table-menu-content :where(.tiptap-separator, [data-slot="tiptap-separator"]) {
-    margin: 4px 2px;
-    background: color-mix(in srgb, var(--mn-border) 82%, transparent);
 }
