@@ -339,10 +339,10 @@
   --tt-table-column-resize-handle-bg: var(--mn-accent, #2563eb);
   --tt-table-cell-padding: var(--mn-markdown-table-cell-pad, 0.5rem);
   --tt-table-margin-block: var(--mn-markdown-block-gap, 1.25rem);
-  --tt-table-pad-block-start: 0;
-  --tt-table-pad-block-end: 0;
-  --tt-table-pad-inline-start: 0;
-  --tt-table-pad-inline-end: 0;
-  --tt-table-handle-bg-color: var(--mn-surface-raised, #ffffff);
-  --tt-table-extend-icon-color: var(--mn-ink-3, #64748b);
+  --tt-table-pad-block-start: 1rem;
+  --tt-table-pad-block-end: 1.5rem;
+  --tt-table-pad-inline-start: 1rem;
+  --tt-table-pad-inline-end: 1.5rem;
+  --tt-table-handle-bg-color: color-mix(in srgb, var(--mn-ink, #111827) 5%, var(--mn-surface-raised, #ffffff));
+  --tt-table-extend-icon-color: color-mix(in srgb, var(--mn-ink-3, #64748b) 72%, transparent);
 }

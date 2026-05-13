@@ -5,13 +5,16 @@
     margin-block: var(--tt-table-margin-block);
 }
 
+.mn-tiptap-editor [data-content-type="table"].tableWrapper,
 .mn-tiptap-editor [data-content-type="table"] .tableWrapper,
 .mn-tiptap-editor .tableWrapper {
     position: relative;
     width: 100%;
-    margin: 0;
-    padding-block: var(--tt-table-pad-block-start) var(--tt-table-pad-block-end);
-    padding-inline: var(--tt-table-pad-inline-start) var(--tt-table-pad-inline-end);
+    margin-inline-start: calc(-1 * var(--tt-table-pad-inline-start));
+    padding-block-start: var(--tt-table-pad-block-start);
+    padding-block-end: var(--tt-table-pad-block-end);
+    padding-inline-start: var(--tt-table-pad-inline-start);
+    padding-inline-end: var(--tt-table-pad-inline-end);
     overflow-x: auto;
     overflow-y: hidden;
 }
@@ -109,7 +112,7 @@
 }
 
 .tiptap-menu-content.tiptap-table-menu-content {
-    z-index: 260;
+    z-index: 50;
     min-width: 15rem;
     height: auto;
     max-height: min(28rem, var(--popover-available-height, 70vh));
