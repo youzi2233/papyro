@@ -9,7 +9,7 @@ import {
   applyMarkToBlockText,
   PAPYRO_HIGHLIGHT_OPTIONS,
   PAPYRO_TEXT_COLOR_OPTIONS,
-} from "./tiptap-text-style.js";
+} from "./tiptap-text-style.ts";
 import {
   blockActionSubmenuDescription,
   blockActionSubmenuLabel,

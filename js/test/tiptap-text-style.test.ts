@@ -7,7 +7,7 @@ const {
   blockTextRanges,
   createPapyroTextStyleExtensions,
 } = await importBundledModule(
-  new URL("../src/tiptap-text-style.js", import.meta.url),
+  new URL("../src/tiptap-text-style.ts", import.meta.url),
 );
 const {
   roundTripTiptapMarkdown,

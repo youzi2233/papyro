@@ -13,7 +13,7 @@ import { createPapyroMathExtensions } from "./tiptap-math.js";
 import { createPapyroMermaidExtensions } from "./tiptap-mermaid.js";
 import { createPapyroTableExtensions } from "./tiptap-table.ts";
 import { createPapyroTaskListExtensions } from "./tiptap-task-list.js";
-import { createPapyroTextStyleExtensions } from "./tiptap-text-style.js";
+import { createPapyroTextStyleExtensions } from "./tiptap-text-style.ts";
 
 export const PAPYRO_UNIQUE_ID_NODE_TYPES = Object.freeze([
   "paragraph",

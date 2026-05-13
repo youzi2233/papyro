@@ -1,7 +1,7 @@
 import {
   PAPYRO_HIGHLIGHT_OPTIONS,
   PAPYRO_TEXT_COLOR_OPTIONS,
-} from "./tiptap-text-style.js";
+} from "./tiptap-text-style.ts";
 
 const FORMAT_MARK_IDS = Object.freeze([
   "bold",

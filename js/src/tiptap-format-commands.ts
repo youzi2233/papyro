@@ -3,7 +3,7 @@ import { createPapyroTiptapFormatSnapshot } from "./tiptap-format-snapshot.ts";
 import {
   PAPYRO_HIGHLIGHT_OPTIONS,
   PAPYRO_TEXT_COLOR_OPTIONS,
-} from "./tiptap-text-style.js";
+} from "./tiptap-text-style.ts";
 import {
   PAPYRO_TIPTAP_TURN_INTO_COMMANDS,
   type PapyroTurnIntoCommand,
