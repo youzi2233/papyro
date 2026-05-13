@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import {
   createTiptapHistoryCommandController,
   PAPYRO_TIPTAP_HISTORY_COMMANDS,
-} from "../src/tiptap-history-commands.js";
+} from "../src/tiptap-history-commands.ts";
 
 function createFakeEditor(commandResults = {}) {
   const calls = [];
