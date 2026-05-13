@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { createTiptapBlockHintsController } from "../src/tiptap-block-hints-controller.js";
+import { createTiptapBlockHintsController } from "../src/tiptap-block-hints-controller.ts";
 
 function hints(revision = 1) {
   return {

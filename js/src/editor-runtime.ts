@@ -7,7 +7,7 @@ import {
 } from "./editor-clipboard.ts";
 import { createTiptapRuntimeAdapter } from "./editor-runtime-contract.ts";
 import { createMarkdownSyncController } from "./markdown-sync-controller.ts";
-import { createTiptapBlockHintsController } from "./tiptap-block-hints-controller.js";
+import { createTiptapBlockHintsController } from "./tiptap-block-hints-controller.ts";
 import { createTiptapFormatCommandController } from "./tiptap-format-commands.js";
 import { createTiptapHistoryCommandController } from "./tiptap-history-commands.ts";
 import { createTiptapModeController } from "./tiptap-mode-controller.ts";
