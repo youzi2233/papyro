@@ -1,3 +1,13 @@
+export function isRuntimeEditorDestroyed(editor) {
+  if (!editor) return false;
+
+  try {
+    return editor.isDestroyed === true || editor.destroyed === true;
+  } catch {
+    return false;
+  }
+}
+
 export class EditorRuntimeRegistry {
   #entries;
 
@@ -51,11 +61,43 @@ export class EditorRuntimeRegistry {
     return entry;
   }
 
-  unregister(tabId) {
+  currentEntry(tabId, { entry, editor } = {}) {
+    const current = this.get(tabId) ?? null;
+    if (!current) return null;
+    if (entry && current !== entry) return null;
+    if (editor && current.editor !== editor) return null;
+    if (isRuntimeEditorDestroyed(current.editor)) return null;
+    return current;
+  }
+
+  entryForEditor(tabId, editor) {
+    return this.currentEntry(tabId, { editor });
+  }
+
+  isCurrentEntry(tabId, entry) {
+    return this.currentEntry(tabId, { entry }) === entry;
+  }
+
+  isCurrentEditor(tabId, editor) {
+    return this.entryForEditor(tabId, editor) !== null;
+  }
+
+  unregister(tabId, expectedEntry = null) {
     const entry = this.get(tabId) ?? null;
     if (!entry) return null;
+    if (expectedEntry && entry !== expectedEntry) return null;
 
     this.delete(tabId);
+    return entry;
+  }
+
+  release(tabId, disposeEntry) {
+    const entry = this.unregister(tabId);
+    if (!entry) return null;
+
+    if (typeof disposeEntry === "function") {
+      disposeEntry(entry);
+    }
     return entry;
   }
 }

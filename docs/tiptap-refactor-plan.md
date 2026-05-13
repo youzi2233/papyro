@@ -313,7 +313,7 @@ These features are unique to Papyro, not in the official template, and need to b
 - [x] KaTeX math formula rendering
 - [x] Outline/TOC generation (consumed by Rust side)
 - [x] i18n multilingual support
-- [ ] Multi-tab editor instance management (editorRegistry)
+- [x] Multi-tab editor instance management (editorRegistry)
 
 ---
 

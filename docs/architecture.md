@@ -709,10 +709,20 @@ Papyro therefore keeps a host lifecycle and spare pool:
 - closed tabs are destroyed or recycled after a delay
 - sidebar, theme, and status changes should not rebuild the editor
 
+The JS side keeps one `EditorRuntimeRegistry` entry per open tab. Runtime code
+uses the registry as the single lifecycle boundary for active editor identity,
+Dioxus channel attachment, React island state, source pane state, table command
+state, paste handling, and scroll/layout hooks. Event handlers validate that the
+incoming Tiptap editor is still the current editor for its tab before sending
+dirty events or save/paste requests. If a host is destroyed and the same tab id
+is mounted again, delayed events from the old editor are ignored and destroyed
+registry entries are replaced instead of reused.
+
 Relevant files:
 
 - `crates/ui/src/components/editor/pane.rs`
 - `crates/ui/src/components/editor/host.rs`
+- `js/src/editor-registry.js`
 - `js/src/editor-runtime.ts`
 - `js/src/tiptap-react/`
 

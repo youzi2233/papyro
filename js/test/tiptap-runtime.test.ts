@@ -888,6 +888,134 @@ test("Tiptap runtime ignores stale host destroy messages", () => {
   assert.equal(registry.has("tab-a"), false);
 });
 
+test("Tiptap runtime isolates stale editor events after tab remount", () => {
+  const { calls, registry, runtime } = createRuntimeHarness();
+  const messages = [];
+  const firstEditor = runtime.ensureEditor({
+    tabId: "tab-a",
+    containerId: "editor-root",
+    instanceId: "host-a",
+    initialContent: "first",
+  });
+  runtime.attachChannel("tab-a", { send: (message) => messages.push(message) });
+
+  assert.equal(
+    runtime.handleRustMessage("tab-a", {
+      type: "destroy",
+      instance_id: "host-a",
+    }),
+    "destroyed",
+  );
+
+  const secondEditor = runtime.ensureEditor({
+    tabId: "tab-a",
+    containerId: "editor-root",
+    instanceId: "host-b",
+    initialContent: "second",
+  });
+  runtime.attachChannel("tab-a", { send: (message) => messages.push(message) });
+  calls.length = 0;
+  messages.length = 0;
+
+  firstEditor.markdown = "stale";
+  firstEditor.emit("update", { editor: firstEditor });
+  firstEditor.emit("selectionUpdate", { editor: firstEditor });
+
+  assert.equal(registry.get("tab-a").editor, secondEditor);
+  assert.equal(registry.get("tab-a").markdownSync.markdown, "second");
+  assert.deepEqual(messages, []);
+  assert.deepEqual(calls, []);
+
+  secondEditor.markdown = "second changed";
+  secondEditor.emit("update", { editor: secondEditor });
+
+  assert.equal(registry.get("tab-a").markdownSync.markdown, "second changed");
+  assert.deepEqual(messages, [
+    {
+      type: "content_changed",
+      tab_id: "tab-a",
+      content: "second changed",
+    },
+  ]);
+});
+
+test("Tiptap runtime ignores stale editor shortcuts after tab remount", () => {
+  const { calls, runtime } = createRuntimeHarness();
+  const messages = [];
+  const firstEditor = runtime.ensureEditor({
+    tabId: "tab-a",
+    containerId: "editor-root",
+    instanceId: "host-a",
+    initialContent: "first",
+  });
+  runtime.attachChannel("tab-a", { send: (message) => messages.push(message) });
+  runtime.handleRustMessage("tab-a", {
+    type: "destroy",
+    instance_id: "host-a",
+  });
+
+  const secondEditor = runtime.ensureEditor({
+    tabId: "tab-a",
+    containerId: "editor-root",
+    instanceId: "host-b",
+    initialContent: "second",
+  });
+  runtime.attachChannel("tab-a", { send: (message) => messages.push(message) });
+  calls.length = 0;
+  messages.length = 0;
+
+  const event = {
+    key: "s",
+    ctrlKey: true,
+    preventDefault: () => calls.push(["preventDefault"]),
+  };
+  const staleHandled = firstEditor.options.editorProps.handleKeyDown(null, event);
+  const currentHandled = secondEditor.options.editorProps.handleKeyDown(null, event);
+
+  assert.equal(staleHandled, false);
+  assert.equal(currentHandled, true);
+  assert.deepEqual(calls, [["preventDefault"]]);
+  assert.deepEqual(messages, [{ type: "save_requested", tab_id: "tab-a" }]);
+});
+
+test("Tiptap runtime replaces destroyed registry entries before remount", () => {
+  const detached = [];
+  const { calls, registry, runtime } = createRuntimeHarness({
+    layout: {
+      detachEditorScroll: (entry) => detached.push(entry.viewMode),
+      detachLayoutObserver: (entry) => detached.push(`layout:${entry.viewMode}`),
+    },
+  });
+  const firstEditor = runtime.ensureEditor({
+    tabId: "tab-a",
+    containerId: "editor-root",
+    instanceId: "host-a",
+    initialContent: "first",
+  });
+  const firstEntry = registry.get("tab-a");
+  calls.length = 0;
+
+  firstEditor.destroyed = true;
+  const secondEditor = runtime.ensureEditor({
+    tabId: "tab-a",
+    containerId: "editor-root",
+    instanceId: "host-b",
+    initialContent: "second",
+  });
+
+  assert.notEqual(secondEditor, firstEditor);
+  assert.notEqual(registry.get("tab-a"), firstEntry);
+  assert.equal(registry.get("tab-a").instanceId, "host-b");
+  assert.equal(registry.get("tab-a").markdownSync.markdown, "second");
+  assert.deepEqual(calls, [
+    ["destroy"],
+    ["constructor", "second", "markdown", false, true],
+    ["mount", "mn-tiptap-runtime", "tab-a"],
+    ["setEditable", true],
+  ]);
+  assert.deepEqual(detached, ["hybrid", "layout:hybrid"]);
+});
+
 test("Tiptap runtime wires autolink paste handling through editor props", () => {
   const { calls, registry, runtime } = createRuntimeHarness();
   runtime.ensureEditor({

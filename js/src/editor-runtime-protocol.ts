@@ -18,13 +18,32 @@ function reportCommandResult(entry, tabId, result) {
   sendRuntimeError(entry, tabId, result?.error ?? "editor_command_failed");
 }
 
-function releaseRuntimeEntry(registry, tabId) {
-  if (typeof registry.unregister === "function") {
-    return registry.unregister(tabId);
+function disposeRuntimeEntry(entry, {
+  detachEditorScroll = () => false,
+  detachLayoutObserver = () => false,
+} = {}) {
+  entry?.pasteController?.destroy?.();
+  detachEditorScroll(entry);
+  detachLayoutObserver(entry);
+  entry?.sourcePane?.destroy?.();
+  entry?.tableCommands?.destroy?.();
+  entry?.reactMount?.destroy?.();
+  entry?.editor?.destroy?.();
+}
+
+function releaseRuntimeEntry(registry, tabId, disposeEntry) {
+  if (typeof registry.release === "function") {
+    return registry.release(tabId, disposeEntry);
   }
 
-  const released = registry.get(tabId);
-  registry.delete(tabId);
+  const released = typeof registry.unregister === "function"
+    ? registry.unregister(tabId)
+    : registry.get(tabId);
+  if (!released) return null;
+  if (typeof registry.unregister !== "function") {
+    registry.delete(tabId);
+  }
+  disposeEntry?.(released);
   return released;
 }
 
@@ -149,14 +168,12 @@ export function createTiptapRuntimeProtocolBridge({
           return "destroyed";
         }
 
-        const released = releaseRuntimeEntry(registry, tabId);
-        released?.pasteController?.destroy?.();
-        detachEditorScroll(released);
-        detachLayoutObserver(released);
-        released?.sourcePane?.destroy?.();
-        released?.tableCommands?.destroy?.();
-        released?.reactMount?.destroy?.();
-        released?.editor?.destroy?.();
+        releaseRuntimeEntry(registry, tabId, (released) => {
+          disposeRuntimeEntry(released, {
+            detachEditorScroll,
+            detachLayoutObserver,
+          });
+        });
         return "destroyed";
       }
     },

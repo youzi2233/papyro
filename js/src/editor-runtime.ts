@@ -26,6 +26,7 @@ import {
   createTiptapRuntimeProtocolBridge,
   syncRuntimeLanguage,
 } from "./editor-runtime-protocol.ts";
+import { isRuntimeEditorDestroyed } from "./editor-registry.js";
 
 function requireFunction(value, name) {
   if (typeof value !== "function") {
@@ -102,12 +103,55 @@ function hasEditorImageChannel(entry) {
   return typeof entry?.dioxus?.send === "function";
 }
 
+function disposeRuntimeEntry(entry, {
+  detachEditorScroll = () => false,
+  detachLayoutObserver = () => false,
+} = {}) {
+  entry?.pasteController?.destroy?.();
+  detachEditorScroll(entry);
+  detachLayoutObserver(entry);
+  entry?.sourcePane?.destroy?.();
+  entry?.tableCommands?.destroy?.();
+  entry?.reactMount?.destroy?.();
+  entry?.editor?.destroy?.();
+}
+
+function releaseRegistryEntry(registry, tabId, disposeEntry = disposeRuntimeEntry) {
+  if (typeof registry.release === "function") {
+    return registry.release(tabId, disposeEntry);
+  }
+
+  const released = typeof registry.unregister === "function"
+    ? registry.unregister(tabId)
+    : registry.get(tabId);
+  if (!released) return null;
+  if (typeof registry.unregister !== "function") {
+    registry.delete(tabId);
+  }
+  disposeEntry(released);
+  return released;
+}
+
+function currentRegistryEntry(registry, tabId, { entry, editor } = {}) {
+  if (typeof registry.currentEntry === "function") {
+    return registry.currentEntry(tabId, { entry, editor });
+  }
+
+  const current = registry.get(tabId) ?? null;
+  if (!current) return null;
+  if (entry && current !== entry) return null;
+  if (editor && current.editor !== editor) return null;
+  if (isRuntimeEditorDestroyed(current.editor)) return null;
+  return current;
+}
+
 function defaultEditorOptions({
   initialContent,
   extensions,
   viewMode,
   tabId,
   registry,
+  editorRef,
   transferImage,
   sendImageRequest,
   element = null,
@@ -124,7 +168,9 @@ function defaultEditorOptions({
         class: "mn-tiptap-editor tiptap",
       },
       handleKeyDown: (_view, event) => {
-        const entry = registry.get(tabId);
+        const entry = currentRegistryEntry(registry, tabId, {
+          editor: editorRef.current,
+        });
         if (isSaveShortcut(event) && requestSave(entry, tabId, event)) {
           return true;
         }
@@ -134,7 +180,9 @@ function defaultEditorOptions({
         return false;
       },
       handlePaste: (view, event, slice) => {
-        const entry = registry.get(tabId);
+        const entry = currentRegistryEntry(registry, tabId, {
+          editor: editorRef.current,
+        });
         const image = transferImage(event?.clipboardData);
         if (image && hasEditorImageChannel(entry)) {
           event?.preventDefault?.();
@@ -147,7 +195,9 @@ function defaultEditorOptions({
         return entry?.pasteController?.handlePaste({ view, event, slice }) ?? false;
       },
       handleDrop: (view, event) => {
-        const entry = registry.get(tabId);
+        const entry = currentRegistryEntry(registry, tabId, {
+          editor: editorRef.current,
+        });
         const image = transferImage(event?.dataTransfer);
         if (!image || !hasEditorImageChannel(entry)) {
           return false;
@@ -287,7 +337,7 @@ export function createTiptapEditorRuntime({
     const container = documentRef?.getElementById?.(containerId) ?? null;
     if (!container) throw new Error(`Editor container not found: ${containerId}`);
 
-    const existing = runtimeRegistry.get(tabId);
+    const existing = currentRegistryEntry(runtimeRegistry, tabId);
     if (existing) {
       if (existing.dom.parentElement !== container) {
         container.replaceChildren(existing.dom);
@@ -298,6 +348,14 @@ export function createTiptapEditorRuntime({
       existing.sourcePane.applyMode(existing);
       existing.reactMount?.refresh?.(existing);
       return existing.editor;
+    }
+    if (runtimeRegistry.has(tabId)) {
+      releaseRegistryEntry(runtimeRegistry, tabId, (released) => {
+        disposeRuntimeEntry(released, {
+          detachEditorScroll,
+          detachLayoutObserver,
+        });
+      });
     }
 
     const root = createElement("div");
@@ -325,6 +383,7 @@ export function createTiptapEditorRuntime({
     });
     const slashCommands = createTiptapSlashCommandController();
     const tableCommands = createTiptapTableCommandController();
+    const editorRef = { current: null };
     const editor = new TiptapEditor(
       defaultEditorOptions({
         initialContent: markdownSync.markdown,
@@ -332,19 +391,23 @@ export function createTiptapEditorRuntime({
         viewMode: modeController.mode,
         tabId,
         registry: runtimeRegistry,
+        editorRef,
         transferImage,
         sendImageRequest,
         element:
           createEditorElement({
             document: documentRef,
             root,
-          }),
+        }),
       }),
     );
+    editorRef.current = editor;
     if (typeof editor.on === "function") {
       editor.on("update", ({ editor: updatedEditor } = {}) => {
         const targetEditor = updatedEditor ?? editor;
-        const entry = runtimeRegistry.get(tabId);
+        const entry = currentRegistryEntry(runtimeRegistry, tabId, {
+          editor: targetEditor,
+        });
         if (!entry || entry.suppressChange) return;
         const markdown = entry.markdownSync.setFromEditor(targetEditor);
         entry.dioxus?.send?.({
@@ -355,7 +418,10 @@ export function createTiptapEditorRuntime({
         entry.sourcePane.setMarkdown(markdown);
       });
       editor.on("selectionUpdate", ({ editor: updatedEditor } = {}) => {
-        const entry = runtimeRegistry.get(tabId);
+        const entry = currentRegistryEntry(runtimeRegistry, tabId, {
+          editor: updatedEditor ?? editor,
+        });
+        if (!entry) return;
         entry?.modeSnapshots?.capture(entry, entry?.viewMode);
         syncOutline(tabId, entry?.viewMode);
       });
@@ -387,7 +453,11 @@ export function createTiptapEditorRuntime({
     modeSnapshots.capture(entry, entry.viewMode);
     pasteController.attach({ editor, root, entry });
     tableCommands.attach({ editor, root, entry });
-    runtimeRegistry.set(tabId, entry);
+    if (typeof runtimeRegistry.register === "function") {
+      runtimeRegistry.register(tabId, entry);
+    } else {
+      runtimeRegistry.set(tabId, entry);
+    }
 
     return editor;
   }
