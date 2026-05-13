@@ -22,7 +22,7 @@ import {
   canMoveTiptapBlock,
   moveTiptapBlock,
   targetEndPos,
-} from "./tiptap-block-move.js";
+} from "./tiptap-block-move.ts";
 import { PAPYRO_TIPTAP_TURN_INTO_COMMANDS } from "./tiptap-turn-into-commands.ts";
 
 function normalizeCommandId(value) {

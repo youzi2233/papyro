@@ -8,7 +8,7 @@ import {
   blockSiblingDrop,
   createTiptapBlockMove,
   moveTiptapBlock,
-} from "../src/tiptap-block-move.js";
+} from "../src/tiptap-block-move.ts";
 
 const schema = new Schema({
   nodes: {

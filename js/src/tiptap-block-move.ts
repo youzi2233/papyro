@@ -1,16 +1,82 @@
+import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
 import { NodeSelection, TextSelection } from "@tiptap/pm/state";
+import type { Selection, Transaction } from "@tiptap/pm/state";
 
-export function targetEndPos(target) {
+type ResolvedPosLike = {
+  depth: number;
+  parent?: {
+    childCount?: number;
+    child?: (index: number) => ProseMirrorNode | null;
+    canReplaceWith?: (
+      from: number,
+      to: number,
+      nodeType: ProseMirrorNode["type"],
+    ) => boolean;
+  } | null;
+  index?: (depth?: number) => number;
+};
+
+type DocLike = ProseMirrorNode & {
+  resolve?: (pos: number) => ResolvedPosLike;
+  nodeAt?: (pos: number) => ProseMirrorNode | null;
+};
+
+type EditorStateLike = {
+  doc?: DocLike | null;
+  tr?: Transaction;
+};
+
+type TiptapBlockMoveEditor = {
+  state?: EditorStateLike | null;
+  view?: {
+    dispatch?: (transaction: Transaction) => void;
+  } | null;
+  commands?: {
+    focus?: () => unknown;
+    setNodeSelection?: (pos: number) => unknown;
+    setTextSelection?: (pos: number) => unknown;
+  } | null;
+};
+
+export type TiptapBlockTarget = {
+  pos?: number | null;
+  node?: ProseMirrorNode | null;
+  block?: {
+    pmViewDesc?: {
+      node?: ProseMirrorNode | null;
+    } | null;
+  } | null;
+  kind?: string;
+};
+
+export type TiptapBlockDrop = {
+  pos?: number | null;
+  placement?: "before" | "after";
+};
+
+export type TiptapBlockMove = {
+  tr: Transaction;
+  pos: number;
+  selection: Selection | null;
+};
+
+export function targetEndPos(target?: TiptapBlockTarget | null): number | null {
   const nodeSize = target?.node?.nodeSize ?? target?.block?.pmViewDesc?.node?.nodeSize ?? 0;
   return Number.isFinite(target?.pos) ? target.pos + Math.max(1, nodeSize) : null;
 }
 
-function targetNode(editor, target) {
+function targetNode(
+  editor?: TiptapBlockMoveEditor | null,
+  target?: TiptapBlockTarget | null,
+): ProseMirrorNode | null {
   const from = target?.pos;
   return target?.node ?? (Number.isFinite(from) ? editor?.state?.doc?.nodeAt?.(from) : null);
 }
 
-function resolvedTargetPosition(editor, target) {
+function resolvedTargetPosition(
+  editor?: TiptapBlockMoveEditor | null,
+  target?: TiptapBlockTarget | null,
+): ResolvedPosLike | null {
   const from = target?.pos;
   const doc = editor?.state?.doc;
   if (!Number.isFinite(from) || typeof doc?.resolve !== "function") {
@@ -24,7 +90,11 @@ function resolvedTargetPosition(editor, target) {
   }
 }
 
-export function blockSiblingDrop(editor, target, direction) {
+export function blockSiblingDrop(
+  editor: TiptapBlockMoveEditor | null | undefined,
+  target: TiptapBlockTarget | null | undefined,
+  direction: "up" | "down" | string,
+): TiptapBlockDrop | null {
   const from = target?.pos;
   const node = targetNode(editor, target);
   const resolved = resolvedTargetPosition(editor, target);
@@ -70,28 +140,40 @@ export function blockSiblingDrop(editor, target, direction) {
   return Number.isFinite(nextEndPos) ? { pos: nextEndPos, placement: "after" } : null;
 }
 
-export function canMoveTiptapBlock(editor, target, direction) {
+export function canMoveTiptapBlock(
+  editor: TiptapBlockMoveEditor | null | undefined,
+  target: TiptapBlockTarget | null | undefined,
+  direction: "up" | "down" | string,
+): boolean {
   return blockSiblingDrop(editor, target, direction) !== null;
 }
 
-function blockMoveSelection(doc, node, pos) {
+function blockMoveSelection(
+  doc: DocLike | null | undefined,
+  node: ProseMirrorNode | null | undefined,
+  pos: number | null | undefined,
+): Selection | null {
   if (!doc || !node || !Number.isFinite(pos)) {
     return null;
   }
 
   try {
     if (NodeSelection.isSelectable(node)) {
-      return NodeSelection.create(doc, pos);
+      return NodeSelection.create(doc, pos as number);
     }
 
-    const resolved = doc.resolve(pos);
+    const resolved = doc.resolve(pos as number);
     return TextSelection.near(resolved, 1);
   } catch (_error) {
     return null;
   }
 }
 
-export function createTiptapBlockMove(editor, source, drop) {
+export function createTiptapBlockMove(
+  editor: TiptapBlockMoveEditor | null | undefined,
+  source: TiptapBlockTarget | null | undefined,
+  drop: TiptapBlockDrop | null | undefined,
+): TiptapBlockMove | null {
   const state = editor?.state;
   const doc = state?.doc;
   const from = source?.pos;
@@ -144,7 +226,11 @@ export function createTiptapBlockMove(editor, source, drop) {
   }
 }
 
-export function moveTiptapBlock(editor, source, drop) {
+export function moveTiptapBlock(
+  editor: TiptapBlockMoveEditor | null | undefined,
+  source: TiptapBlockTarget | null | undefined,
+  drop: TiptapBlockDrop | null | undefined,
+): boolean {
   const move = createTiptapBlockMove(editor, source, drop);
   if (!move) return false;
 
