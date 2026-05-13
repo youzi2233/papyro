@@ -1,35 +1,43 @@
 import { useRef } from "react";
 
-function preventMenuPointer(event) {
+type PointerActivationEvent = {
+  preventDefault?: () => void;
+  stopPropagation?: () => void;
+  nativeEvent?: {
+    stopImmediatePropagation?: () => void;
+  };
+};
+
+function preventMenuPointer(event: PointerActivationEvent | null | undefined) {
   event?.preventDefault?.();
   event?.stopPropagation?.();
   event?.nativeEvent?.stopImmediatePropagation?.();
 }
 
-export function usePointerActivation(run) {
+export function usePointerActivation(run: () => void) {
   const pointerActivated = useRef(false);
 
   return {
-    onPointerDown(event) {
+    onPointerDown(event: PointerActivationEvent) {
       preventMenuPointer(event);
       pointerActivated.current = true;
       run();
     },
-    onClick(event) {
+    onClick(event: PointerActivationEvent) {
       preventMenuPointer(event);
       if (!pointerActivated.current) {
         run();
       }
       pointerActivated.current = false;
     },
-    onMouseDown(event) {
+    onMouseDown(event: PointerActivationEvent) {
       preventMenuPointer(event);
     },
-    onAuxClick(event) {
+    onAuxClick(event: PointerActivationEvent) {
       preventMenuPointer(event);
       pointerActivated.current = false;
     },
-    onContextMenu(event) {
+    onContextMenu(event: PointerActivationEvent) {
       preventMenuPointer(event);
       pointerActivated.current = false;
     },

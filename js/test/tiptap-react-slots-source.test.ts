@@ -23,7 +23,7 @@ const runtimeModelSource = readFileSync(
   "utf8",
 );
 const codeBlockCommandModelSource = readFileSync(
-  new URL("../src/tiptap-react/commands/code-block-command-model.js", import.meta.url),
+  new URL("../src/tiptap-react/commands/code-block-command-model.ts", import.meta.url),
   "utf8",
 );
 const codeBlockNodeViewSource = readFileSync(
@@ -35,11 +35,11 @@ const codeBlockNodeViewExtensionSource = readFileSync(
   "utf8",
 );
 const hoverIntentHookSource = readFileSync(
-  new URL("../src/tiptap-react/hooks/use-hover-intent-activation.js", import.meta.url),
+  new URL("../src/tiptap-react/hooks/use-hover-intent-activation.ts", import.meta.url),
   "utf8",
 );
 const pointerActivationHookSource = readFileSync(
-  new URL("../src/tiptap-react/hooks/use-pointer-activation.js", import.meta.url),
+  new URL("../src/tiptap-react/hooks/use-pointer-activation.ts", import.meta.url),
   "utf8",
 );
 const officialTableNodeLayerSource = readFileSync(
@@ -47,7 +47,7 @@ const officialTableNodeLayerSource = readFileSync(
   "utf8",
 );
 const floatingUtilsSource = readFileSync(
-  new URL("../src/tiptap-react/utils/floating.js", import.meta.url),
+  new URL("../src/tiptap-react/utils/floating.ts", import.meta.url),
   "utf8",
 );
 const tableCommandControllerSource = readFileSync(

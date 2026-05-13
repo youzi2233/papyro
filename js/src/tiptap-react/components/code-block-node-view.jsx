@@ -10,14 +10,14 @@ import {
   inferCodeBlockLanguage,
   setCodeBlockLanguage,
 } from "../../tiptap-code-block.js";
-import { usePointerActivation } from "../hooks/use-pointer-activation.js";
+import { usePointerActivation } from "../hooks/use-pointer-activation.ts";
 import {
   activeCodeBlockLanguageCommandIndex,
   createCodeBlockChromeCommands,
   createCodeBlockLanguageChrome,
   createCodeBlockLanguageCommands,
   nextCodeBlockLanguageCommandIndex,
-} from "../commands/code-block-command-model.js";
+} from "../commands/code-block-command-model.ts";
 import { usePapyroTiptapLanguage } from "../runtime-context.tsx";
 
 const COPY_FEEDBACK_MS = 1400;

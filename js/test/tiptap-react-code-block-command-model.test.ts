@@ -8,7 +8,7 @@ import {
   createCodeBlockLanguageChrome,
   createCodeBlockLanguageCommands,
   nextCodeBlockLanguageCommandIndex,
-} from "../src/tiptap-react/commands/code-block-command-model.js";
+} from "../src/tiptap-react/commands/code-block-command-model.ts";
 
 test("React code block command model exposes stable language commands", () => {
   const commands = createCodeBlockLanguageCommands({

@@ -4,7 +4,29 @@ import {
   viewportSize,
 } from "../../tiptap-ui-primitives.ts";
 
-export function usableFloatingRect(rect) {
+type FloatingRectLike = {
+  left?: unknown;
+  top?: unknown;
+  right?: unknown;
+  bottom?: unknown;
+};
+
+type EditorRangeLike = {
+  to: number;
+};
+
+type TiptapEditorLike = {
+  view?: {
+    coordsAtPos?: (position: number) => FloatingRectLike;
+  };
+};
+
+type ElementLike = {
+  ownerDocument?: Document;
+  getBoundingClientRect?: () => FloatingRectLike;
+};
+
+export function usableFloatingRect(rect: FloatingRectLike | null | undefined) {
   if (!rect) return false;
   const left = Number(rect.left);
   const top = Number(rect.top);
@@ -14,7 +36,10 @@ export function usableFloatingRect(rect) {
   return Math.abs(left) + Math.abs(top) > 0 || right > left || bottom > top;
 }
 
-export function anchorRectFromEditorRange(editor, range) {
+export function anchorRectFromEditorRange(
+  editor: TiptapEditorLike | null | undefined,
+  range: EditorRangeLike | null | undefined,
+) {
   const view = editor?.view;
   if (!view || typeof view.coordsAtPos !== "function" || !range) return null;
 

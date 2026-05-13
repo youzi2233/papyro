@@ -16,32 +16,49 @@ const CODE_LANGUAGE_GROUP_KEY = "Code language";
 const CODE_BLOCK_GROUP_KEY = "Code block";
 const COPY_STATES = new Set(["idle", "copied", "failed"]);
 
-function freezeCommand(command) {
+type PapyroCodeBlockCommand = {
+  id: string;
+  title: string;
+  description?: string;
+  group?: string;
+  groupKey?: string;
+  icon?: string;
+  active?: boolean;
+  disabled?: boolean;
+  pressed?: boolean;
+  state?: string;
+  optionId?: string;
+  language?: string | null;
+  token?: string;
+  meta?: Record<string, unknown>;
+};
+
+function freezeCommand(command: PapyroCodeBlockCommand) {
   return Object.freeze({
     ...command,
     meta: Object.freeze({ ...(command.meta ?? {}) }),
   });
 }
 
-function normalizeCopyState(copyState) {
+function normalizeCopyState(copyState: unknown) {
   const normalized = String(copyState ?? "idle").trim().toLowerCase();
   return COPY_STATES.has(normalized) ? normalized : "idle";
 }
 
-function enabledCommandIndexes(commands = []) {
+function enabledCommandIndexes(commands: readonly PapyroCodeBlockCommand[] = []) {
   return (commands ?? [])
     .map((command, index) => (command?.disabled ? null : index))
     .filter((index) => Number.isInteger(index));
 }
 
-function groupLabel(language, groupKey) {
+function groupLabel(language: string, groupKey: string) {
   if (groupKey === CODE_LANGUAGE_GROUP_KEY) {
     return localizedText(language, "Code language", "\u4ee3\u7801\u8bed\u8a00");
   }
   return localizedText(language, "Code block", "\u4ee3\u7801\u5757");
 }
 
-function languageDescription(language, option) {
+function languageDescription(language: string, option: { language?: string | null; label: string }) {
   if (!option?.language) {
     return localizedText(
       language,
@@ -56,7 +73,7 @@ function languageDescription(language, option) {
   );
 }
 
-function customLanguageCommand(language, currentLanguage) {
+function customLanguageCommand(language: string, currentLanguage: unknown) {
   const normalized = normalizeCodeBlockLanguage(currentLanguage);
   if (!normalized || codeBlockLanguageOption(normalized)) return null;
   return freezeCommand({
@@ -127,7 +144,11 @@ export function activeCodeBlockLanguageCommandIndex(commands = []) {
   return enabledCommandIndexes(commands)[0] ?? 0;
 }
 
-export function nextCodeBlockLanguageCommandIndex(commands = [], currentIndex = 0, direction = 1) {
+export function nextCodeBlockLanguageCommandIndex(
+  commands: readonly PapyroCodeBlockCommand[] = [],
+  currentIndex = 0,
+  direction = 1,
+) {
   const indexes = enabledCommandIndexes(commands);
   if (indexes.length === 0) return activeCodeBlockLanguageCommandIndex(commands);
 

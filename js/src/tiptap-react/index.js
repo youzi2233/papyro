@@ -33,7 +33,7 @@ export {
   createCodeBlockLanguageChrome,
   createCodeBlockLanguageCommands,
   nextCodeBlockLanguageCommandIndex,
-} from "./commands/code-block-command-model.js";
+} from "./commands/code-block-command-model.ts";
 export {
   createTiptapReactCodeBlockNodeViewRenderer,
 } from "./extensions/code-block-node-view.js";
@@ -49,4 +49,4 @@ export {
   positionReactFloatingElement,
   shouldFlipFloatingSidePanel,
   usableFloatingRect,
-} from "./utils/floating.js";
+} from "./utils/floating.ts";

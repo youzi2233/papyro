@@ -2,12 +2,19 @@ import { useCallback, useEffect, useRef } from "react";
 
 const DEFAULT_HOVER_INTENT_DELAY_MS = 80;
 
+type HoverIntentOptions = Record<string, unknown>;
+
+type HoverIntentActivate = (
+  index: number,
+  options?: HoverIntentOptions,
+) => void;
+
 export function useHoverIntentActivation({
   activate,
   delay = DEFAULT_HOVER_INTENT_DELAY_MS,
-} = {}) {
+}: { activate?: HoverIntentActivate; delay?: number } = {}) {
   const activateRef = useRef(activate);
-  const timerRef = useRef(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   activateRef.current = activate;
 
@@ -18,7 +25,7 @@ export function useHoverIntentActivation({
   }, []);
 
   const schedule = useCallback(
-    (index, options = {}) => {
+    (index: number, options: HoverIntentOptions = {}) => {
       cancel();
       if (typeof globalThis.setTimeout !== "function") {
         activateRef.current?.(index, options);
@@ -33,7 +40,7 @@ export function useHoverIntentActivation({
   );
 
   const runNow = useCallback(
-    (index, options = {}) => {
+    (index: number, options: HoverIntentOptions = {}) => {
       cancel();
       activateRef.current?.(index, options);
     },
