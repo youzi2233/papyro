@@ -311,7 +311,7 @@ js/src/
 - [x] 本地图片粘贴（通过 Rust 端处理文件保存）
 - [x] Mermaid 图表渲染
 - [x] KaTeX 数学公式渲染
-- [ ] 大纲/TOC 生成（通过 Rust 端消费）
+- [x] 大纲/TOC 生成（通过 Rust 端消费）
 - [ ] i18n 多语言支持
 - [ ] 多标签页编辑器实例管理（editorRegistry）
 

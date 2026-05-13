@@ -330,13 +330,20 @@ These APIs are wrapped so app flows can be tested.
 Editor owns Rust-side Markdown capability:
 
 - document statistics
-- outline extraction
+- outline extraction with TOC-ready anchors
 - Hybrid block analysis
 - Preview HTML rendering
 - code highlighting theme decisions
 - Rust/JS protocol structs
 
 `crates/editor` is not the Tiptap runtime. The browser editor runtime lives in `js/`.
+
+Outline extraction uses the same `pulldown-cmark` Markdown semantics as Preview
+instead of a line-based scanner. It collects ATX and Setext headings, strips
+inline Markdown formatting from titles, preserves explicit heading IDs, and
+generates stable duplicate-safe anchor IDs. Rust keeps this as the
+application-level TOC source; JS only consumes the rendered outline rows for
+active-state sync and navigation.
 
 ### `js/`
 
@@ -601,6 +608,14 @@ events into escaped `.mn-math-inline` and `.mn-math-block` placeholders.
 Preview placeholders. It renders with `trust: false`, `throwOnError: true`,
 `output: "mathml"`, bounded `maxSize`, and bounded `maxExpand`, so local
 documents cannot opt into trusted KaTeX HTML features.
+
+Outline/TOC data stays on the Rust side for revision alignment. `OutlineItem`
+contains the heading level, cleaned title, source line number, and stable
+`anchor_id`. `OutlinePane` exposes those values through `data-line-number`,
+`data-heading-index`, and `data-anchor-id`; `window.papyroEditor.syncOutline`
+and `navigateOutline` continue to handle only DOM active-state and scroll
+behavior. This follows Tiptap's TOC model of headless anchor data plus a
+separate UI, while keeping Papyro's Rust document model as the source of truth.
 
 Most input follows this path:
 

@@ -381,13 +381,18 @@ UI 的正确姿势：
 编辑器能力层负责 Rust 侧 Markdown 逻辑：
 
 - Markdown 统计。
-- 大纲提取。
+- 带 TOC anchor 的大纲提取。
 - Hybrid block 分析。
 - Preview HTML 渲染。
 - 代码高亮主题。
 - Rust/JS 协议结构。
 
 注意：`crates/editor` 不等于 Tiptap runtime。浏览器编辑器 runtime 在 `js/`。
+
+大纲提取使用和 Preview 相同的 `pulldown-cmark` Markdown 语义，不再依赖逐行扫描。
+它会收集 ATX 和 Setext 标题，清理标题里的 inline Markdown 标记，保留显式 heading
+ID，并为重复标题生成稳定且不冲突的 anchor ID。Rust 继续作为应用层 TOC 数据源；
+JS 只消费渲染后的大纲行，负责 active state 同步和导航滚动。
 
 ### 7.9 `js/`
 
@@ -663,6 +668,13 @@ KaTeX 渲染也保留在 JS 侧。Rust 启用 `pulldown-cmark` 的 `ENABLE_MATH`
 同时负责 Tiptap math node view 和 Preview 占位符渲染，使用 `trust: false`、
 `throwOnError: true`、`output: "mathml"`，并限制 `maxSize` 与 `maxExpand`，
 避免本地文档开启受信任的 KaTeX HTML 能力。
+
+大纲/TOC 数据保留在 Rust 侧，便于和 document revision 对齐。`OutlineItem`
+包含标题级别、清理后的标题文本、源码行号和稳定的 `anchor_id`。`OutlinePane`
+把这些值暴露为 `data-line-number`、`data-heading-index` 和 `data-anchor-id`；
+`window.papyroEditor.syncOutline` 与 `navigateOutline` 仍只处理 DOM active state
+和滚动行为。这遵循 Tiptap TOC 的“无头 anchor 数据 + 独立 UI”模型，同时保持
+Papyro 的 Rust 文档模型是真相源。
 
 最常见的是 `ContentChanged`：
 

@@ -74,6 +74,7 @@ pub fn OutlineItemButton(
     tab_id: String,
     line_number: usize,
     heading_index: usize,
+    anchor_id: String,
     level: u8,
     class_name: String,
     on_click: EventHandler<()>,
@@ -87,6 +88,7 @@ pub fn OutlineItemButton(
             "data-tab-id": "{tab_id}",
             "data-line-number": "{line_number}",
             "data-heading-index": "{heading_index}",
+            "data-anchor-id": "{anchor_id}",
             title,
             onclick: move |_| on_click.call(()),
             "{label}"

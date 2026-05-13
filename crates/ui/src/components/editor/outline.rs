@@ -96,9 +96,15 @@ pub(super) fn OutlinePane(
                         tab_id: tab_id.clone(),
                         line_number: item.line_number,
                         heading_index,
+                        anchor_id: item.anchor_id.clone(),
                         level: item.level,
                         class_name: String::new(),
-                        title: format!("{} {}", i18n.text("Line", "第"), item.line_number),
+                        title: format!(
+                            "{} {} · #{}",
+                            i18n.text("Line", "第"),
+                            item.line_number,
+                            item.anchor_id
+                        ),
                         on_click: {
                             let script = navigate_outline_script(
                                 &tab_id,
@@ -279,6 +285,7 @@ mod tests {
                 level: 1,
                 title: "Old".to_string(),
                 line_number: 1,
+                anchor_id: "old".to_string(),
             }],
         };
 
@@ -298,6 +305,7 @@ mod tests {
                 level: 1,
                 title: "Current".to_string(),
                 line_number: 1,
+                anchor_id: "current".to_string(),
             }],
         );
 
@@ -332,11 +340,13 @@ mod tests {
                     level: 1,
                     title: "Current".to_string(),
                     line_number: 1,
+                    anchor_id: "current".to_string(),
                 },
                 OutlineItem {
                     level: 2,
                     title: "Next".to_string(),
                     line_number: 3,
+                    anchor_id: "next".to_string(),
                 },
             ]
         );
