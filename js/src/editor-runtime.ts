@@ -15,7 +15,7 @@ import { createTiptapModeSnapshotController } from "./tiptap-mode-snapshots.ts";
 import { createTiptapPasteController } from "./tiptap-paste-controller.ts";
 import { createTiptapPreferencesController } from "./tiptap-preferences-controller.ts";
 import { createTiptapSourcePaneController } from "./tiptap-source-pane.ts";
-import { createTiptapSlashCommandController } from "./tiptap-slash-commands.js";
+import { createTiptapSlashCommandController } from "./tiptap-slash-commands.ts";
 import { isComposingKeyboardEvent } from "./tiptap-ui-primitives.ts";
 import {
   createPapyroMarkdownManager,

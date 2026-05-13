@@ -7,7 +7,7 @@ import {
   createMarkdownTable,
   createTiptapSlashCommandController,
   PAPYRO_TIPTAP_SLASH_COMMANDS,
-} from "../src/tiptap-slash-commands.js";
+} from "../src/tiptap-slash-commands.ts";
 
 function createFakeEditor() {
   const calls = [];

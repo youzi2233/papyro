@@ -5,24 +5,90 @@ import {
 } from "./tiptap-markdown-snippets.ts";
 import { normalizeCodeBlockLanguage } from "./tiptap-code-block.js";
 import { localizeSlashCommand, normalizeTiptapLanguage } from "./tiptap-i18n.ts";
+import type { PapyroCalloutKind } from "./tiptap-markdown-snippets.ts";
+import type { TiptapLanguage } from "./tiptap-i18n.ts";
 
 const DEFAULT_LIMIT = 8;
 const DEFAULT_RECENT_LIMIT = 4;
 const RECENT_GROUP = "Recent";
 
-function normalizeText(value) {
+type EditorCommandMap = Record<string, (...args: unknown[]) => unknown>;
+type SlashEditor = {
+  commands?: EditorCommandMap;
+};
+type TableSize = {
+  rows?: unknown;
+  cols?: unknown;
+};
+type SlashCommandContext = {
+  editor?: SlashEditor | null;
+  entry?: unknown;
+  tableSize?: TableSize | null;
+  calloutKind?: unknown;
+  codeLanguage?: unknown;
+  [key: string]: unknown;
+};
+type SlashCommandRun = (context: SlashCommandContext) => boolean;
+type SlashCommandInput = {
+  id: string;
+  title: string;
+  description: string;
+  group: string;
+  icon?: string;
+  aliases?: readonly string[];
+  keywords?: readonly string[];
+  priority?: number;
+  run: SlashCommandRun;
+};
+export type PapyroSlashCommand = Readonly<{
+  id: string;
+  title: string;
+  description: string;
+  group: string;
+  icon: string;
+  aliases: readonly string[];
+  keywords: readonly string[];
+  priority: number;
+  run: SlashCommandRun;
+}>;
+type SlashCommandMatch = {
+  command: PapyroSlashCommand;
+  index: number;
+  score: number;
+};
+export type PapyroVisibleSlashCommand = PapyroSlashCommand & {
+  index: number;
+  sourceIndex: number;
+  recent: boolean;
+};
+type QueryOptions = {
+  limit?: unknown;
+  language?: unknown;
+};
+type ControllerOptions = {
+  language?: unknown;
+  recentLimit?: unknown;
+};
+
+function normalizeText(value: unknown): string {
   return String(value ?? "").trim().toLowerCase();
 }
 
-function freezeCommand(command) {
+function freezeCommand(command: SlashCommandInput): PapyroSlashCommand {
   return Object.freeze({
     ...command,
     aliases: Object.freeze([...(command.aliases ?? [])]),
     keywords: Object.freeze([...(command.keywords ?? [])]),
+    icon: command.icon ?? "paragraph",
+    priority: command.priority ?? 100,
   });
 }
 
-function editorCommand(editor, commandName, ...args) {
+function editorCommand(
+  editor: SlashEditor | null | undefined,
+  commandName: string,
+  ...args: unknown[]
+): boolean {
   const command = editor?.commands?.[commandName];
   if (typeof command !== "function") {
     return false;
@@ -30,18 +96,23 @@ function editorCommand(editor, commandName, ...args) {
   return command(...args) !== false;
 }
 
-function insertMarkdown(editor, markdown) {
+function insertMarkdown(editor: SlashEditor | null | undefined, markdown: string): boolean {
   return editorCommand(editor, "insertContent", markdown, { contentType: "markdown" });
 }
 
 export { createMarkdownCallout, createMarkdownTable };
 
 
-function focusEditor(editor) {
+function focusEditor(editor: SlashEditor | null | undefined) {
   editor?.commands?.focus?.();
 }
 
-function runEditorCommand(editor, commandName, args = [], fallbackMarkdown) {
+function runEditorCommand(
+  editor: SlashEditor | null | undefined,
+  commandName: string,
+  args: readonly unknown[] = [],
+  fallbackMarkdown?: string,
+): boolean {
   const ok = editorCommand(editor, commandName, ...args);
   if (!ok && fallbackMarkdown) {
     return insertMarkdown(editor, fallbackMarkdown);
@@ -49,18 +120,18 @@ function runEditorCommand(editor, commandName, args = [], fallbackMarkdown) {
   return ok;
 }
 
-function normalizeSlashCodeLanguage(language) {
+function normalizeSlashCodeLanguage(language: unknown): string | null {
   const raw = String(language ?? "").trim().toLowerCase();
   if (!raw || raw === "auto") return null;
   return normalizeCodeBlockLanguage(raw);
 }
 
-export function createMarkdownCodeBlock(language = null) {
+export function createMarkdownCodeBlock(language: unknown = null): string {
   const normalized = normalizeSlashCodeLanguage(language);
   return `\`\`\`${normalized ?? ""}\ncode\n\`\`\``;
 }
 
-function commandSearchText(command) {
+function commandSearchText(command: PapyroSlashCommand): string {
   return [
     command.id,
     command.title,
@@ -74,7 +145,7 @@ function commandSearchText(command) {
     .join(" ");
 }
 
-function scoreCommand(command, query) {
+function scoreCommand(command: PapyroSlashCommand, query: unknown): number | null {
   const normalizedQuery = normalizeText(query);
   if (!normalizedQuery) return command.priority ?? 100;
 
@@ -94,24 +165,36 @@ function scoreCommand(command, query) {
   return null;
 }
 
-function sortCommandMatches(matches, query, recentCommandIds = []) {
+function sortCommandMatches(
+  matches: readonly SlashCommandMatch[],
+  query: unknown,
+  recentCommandIds: readonly string[] = [],
+): SlashCommandMatch[] {
   const normalizedQuery = normalizeText(query);
   const recentOrder = new Map(recentCommandIds.map((id, index) => [id, index]));
   return [...matches].sort((a, b) => {
     if (!normalizedQuery) {
-      const leftRecent = recentOrder.has(a.command.id)
-        ? recentOrder.get(a.command.id)
-        : Number.POSITIVE_INFINITY;
-      const rightRecent = recentOrder.has(b.command.id)
-        ? recentOrder.get(b.command.id)
-        : Number.POSITIVE_INFINITY;
+      const leftRecent = recentOrder.get(a.command.id) ?? Number.POSITIVE_INFINITY;
+      const rightRecent = recentOrder.get(b.command.id) ?? Number.POSITIVE_INFINITY;
       if (leftRecent !== rightRecent) return leftRecent - rightRecent;
     }
     return a.score - b.score || a.command.priority - b.command.priority || a.index - b.index;
   });
 }
 
-function localizeQueryMatch(match, visibleIndex, { locale, recentCommandIds = [], query = "" } = {}) {
+function localizeQueryMatch(
+  match: SlashCommandMatch,
+  visibleIndex: number,
+  {
+    locale,
+    recentCommandIds = [],
+    query = "",
+  }: {
+    locale: TiptapLanguage;
+    recentCommandIds?: readonly string[];
+    query?: unknown;
+  },
+): PapyroVisibleSlashCommand {
   const normalizedQuery = normalizeText(query);
   const recent = !normalizedQuery && recentCommandIds.includes(match.command.id);
   const command = recent
@@ -123,7 +206,7 @@ function localizeQueryMatch(match, visibleIndex, { locale, recentCommandIds = []
     : match.command;
 
   return {
-    ...localizeSlashCommand(command, locale),
+    ...(localizeSlashCommand(command, locale) as PapyroSlashCommand),
     index: visibleIndex,
     sourceIndex: match.index,
     recent,
@@ -140,7 +223,7 @@ function createCommand({
   keywords = [],
   priority = 100,
   run,
-}) {
+}: SlashCommandInput): PapyroSlashCommand {
   if (!id || typeof run !== "function") {
     throw new TypeError("Tiptap slash commands require an id and run function");
   }
@@ -257,7 +340,7 @@ export const PAPYRO_TIPTAP_SLASH_COMMANDS = Object.freeze([
     keywords: ["callout", "notice", "tip", "warning"],
     priority: 41,
     run: ({ editor, calloutKind = "NOTE" }) => {
-      const kind = normalizeCalloutKind(calloutKind);
+      const kind: PapyroCalloutKind = normalizeCalloutKind(calloutKind);
       return runEditorCommand(
         editor,
         "setCalloutBlock",
@@ -305,9 +388,10 @@ export const PAPYRO_TIPTAP_SLASH_COMMANDS = Object.freeze([
     aliases: ["grid"],
     keywords: ["cells", "表格"],
     priority: 50,
-    run: ({ editor, entry, tableSize = {} }) => {
-      const rows = Math.max(1, Number(tableSize.rows) || 3);
-      const cols = Math.max(1, Number(tableSize.cols) || 2);
+    run: ({ editor, tableSize = {} }) => {
+      const requestedSize = tableSize ?? {};
+      const rows = Math.max(1, Number(requestedSize.rows) || 3);
+      const cols = Math.max(1, Number(requestedSize.cols) || 2);
       const ok = runEditorCommand(
         editor,
         "insertTable",
@@ -366,12 +450,15 @@ export const PAPYRO_TIPTAP_SLASH_COMMANDS = Object.freeze([
 ]);
 
 export class TiptapSlashCommandController {
-  #commands;
-  #language;
-  #recentCommandIds = [];
-  #recentLimit;
+  #commands: readonly PapyroSlashCommand[];
+  #language: TiptapLanguage;
+  #recentCommandIds: string[] = [];
+  #recentLimit: number;
 
-  constructor(commands = PAPYRO_TIPTAP_SLASH_COMMANDS, { language = "english", recentLimit = DEFAULT_RECENT_LIMIT } = {}) {
+  constructor(
+    commands: readonly PapyroSlashCommand[] = PAPYRO_TIPTAP_SLASH_COMMANDS,
+    { language = "english", recentLimit = DEFAULT_RECENT_LIMIT }: ControllerOptions = {},
+  ) {
     this.#commands = Object.freeze([...commands]);
     this.#language = normalizeTiptapLanguage(language);
     this.#recentLimit = Math.max(0, Number(recentLimit) || 0);
@@ -381,20 +468,20 @@ export class TiptapSlashCommandController {
     return this.#commands;
   }
 
-  get recentCommandIds() {
+  get recentCommandIds(): string[] {
     return [...this.#recentCommandIds];
   }
 
-  find(commandId) {
+  find(commandId: unknown): PapyroSlashCommand | null {
     const id = normalizeText(commandId);
     return this.#commands.find((command) => command.id === id) ?? null;
   }
 
-  setLanguage(language) {
+  setLanguage(language: unknown) {
     this.#language = normalizeTiptapLanguage(language);
   }
 
-  recordUsage(commandId) {
+  recordUsage(commandId: unknown): string[] {
     const command = this.find(commandId);
     if (!command || this.#recentLimit <= 0) {
       return this.recentCommandIds;
@@ -407,7 +494,10 @@ export class TiptapSlashCommandController {
     return this.recentCommandIds;
   }
 
-  query(query, { limit = DEFAULT_LIMIT, language = this.#language } = {}) {
+  query(
+    query: unknown,
+    { limit = DEFAULT_LIMIT, language = this.#language }: QueryOptions = {},
+  ): PapyroVisibleSlashCommand[] {
     const locale = normalizeTiptapLanguage(language);
     const matches = this.#commands
       .map((command, index) => ({
@@ -415,11 +505,11 @@ export class TiptapSlashCommandController {
         index,
         score: scoreCommand(command, query),
       }))
-      .filter((match) => match.score !== null)
+      .filter((match): match is SlashCommandMatch => match.score !== null)
       .sort((a, b) => a.index - b.index);
 
     return sortCommandMatches(matches, query, this.#recentCommandIds)
-      .slice(0, Math.max(0, limit))
+      .slice(0, Math.max(0, Number(limit)))
       .map((match, visibleIndex) =>
         localizeQueryMatch(match, visibleIndex, {
           locale,
@@ -429,7 +519,7 @@ export class TiptapSlashCommandController {
       );
   }
 
-  run(commandId, context = {}) {
+  run(commandId: unknown, context: SlashCommandContext = {}) {
     const command = this.find(commandId);
     if (!command) {
       return {
@@ -453,6 +543,8 @@ export class TiptapSlashCommandController {
   }
 }
 
-export function createTiptapSlashCommandController(commands) {
+export function createTiptapSlashCommandController(
+  commands?: readonly PapyroSlashCommand[],
+) {
   return new TiptapSlashCommandController(commands);
 }
