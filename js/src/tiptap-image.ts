@@ -1,24 +1,58 @@
 import { mergeAttributes, Node } from "@tiptap/core";
+import type {
+  CommandProps,
+  MarkdownParseHelpers,
+  MarkdownToken,
+  NodeViewRendererProps,
+} from "@tiptap/core";
+import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
 
 import { sanitizeMarkdownImageSrc } from "./editor-core.ts";
 
-function normalizeText(value) {
+type ImageAttributes = {
+  src?: unknown;
+  alt?: unknown;
+  title?: unknown;
+};
+
+type ParsedImageDestination = {
+  href: string;
+  title: string;
+};
+
+type MarkdownImageToken = MarkdownToken & {
+  type: "image";
+  raw: string;
+  href: string;
+  text: string;
+  title: string;
+};
+
+declare module "@tiptap/core" {
+  interface Commands<ReturnType> {
+    papyroImage: {
+      setImage: (attributes?: ImageAttributes) => ReturnType;
+    };
+  }
+}
+
+function normalizeText(value: unknown): string {
   return String(value ?? "");
 }
 
-function escapeImageAlt(text) {
+function escapeImageAlt(text: unknown): string {
   return normalizeText(text).replace(/\\/g, "\\\\").replace(/\]/g, "\\]");
 }
 
-function escapeImageTitle(text) {
+function escapeImageTitle(text: unknown): string {
   return normalizeText(text).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 }
 
-function imageLabel(attrs = {}) {
+function imageLabel(attrs: ImageAttributes = {}): string {
   return normalizeText(attrs.alt).trim() || normalizeText(attrs.title).trim() || "Image preview";
 }
 
-function isEscaped(source, index) {
+function isEscaped(source: string, index: number): boolean {
   let backslashes = 0;
   for (let cursor = index - 1; cursor >= 0 && source[cursor] === "\\"; cursor -= 1) {
     backslashes += 1;
@@ -26,14 +60,14 @@ function isEscaped(source, index) {
   return backslashes % 2 === 1;
 }
 
-function findClosingBracket(source, openIndex, closeChar) {
+function findClosingBracket(source: string, openIndex: number, closeChar: string): number {
   for (let cursor = openIndex + 1; cursor < source.length; cursor += 1) {
     if (source[cursor] === closeChar && !isEscaped(source, cursor)) return cursor;
   }
   return -1;
 }
 
-function parseImageDestinationAndTitle(raw) {
+function parseImageDestinationAndTitle(raw: unknown): ParsedImageDestination | null {
   const text = normalizeText(raw).trim();
   if (!text) return null;
 
@@ -59,7 +93,7 @@ function parseImageDestinationAndTitle(raw) {
   };
 }
 
-export function tokenizeMarkdownImage(source) {
+export function tokenizeMarkdownImage(source: string): MarkdownImageToken | undefined {
   const text = normalizeText(source);
   if (!text.startsWith("![")) return undefined;
 
@@ -81,7 +115,7 @@ export function tokenizeMarkdownImage(source) {
   };
 }
 
-function createImageDom(documentRef, attrs = {}) {
+function createImageDom(documentRef: Document, attrs: ImageAttributes = {}): HTMLElement {
   const figure = documentRef.createElement("span");
   figure.className = "mn-tiptap-image";
   figure.contentEditable = "false";
@@ -91,7 +125,7 @@ function createImageDom(documentRef, attrs = {}) {
   const src = sanitizeMarkdownImageSrc(attrs.src);
   if (!src) {
     figure.classList.add("mn-tiptap-image-error");
-    figure.textContent = attrs.src || "Invalid image source";
+    figure.textContent = normalizeText(attrs.src) || "Invalid image source";
     return figure;
   }
 
@@ -167,7 +201,7 @@ export const PapyroImage = Node.create({
   },
 
   addNodeView() {
-    return ({ node, view }) => ({
+    return ({ node, view }: NodeViewRendererProps) => ({
       dom: createImageDom(view.dom.ownerDocument, node.attrs),
     });
   },
@@ -181,14 +215,14 @@ export const PapyroImage = Node.create({
     tokenize: tokenizeMarkdownImage,
   },
 
-  parseMarkdown: (token, helpers) =>
+  parseMarkdown: (token: MarkdownToken, helpers: MarkdownParseHelpers) =>
     helpers.createNode("image", {
       src: normalizeText(token.href),
       alt: normalizeText(token.text),
       title: normalizeText(token.title),
     }),
 
-  renderMarkdown: (node) => {
+  renderMarkdown: (node: ProseMirrorNode | { attrs?: ImageAttributes }) => {
     const attrs = node.attrs ?? {};
     const alt = escapeImageAlt(attrs.alt);
     const src = normalizeText(attrs.src);
@@ -201,8 +235,8 @@ export const PapyroImage = Node.create({
   addCommands() {
     return {
       setImage:
-        (attributes = {}) =>
-        ({ commands }) =>
+        (attributes: ImageAttributes = {}) =>
+        ({ commands }: CommandProps) =>
           commands.insertContent({
             type: this.name,
             attrs: {

@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import {
   createPapyroImageExtensions,
   tokenizeMarkdownImage,
-} from "../src/tiptap-image.js";
+} from "../src/tiptap-image.ts";
 
 test("Papyro image extension exposes the image node boundary", () => {
   const extensions = createPapyroImageExtensions();
