@@ -1,4 +1,111 @@
-export const TABLE_CELL_MENU_COMMAND_IDS = new Set([
+export type TableCommandId =
+  | "add-column-before"
+  | "add-column-after"
+  | "delete-column"
+  | "add-row-before"
+  | "add-row-after"
+  | "delete-row"
+  | "merge-cells"
+  | "split-cell"
+  | "copy-cell-content"
+  | "clear-cell-content"
+  | "clear-cell-style"
+  | "merge-or-split"
+  | "toggle-header-row"
+  | "toggle-header-column"
+  | "toggle-header-cell"
+  | "align-left"
+  | "align-center"
+  | "align-right"
+  | "cell-text-clear"
+  | "cell-text-muted"
+  | "cell-text-accent"
+  | "cell-text-danger"
+  | "cell-bg-clear"
+  | "cell-bg-yellow"
+  | "cell-bg-blue"
+  | "cell-bg-green"
+  | "previous-cell"
+  | "next-cell"
+  | "fix-table"
+  | "delete-table";
+
+export type TableCommandGroup =
+  | "Columns"
+  | "Rows"
+  | "Cells"
+  | "Headers"
+  | "Align"
+  | "Text color"
+  | "Cell color"
+  | "Navigate"
+  | "Table";
+
+export type TableCommandVariant = "text" | "icon" | "text-swatch" | "swatch";
+export type TableCommandLayoutGroup =
+  | "actions"
+  | "align"
+  | "text-color"
+  | "cell-color"
+  | "danger";
+export type TableCommandMenuSection = "structure" | "content" | "style" | "danger";
+export type TableCommandMenuMode = "context" | "keyboard";
+export type TableCommandSelectionKind = "cell" | "cells" | "row" | "column" | "table";
+
+export interface TableCommand {
+  id: TableCommandId;
+  group: TableCommandGroup;
+  title: string;
+  label: string;
+  command: string;
+  icon: string;
+  args?: readonly unknown[];
+  disabled?: boolean;
+  tone?: "danger";
+  variant?: TableCommandVariant;
+  groupKey?: TableCommandGroup;
+  layoutGroup?: TableCommandLayoutGroup;
+  menuSection?: TableCommandMenuSection;
+}
+
+export interface IndexedTableCommand extends TableCommand {
+  index: number;
+}
+
+export interface TableCommandMenuGroup {
+  groupKey: string;
+  group: string;
+  layoutGroup: TableCommandLayoutGroup;
+  menuSection: TableCommandMenuSection;
+  showLabel: boolean;
+  commands: IndexedTableCommand[];
+}
+
+export interface TableCommandMenuState {
+  mode: TableCommandMenuMode;
+  selectionKind: TableCommandSelectionKind;
+  commands: TableCommand[];
+  enabledCommandIds: TableCommandId[];
+  activeCommandId: TableCommandId | null;
+}
+
+export interface TableCommandMenuModel extends TableCommandMenuState {
+  groups: Array<TableCommandMenuGroup & {
+    order: number;
+    layoutGroups: TableCommandLayoutGroup[];
+  }>;
+}
+
+type TableEditorCommand = (...args: readonly unknown[]) => unknown;
+
+export interface TableCommandEditor {
+  commands?: Record<string, TableEditorCommand | undefined> & {
+    focus?: () => unknown;
+  };
+  can?: () => Record<string, TableEditorCommand | undefined> | null;
+}
+
+export const TABLE_CELL_MENU_COMMAND_IDS = new Set<TableCommandId>([
   "split-cell",
   "copy-cell-content",
   "clear-cell-content",
@@ -20,7 +127,7 @@ export const TABLE_STYLE_LAYOUT_GROUPS = Object.freeze([
   "align",
   "text-color",
   "cell-color",
-]);
+]) satisfies readonly TableCommandLayoutGroup[];
 
 const TABLE_AXIS_STYLE_COMMAND_IDS = Object.freeze([
   "align-left",
@@ -34,7 +141,7 @@ const TABLE_AXIS_STYLE_COMMAND_IDS = Object.freeze([
   "cell-bg-yellow",
   "cell-bg-blue",
   "cell-bg-green",
-]);
+]) satisfies readonly TableCommandId[];
 
 export const TABLE_COMMANDS = Object.freeze([
   {
@@ -302,7 +409,7 @@ export const TABLE_COMMANDS = Object.freeze([
     icon: "delete-table",
     tone: "danger",
   },
-]);
+]) satisfies readonly TableCommand[];
 
 export const TABLE_MENU_COMMAND_SCOPE = Object.freeze({
   cell: TABLE_CELL_MENU_COMMAND_IDS,
@@ -349,7 +456,7 @@ export const TABLE_MENU_COMMAND_SCOPE = Object.freeze({
     "fix-table",
     "delete-table",
   ]),
-});
+}) satisfies Readonly<Record<TableCommandSelectionKind, ReadonlySet<TableCommandId>>>;
 
 export const TABLE_COMMAND_CONTEXT_ORDER = Object.freeze({
   row: [
@@ -378,15 +485,15 @@ export const TABLE_COMMAND_CONTEXT_ORDER = Object.freeze({
     "fix-table",
     "delete-table",
   ],
-});
+}) satisfies Readonly<Partial<Record<TableCommandSelectionKind, readonly TableCommandId[]>>>;
 
-export const TABLE_CONTEXT_HEADER_COMMAND_IDS = new Set([
+export const TABLE_CONTEXT_HEADER_COMMAND_IDS = new Set<TableCommandId>([
   "toggle-header-row",
   "toggle-header-column",
   "toggle-header-cell",
 ]);
 
-export const SELECTION_TABLE_COMMAND_IDS = new Set([
+export const SELECTION_TABLE_COMMAND_IDS = new Set<TableCommandId>([
   "merge-cells",
   "split-cell",
   "copy-cell-content",
@@ -405,7 +512,7 @@ export const SELECTION_TABLE_COMMAND_IDS = new Set([
   "cell-bg-green",
 ]);
 
-export const KEYBOARD_TABLE_COMMAND_IDS = new Set([
+export const KEYBOARD_TABLE_COMMAND_IDS = new Set<TableCommandId>([
   "add-column-before",
   "add-column-after",
   "delete-column",
@@ -435,13 +542,19 @@ export const KEYBOARD_TABLE_COMMAND_IDS = new Set([
   "delete-table",
 ]);
 
-export function enabledTableCommandIds(commands) {
+export function enabledTableCommandIds(
+  commands: readonly TableCommand[] | null | undefined,
+): TableCommandId[] {
   return (commands ?? [])
     .filter((command) => !command.disabled)
     .map((command) => command.id);
 }
 
-export function runTableEditorCommand(editor, commandName, args = []) {
+export function runTableEditorCommand(
+  editor: TableCommandEditor | null | undefined,
+  commandName: string,
+  args: readonly unknown[] = [],
+): boolean {
   const command = editor?.commands?.[commandName];
   if (typeof command !== "function") return false;
   const ok = command(...args) !== false;
@@ -449,7 +562,11 @@ export function runTableEditorCommand(editor, commandName, args = []) {
   return ok;
 }
 
-export function canRunTableEditorCommand(editor, commandName, args = []) {
+export function canRunTableEditorCommand(
+  editor: TableCommandEditor | null | undefined,
+  commandName: string,
+  args: readonly unknown[] = [],
+): boolean {
   if (typeof editor?.commands?.[commandName] !== "function") return false;
   const canCommands = typeof editor?.can === "function" ? editor.can() : null;
   const canCommand = canCommands?.[commandName];
@@ -465,7 +582,10 @@ export function canRunTableEditorCommand(editor, commandName, args = []) {
   }
 }
 
-export function tableCellAttributeValue(cell, name) {
+export function tableCellAttributeValue(
+  cell: HTMLElement | null | undefined,
+  name: string,
+): string | null {
   if (!cell) return null;
 
   if (name === "backgroundColor") {
@@ -479,7 +599,7 @@ export function tableCellAttributeValue(cell, name) {
   return null;
 }
 
-export function normalizeTableCellAttributeValue(name, value) {
+export function normalizeTableCellAttributeValue(name: string, value: unknown): unknown {
   if (name === "align") {
     const align = String(value ?? "").trim().toLowerCase();
     return align === "left" ? null : align || null;
@@ -487,7 +607,9 @@ export function normalizeTableCellAttributeValue(name, value) {
   return value ?? null;
 }
 
-export function tableCommandVariant(command) {
+export function tableCommandVariant(
+  command: Partial<TableCommand> | null | undefined,
+): TableCommandVariant {
   if (command?.variant) return command.variant;
   const groupKey = command?.groupKey ?? command?.group;
   if (groupKey === "Align") return "icon";
@@ -496,12 +618,14 @@ export function tableCommandVariant(command) {
   return "text";
 }
 
-export function tableCommandLayoutGroup(command) {
+export function tableCommandLayoutGroup(
+  command: Partial<TableCommand> | null | undefined,
+): TableCommandLayoutGroup {
   if (command?.id === "split-cell") return "actions";
   if (command?.id === "copy-cell-content") return "actions";
   if (command?.id === "clear-cell-content") return "actions";
   if (command?.id === "clear-cell-style") return "actions";
-  if (TABLE_CONTEXT_HEADER_COMMAND_IDS.has(command?.id)) return "actions";
+  if (command?.id && TABLE_CONTEXT_HEADER_COMMAND_IDS.has(command.id)) return "actions";
   const variant = tableCommandVariant(command);
   if (variant === "icon") return "align";
   if (variant === "text-swatch") return "text-color";
@@ -538,33 +662,41 @@ const TABLE_COMMAND_MENU_SECTION_BY_ID = Object.freeze({
   "delete-row": "danger",
   "delete-column": "danger",
   "delete-table": "danger",
-});
+}) satisfies Readonly<Partial<Record<TableCommandId, TableCommandMenuSection>>>;
 
 const TABLE_COMMAND_MENU_SECTION_LABELS = Object.freeze({
   structure: "Structure",
   content: "Content",
   style: "Style",
   danger: "Danger",
-});
+}) satisfies Readonly<Record<TableCommandMenuSection, string>>;
 
 const TABLE_COMMAND_MENU_SECTION_ORDER = Object.freeze([
   "structure",
   "content",
   "style",
   "danger",
-]);
+]) satisfies readonly TableCommandMenuSection[];
 
-export function tableCommandMenuSection(command) {
+export function tableCommandMenuSection(
+  command: Partial<TableCommand> | null | undefined,
+): TableCommandMenuSection {
   if (command?.menuSection) return command.menuSection;
   if (command?.tone === "danger") return "danger";
-  return TABLE_COMMAND_MENU_SECTION_BY_ID[command?.id] ?? "content";
+  return command?.id ? TABLE_COMMAND_MENU_SECTION_BY_ID[command.id] ?? "content" : "content";
 }
 
-export function tableCommandMenuSectionLabel(section) {
-  return TABLE_COMMAND_MENU_SECTION_LABELS[section] ?? section;
+export function tableCommandMenuSectionLabel(section: string): string {
+  return section in TABLE_COMMAND_MENU_SECTION_LABELS
+    ? TABLE_COMMAND_MENU_SECTION_LABELS[section as TableCommandMenuSection]
+    : section;
 }
 
-export function visibleTableCommands(commands, mode = "context", selectionKind = "cell") {
+export function visibleTableCommands(
+  commands: readonly TableCommand[] | null | undefined,
+  mode: TableCommandMenuMode = "context",
+  selectionKind: TableCommandSelectionKind = "cell",
+): TableCommand[] {
   const allowed = mode === "keyboard"
     ? KEYBOARD_TABLE_COMMAND_IDS
     : TABLE_MENU_COMMAND_SCOPE[selectionKind] ?? SELECTION_TABLE_COMMAND_IDS;
@@ -585,26 +717,42 @@ export function visibleTableCommands(commands, mode = "context", selectionKind =
   });
 }
 
-export function firstEnabledTableCommandId(commands, mode = "context", selectionKind = "cell") {
+export function firstEnabledTableCommandId(
+  commands: readonly TableCommand[] | null | undefined,
+  mode: TableCommandMenuMode = "context",
+  selectionKind: TableCommandSelectionKind = "cell",
+): TableCommandId | null {
   return enabledTableCommandIds(visibleTableCommands(commands, mode, selectionKind))[0] ?? null;
 }
 
-export function nextEnabledTableCommandId(commands, currentId, direction) {
+export function nextEnabledTableCommandId(
+  commands: readonly TableCommand[] | null | undefined,
+  currentId: string | null | undefined,
+  direction: number,
+): TableCommandId | null {
   const ids = enabledTableCommandIds(commands);
   if (ids.length === 0) return null;
-  const currentIndex = ids.indexOf(currentId);
+  const currentIndex = ids.findIndex((id) => id === currentId);
   const startIndex = currentIndex < 0 ? 0 : currentIndex;
   return ids[(startIndex + direction + ids.length) % ids.length];
 }
 
-export function normalizeTableMenuMode(mode) {
+export function normalizeTableMenuMode(mode: unknown): TableCommandMenuMode {
   return mode === "keyboard" ? "keyboard" : "context";
 }
 
 export function createTableCommandMenuState(
-  commands,
-  { mode = "context", selectionKind = "cell", activeCommandId = null } = {},
-) {
+  commands: readonly TableCommand[] | null | undefined,
+  {
+    mode = "context",
+    selectionKind = "cell",
+    activeCommandId = null,
+  }: {
+    mode?: TableCommandMenuMode | string;
+    selectionKind?: TableCommandSelectionKind | null;
+    activeCommandId?: string | null;
+  } = {},
+): TableCommandMenuState {
   const normalizedMode = normalizeTableMenuMode(mode);
   const normalizedSelectionKind = selectionKind ?? "cell";
   const visibleCommands = visibleTableCommands(
@@ -623,13 +771,15 @@ export function createTableCommandMenuState(
     commands: visibleCommands,
     enabledCommandIds,
     activeCommandId: activeCommandStillValid
-      ? activeCommandId
+      ? activeCommandId as TableCommandId
       : enabledCommandIds[0] ?? null,
   };
 }
 
-export function groupTableCommandMenuCommands(commands = []) {
-  const groups = [];
+export function groupTableCommandMenuCommands(
+  commands: readonly TableCommand[] = [],
+): TableCommandMenuGroup[] {
+  const groups: TableCommandMenuGroup[] = [];
 
   (commands ?? []).forEach((command, commandIndex) => {
     const indexedCommand = {
@@ -651,21 +801,26 @@ export function groupTableCommandMenuCommands(commands = []) {
         commands: [],
       });
     }
-    groups.at(-1).commands.push(indexedCommand);
+    groups.at(-1)?.commands.push(indexedCommand);
   });
 
   return groups;
 }
 
 export function createTableCommandMenuModel(
-  commands,
+  commands: readonly TableCommand[] | null | undefined,
   {
     mode = "context",
     selectionKind = "cell",
     activeCommandId = null,
     sectionLabel = tableCommandMenuSectionLabel,
+  }: {
+    mode?: TableCommandMenuMode | string;
+    selectionKind?: TableCommandSelectionKind | null;
+    activeCommandId?: string | null;
+    sectionLabel?: (section: TableCommandMenuSection) => string;
   } = {},
-) {
+): TableCommandMenuModel {
   const state = createTableCommandMenuState(commands, {
     mode,
     selectionKind,

@@ -327,7 +327,7 @@ Tasks:
 - [x] Tighten table hover chrome further: edge quick-add rails, axis handles, and the cell action dot use smaller hot zones and lower-opacity surfaces so table controls appear only when pointer intent is clear.
 - [x] Improve table column-resize discoverability with a slightly stronger right-edge hover and resize-cursor state while keeping the handle invisible during normal reading and selected-cell work.
 - [x] Wire the code-block language menu into the shared active-descendant pattern: Arrow/Home/End move the active language, Enter/Space applies it, Escape restores focus, and pointer hover no longer leaves the menu as a mouse-only control.
-- [x] Split table command definitions, scope ordering, layout variants, and keyboard helpers into `js/src/tiptap-table-commands.js` with direct tests, so table UX can keep evolving without turning `tiptap-table-toolbar.js` into another giant runtime file.
+- [x] Split table command definitions, scope ordering, layout variants, and keyboard helpers into `js/src/tiptap-table-commands.ts` with direct tests, so table UX can keep evolving without turning `tiptap-table-toolbar.js` into another giant runtime file.
 - [x] Replace the old table hover geometry and chrome model with official `table-node` portal containers, so custom row/column handle math no longer lives in Papyro runtime code.
 - [x] Refine table cell-action chrome into a quieter edge-dot-to-four-dot grip, and reduce row/column handle surface noise so table controls feel intentional instead of appearing as developer-only overlays.
 - [x] Split table chrome rendering into `js/src/tiptap-table-toolbar-view.js`, leaving `tiptap-table-toolbar.js` as the controller for state, commands, and selection coordination.

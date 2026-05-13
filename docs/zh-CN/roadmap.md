@@ -322,7 +322,7 @@ flowchart LR
 - [x] 继续降低表格 hover chrome 噪音：边缘快捷新增轨道、行列 handle 和单元格操作小点使用更窄热区与更低透明度，只有用户意图明确靠近边缘时才出现。
 - [x] 提升表格列宽拖拽的可发现性：右边缘 hover 和 resize-cursor 状态会稍微更明确，但阅读态和选中单元格时仍保持低噪声。
 - [x] 代码块语言菜单接入共享 active-descendant 契约：Arrow/Home/End 移动当前语言，Enter/Space 应用，Escape 关闭并恢复焦点，鼠标 hover 也同步同一套 active 状态。
-- [x] 把表格命令定义、作用域排序、布局变体和键盘 helper 拆到 `js/src/tiptap-table-commands.js` 并补直接测试，让表格 UX 后续迭代不再继续把 `tiptap-table-toolbar.js` 推回巨型运行时文件。
+- [x] 把表格命令定义、作用域排序、布局变体和键盘 helper 拆到 `js/src/tiptap-table-commands.ts` 并补直接测试，让表格 UX 后续迭代不再继续把 `tiptap-table-toolbar.js` 推回巨型运行时文件。
 - [x] 删除旧表格快捷新增轨道、行列 handle、单元格触发点和 hover 意图几何模型，保留官方 `table-node` 交互挂载点与 Markdown 序列化测试。
 - [x] 把表格单元格操作 chrome 调成更克制的边缘小点到四点 grip，同时降低行列 handle 的表面噪音，让表格控件更像有意图的文档产品控件，而不是开发者覆盖层。
 - [x] 把表格 chrome 渲染拆到 `js/src/tiptap-table-toolbar-view.js`，让 `tiptap-table-toolbar.js` 只负责状态、命令和选区协调，避免表格迭代再次堆成巨型控制器。

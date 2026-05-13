@@ -20,7 +20,7 @@ import {
   tableCommandMenuSectionLabel,
   tableCommandVariant,
   visibleTableCommands,
-} from "../src/tiptap-table-commands.js";
+} from "../src/tiptap-table-commands.ts";
 
 function commandIds(commands) {
   return commands.map((command) => command.id);

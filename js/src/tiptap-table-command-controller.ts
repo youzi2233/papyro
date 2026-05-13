@@ -1,27 +1,14 @@
 import {
   TABLE_COMMANDS,
+  type TableCommand,
+  type TableCommandEditor,
   canRunTableEditorCommand,
   runTableEditorCommand,
-} from "./tiptap-table-commands.js";
+} from "./tiptap-table-commands.ts";
 
-type TiptapEditorCommand = (...args: readonly unknown[]) => unknown;
-
-export interface TiptapTableCommandEditor {
-  commands?: Record<string, TiptapEditorCommand | undefined> & {
-    focus?: () => unknown;
-  };
-  can?: () => Record<string, TiptapEditorCommand | undefined> | null;
-}
-
-export interface TiptapTableCommand {
-  id: string;
-  command: string;
-  args?: readonly unknown[];
-  disabled?: boolean;
-  [key: string]: unknown;
-}
-
-export type TiptapTableCommandList = readonly TiptapTableCommand[];
+export type TiptapTableCommandEditor = TableCommandEditor;
+export type TiptapTableCommand = TableCommand;
+export type TiptapTableCommandList = readonly TableCommand[];
 
 export interface TiptapTableCommandControllerOptions {
   commands?: TiptapTableCommandList;
