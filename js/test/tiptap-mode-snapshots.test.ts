@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { createTiptapModeSnapshotController } from "../src/tiptap-mode-snapshots.js";
+import { createTiptapModeSnapshotController } from "../src/tiptap-mode-snapshots.ts";
 
 function createEditorSelectionHarness() {
   const calls = [];

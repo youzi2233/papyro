@@ -1,11 +1,55 @@
-import { normalizeTiptapViewMode } from "./tiptap-mode-controller.js";
+import {
+  normalizeTiptapViewMode,
+  type TiptapViewMode,
+} from "./tiptap-mode-controller.ts";
 
-function safePosition(value) {
+type SelectionSnapshot = Readonly<{
+  from: number;
+  to: number;
+}>;
+type ModeSnapshot = Readonly<{
+  mode: TiptapViewMode;
+  selection: SelectionSnapshot;
+  markdownRevision: number;
+}>;
+type EditorSelectionLike = {
+  from?: unknown;
+  to?: unknown;
+};
+type TiptapEditorLike = {
+  state?: {
+    selection?: EditorSelectionLike;
+  };
+  commands?: {
+    focus?: () => void;
+    setTextSelection?: (selection: SelectionSnapshot) => boolean | void;
+  };
+};
+type SourceTextareaLike = {
+  value?: string;
+  selectionStart?: unknown;
+  selectionEnd?: unknown;
+  setSelectionRange?: (start: number, end: number) => void;
+  focus?: () => void;
+};
+type SourcePaneLike = {
+  textarea?: SourceTextareaLike | null;
+};
+type ModeSnapshotEntry = {
+  viewMode?: unknown;
+  editor?: TiptapEditorLike | null;
+  sourcePane?: SourcePaneLike | null;
+  markdownSync?: {
+    markdown?: string | null;
+  } | null;
+};
+
+function safePosition(value: unknown) {
   const position = Number(value);
   return Number.isSafeInteger(position) && position >= 0 ? position : null;
 }
 
-function editorSelectionSnapshot(editor) {
+function editorSelectionSnapshot(editor: TiptapEditorLike | null | undefined) {
   const selection = editor?.state?.selection;
   const from = safePosition(selection?.from);
   const to = safePosition(selection?.to);
@@ -17,7 +61,7 @@ function editorSelectionSnapshot(editor) {
   };
 }
 
-function sourceSelectionSnapshot(sourcePane) {
+function sourceSelectionSnapshot(sourcePane: SourcePaneLike | null | undefined) {
   const textarea = sourcePane?.textarea;
   if (!textarea) return null;
 
@@ -32,7 +76,10 @@ function sourceSelectionSnapshot(sourcePane) {
   };
 }
 
-function restoreEditorSelection(editor, selection) {
+function restoreEditorSelection(
+  editor: TiptapEditorLike | null | undefined,
+  selection: SelectionSnapshot | null | undefined,
+) {
   if (!editor || !selection) return false;
 
   const from = safePosition(selection.from);
@@ -48,7 +95,10 @@ function restoreEditorSelection(editor, selection) {
   return true;
 }
 
-function restoreSourceSelection(sourcePane, selection) {
+function restoreSourceSelection(
+  sourcePane: SourcePaneLike | null | undefined,
+  selection: SelectionSnapshot | null | undefined,
+) {
   const textarea = sourcePane?.textarea;
   if (!textarea || !selection) return false;
 
@@ -60,20 +110,26 @@ function restoreSourceSelection(sourcePane, selection) {
   return true;
 }
 
-function markdownRevision(entry) {
+function markdownRevision(entry: ModeSnapshotEntry | null | undefined) {
   return entry?.markdownSync?.markdown?.length ?? 0;
 }
 
 export class TiptapModeSnapshotController {
-  #snapshots = new Map();
+  #snapshots = new Map<TiptapViewMode, ModeSnapshot>();
 
   get snapshots() {
     return new Map(
-      Array.from(this.#snapshots.entries()).map(([mode, snapshot]) => [mode, { ...snapshot }]),
+      Array.from(this.#snapshots.entries()).map(([mode, snapshot]) => [
+        mode,
+        {
+          ...snapshot,
+          selection: { ...snapshot.selection },
+        },
+      ]),
     );
   }
 
-  capture(entry, mode = entry?.viewMode) {
+  capture(entry: ModeSnapshotEntry | null | undefined, mode: unknown = entry?.viewMode) {
     const normalizedMode = normalizeTiptapViewMode(mode);
     const selection =
       normalizedMode === "source"
@@ -91,7 +147,7 @@ export class TiptapModeSnapshotController {
     return { ...snapshot, selection: { ...selection } };
   }
 
-  restore(entry, mode = entry?.viewMode) {
+  restore(entry: ModeSnapshotEntry | null | undefined, mode: unknown = entry?.viewMode) {
     const normalizedMode = normalizeTiptapViewMode(mode);
     const snapshot = this.#snapshots.get(normalizedMode);
     if (!snapshot) return false;

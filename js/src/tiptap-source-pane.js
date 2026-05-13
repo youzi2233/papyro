@@ -5,7 +5,7 @@ import {
 import {
   normalizeTiptapViewMode,
   tiptapModeUsesSourcePane,
-} from "./tiptap-mode-controller.js";
+} from "./tiptap-mode-controller.ts";
 
 function defaultDocument() {
   return typeof document === "undefined" ? null : document;

@@ -9,7 +9,7 @@ import {
   tiptapModeUsesRustPreview,
   tiptapModeUsesSourcePane,
   tiptapViewModeContract,
-} from "../src/tiptap-mode-controller.js";
+} from "../src/tiptap-mode-controller.ts";
 
 test("Tiptap mode controller normalizes supported modes", () => {
   assert.equal(normalizeTiptapViewMode("Source"), "source");

@@ -1,4 +1,4 @@
-import { normalizeTiptapViewMode } from "./tiptap-mode-controller.js";
+import { normalizeTiptapViewMode } from "./tiptap-mode-controller.ts";
 
 export function syncRuntimeLanguage(entry) {
   if (!entry?.dom) return;

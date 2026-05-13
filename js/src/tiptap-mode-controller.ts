@@ -1,4 +1,22 @@
-export const TIPTAP_VIEW_MODE_CONTRACT = Object.freeze({
+export type TiptapViewMode = "source" | "hybrid" | "preview";
+export type TiptapViewModeContract = Readonly<{
+  mode: TiptapViewMode;
+  richTextEditable: boolean;
+  sourcePaneVisible: boolean;
+  rustPreviewVisible: boolean;
+}>;
+
+type TiptapModeEntry = {
+  viewMode?: TiptapViewMode;
+  dom?: {
+    dataset?: Record<string, string>;
+  };
+  editor?: {
+    setEditable?: (editable: boolean) => void;
+  };
+};
+
+export const TIPTAP_VIEW_MODE_CONTRACT: Readonly<Record<TiptapViewMode, TiptapViewModeContract>> = Object.freeze({
   source: Object.freeze({
     mode: "source",
     richTextEditable: false,
@@ -19,32 +37,34 @@ export const TIPTAP_VIEW_MODE_CONTRACT = Object.freeze({
   }),
 });
 
-export function normalizeTiptapViewMode(mode) {
+export function normalizeTiptapViewMode(mode: unknown): TiptapViewMode {
   if (typeof mode !== "string") return "hybrid";
   const normalized = mode.trim().toLowerCase();
-  return ["source", "hybrid", "preview"].includes(normalized) ? normalized : "hybrid";
+  return normalized === "source" || normalized === "hybrid" || normalized === "preview"
+    ? normalized
+    : "hybrid";
 }
 
-export function tiptapViewModeContract(mode) {
+export function tiptapViewModeContract(mode: unknown) {
   return TIPTAP_VIEW_MODE_CONTRACT[normalizeTiptapViewMode(mode)];
 }
 
-export function tiptapModeAllowsRichTextEditing(mode) {
+export function tiptapModeAllowsRichTextEditing(mode: unknown) {
   return tiptapViewModeContract(mode).richTextEditable;
 }
 
-export function tiptapModeUsesSourcePane(mode) {
+export function tiptapModeUsesSourcePane(mode: unknown) {
   return tiptapViewModeContract(mode).sourcePaneVisible;
 }
 
-export function tiptapModeUsesRustPreview(mode) {
+export function tiptapModeUsesRustPreview(mode: unknown) {
   return tiptapViewModeContract(mode).rustPreviewVisible;
 }
 
 export class TiptapModeController {
-  #mode;
+  #mode: TiptapViewMode;
 
-  constructor(initialMode = "hybrid") {
+  constructor(initialMode: unknown = "hybrid") {
     this.#mode = normalizeTiptapViewMode(initialMode);
   }
 
@@ -52,7 +72,7 @@ export class TiptapModeController {
     return this.#mode;
   }
 
-  apply(entry, nextMode = this.#mode) {
+  apply(entry: TiptapModeEntry | null | undefined, nextMode: unknown = this.#mode) {
     const mode = normalizeTiptapViewMode(nextMode);
     const contract = tiptapViewModeContract(mode);
     this.#mode = mode;
@@ -69,6 +89,6 @@ export class TiptapModeController {
   }
 }
 
-export function createTiptapModeController(initialMode) {
+export function createTiptapModeController(initialMode?: unknown) {
   return new TiptapModeController(initialMode);
 }
