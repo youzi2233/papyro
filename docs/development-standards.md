@@ -60,7 +60,7 @@ points are:
 - `js/src/editor-runtime-contract.ts`
 - `js/src/tiptap-*.js`
 - `js/src/tiptap-react/`
-- `js/src/editor-host-runtime.js`
+- `js/src/editor-host-runtime.ts`
 - `js/src/editor-runtime-bootstrap.ts`
 
 Then run:

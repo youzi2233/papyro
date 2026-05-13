@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import { createEditorRuntimeRegistry } from "../src/editor-registry.ts";
-import { createEditorHostRuntime } from "../src/editor-host-runtime.js";
+import { createEditorHostRuntime } from "../src/editor-host-runtime.ts";
 
 function createClassList() {
   const values = new Set();

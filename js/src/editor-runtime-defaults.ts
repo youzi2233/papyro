@@ -1,4 +1,4 @@
-import { createEditorHostRuntime } from "./editor-host-runtime.js";
+import { createEditorHostRuntime } from "./editor-host-runtime.ts";
 import { createEditorRuntimeRegistry } from "./editor-registry.ts";
 import { createTiptapEditorRuntime } from "./editor-runtime.ts";
 import { createPapyroTiptapExtensions } from "./tiptap-markdown.js";
