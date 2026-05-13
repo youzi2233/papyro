@@ -108,50 +108,6 @@
     pointer-events: auto;
 }
 
-:root .tiptap-table-handle-menu,
-:root .tiptap-table-extend-row-column-button {
-    border: 0;
-    box-shadow: none;
-    opacity: .74;
-    color: color-mix(in srgb, var(--mn-ink-2) 82%, transparent);
-    background-color: color-mix(in srgb, var(--mn-surface-raised) 88%, transparent);
-    transition:
-        opacity var(--mn-transition-fast),
-        color var(--mn-transition-fast),
-        background-color var(--mn-transition-fast),
-        box-shadow var(--mn-transition-fast);
-}
-
-:root .tiptap-table-handle-menu:hover,
-:root .tiptap-table-extend-row-column-button:hover {
-    opacity: 1;
-    color: var(--mn-accent-strong);
-    background-color: color-mix(in srgb, var(--mn-accent) 7%, var(--mn-surface-raised));
-    box-shadow: 0 1px 2px color-mix(in srgb, var(--mn-shadow-color, #0f172a) 8%, transparent);
-}
-
-:root .tiptap-table-handle-menu.menu-opened,
-:root .tiptap-table-handle-menu.is-dragging {
-    opacity: 1;
-    background-color: var(--tt-brand-color-500);
-    color: var(--white);
-    box-shadow:
-        0 0 0 2px color-mix(in srgb, var(--mn-accent) 10%, transparent),
-        var(--mn-shadow-sm);
-}
-
-:root .expandable-menu-button::before {
-    opacity: .8;
-    background: color-mix(in srgb, var(--mn-accent) 72%, var(--mn-surface-raised));
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--mn-editor-bg) 86%, transparent);
-}
-
-:root .expandable-menu-button:hover::before,
-:root .expandable-menu-button:focus-visible::before,
-:root .expandable-menu-button.menu-opened::before {
-    opacity: 1;
-}
-
 .tiptap-menu-content.tiptap-table-menu-content {
     z-index: 260;
     min-width: 15rem;

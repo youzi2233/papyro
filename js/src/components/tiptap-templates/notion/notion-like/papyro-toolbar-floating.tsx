@@ -1,15 +1,32 @@
+import { useEffect, useState } from "react"
+import { type Editor } from "@tiptap/react"
+
+import { useFloatingToolbarVisibility } from "@/hooks/use-floating-toolbar-visibility"
+import { useIsBreakpoint } from "@/hooks/use-is-breakpoint"
 import { useTiptapEditor } from "@/hooks/use-tiptap-editor"
 import { useUiEditorState } from "@/hooks/use-ui-editor-state"
-import { useFloatingToolbarVisibility } from "@/hooks/use-floating-toolbar-visibility"
 
+import { ImageNodeFloating } from "@/components/tiptap-node/image-node/image-node-floating"
+import { MoreVerticalIcon } from "@/components/tiptap-icons/more-vertical-icon"
 import { ColorTextPopover } from "@/components/tiptap-ui/color-text-popover"
+import { IndentButton } from "@/components/tiptap-ui/indent-button"
 import { LinkPopover } from "@/components/tiptap-ui/link-popover"
-import { MarkButton } from "@/components/tiptap-ui/mark-button"
-import { TextAlignButton } from "@/components/tiptap-ui/text-align-button"
+import type { Mark } from "@/components/tiptap-ui/mark-button"
+import { canToggleMark, MarkButton } from "@/components/tiptap-ui/mark-button"
+import type { TextAlign } from "@/components/tiptap-ui/text-align-button"
+import {
+  canSetTextAlign,
+  TextAlignButton,
+} from "@/components/tiptap-ui/text-align-button"
 import { TurnIntoDropdown } from "@/components/tiptap-ui/turn-into-dropdown"
-import { UndoRedoButton } from "@/components/tiptap-ui/undo-redo-button"
-import { ColorHighlightPopover } from "@/components/tiptap-ui/color-highlight-popover"
 
+import type { ButtonProps } from "@/components/tiptap-ui-primitive/button"
+import { Button } from "@/components/tiptap-ui-primitive/button"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/tiptap-ui-primitive/popover"
 import {
   Toolbar,
   ToolbarGroup,
@@ -22,14 +39,17 @@ import { isSelectionValid } from "@/lib/tiptap-collab-utils"
 
 export function PapyroToolbarFloating() {
   const { editor } = useTiptapEditor()
-  const { lockDragHandle } = useUiEditorState(editor)
+  const isMobile = useIsBreakpoint("max", 480)
+  const { lockDragHandle, aiGenerationActive, commentInputVisible } =
+    useUiEditorState(editor)
 
   const { shouldShow } = useFloatingToolbarVisibility({
     editor,
     isSelectionValid,
+    extraHideWhen: Boolean(aiGenerationActive || commentInputVisible),
   })
 
-  if (lockDragHandle) return null
+  if (lockDragHandle || isMobile) return null
 
   return (
     <FloatingElement shouldShow={shouldShow}>
@@ -51,26 +71,146 @@ export function PapyroToolbarFloating() {
         <ToolbarSeparator />
 
         <ToolbarGroup>
-          <LinkPopover autoOpenOnLinkActive={false} hideWhenUnavailable={true} />
+          <ImageNodeFloating />
+        </ToolbarGroup>
+
+        <ToolbarGroup>
+          <LinkPopover
+            autoOpenOnLinkActive={false}
+            hideWhenUnavailable={true}
+          />
           <ColorTextPopover hideWhenUnavailable={true} />
-          <ColorHighlightPopover hideWhenUnavailable={true} />
         </ToolbarGroup>
 
-        <ToolbarSeparator />
-
-        <ToolbarGroup>
-          <TextAlignButton align="left" />
-          <TextAlignButton align="center" />
-          <TextAlignButton align="right" />
-        </ToolbarGroup>
-
-        <ToolbarSeparator />
-
-        <ToolbarGroup>
-          <UndoRedoButton action="undo" />
-          <UndoRedoButton action="redo" />
-        </ToolbarGroup>
+        <MoreOptions hideWhenUnavailable={true} />
       </Toolbar>
     </FloatingElement>
+  )
+}
+
+function canMoreOptions(editor: Editor | null): boolean {
+  if (!editor) {
+    return false
+  }
+
+  const canTextAlignAny = ["left", "center", "right", "justify"].some((align) =>
+    canSetTextAlign(editor, align as TextAlign)
+  )
+
+  const canMarkAny = ["superscript", "subscript"].some((type) =>
+    canToggleMark(editor, type as Mark)
+  )
+
+  return canMarkAny || canTextAlignAny
+}
+
+function shouldShowMoreOptions(params: {
+  editor: Editor | null
+  hideWhenUnavailable: boolean
+}): boolean {
+  const { editor, hideWhenUnavailable } = params
+
+  if (!editor) {
+    return false
+  }
+
+  if (hideWhenUnavailable && !editor.isActive("code")) {
+    return canMoreOptions(editor)
+  }
+
+  return Boolean(editor?.isEditable)
+}
+
+export interface MoreOptionsProps extends Omit<ButtonProps, "type"> {
+  editor?: Editor | null
+  hideWhenUnavailable?: boolean
+}
+
+export function MoreOptions({
+  editor: providedEditor,
+  hideWhenUnavailable = false,
+  ...props
+}: MoreOptionsProps) {
+  const { editor } = useTiptapEditor(providedEditor)
+  const [show, setShow] = useState(false)
+
+  useEffect(() => {
+    if (!editor) return
+
+    const handleSelectionUpdate = () => {
+      setShow(
+        shouldShowMoreOptions({
+          editor,
+          hideWhenUnavailable,
+        })
+      )
+    }
+
+    handleSelectionUpdate()
+
+    editor.on("selectionUpdate", handleSelectionUpdate)
+    editor.on("transaction", handleSelectionUpdate)
+
+    return () => {
+      editor.off("selectionUpdate", handleSelectionUpdate)
+      editor.off("transaction", handleSelectionUpdate)
+    }
+  }, [editor, hideWhenUnavailable])
+
+  if (!show || !editor || !editor.isEditable) {
+    return null
+  }
+
+  return (
+    <>
+      <ToolbarSeparator />
+      <ToolbarGroup>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              type="button"
+              variant="ghost"
+              role="button"
+              tabIndex={-1}
+              tooltip="More options"
+              {...props}
+            >
+              <MoreVerticalIcon className="tiptap-button-icon" />
+            </Button>
+          </PopoverTrigger>
+
+          <PopoverContent
+            side="top"
+            align="end"
+            alignOffset={4}
+            sideOffset={4}
+            asChild
+          >
+            <Toolbar variant="floating" tabIndex={0}>
+              <ToolbarGroup>
+                <MarkButton type="superscript" />
+                <MarkButton type="subscript" />
+              </ToolbarGroup>
+
+              <ToolbarSeparator />
+
+              <ToolbarGroup>
+                <TextAlignButton align="left" />
+                <TextAlignButton align="center" />
+                <TextAlignButton align="right" />
+                <TextAlignButton align="justify" />
+              </ToolbarGroup>
+
+              <ToolbarSeparator />
+
+              <ToolbarGroup>
+                <IndentButton action="outdent" />
+                <IndentButton action="indent" />
+              </ToolbarGroup>
+            </Toolbar>
+          </PopoverContent>
+        </Popover>
+      </ToolbarGroup>
+    </>
   )
 }

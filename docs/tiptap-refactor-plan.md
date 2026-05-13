@@ -16,7 +16,7 @@ This document is the complete execution plan for refactoring Papyro's editor fro
 
 | Dimension | Current State | Target State |
 |-----------|--------------|--------------|
-| Language | Mixed TypeScript with 48 production `.js`/`.jsx` files still under `js/src/` as of 2026-05-13 | TypeScript (.ts/.tsx) |
+| Language | Mixed TypeScript with 44 tracked `.js` files and 4 tracked `.jsx` files still under `js/src/` as of 2026-05-13 | TypeScript (.ts/.tsx) |
 | Build | esbuild (native TS support, no changes needed) | esbuild + tsconfig |
 | UI Framework | React 18.3 (already satisfied) | React 18.3 (unchanged) |
 | Tiptap | 3.23.1 (already aligned) | 3.23.1+ (keep same version) |
@@ -31,8 +31,8 @@ The editor has moved in the right direction, but it is not yet at the official N
 
 - Table architecture: `PapyroOfficialTableNodeLayer` now mounts the official `TableHandle`, `TableSelectionOverlay`, `TableCellHandleMenu`, and `TableExtendRowColumnButtons` outside `EditorContent`, matching the official table-node integration contract. The remaining issue is host chrome drift: Papyro-specific CSS currently strengthens the official handles and scopes table menu content in a way that can make handles look heavy and nested dropdowns feel inconsistent.
 - Table UX target: keep the official table-node SCSS as the component owner, and limit Papyro CSS to host layout, viewport safety, theme token bridging, and Markdown persistence constraints. Row/column handles should feel like subtle Notion-like affordances, not persistent developer toolbar controls.
-- JavaScript inventory: the 48 remaining production `.js`/`.jsx` files under `js/src/` are real technical debt, not stale generated output. They fall into three buckets: core runtime/registry/Markdown sync modules that must become TypeScript, Papyro-specific Markdown/media adapters that should be typed after behavior coverage, and legacy React support files that should either migrate to TSX or be deleted once the official component path fully owns the UX.
-- Formatting entry points: the top shell toolbar must stay app-level only. Rich-text formatting belongs to official Tiptap React surfaces: `PapyroToolbarFloating`, slash menu, drag context menu, link popover, and table-node menus. Any remaining `mn-tiptap-format-toolbar` or old block-handle CSS must be treated as cleanup debt unless a live mounted component still requires it.
+- JavaScript inventory: `js/src/` still contains 44 tracked `.js` files and 4 tracked `.jsx` files. They are source files, not generated output. They fall into three buckets: core runtime/registry/Markdown sync modules that must become TypeScript, Papyro-specific Markdown/media adapters that should be typed after behavior coverage, and legacy React support files that should either migrate to TSX or be deleted once the official component path fully owns the UX.
+- Formatting entry points: the top shell toolbar must stay app-level only. Rich-text formatting belongs to official Tiptap React surfaces: `PapyroToolbarFloating`, slash menu, drag context menu, link popover, and table-node menus. The active `PapyroToolbarFloating` still diverges from the official Notion-like toolbar by keeping text alignment, undo/redo, and highlight controls permanently visible; it should become an official-template composition with only Papyro-specific omissions such as AI/Cloud controls.
 - Verification bar: for every UI convergence step, run source tests, build, and the editor Markdown gate; for visual changes, prefer desktop WebView/manual smoke or a screenshot-backed check when the app target is available.
 
 ## Architecture Alignment: Official Notion-like Template Structure
@@ -279,6 +279,7 @@ The table-node is partially integrated, needs completion:
 - [x] 2026-05-13 follow-up: scope table dropdown sizing, z-index, and menu-item rhythm to the official table-node menus via `tiptap-table-menu-content`, avoiding global overrides of slash/link/drag menus
 - [x] 2026-05-13 audit follow-up: soften Papyro's table host overrides so official table-node handles, extend rails, and cell action dots match the Notion-like reference more closely
 - [x] 2026-05-13 audit follow-up: keep nested table menus (`ColorMenu`, `TableAlignMenu`) on the scoped table menu surface without changing slash/link/drag menu styling
+- [x] 2026-05-13 audit follow-up: remove Papyro-specific handle, extend button, and cell-dot visual overrides so the official table-node SCSS owns the Notion-like table chrome
 
 ---
 
@@ -306,7 +307,8 @@ Migrate by module priority, one module at a time:
 - [x] Test file migration (keep `node --test` runner)
 
 #### 5.4 Current TypeScript Debt Audit (2026-05-13)
-- [ ] Migrate the remaining 48 production `.js`/`.jsx` files under `js/src/` to `.ts`/`.tsx`
+- [x] Audit the remaining tracked JS/JSX inventory: 44 `.js` files and 4 `.jsx` files under `js/src/`
+- [ ] Migrate the remaining 44 `.js` files and 4 `.jsx` files under `js/src/` to `.ts`/`.tsx`, or delete them when an official TS/TSX component already owns the behavior
 - [ ] Split the remaining JS/JSX migration into three tracks: core runtime (`editor-*`, `markdown-sync-controller`), Papyro feature adapters (`tiptap-math`, `tiptap-mermaid`, `tiptap-image`, `tiptap-callout`, etc.), and leftover React support (`tiptap-react/*`, `tiptap-react-island.jsx`)
 - [x] Convert `tiptap-table-command-controller.js` to `tiptap-table-command-controller.ts` after table command behavior was covered by source and runtime tests
 - [x] Convert `tiptap-table.js` to `tiptap-table.ts` after table command behavior was covered by source and runtime tests
@@ -361,7 +363,8 @@ The editor surface must behave like the official Notion-like template first, wit
 - [x] Keep app-level controls in the titlebar: tabs, sidebar toggle, theme switch, settings, window controls, and outline toggle
 - [x] Use official Tiptap floating toolbar, slash menu, drag context menu, and table menus as the formatting entry points
 - [x] Remove or quarantine old `mn-tiptap-format-toolbar`, legacy block handle, and legacy block action menu CSS after confirming no mounted React component still depends on it
-- [ ] Compare `PapyroToolbarFloating` against the official Notion-like toolbar composition and remove any remaining Papyro-only command model that duplicates official toolbar components
+- [x] Compare `PapyroToolbarFloating` against the official Notion-like toolbar composition and remove any remaining Papyro-only command model that duplicates official toolbar components
+- [x] Replace the active floating toolbar composition with the official Notion-like pattern: turn-into, marks, image floating controls, link/text color, and a More popover for superscript/subscript, alignment, and indentation; exclude AI/Improve until a real local/Pro-backed AI workflow is implemented
 - [ ] Audit remaining top-level editor layout against the official Notion-like template after each migrated component
 - [ ] Add visual regression coverage for table handles, cell menu, floating toolbar, slash menu, and drag handle once the desktop WebView smoke can run in CI
 

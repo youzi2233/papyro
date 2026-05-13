@@ -124,7 +124,7 @@ const TIPTAP_REQUIREMENTS = [
   ["Tiptap table official overlay containers", ".mn-tiptap-editor .table-selection-overlay-container", "pointer-events: none"],
   ["Tiptap table official controls layer", ".mn-tiptap-editor .table-controls", "position: absolute"],
   ["Tiptap table official handle menu", ".tiptap-table-handle-menu", "pointer-events: auto"],
-  ["Tiptap table quiet official handle", ".tiptap-table-handle-menu", "opacity: .74"],
+  ["Tiptap table official handle surface", ".tiptap-table-handle-menu", "--tt-table-handle-bg-color"],
   ["Tiptap table official cell menu trigger", ".expandable-menu-button", "--dot-size-large"],
   ["Tiptap table official extend buttons", ".tiptap-table-extend-row-column-button", "pointer-events: auto"],
   ["Tiptap table selectedCell stays integrated", ".mn-tiptap-editor :where(td.selectedCell, th.selectedCell)", "background-image: none"],
