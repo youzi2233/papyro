@@ -312,7 +312,7 @@ js/src/
 - [x] Mermaid 图表渲染
 - [x] KaTeX 数学公式渲染
 - [x] 大纲/TOC 生成（通过 Rust 端消费）
-- [ ] i18n 多语言支持
+- [x] i18n 多语言支持
 - [ ] 多标签页编辑器实例管理（editorRegistry）
 
 ---

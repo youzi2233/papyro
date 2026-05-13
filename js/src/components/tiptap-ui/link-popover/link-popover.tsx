@@ -33,6 +33,14 @@ import {
 } from "@/components/tiptap-ui-primitive/card"
 import { Input } from "@/components/tiptap-ui-primitive/input"
 import { ButtonGroup } from "@/components/tiptap-ui-primitive/button-group"
+import {
+  linkApplyTitle,
+  linkInputPlaceholder,
+  linkLabel,
+  linkOpenTitle,
+  linkRemoveTitle,
+} from "@/tiptap-i18n"
+import { usePapyroTiptapLanguage } from "@/tiptap-react/runtime-context"
 
 import "./link-popover.scss"
 
@@ -81,6 +89,9 @@ export interface LinkPopoverProps
  */
 export const LinkButton = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, children, ...props }, ref) => {
+    const language = usePapyroTiptapLanguage()
+    const label = linkLabel(language)
+
     return (
       <Button
         type="button"
@@ -88,8 +99,8 @@ export const LinkButton = forwardRef<HTMLButtonElement, ButtonProps>(
         variant="ghost"
         role="button"
         tabIndex={-1}
-        aria-label="Link"
-        tooltip="Link"
+        aria-label={label}
+        tooltip={label}
         ref={ref}
         {...props}
       >
@@ -113,6 +124,7 @@ const LinkMain: React.FC<LinkMainProps> = ({
   isActive,
 }) => {
   const isMobile = useIsBreakpoint()
+  const language = usePapyroTiptapLanguage()
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
@@ -135,7 +147,7 @@ const LinkMain: React.FC<LinkMainProps> = ({
         <CardItemGroup orientation="horizontal">
           <Input
             type="url"
-            placeholder="Paste a link..."
+            placeholder={linkInputPlaceholder(language)}
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -150,7 +162,7 @@ const LinkMain: React.FC<LinkMainProps> = ({
             <Button
               type="button"
               onClick={setLink}
-              title="Apply link"
+              title={linkApplyTitle(language)}
               disabled={!url && !isActive}
               variant="ghost"
             >
@@ -165,7 +177,7 @@ const LinkMain: React.FC<LinkMainProps> = ({
               <Button
                 type="button"
                 onClick={openLink}
-                title="Open in new window"
+                title={linkOpenTitle(language)}
                 disabled={!url && !isActive}
                 variant="ghost"
               >
@@ -177,7 +189,7 @@ const LinkMain: React.FC<LinkMainProps> = ({
               <Button
                 type="button"
                 onClick={removeLink}
-                title="Remove link"
+                title={linkRemoveTitle(language)}
                 disabled={!url && !isActive}
                 variant="ghost"
               >

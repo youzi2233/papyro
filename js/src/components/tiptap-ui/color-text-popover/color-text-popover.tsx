@@ -48,6 +48,16 @@ import {
 
 // --- Utils ---
 import { chunkArray } from "@/lib/tiptap-advanced-utils"
+import {
+  colorKindLabel,
+  colorOptionAriaLabel,
+  colorOptionLabel,
+  highlightColorsLabel,
+  recentColorsLabel,
+  textColorLabel,
+  textColorOptionsLabel,
+} from "@/tiptap-i18n"
+import { usePapyroTiptapLanguage } from "@/tiptap-react/runtime-context"
 
 // --- Styles ---
 import "@/components/tiptap-ui/color-text-popover/color-text-popover.scss"
@@ -77,16 +87,18 @@ export function RecentColorButton({
   editor,
   ...props
 }: RecentColorButtonProps) {
+  const language = usePapyroTiptapLanguage()
   const colorSet = colorObj.type === "text" ? TEXT_COLORS : HIGHLIGHT_COLORS
   const color = getColorByValue(colorObj.value, colorSet)
+  const localizedLabel = colorOptionLabel(language, colorObj.type, color.label)
 
   const commonProps = {
-    tooltip: color.label,
-    text: withLabel ? color.label : undefined,
+    tooltip: localizedLabel,
+    text: withLabel ? localizedLabel : undefined,
     onApplied: () =>
       onColorChanged?.({
         type: colorObj.type,
-        label: color.label,
+        label: localizedLabel,
         value: color.value,
       }),
     ...props,
@@ -95,14 +107,14 @@ export function RecentColorButton({
   return colorObj.type === "text" ? (
     <ColorTextButton
       textColor={color.value}
-      label={color.label}
+      label={localizedLabel}
       editor={editor}
       {...commonProps}
     />
   ) : (
     <ColorHighlightButton
       highlightColor={color.value}
-      label={color.label}
+      label={localizedLabel}
       editor={editor}
       {...commonProps}
     />
@@ -128,6 +140,8 @@ export function ColorGroup({
   startIndexOffset,
   editor,
 }: ColorGroupProps) {
+  const language = usePapyroTiptapLanguage()
+
   return colors.map((group, groupIndex) => (
     <ButtonGroup key={`${type}-group-${groupIndex}`}>
       {group.map((color, colorIndex) => {
@@ -137,21 +151,22 @@ export function ColorGroup({
           colorIndex
 
         const isHighlighted = selectedIndex === itemIndex
+        const localizedLabel = colorOptionLabel(language, type, color.label)
 
         const commonProps = {
-          tooltip: color.label,
+          tooltip: localizedLabel,
           onApplied: () =>
-            onColorSelected({ type, label: color.label, value: color.value }),
+            onColorSelected({ type, label: localizedLabel, value: color.value }),
           tabIndex: isHighlighted ? 0 : -1,
           "data-highlighted": isHighlighted,
-          "aria-label": `${color.label} ${type === "text" ? "text" : "highlight"} color`,
+          "aria-label": colorOptionAriaLabel(language, type, color.label),
         }
 
         return type === "text" ? (
           <ButtonGroup key={`${type}-${color.value}-${colorIndex}`}>
             <ColorTextButton
               textColor={color.value}
-              label={color.label}
+              label={localizedLabel}
               editor={editor}
               {...commonProps}
             />
@@ -160,7 +175,7 @@ export function ColorGroup({
           <ButtonGroup key={`${type}-${color.value}-${colorIndex}`}>
             <ColorHighlightButton
               highlightColor={color.value}
-              label={color.label}
+              label={localizedLabel}
               editor={editor}
               {...commonProps}
             />
@@ -186,11 +201,12 @@ function RecentColorsSection({
   selectedIndex,
   editor,
 }: RecentColorsSectionProps) {
+  const language = usePapyroTiptapLanguage()
   if (recentColors.length === 0) return null
 
   return (
     <CardItemGroup>
-      <CardGroupLabel>Recently used</CardGroupLabel>
+      <CardGroupLabel>{recentColorsLabel(language)}</CardGroupLabel>
       <ButtonGroup>
         {recentColors.map((colorObj, index) => (
           <RecentColorButton
@@ -222,6 +238,7 @@ export function TextStyleColorPanel({
   onColorChanged,
   editor,
 }: TextStyleColorPanelProps) {
+  const language = usePapyroTiptapLanguage()
   const { recentColors, addRecentColor, isInitialized } =
     useRecentColors(maxRecentColors)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -260,7 +277,7 @@ export function TextStyleColorPanel({
         ...recentColors.map((color) => ({
           type: color.type,
           value: color.value,
-          label: `Recent ${color.type === "text" ? "text" : "highlight"} color`,
+          label: `${recentColorsLabel(language)} ${colorKindLabel(language, color.type)}`,
           group: "recent",
         }))
       )
@@ -270,7 +287,7 @@ export function TextStyleColorPanel({
       ...allTextColors.map((color) => ({
         type: "text" as ColorType,
         value: color.value,
-        label: color.label,
+        label: colorOptionLabel(language, "text", color.label),
         group: "text",
       }))
     )
@@ -279,13 +296,13 @@ export function TextStyleColorPanel({
       ...allHighlightColors.map((color) => ({
         type: "highlight" as ColorType,
         value: color.value,
-        label: color.label,
+        label: colorOptionLabel(language, "highlight", color.label),
         group: "highlight",
       }))
     )
 
     return items
-  }, [isInitialized, recentColors, allTextColors, allHighlightColors])
+  }, [isInitialized, recentColors, allTextColors, allHighlightColors, language])
 
   const handleColorSelected = useCallback(
     ({ type, label, value }: ColorChangePayload) => {
@@ -331,7 +348,7 @@ export function TextStyleColorPanel({
         )}
 
         <CardItemGroup>
-          <CardGroupLabel>Text color</CardGroupLabel>
+          <CardGroupLabel>{textColorLabel(language)}</CardGroupLabel>
           <ColorGroup
             type="text"
             colors={textColorGroups}
@@ -343,7 +360,7 @@ export function TextStyleColorPanel({
         </CardItemGroup>
 
         <CardItemGroup>
-          <CardGroupLabel>Highlight color</CardGroupLabel>
+          <CardGroupLabel>{highlightColorsLabel(language)}</CardGroupLabel>
           <ColorGroup
             type="highlight"
             colors={highlightColorGroups}
@@ -380,6 +397,7 @@ export function ColorTextPopover({
   ...buttonProps
 }: ColorTextPopoverProps) {
   const { editor } = useTiptapEditor(providedEditor)
+  const language = usePapyroTiptapLanguage()
   const [isOpen, setIsOpen] = useState(false)
   const {
     isVisible,
@@ -442,7 +460,7 @@ export function ColorTextPopover({
       </PopoverTrigger>
 
       <PopoverContent
-        aria-label="Text color options"
+        aria-label={textColorOptionsLabel(language)}
         side="bottom"
         align="start"
       >

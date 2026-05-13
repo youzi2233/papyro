@@ -20,6 +20,8 @@ import {
   isValidPosition,
   selectionWithinConvertibleTypes,
 } from "@/lib/tiptap-utils"
+import { textButtonLabel } from "@/tiptap-i18n"
+import { usePapyroTiptapLanguage } from "@/tiptap-react/runtime-context"
 
 export const TEXT_SHORTCUT_KEY = "mod+alt+0"
 
@@ -235,6 +237,7 @@ export function useText(config?: UseTextConfig) {
   } = config || {}
 
   const { editor } = useTiptapEditor(providedEditor)
+  const language = usePapyroTiptapLanguage()
   const isMobile = useIsBreakpoint()
   const [isVisible, setIsVisible] = useState<boolean>(true)
   const canToggle = canToggleText(editor)
@@ -284,7 +287,7 @@ export function useText(config?: UseTextConfig) {
     isActive,
     handleToggle,
     canToggle,
-    label: "Text",
+    label: textButtonLabel(language),
     shortcutKeys: TEXT_SHORTCUT_KEY,
     Icon: TypeIcon,
   }

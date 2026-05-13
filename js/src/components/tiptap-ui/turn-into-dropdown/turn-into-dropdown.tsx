@@ -8,7 +8,10 @@ import type { UseTurnIntoDropdownConfig } from "@/components/tiptap-ui/turn-into
 import {
   useTurnIntoDropdown,
   getFilteredBlockTypeOptions,
+  localizeBlockTypeOptions,
 } from "@/components/tiptap-ui/turn-into-dropdown"
+import { turnIntoLabel } from "@/tiptap-i18n"
+import { usePapyroTiptapLanguage } from "@/tiptap-react/runtime-context"
 
 // --- Hooks ---
 import { useTiptapEditor } from "@/hooks/use-tiptap-editor"
@@ -41,11 +44,15 @@ export function TurnIntoDropdownContent({
   blockTypes,
   editor,
 }: TurnIntoDropdownContentProps) {
-  const filteredOptions = getFilteredBlockTypeOptions(blockTypes)
+  const language = usePapyroTiptapLanguage()
+  const filteredOptions = localizeBlockTypeOptions(
+    getFilteredBlockTypeOptions(blockTypes),
+    language
+  )
 
   return (
     <DropdownMenuGroup>
-      <DropdownMenuLabel>Turn into</DropdownMenuLabel>
+      <DropdownMenuLabel>{turnIntoLabel(language)}</DropdownMenuLabel>
       {filteredOptions.map((option, index) =>
         renderBlockTypeButton(
           option,
@@ -171,6 +178,7 @@ export const TurnIntoDropdown = forwardRef<
   ref
 ) {
   const { editor } = useTiptapEditor(providedEditor)
+  const language = usePapyroTiptapLanguage()
   const {
     isVisible,
     canToggle,
@@ -199,14 +207,14 @@ export const TurnIntoDropdown = forwardRef<
           role="button"
           tabIndex={-1}
           aria-label={label}
-          tooltip="Turn into"
+          tooltip={turnIntoLabel(language)}
           {...buttonProps}
           ref={ref}
         >
           {children ?? (
             <>
               <span className="tiptap-button-text">
-                {activeBlockType?.label || "Text"}
+                {activeBlockType?.label || turnIntoLabel(language)}
               </span>
               <Icon className="tiptap-button-dropdown-small" />
             </>

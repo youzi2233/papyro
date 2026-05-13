@@ -21,6 +21,8 @@ import {
   isValidPosition,
   selectionWithinConvertibleTypes,
 } from "@/lib/tiptap-utils"
+import { listLabel } from "@/tiptap-i18n"
+import { usePapyroTiptapLanguage } from "@/tiptap-react/runtime-context"
 
 export type ListType = "bulletList" | "orderedList" | "taskList"
 
@@ -311,6 +313,7 @@ export function useList(config: UseListConfig) {
   } = config
 
   const { editor } = useTiptapEditor(providedEditor)
+  const language = usePapyroTiptapLanguage()
   const [isVisible, setIsVisible] = useState<boolean>(true)
   const canToggle = canToggleList(editor, type)
   const isActive = isListActive(editor, type)
@@ -346,7 +349,7 @@ export function useList(config: UseListConfig) {
     isActive,
     handleToggle,
     canToggle,
-    label: listLabels[type],
+    label: listLabel(language, type),
     shortcutKeys: LIST_SHORTCUT_KEYS[type],
     Icon: listIcons[type],
   }

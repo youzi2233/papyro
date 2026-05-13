@@ -14,6 +14,8 @@ import { getActiveMarkAttrs } from "@/lib/tiptap-advanced-utils"
 // --- Tiptap UI ---
 import { canColorText } from "@/components/tiptap-ui/color-text-button"
 import { canColorHighlight } from "@/components/tiptap-ui/color-highlight-button"
+import { textColorLabel } from "@/tiptap-i18n"
+import { usePapyroTiptapLanguage } from "@/tiptap-react/runtime-context"
 
 export type ColorType = "text" | "highlight"
 
@@ -218,6 +220,7 @@ export function useColorTextPopover(config?: UseColorTextPopoverConfig) {
   } = config || {}
 
   const { editor } = useTiptapEditor(providedEditor)
+  const language = usePapyroTiptapLanguage()
   const [isVisible, setIsVisible] = useState(true)
 
   const textStyleInSchema = isMarkInSchema("textStyle", editor)
@@ -270,7 +273,7 @@ export function useColorTextPopover(config?: UseColorTextPopoverConfig) {
     activeTextStyle,
     activeHighlight,
     handleColorChanged,
-    label: "Text color",
+    label: textColorLabel(language),
     Icon: TextColorSmallIcon,
   }
 }

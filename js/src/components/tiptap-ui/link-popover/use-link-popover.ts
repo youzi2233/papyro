@@ -6,6 +6,8 @@ import { useTiptapEditor } from "@/hooks/use-tiptap-editor"
 
 // --- Icons ---
 import { LinkIcon } from "@/components/tiptap-icons/link-icon"
+import { linkLabel } from "@/tiptap-i18n"
+import { usePapyroTiptapLanguage } from "@/tiptap-react/runtime-context"
 
 // --- Lib ---
 import {
@@ -275,6 +277,7 @@ export function useLinkPopover(config?: UseLinkPopoverConfig) {
   } = config || {}
 
   const { editor } = useTiptapEditor(providedEditor)
+  const language = usePapyroTiptapLanguage()
 
   const { isVisible, canSet, isActive } = useLinkState({
     editor,
@@ -290,7 +293,7 @@ export function useLinkPopover(config?: UseLinkPopoverConfig) {
     isVisible,
     canSet,
     isActive,
-    label: "Link",
+    label: linkLabel(language),
     Icon: LinkIcon,
     ...linkHandler,
   }

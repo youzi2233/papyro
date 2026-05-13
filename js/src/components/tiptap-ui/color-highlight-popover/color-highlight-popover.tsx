@@ -36,6 +36,14 @@ import {
   useColorHighlight,
 } from "@/components/tiptap-ui/color-highlight-button"
 import { ButtonGroup } from "@/components/tiptap-ui-primitive/button-group"
+import {
+  colorOptionAriaLabel,
+  highlightColorOptionLabel,
+  highlightColorsLabel,
+  highlightTextLabel,
+  removeHighlightLabel,
+} from "@/tiptap-i18n"
+import { usePapyroTiptapLanguage } from "@/tiptap-react/runtime-context"
 
 export interface ColorHighlightPopoverContentProps {
   /**
@@ -76,22 +84,27 @@ export interface ColorHighlightPopoverProps
 export const ColorHighlightPopoverButton = forwardRef<
   HTMLButtonElement,
   ButtonProps
->(({ className, children, ...props }, ref) => (
-  <Button
-    type="button"
-    className={className}
-    variant="ghost"
-    data-appearance="default"
-    role="button"
-    tabIndex={-1}
-    aria-label="Highlight text"
-    tooltip="Highlight"
-    ref={ref}
-    {...props}
-  >
-    {children ?? <HighlighterIcon className="tiptap-button-icon" />}
-  </Button>
-))
+>(({ className, children, ...props }, ref) => {
+  const language = usePapyroTiptapLanguage()
+  const label = highlightTextLabel(language)
+
+  return (
+    <Button
+      type="button"
+      className={className}
+      variant="ghost"
+      data-appearance="default"
+      role="button"
+      tabIndex={-1}
+      aria-label={label}
+      tooltip={label}
+      ref={ref}
+      {...props}
+    >
+      {children ?? <HighlighterIcon className="tiptap-button-icon" />}
+    </Button>
+  )
+})
 
 ColorHighlightPopoverButton.displayName = "ColorHighlightPopoverButton"
 
@@ -107,12 +120,13 @@ export function ColorHighlightPopoverContent({
   useColorValue = false,
 }: ColorHighlightPopoverContentProps) {
   const { handleRemoveHighlight } = useColorHighlight({ editor })
+  const language = usePapyroTiptapLanguage()
   const isMobile = useIsBreakpoint()
   const containerRef = useRef<HTMLDivElement>(null)
 
   const menuItems = useMemo(
-    () => [...colors, { label: "Remove highlight", value: "none" }],
-    [colors]
+    () => [...colors, { label: removeHighlightLabel(language), value: "none" }],
+    [colors, language]
   )
 
   const { selectedIndex } = useMenuNavigation({
@@ -147,8 +161,9 @@ export function ColorHighlightPopoverContent({
                   highlightColor={
                     useColorValue ? color.colorValue : color.value
                   }
-                  tooltip={color.label}
-                  aria-label={`${color.label} highlight color`}
+                  label={highlightColorOptionLabel(language, color.label)}
+                  tooltip={highlightColorOptionLabel(language, color.label)}
+                  aria-label={colorOptionAriaLabel(language, "highlight", color.label)}
                   tabIndex={index === selectedIndex ? 0 : -1}
                   data-highlighted={selectedIndex === index}
                   useColorValue={useColorValue}
@@ -160,8 +175,8 @@ export function ColorHighlightPopoverContent({
           <ButtonGroup>
             <Button
               onClick={handleRemoveHighlight}
-              aria-label="Remove highlight"
-              tooltip="Remove highlight"
+              aria-label={removeHighlightLabel(language)}
+              tooltip={removeHighlightLabel(language)}
               tabIndex={selectedIndex === colors.length ? 0 : -1}
               type="button"
               role="menuitem"
@@ -192,6 +207,7 @@ export function ColorHighlightPopover({
   ...props
 }: ColorHighlightPopoverProps) {
   const { editor } = useTiptapEditor(providedEditor)
+  const language = usePapyroTiptapLanguage()
   const [isOpen, setIsOpen] = useState(false)
   const { isVisible, canColorHighlight, isActive, label, Icon } =
     useColorHighlight({
@@ -217,7 +233,7 @@ export function ColorHighlightPopover({
           <Icon className="tiptap-button-icon" />
         </ColorHighlightPopoverButton>
       </PopoverTrigger>
-      <PopoverContent aria-label="Highlight colors">
+      <PopoverContent aria-label={highlightColorsLabel(language)}>
         <ColorHighlightPopoverContent
           editor={editor}
           colors={colors}

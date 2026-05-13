@@ -16,6 +16,8 @@ import {
   isValidPosition,
   selectionWithinConvertibleTypes,
 } from "@/lib/tiptap-utils"
+import { headingLabel } from "@/tiptap-i18n"
+import { usePapyroTiptapLanguage } from "@/tiptap-react/runtime-context"
 
 // --- Icons ---
 import { HeadingOneIcon } from "@/components/tiptap-icons/heading-one-icon"
@@ -306,6 +308,7 @@ export function useHeading(config: UseHeadingConfig) {
   } = config
 
   const { editor } = useTiptapEditor(providedEditor)
+  const language = usePapyroTiptapLanguage()
   const [isVisible, setIsVisible] = useState<boolean>(true)
   const canToggleState = canToggle(editor, level)
   const isActive = isHeadingActive(editor, level)
@@ -341,7 +344,7 @@ export function useHeading(config: UseHeadingConfig) {
     isActive,
     handleToggle,
     canToggle: canToggleState,
-    label: `Heading ${level}`,
+    label: headingLabel(language, level),
     shortcutKeys: HEADING_SHORTCUT_KEYS[level],
     Icon: headingIcons[level],
   }

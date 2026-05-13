@@ -273,6 +273,72 @@ const TABLE_COMMAND_DESCRIPTIONS = Object.freeze({
   ],
 });
 
+const MARK_LABELS = Object.freeze({
+  bold: ["Bold", "\u52a0\u7c97"],
+  italic: ["Italic", "\u659c\u4f53"],
+  underline: ["Underline", "\u4e0b\u5212\u7ebf"],
+  strike: ["Strikethrough", "\u5220\u9664\u7ebf"],
+  code: ["Inline code", "\u884c\u5185\u4ee3\u7801"],
+  superscript: ["Superscript", "\u4e0a\u6807"],
+  subscript: ["Subscript", "\u4e0b\u6807"],
+});
+
+const BLOCK_TYPE_LABELS = Object.freeze({
+  paragraph: ["Text", "\u6587\u672c"],
+  "heading-1": ["Heading 1", "\u4e00\u7ea7\u6807\u9898"],
+  "heading-2": ["Heading 2", "\u4e8c\u7ea7\u6807\u9898"],
+  "heading-3": ["Heading 3", "\u4e09\u7ea7\u6807\u9898"],
+  bulletList: ["Bulleted list", "\u65e0\u5e8f\u5217\u8868"],
+  orderedList: ["Numbered list", "\u7f16\u53f7\u5217\u8868"],
+  taskList: ["To-do list", "\u4efb\u52a1\u5217\u8868"],
+  blockquote: ["Blockquote", "\u5f15\u7528"],
+  codeBlock: ["Code block", "\u4ee3\u7801\u5757"],
+});
+
+const LIST_LABELS = Object.freeze({
+  bulletList: ["Bullet List", "\u65e0\u5e8f\u5217\u8868"],
+  orderedList: ["Ordered List", "\u6709\u5e8f\u5217\u8868"],
+  taskList: ["Task List", "\u4efb\u52a1\u5217\u8868"],
+});
+
+const TEXT_ALIGN_LABELS = Object.freeze({
+  left: ["Align left", "\u5de6\u5bf9\u9f50"],
+  center: ["Align center", "\u5c45\u4e2d\u5bf9\u9f50"],
+  right: ["Align right", "\u53f3\u5bf9\u9f50"],
+  justify: ["Align justify", "\u4e24\u7aef\u5bf9\u9f50"],
+});
+
+const HISTORY_LABELS = Object.freeze({
+  undo: ["Undo", "\u64a4\u9500"],
+  redo: ["Redo", "\u91cd\u505a"],
+});
+
+const TEXT_COLOR_LABELS = Object.freeze({
+  "Default text": "\u9ed8\u8ba4\u6587\u5b57",
+  "Gray text": "\u7070\u8272\u6587\u5b57",
+  "Brown text": "\u68d5\u8272\u6587\u5b57",
+  "Orange text": "\u6a59\u8272\u6587\u5b57",
+  "Yellow text": "\u9ec4\u8272\u6587\u5b57",
+  "Green text": "\u7eff\u8272\u6587\u5b57",
+  "Blue text": "\u84dd\u8272\u6587\u5b57",
+  "Purple text": "\u7d2b\u8272\u6587\u5b57",
+  "Pink text": "\u7c89\u8272\u6587\u5b57",
+  "Red text": "\u7ea2\u8272\u6587\u5b57",
+});
+
+const HIGHLIGHT_COLOR_LABELS = Object.freeze({
+  "Default background": "\u9ed8\u8ba4\u80cc\u666f",
+  "Gray background": "\u7070\u8272\u80cc\u666f",
+  "Brown background": "\u68d5\u8272\u80cc\u666f",
+  "Orange background": "\u6a59\u8272\u80cc\u666f",
+  "Yellow background": "\u9ec4\u8272\u80cc\u666f",
+  "Green background": "\u7eff\u8272\u80cc\u666f",
+  "Blue background": "\u84dd\u8272\u80cc\u666f",
+  "Purple background": "\u7d2b\u8272\u80cc\u666f",
+  "Pink background": "\u7c89\u8272\u80cc\u666f",
+  "Red background": "\u7ea2\u8272\u80cc\u666f",
+});
+
 function localizedGroup(group, language) {
   return localizedText(language, group, GROUP_LABELS[group] ?? group);
 }
@@ -335,6 +401,142 @@ export function localizeCalloutKindOption(option, language) {
       ? localizedText(language, labels[2], labels[3])
       : option?.description,
   };
+}
+
+export function markLabel(language, mark) {
+  const labels = MARK_LABELS[mark];
+  return labels ? localizedText(language, labels[0], labels[1]) : String(mark ?? "");
+}
+
+export function blockTypeLabel(language, option = {}) {
+  const key = option.type === "heading" && option.level
+    ? `heading-${option.level}`
+    : option.type;
+  const labels = BLOCK_TYPE_LABELS[key];
+  return labels
+    ? localizedText(language, labels[0], labels[1])
+    : String(option.label ?? option.type ?? "");
+}
+
+export function listLabel(language, type) {
+  const labels = LIST_LABELS[type];
+  return labels ? localizedText(language, labels[0], labels[1]) : String(type ?? "");
+}
+
+export function headingLabel(language, level) {
+  return blockTypeLabel(language, { type: "heading", level });
+}
+
+export function textButtonLabel(language) {
+  return blockTypeLabel(language, { type: "paragraph" });
+}
+
+export function blockquoteLabel(language) {
+  return blockTypeLabel(language, { type: "blockquote" });
+}
+
+export function codeBlockLabel(language) {
+  return blockTypeLabel(language, { type: "codeBlock" });
+}
+
+export function textAlignLabel(language, align) {
+  const labels = TEXT_ALIGN_LABELS[align];
+  return labels ? localizedText(language, labels[0], labels[1]) : String(align ?? "");
+}
+
+export function historyLabel(language, action) {
+  const labels = HISTORY_LABELS[action];
+  return labels ? localizedText(language, labels[0], labels[1]) : String(action ?? "");
+}
+
+export function turnIntoLabel(language) {
+  return localizedText(language, "Turn into", "\u8f6c\u6362\u4e3a");
+}
+
+export function turnIntoCurrentLabel(language, currentLabel) {
+  return localizedText(
+    language,
+    `Turn into (current: ${currentLabel || "Text"})`,
+    `\u8f6c\u6362\u4e3a\uff08\u5f53\u524d\uff1a${currentLabel || "\u6587\u672c"}\uff09`,
+  );
+}
+
+export function linkLabel(language) {
+  return localizedText(language, "Link", "\u94fe\u63a5");
+}
+
+export function linkInputPlaceholder(language) {
+  return localizedText(language, "Paste a link...", "\u7c98\u8d34\u94fe\u63a5...");
+}
+
+export function linkApplyTitle(language) {
+  return localizedText(language, "Apply link", "\u5e94\u7528\u94fe\u63a5");
+}
+
+export function linkOpenTitle(language) {
+  return localizedText(language, "Open in new window", "\u5728\u65b0\u7a97\u53e3\u6253\u5f00");
+}
+
+export function linkRemoveTitle(language) {
+  return localizedText(language, "Remove link", "\u79fb\u9664\u94fe\u63a5");
+}
+
+export function textColorLabel(language) {
+  return localizedText(language, "Text color", "\u6587\u5b57\u989c\u8272");
+}
+
+export function highlightLabel(language) {
+  return localizedText(language, "Highlight", "\u9ad8\u4eae");
+}
+
+export function highlightTextLabel(language) {
+  return localizedText(language, "Highlight text", "\u9ad8\u4eae\u6587\u5b57");
+}
+
+export function removeHighlightLabel(language) {
+  return localizedText(language, "Remove highlight", "\u79fb\u9664\u9ad8\u4eae");
+}
+
+export function recentColorsLabel(language) {
+  return localizedText(language, "Recently used", "\u6700\u8fd1\u4f7f\u7528");
+}
+
+export function highlightColorsLabel(language) {
+  return localizedText(language, "Highlight colors", "\u9ad8\u4eae\u989c\u8272");
+}
+
+export function textColorOptionsLabel(language) {
+  return localizedText(language, "Text color options", "\u6587\u5b57\u989c\u8272\u9009\u9879");
+}
+
+export function colorKindLabel(language, type) {
+  return type === "highlight"
+    ? localizedText(language, "highlight", "\u9ad8\u4eae")
+    : localizedText(language, "text", "\u6587\u5b57");
+}
+
+export function textColorOptionLabel(language, label) {
+  return localizedText(language, String(label ?? ""), TEXT_COLOR_LABELS[label] ?? String(label ?? ""));
+}
+
+export function highlightColorOptionLabel(language, label) {
+  return localizedText(
+    language,
+    String(label ?? ""),
+    HIGHLIGHT_COLOR_LABELS[label] ?? String(label ?? ""),
+  );
+}
+
+export function colorOptionLabel(language, type, label) {
+  return type === "highlight"
+    ? highlightColorOptionLabel(language, label)
+    : textColorOptionLabel(language, label);
+}
+
+export function colorOptionAriaLabel(language, type, label) {
+  const option = colorOptionLabel(language, type, label);
+  const kind = colorKindLabel(language, type);
+  return localizedText(language, `${option} ${kind} color`, `${option}${kind}\u989c\u8272`);
 }
 
 export function tableSizeLabel(language, rows, cols) {

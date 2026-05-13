@@ -357,6 +357,7 @@ The JS directory owns browser editor runtime code.
 | `js/src/editor-runtime-protocol.ts` | Rust command bridge for view mode, content, preferences, commands, focus, and destroy messages |
 | `js/src/editor-runtime-contract.ts` | stable host facade and adapter contract for `window.papyroEditor` |
 | `js/src/tiptap-react/` | React island provider, slots, mount controller, and future editor UI components |
+| `js/src/tiptap-i18n.js` | centralized labels for Tiptap runtime chrome, command menus, and accessibility text |
 | `js/src/tiptap-*.js` | focused Tiptap controllers, commands, Markdown handlers, and UI helpers |
 | `js/test/tiptap-*.test.ts` | Node test-runner coverage for runtime, commands, tables, Markdown, and UI primitives |
 | `js/build.js` | builds and syncs generated editor assets |
@@ -564,6 +565,13 @@ internals behind explicit functions.
 | `ApplyFormat` | apply bold, italic, link, heading, etc. |
 | `Focus` | focus the editor |
 | `Destroy` | destroy or recycle the editor host |
+
+`SetPreferences` carries the Rust `AppLanguage` into the browser runtime. The
+React island exposes the normalized language through
+`usePapyroTiptapLanguage()`, and active editor chrome reads user-facing labels
+from `js/src/tiptap-i18n.js`. This keeps Tiptap component state local to React
+while making menu labels, tooltips, placeholders, and accessibility text follow
+the same language preference as the Rust UI.
 
 Commands are usually sent from:
 

@@ -1,3 +1,4 @@
+import { normalizeTiptapLanguage } from "../tiptap-i18n.js";
 import {
   createPapyroTiptapFormatSnapshot,
   samePapyroTiptapFormatSnapshot,
@@ -16,11 +17,9 @@ export function normalizePapyroTiptapLanguage(entryOrLanguage) {
     typeof entryOrLanguage === "string"
       ? entryOrLanguage
       : entryOrLanguage?.preferences?.language;
-  const normalized = String(language ?? DEFAULT_LANGUAGE).toLowerCase();
-  if (normalized === "chinese" || normalized === "zh-cn" || normalized === "zh_cn") {
-    return "chinese";
-  }
-  return DEFAULT_LANGUAGE;
+  return normalizeTiptapLanguage(language ?? DEFAULT_LANGUAGE) === "zh-CN"
+    ? "chinese"
+    : DEFAULT_LANGUAGE;
 }
 
 export function normalizePapyroTiptapViewMode(entryOrMode) {

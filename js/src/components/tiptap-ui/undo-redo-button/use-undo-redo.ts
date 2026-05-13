@@ -8,6 +8,8 @@ import { useTiptapEditor } from "@/hooks/use-tiptap-editor"
 
 // --- Lib ---
 import { isNodeTypeSelected } from "@/lib/tiptap-utils"
+import { historyLabel } from "@/tiptap-i18n"
+import { usePapyroTiptapLanguage } from "@/tiptap-react/runtime-context"
 
 // --- Icons ---
 import { Redo2Icon } from "@/components/tiptap-icons/redo2-icon"
@@ -150,6 +152,7 @@ export function useUndoRedo(config: UseUndoRedoConfig) {
   } = config
 
   const { editor } = useTiptapEditor(providedEditor)
+  const language = usePapyroTiptapLanguage()
   const [isVisible, setIsVisible] = useState<boolean>(true)
   const canExecute = canExecuteUndoRedoAction(editor, action)
 
@@ -183,7 +186,7 @@ export function useUndoRedo(config: UseUndoRedoConfig) {
     isVisible,
     handleAction,
     canExecute,
-    label: historyActionLabels[action],
+    label: historyLabel(language, action),
     shortcutKeys: UNDO_REDO_SHORTCUT_KEYS[action],
     Icon: historyIcons[action],
   }

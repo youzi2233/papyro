@@ -10,6 +10,11 @@ import { ChevronDownIcon } from "@/components/tiptap-icons/chevron-down-icon"
 
 // --- Tiptap UI ---
 import type { Level } from "@/components/tiptap-ui/heading-button"
+import {
+  blockTypeLabel,
+  turnIntoCurrentLabel,
+} from "@/tiptap-i18n"
+import { usePapyroTiptapLanguage } from "@/tiptap-react/runtime-context"
 
 export const TURN_INTO_BLOCKS = [
   "paragraph",
@@ -136,6 +141,13 @@ export function getFilteredBlockTypeOptions(blockTypes?: string[]) {
   })
 }
 
+export function localizeBlockTypeOptions(options, language) {
+  return options.map((option) => ({
+    ...option,
+    label: blockTypeLabel(language, option),
+  }))
+}
+
 /**
  * Gets the currently active block type from the available options
  */
@@ -225,11 +237,22 @@ export function useTurnIntoDropdown(config?: UseTurnIntoDropdownConfig) {
   } = config || {}
 
   const { editor } = useTiptapEditor(providedEditor)
+  const language = usePapyroTiptapLanguage()
   const [isOpen, setIsOpen] = useState(false)
   const [isVisible, setIsVisible] = useState(true)
 
   const canToggle = canTurnInto(editor, blockTypes)
+  const filteredOptions = localizeBlockTypeOptions(
+    getFilteredBlockTypeOptions(blockTypes),
+    language
+  )
   const activeBlockType = getActiveBlockType(editor, blockTypes)
+  const localizedActiveBlockType = activeBlockType
+    ? {
+        ...activeBlockType,
+        label: blockTypeLabel(language, activeBlockType),
+      }
+    : filteredOptions[0]
 
   const handleOpenChange = useCallback(
     (open: boolean) => {
@@ -266,10 +289,10 @@ export function useTurnIntoDropdown(config?: UseTurnIntoDropdownConfig) {
     canToggle,
     isOpen,
     setIsOpen,
-    activeBlockType,
+    activeBlockType: localizedActiveBlockType,
     handleOpenChange,
-    filteredOptions: getFilteredBlockTypeOptions(blockTypes),
-    label: `Turn into (current: ${activeBlockType?.label || "Text"})`,
+    filteredOptions,
+    label: turnIntoCurrentLabel(language, localizedActiveBlockType?.label),
     Icon: ChevronDownIcon,
   }
 }

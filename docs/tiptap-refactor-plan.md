@@ -312,7 +312,7 @@ These features are unique to Papyro, not in the official template, and need to b
 - [x] Mermaid diagram rendering
 - [x] KaTeX math formula rendering
 - [x] Outline/TOC generation (consumed by Rust side)
-- [ ] i18n multilingual support
+- [x] i18n multilingual support
 - [ ] Multi-tab editor instance management (editorRegistry)
 
 ---

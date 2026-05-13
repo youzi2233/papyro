@@ -6,15 +6,21 @@ import {
   addRowBelowLabel,
   blockHandleActionsLabel,
   blockHandleInsertLabel,
+  colorOptionAriaLabel,
   formatToolbarLabel,
+  headingLabel,
+  historyLabel,
   insertBlockAfterLabel,
   insertBlockAtEdgeLabel,
   insertBlockBeforeLabel,
   insertTableLabel,
+  linkInputPlaceholder,
+  listLabel,
   loadingEditorLabel,
   localizeCalloutKindOption,
   localizeSlashCommand,
   localizeTableCommand,
+  markLabel,
   markdownCommandsLabel,
   mathSourceEditorLabel,
   mermaidSourceEditorLabel,
@@ -28,6 +34,8 @@ import {
   tableSelectionActionsLabel,
   tableSizeLabel,
   tableToolsLabel,
+  textAlignLabel,
+  turnIntoCurrentLabel,
 } from "../src/tiptap-i18n.js";
 
 test("Tiptap i18n normalizes Chinese language values", () => {
@@ -39,6 +47,23 @@ test("Tiptap i18n normalizes Chinese language values", () => {
 test("Tiptap format toolbar label follows editor language", () => {
   assert.equal(formatToolbarLabel("english"), "Text formatting");
   assert.equal(formatToolbarLabel("Chinese"), "\u6587\u672c\u683c\u5f0f");
+});
+
+test("Tiptap React chrome labels follow editor language", () => {
+  assert.equal(markLabel("Chinese", "bold"), "\u52a0\u7c97");
+  assert.equal(headingLabel("Chinese", 2), "\u4e8c\u7ea7\u6807\u9898");
+  assert.equal(listLabel("Chinese", "taskList"), "\u4efb\u52a1\u5217\u8868");
+  assert.equal(textAlignLabel("Chinese", "center"), "\u5c45\u4e2d\u5bf9\u9f50");
+  assert.equal(historyLabel("Chinese", "undo"), "\u64a4\u9500");
+  assert.equal(
+    turnIntoCurrentLabel("Chinese", "\u6587\u672c"),
+    "\u8f6c\u6362\u4e3a\uff08\u5f53\u524d\uff1a\u6587\u672c\uff09",
+  );
+  assert.equal(linkInputPlaceholder("Chinese"), "\u7c98\u8d34\u94fe\u63a5...");
+  assert.equal(
+    colorOptionAriaLabel("Chinese", "highlight", "Yellow background"),
+    "\u9ec4\u8272\u80cc\u666f\u9ad8\u4eae\u989c\u8272",
+  );
 });
 
 test("Tiptap editor surface labels follow editor language", () => {
