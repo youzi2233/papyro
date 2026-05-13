@@ -4,7 +4,7 @@ import { Markdown } from "@tiptap/markdown";
 import {
   imageFileFromTransfer,
   sendEditorImageRequest,
-} from "./editor-clipboard.js";
+} from "./editor-clipboard.ts";
 import { createTiptapRuntimeAdapter } from "./editor-runtime-contract.ts";
 import { createMarkdownSyncController } from "./markdown-sync-controller.ts";
 import { createTiptapBlockHintsController } from "./tiptap-block-hints-controller.js";

@@ -9,7 +9,7 @@ import {
   imageFileFromTransfer,
   sendEditorImageRequest,
   supportedImageMimeType,
-} from "../src/editor-clipboard.js";
+} from "../src/editor-clipboard.ts";
 
 test("dataUrlPayload strips the data URL prefix", () => {
   assert.equal(dataUrlPayload("data:image/png;base64,abc123"), "abc123");
