@@ -96,6 +96,24 @@ function collectMarks(node, marks = []) {
   return marks;
 }
 
+function collectMarkRecords(node, marks = []) {
+  if (!node || typeof node !== "object") return marks;
+
+  for (const mark of node.marks ?? []) {
+    marks.push({
+      type: mark.type,
+      attrs: { ...(mark.attrs ?? {}) },
+      text: node.text ?? "",
+    });
+  }
+
+  for (const child of node.content ?? []) {
+    collectMarkRecords(child, marks);
+  }
+
+  return marks;
+}
+
 function collectTaskItems(node, tasks = []) {
   if (!node || typeof node !== "object") return tasks;
 
@@ -154,6 +172,10 @@ function compactTables(tables) {
       })),
     ),
   );
+}
+
+function normalizeJsonContent(value) {
+  return JSON.parse(JSON.stringify(value));
 }
 
 function installDomGlobals(windowRef) {
@@ -284,6 +306,336 @@ function collectNodeAttrs(node, type, attrs = []) {
   }
 
   return attrs;
+}
+
+const officialComponentRoundTripCases = [
+  {
+    component: "paragraph-node / slash-dropdown-menu paragraph",
+    markdown: "Plain paragraph text.",
+    assertSemantics({ parsed, serialized, reparsed }) {
+      assert.equal(parsed.content[0].type, "paragraph");
+      assert.equal(plainText(parsed), "Plain paragraph text.");
+      assert.equal(serialized, "Plain paragraph text.");
+      assert.deepEqual(reparsed, parsed);
+    },
+  },
+  {
+    component: "heading-node / heading-dropdown-menu / turn-into-dropdown heading",
+    markdown: "### Roadmap",
+    assertSemantics({ parsed, serialized, reparsed }) {
+      assert.deepEqual(parsed.content.map((node) => node.attrs?.level ?? null), [3]);
+      assert.equal(plainText(parsed), "Roadmap");
+      assert.equal(serialized, "### Roadmap");
+      assert.deepEqual(reparsed, parsed);
+    },
+  },
+  {
+    component: "mark-button bold italic underline strike code",
+    markdown: "Use **bold**, *italic*, ++underline++, ~~strike~~, and `code`.",
+    assertSemantics({ parsed, serialized, reparsed }) {
+      assert.deepEqual(collectMarks(parsed), ["bold", "italic", "underline", "strike", "code"]);
+      assert.match(serialized, /\*\*bold\*\*/);
+      assert.match(serialized, /\*italic\*/);
+      assert.match(serialized, /\+\+underline\+\+/);
+      assert.match(serialized, /~~strike~~/);
+      assert.match(serialized, /`code`/);
+      assert.deepEqual(reparsed, parsed);
+    },
+  },
+  {
+    component: "link-popover",
+    markdown: '[Docs](https://example.com "Docs title")',
+    assertSemantics({ parsed, serialized, reparsed }) {
+      assert.deepEqual(collectMarkRecords(parsed), [
+        {
+          type: "link",
+          attrs: {
+            href: "https://example.com",
+            title: "Docs title",
+          },
+          text: "Docs",
+        },
+      ]);
+      assert.equal(serialized, '[Docs](https://example.com "Docs title")');
+      assert.deepEqual(reparsed, parsed);
+    },
+  },
+  {
+    component: "blockquote-button / blockquote-node / drag-context-menu transform",
+    markdown: "> Quote line",
+    assertSemantics({ parsed, serialized, reparsed }) {
+      assert.equal(parsed.content[0].type, "blockquote");
+      assert.equal(plainText(parsed), "Quote line");
+      assert.equal(serialized, "> Quote line");
+      assert.deepEqual(reparsed, parsed);
+    },
+  },
+  {
+    component: "list-dropdown-menu / list-node bullet list",
+    markdown: "- First\n- Second",
+    assertSemantics({ parsed, serialized, reparsed }) {
+      assert.equal(parsed.content[0].type, "bulletList");
+      assert.deepEqual(parsed.content[0].content.map(plainText), ["First", "Second"]);
+      assert.equal(serialized, "- First\n- Second");
+      assert.deepEqual(reparsed, parsed);
+    },
+  },
+  {
+    component: "list-dropdown-menu / list-node ordered list",
+    markdown: "1. First\n2. Second",
+    assertSemantics({ parsed, serialized, reparsed }) {
+      assert.equal(parsed.content[0].type, "orderedList");
+      assert.deepEqual(parsed.content[0].content.map(plainText), ["First", "Second"]);
+      assert.equal(serialized, "1. First\n2. Second");
+      assert.deepEqual(reparsed, parsed);
+    },
+  },
+  {
+    component: "list-dropdown-menu task list / task item",
+    markdown: "- [ ] Draft\n- [x] Reviewed",
+    assertSemantics({ parsed, serialized, reparsed }) {
+      assert.deepEqual(collectTaskItems(parsed), [
+        { checked: false, text: "Draft" },
+        { checked: true, text: "Reviewed" },
+      ]);
+      assert.equal(serialized, "- [ ] Draft\n- [x] Reviewed");
+      assert.deepEqual(reparsed, parsed);
+    },
+  },
+  {
+    component: "horizontal-rule-node",
+    markdown: "---",
+    assertSemantics({ parsed, serialized, reparsed }) {
+      assert.equal(parsed.content[0].type, "horizontalRule");
+      assert.equal(serialized, "---");
+      assert.deepEqual(reparsed, parsed);
+    },
+  },
+  {
+    component: "code-block-button / code-block-node",
+    markdown: "```ts\nconst answer: number = 42;\n```",
+    assertSemantics({ parsed, serialized, reparsed }) {
+      assert.deepEqual(collectCodeBlocks(parsed), [
+        {
+          language: "ts",
+          text: "const answer: number = 42;",
+        },
+      ]);
+      assert.equal(serialized, "```ts\nconst answer: number = 42;\n```");
+      assert.deepEqual(reparsed, parsed);
+    },
+  },
+  {
+    component: "image-upload-button / image-node",
+    markdown: '![Screenshot](assets/editor.png "Editor")',
+    assertSemantics({ parsed, serialized, reparsed }) {
+      assert.deepEqual(collectImages(parsed), [
+        {
+          src: "assets/editor.png",
+          alt: "Screenshot",
+          title: "Editor",
+        },
+      ]);
+      assert.equal(serialized, '![Screenshot](assets/editor.png "Editor")');
+      assert.deepEqual(reparsed, parsed);
+    },
+  },
+  {
+    component: "table-node / slash-dropdown-menu table",
+    markdown: [
+      "| Feature | Status |",
+      "| --- | :---: |",
+      "| Source | Done |",
+    ].join("\n"),
+    assertSemantics({ parsed, serialized, reparsed }) {
+      assert.deepEqual(compactTables(collectTables(parsed)), [
+        [
+          [
+            { type: "tableHeader", align: null, text: "Feature" },
+            { type: "tableHeader", align: "center", text: "Status" },
+          ],
+          [
+            { type: "tableCell", align: null, text: "Source" },
+            { type: "tableCell", align: "center", text: "Done" },
+          ],
+        ],
+      ]);
+      assert.match(serialized, /^\| Feature | Status \|/m);
+      assert.deepEqual(compactTables(collectTables(reparsed)), compactTables(collectTables(parsed)));
+    },
+  },
+  {
+    component: "color-highlight-popover",
+    markdown: "Use ==marked== text.",
+    assertSemantics({ parsed, serialized, reparsed }) {
+      assert.deepEqual(collectMarkRecords(parsed), [
+        { type: "highlight", attrs: {}, text: "marked" },
+      ]);
+      assert.equal(serialized, "Use ==marked== text.");
+      assert.deepEqual(reparsed, parsed);
+    },
+  },
+  {
+    component: "color-highlight-popover multicolor highlight",
+    doc: {
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [
+            {
+              type: "text",
+              text: "Blue highlight",
+              marks: [
+                {
+                  type: "highlight",
+                  attrs: {
+                    color: "var(--tt-color-highlight-blue)",
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    assertSemantics({ parsed, serialized }) {
+      assert.deepEqual(collectMarkRecords(parsed), [
+        {
+          type: "highlight",
+          attrs: { color: "var(--tt-color-highlight-blue)" },
+          text: "Blue highlight",
+        },
+      ]);
+      assert.equal(serialized, "==Blue highlight==");
+    },
+  },
+  {
+    component: "color-text-popover",
+    doc: {
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [
+            {
+              type: "text",
+              text: "Accent",
+              marks: [
+                {
+                  type: "textStyle",
+                  attrs: {
+                    color: "var(--mn-accent)",
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    requiresDom: true,
+    assertSemantics({ parsed, serialized, reparsed }) {
+      assert.deepEqual(collectMarkRecords(parsed), [
+        {
+          type: "textStyle",
+          attrs: { color: "var(--mn-accent)" },
+          text: "Accent",
+        },
+      ]);
+      assert.equal(serialized, '<span style="color: var(--mn-accent)">Accent</span>');
+      assert.deepEqual(normalizeJsonContent(reparsed), normalizeJsonContent(parsed));
+    },
+  },
+  {
+    component: "text-align-button",
+    doc: {
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          attrs: {
+            textAlign: "center",
+          },
+          content: [{ type: "text", text: "Centered" }],
+        },
+      ],
+    },
+    assertSemantics({ parsed, serialized }) {
+      assert.deepEqual(collectNodeAttrs(parsed, "paragraph"), [{ textAlign: "center" }]);
+      assert.equal(serialized, "Centered");
+    },
+  },
+  {
+    component: "mathematics-extension / slash-dropdown-menu math",
+    markdown: "$$\nx^2 + y^2 = z^2\n$$",
+    assertSemantics({ parsed, serialized, reparsed }) {
+      assert.deepEqual(collectMath(parsed), [
+        { type: "mathBlock", source: "x^2 + y^2 = z^2", singleLine: false },
+      ]);
+      assert.equal(serialized, "$$\nx^2 + y^2 = z^2\n$$");
+      assert.deepEqual(reparsed, parsed);
+    },
+  },
+  {
+    component: "Mermaid block / slash-dropdown-menu diagram",
+    markdown: "```mermaid\nflowchart TD\n  A --> B\n```",
+    assertSemantics({ parsed, serialized, reparsed }) {
+      assert.deepEqual(collectMermaid(parsed), ["flowchart TD\n  A --> B"]);
+      assert.equal(serialized, "```mermaid\nflowchart TD\n  A --> B\n```");
+      assert.deepEqual(reparsed, parsed);
+    },
+  },
+  {
+    component: "Papyro callout block / turn-into-dropdown admonition",
+    markdown: "> [!NOTE]\n> Keep decisions portable.",
+    assertSemantics({ parsed, serialized, reparsed }) {
+      assert.deepEqual(collectCallouts(parsed), [
+        {
+          kind: "NOTE",
+          text: "Keep decisions portable.",
+        },
+      ]);
+      assert.equal(serialized, "> [!NOTE]\n> Keep decisions portable.");
+      assert.deepEqual(reparsed, parsed);
+    },
+  },
+];
+
+function assertOfficialComponentRoundTrip(testCase) {
+  const run = () => {
+    const parsed = testCase.doc ?? parseTiptapMarkdown(testCase.markdown);
+    const serialized = serializeTiptapMarkdown(parsed);
+    const reparsed = parseTiptapMarkdown(serialized);
+    testCase.assertSemantics({ parsed, serialized, reparsed });
+  };
+
+  try {
+    if (!testCase.requiresDom) {
+      run();
+      return;
+    }
+
+    const windowRef = new Window({ url: "http://localhost/" });
+    const previousGlobals = installDomGlobals(windowRef);
+    const previousWarn = console.warn;
+    console.warn = (...args) => {
+      if (String(args[0] ?? "").includes("KaTeX doesn't work in quirks mode")) {
+        return;
+      }
+      previousWarn(...args);
+    };
+
+    try {
+      run();
+    } finally {
+      console.warn = previousWarn;
+      restoreDomGlobals(previousGlobals);
+      windowRef.close?.();
+    }
+  } catch (error) {
+    throw new Error(`${testCase.component}: ${error.message}`, { cause: error });
+  }
 }
 
 test("Tiptap Markdown manager parses the baseline Markdown blocks", () => {
@@ -540,6 +892,12 @@ test("Papyro Tiptap extensions include official UI state storage", () => {
   const uiState = extensions.find((extension) => extension.name === "uiState");
 
   assert.ok(uiState, "uiState extension should be installed for official chrome hooks");
+});
+
+test("Official Tiptap component Markdown semantics round trip", () => {
+  for (const testCase of officialComponentRoundTripCases) {
+    assertOfficialComponentRoundTrip(testCase);
+  }
 });
 
 test("Tiptap Markdown serialization keeps semantic Markdown output", () => {

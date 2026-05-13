@@ -321,7 +321,7 @@ js/src/
 
 - [x] 更新 `tiptap-runtime-smoke.js` 适配新架构
 - [x] 更新所有现有测试文件适配新模块路径
-- [ ] 为每个官方组件接入添加 Markdown 序列化往返测试
+- [x] 为每个官方组件接入添加 Markdown 序列化往返测试
 - [ ] 验证 `scripts/check-editor-markdown-gate.js` 通过
 - [ ] 在桌面 WebView 中端到端验证所有交互
 
