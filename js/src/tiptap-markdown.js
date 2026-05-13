@@ -11,7 +11,7 @@ import { UiState } from "./components/tiptap-extension/ui-state-extension.ts";
 import { createPapyroImageExtensions } from "./tiptap-image.js";
 import { createPapyroMathExtensions } from "./tiptap-math.js";
 import { createPapyroMermaidExtensions } from "./tiptap-mermaid.js";
-import { createPapyroTableExtensions } from "./tiptap-table.js";
+import { createPapyroTableExtensions } from "./tiptap-table.ts";
 import { createPapyroTaskListExtensions } from "./tiptap-task-list.js";
 import { createPapyroTextStyleExtensions } from "./tiptap-text-style.js";
 

@@ -42,7 +42,7 @@ const tableCellHandleMenuSource = readFileSync(
   "utf8",
 );
 const tableExtensionSource = readFileSync(
-  new URL("../src/tiptap-table.js", import.meta.url),
+  new URL("../src/tiptap-table.ts", import.meta.url),
   "utf8",
 );
 const tableStylesSource = readFileSync(

@@ -16,7 +16,7 @@ const {
   setSelectedTableCellTextColor,
   writeTableTextToClipboard,
 } = await importBundledModule(
-  new URL("../src/tiptap-table.js", import.meta.url),
+  new URL("../src/tiptap-table.ts", import.meta.url),
 );
 const { createPapyroTextStyleExtensions } = await importBundledModule(
   new URL("../src/tiptap-text-style.js", import.meta.url),

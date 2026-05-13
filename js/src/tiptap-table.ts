@@ -5,18 +5,68 @@ import {
   renderTableToMarkdown,
 } from "@tiptap/extension-table";
 import { Extension } from "@tiptap/core";
+import type {
+  Extension as TiptapExtension,
+  JSONContent,
+  MarkdownRendererHelpers,
+} from "@tiptap/core";
+import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
+import type { EditorState, Transaction } from "@tiptap/pm/state";
 import {
   deleteCellSelection,
   selectedRect,
+  type TableMap,
+  type TableRect,
 } from "@tiptap/pm/tables";
 import { TableHandleExtension } from "./components/tiptap-node/table-node/extensions/table-handle/index.ts";
+
+type TableCellResetAttribute = "align" | "backgroundColor";
+type TableCellAlign = "left" | "center" | "right";
+type AttributeValue = string | number | boolean | readonly number[] | null | undefined;
+type HtmlAttributes = Record<string, AttributeValue>;
+type ClipboardTextWriter = (text: string) => Promise<unknown> | unknown;
+
+interface PapyroTableJSONNode extends JSONContent {
+  type?: string;
+  attrs?: {
+    align?: string | null;
+    backgroundColor?: string | null;
+    colspan?: number | null;
+    rowspan?: number | null;
+    colwidth?: readonly number[] | null;
+    [key: string]: unknown;
+  };
+  content?: PapyroTableJSONNode[];
+}
+
+interface TableSelectionLike {
+  forEachCell?: (
+    callback: (node: ProseMirrorNode, pos: number) => void,
+  ) => void;
+}
+
+interface TextStyleMarkType {
+  create: (attrs?: Record<string, unknown>) => unknown;
+}
+
+interface TableCellContentActionOptions {
+  resetAttrs?: boolean;
+}
+
+interface PapyroTableCellContentActionsOptions {
+  writeText: ClipboardTextWriter | null;
+}
+
+export interface PapyroTableExtensionOptions {
+  writeText?: ClipboardTextWriter | null;
+}
 
 export const PAPYRO_TABLE_CELL_RESET_ATTRS = Object.freeze([
   "align",
   "backgroundColor",
-]);
+] as const satisfies readonly TableCellResetAttribute[]);
 
-function escapeHtmlAttribute(value) {
+function escapeHtmlAttribute(value: unknown): string {
   return String(value ?? "")
     .replace(/&/g, "&amp;")
     .replace(/"/g, "&quot;")
@@ -24,25 +74,27 @@ function escapeHtmlAttribute(value) {
     .replace(/>/g, "&gt;");
 }
 
-function normalizeCellAlign(value) {
+function normalizeCellAlign(value: unknown): TableCellAlign | null {
   const align = String(value ?? "").trim().toLowerCase();
-  return align === "left" || align === "center" || align === "right" ? align : null;
+  return align === "left" || align === "center" || align === "right"
+    ? align
+    : null;
 }
 
-function tableCellNodes(rowNode) {
+function tableCellNodes(rowNode: PapyroTableJSONNode): PapyroTableJSONNode[] {
   return Array.isArray(rowNode?.content) ? rowNode.content : [];
 }
 
-function isDefaultSpan(value) {
+function isDefaultSpan(value: unknown): boolean {
   return value === null || value === undefined || value === 1;
 }
 
-function hasColumnWidth(cellNode) {
+function hasColumnWidth(cellNode: PapyroTableJSONNode): boolean {
   return Array.isArray(cellNode?.attrs?.colwidth) &&
     cellNode.attrs.colwidth.some((width) => Number.isFinite(Number(width)));
 }
 
-function tableNeedsHtmlMarkdown(node) {
+function tableNeedsHtmlMarkdown(node: PapyroTableJSONNode): boolean {
   const rows = Array.isArray(node?.content) ? node.content : [];
   if (rows.length === 0) return false;
 
@@ -51,7 +103,7 @@ function tableNeedsHtmlMarkdown(node) {
     firstRowCells.every((cell) => cell?.type === "tableHeader");
   if (!firstRowIsHeader) return true;
 
-  const columnAlignments = [];
+  const columnAlignments: Array<TableCellAlign | null | undefined> = [];
 
   for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1) {
     const cells = tableCellNodes(rows[rowIndex]);
@@ -77,20 +129,23 @@ function tableNeedsHtmlMarkdown(node) {
   return false;
 }
 
-function htmlAttributes(attributes) {
+function htmlAttributes(attributes: HtmlAttributes): string {
   const rendered = Object.entries(attributes)
     .filter(([, value]) => value !== null && value !== undefined && value !== "")
     .map(([name, value]) => `${name}="${escapeHtmlAttribute(value)}"`);
   return rendered.length > 0 ? ` ${rendered.join(" ")}` : "";
 }
 
-function renderHtmlTableCell(cellNode, helpers) {
+function renderHtmlTableCell(
+  cellNode: PapyroTableJSONNode,
+  helpers: MarkdownRendererHelpers,
+): string {
   const attrs = cellNode?.attrs ?? {};
   const tag = cellNode?.type === "tableHeader" ? "th" : "td";
-  const style = [];
+  const style: string[] = [];
   const align = normalizeCellAlign(attrs.align);
   const backgroundColor = attrs.backgroundColor ?? null;
-  const htmlAttrs = {};
+  const htmlAttrs: HtmlAttributes = {};
 
   if (align) style.push(`text-align: ${align}`);
   if (backgroundColor) {
@@ -102,13 +157,16 @@ function renderHtmlTableCell(cellNode, helpers) {
   if (hasColumnWidth(cellNode)) htmlAttrs.colwidth = attrs.colwidth.join(",");
   if (style.length > 0) htmlAttrs.style = style.join("; ");
 
-  const content = Array.isArray(cellNode?.content)
+  const content = Array.isArray(cellNode.content)
     ? helpers.renderChildren(cellNode.content, "<br>")
     : "";
   return `<${tag}${htmlAttributes(htmlAttrs)}>${content}</${tag}>`;
 }
 
-function renderHtmlTableMarkdown(node, helpers) {
+function renderHtmlTableMarkdown(
+  node: PapyroTableJSONNode,
+  helpers: MarkdownRendererHelpers,
+): string {
   const rows = Array.isArray(node?.content) ? node.content : [];
   const body = rows
     .map((rowNode) =>
@@ -120,7 +178,7 @@ function renderHtmlTableMarkdown(node, helpers) {
   return `<table><tbody>${body}</tbody></table>`;
 }
 
-function parseCellBackgroundColor(element) {
+function parseCellBackgroundColor(element: HTMLElement): string | null {
   return (
     element.getAttribute("data-cell-background") ||
     element.style.backgroundColor ||
@@ -128,7 +186,9 @@ function parseCellBackgroundColor(element) {
   );
 }
 
-function renderCellBackgroundColor(attributes) {
+function renderCellBackgroundColor(attributes: {
+  backgroundColor?: string | null;
+}): Record<string, string> {
   if (!attributes.backgroundColor) return {};
   return {
     "data-cell-background": attributes.backgroundColor,
@@ -146,7 +206,10 @@ function createPapyroCellAttributes() {
   };
 }
 
-function resetTableCellAttrs(attrs, names = PAPYRO_TABLE_CELL_RESET_ATTRS) {
+function resetTableCellAttrs(
+  attrs: ProseMirrorNode["attrs"] | null | undefined,
+  names: readonly TableCellResetAttribute[] = PAPYRO_TABLE_CELL_RESET_ATTRS,
+): ProseMirrorNode["attrs"] | null {
   const nextAttrs = { ...(attrs ?? {}) };
   let changed = false;
 
@@ -160,16 +223,18 @@ function resetTableCellAttrs(attrs, names = PAPYRO_TABLE_CELL_RESET_ATTRS) {
   return changed ? nextAttrs : null;
 }
 
-function isTextNode(node) {
-  return node?.isText === true || node?.type?.name === "text" || node?.type === "text";
+function isTextNode(node: ProseMirrorNode | null | undefined): boolean {
+  const nodeType = node?.type as ProseMirrorNode["type"] | string | undefined;
+  return node?.isText === true ||
+    (typeof nodeType === "string" ? nodeType === "text" : nodeType?.name === "text");
 }
 
-function clipboardApi() {
+function clipboardApi(): Clipboard | null {
   if (typeof globalThis === "undefined") return null;
   return globalThis.navigator?.clipboard ?? null;
 }
 
-function tableCellClipboardText(cell) {
+function tableCellClipboardText(cell: ProseMirrorNode | null | undefined): string {
   if (!cell) return "";
   const text =
     typeof cell.textBetween === "function"
@@ -182,7 +247,7 @@ function tableCellClipboardText(cell) {
     .trim();
 }
 
-function currentSelectedTableRect(state) {
+function currentSelectedTableRect(state: EditorState): TableRect | null {
   try {
     return selectedRect(state);
   } catch (_error) {
@@ -190,10 +255,10 @@ function currentSelectedTableRect(state) {
   }
 }
 
-function selectedTableCellTextRanges(selection) {
+function selectedTableCellTextRanges(selection: TableSelectionLike) {
   if (typeof selection?.forEachCell !== "function") return [];
 
-  const ranges = [];
+  const ranges: Array<{ from: number; to: number }> = [];
   selection.forEachCell((cell, cellPos) => {
     if (!cell || !Number.isFinite(cellPos)) return;
     if (isTextNode(cell)) {
@@ -201,7 +266,7 @@ function selectedTableCellTextRanges(selection) {
       return;
     }
 
-    cell.descendants?.((node, offset) => {
+    cell.descendants?.((node: ProseMirrorNode, offset: number) => {
       if (!isTextNode(node)) return true;
 
       const from = cellPos + 1 + offset;
@@ -216,19 +281,19 @@ function selectedTableCellTextRanges(selection) {
   return ranges;
 }
 
-export function selectedTableCellsPlainText(state) {
+export function selectedTableCellsPlainText(state: EditorState): string {
   const rect = currentSelectedTableRect(state);
 
   const table = rect?.table;
-  const map = rect?.map;
+  const map: TableMap | undefined = rect?.map;
   if (!table || !map || !Number.isInteger(map.width) || map.width <= 0) {
     return "";
   }
 
-  const used = new Set();
-  const rows = [];
+  const used = new Set<number>();
+  const rows: string[] = [];
   for (let row = rect.top; row < rect.bottom; row += 1) {
-    const cells = [];
+    const cells: string[] = [];
     for (let column = rect.left; column < rect.right; column += 1) {
       const relativePos = map.map[row * map.width + column];
       if (!Number.isFinite(relativePos) || used.has(relativePos)) {
@@ -258,7 +323,10 @@ export function selectedTableCellsPlainText(state) {
   return rows.join("\n");
 }
 
-export async function writeTableTextToClipboard(text, writeText = null) {
+export async function writeTableTextToClipboard(
+  text: unknown,
+  writeText: ClipboardTextWriter | null = null,
+): Promise<boolean> {
   const value = String(text ?? "");
   if (!value) return false;
   const clipboard = clipboardApi();
@@ -269,7 +337,11 @@ export async function writeTableTextToClipboard(text, writeText = null) {
   return true;
 }
 
-export function resetSelectedTableCellAttrs(selection, tr, names = PAPYRO_TABLE_CELL_RESET_ATTRS) {
+export function resetSelectedTableCellAttrs(
+  selection: TableSelectionLike | null | undefined,
+  tr: Transaction | null | undefined,
+  names: readonly TableCellResetAttribute[] = PAPYRO_TABLE_CELL_RESET_ATTRS,
+): boolean {
   if (typeof selection?.forEachCell !== "function" || !tr) return false;
 
   let changed = false;
@@ -283,7 +355,12 @@ export function resetSelectedTableCellAttrs(selection, tr, names = PAPYRO_TABLE_
   return changed;
 }
 
-export function setSelectedTableCellTextColor(selection, tr, markType, color = null) {
+export function setSelectedTableCellTextColor(
+  selection: TableSelectionLike | null | undefined,
+  tr: Transaction | null | undefined,
+  markType: TextStyleMarkType | null | undefined,
+  color: string | null = null,
+): boolean {
   if (typeof selection?.forEachCell !== "function" || !tr || !markType) return false;
 
   const ranges = selectedTableCellTextRanges(selection);
@@ -316,13 +393,13 @@ export const PapyroTableCellContentActions = Extension.create({
   addOptions() {
     return {
       writeText: null,
-    };
+    } satisfies PapyroTableCellContentActionsOptions;
   },
 
   addCommands() {
     return {
       clearSelectedTableCells:
-        (options = {}) =>
+        (options: TableCellContentActionOptions = {}) =>
         ({ state, dispatch }) => {
           const resetAttrs = Boolean(options?.resetAttrs);
           if (!resetAttrs) return deleteCellSelection(state, dispatch);
@@ -352,10 +429,10 @@ export const PapyroTableCellContentActions = Extension.create({
           return true;
         },
       setSelectedTableCellTextColor:
-        (color = null) =>
+        (color: string | null = null) =>
         ({ state, dispatch }) => {
           if (typeof state?.selection?.forEachCell !== "function") return false;
-          const markType = state.schema?.marks?.textStyle ?? null;
+          const markType = state.schema?.marks?.textStyle as TextStyleMarkType | undefined;
           if (!markType) return false;
           if (dispatch) {
             const tr = state.tr;
@@ -378,19 +455,21 @@ export const PapyroTableCellContentActions = Extension.create({
 });
 
 export const PapyroTable = Table.extend({
-  renderMarkdown: (node, helpers) =>
-    tableNeedsHtmlMarkdown(node)
-      ? renderHtmlTableMarkdown(node, helpers)
-      : renderTableToMarkdown(node, helpers),
+  renderMarkdown: (node: JSONContent, helpers: MarkdownRendererHelpers) => {
+    const tableNode = node as PapyroTableJSONNode;
+    return tableNeedsHtmlMarkdown(tableNode)
+      ? renderHtmlTableMarkdown(tableNode, helpers)
+      : renderTableToMarkdown(tableNode, helpers);
+  },
 });
 
 class PapyroTableView extends TableView {
-  constructor(node, cellMinWidth, view) {
-    super(node, cellMinWidth, view);
+  constructor(node: ProseMirrorNode, cellMinWidth: number) {
+    super(node, cellMinWidth);
     this.#mountOfficialTableContainers();
   }
 
-  update(node) {
+  update(node: ProseMirrorNode): boolean {
     const updated = super.update(node);
     if (updated) {
       this.#mountOfficialTableContainers();
@@ -398,7 +477,7 @@ class PapyroTableView extends TableView {
     return updated;
   }
 
-  #mountOfficialTableContainers() {
+  #mountOfficialTableContainers(): void {
     this.dom.dataset.contentType = "table";
     if (!this.dom.querySelector?.(":scope > .table-controls")) {
       const controls = document.createElement("div");
@@ -413,7 +492,9 @@ class PapyroTableView extends TableView {
   }
 }
 
-export function createPapyroTableExtensions({ writeText = null } = {}) {
+export function createPapyroTableExtensions({
+  writeText = null,
+}: PapyroTableExtensionOptions = {}): TiptapExtension[] {
   return [
     PapyroTable.configure({
       resizable: true,

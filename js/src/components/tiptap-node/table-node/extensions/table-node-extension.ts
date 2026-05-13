@@ -1,1 +1,1 @@
-export { TableKit } from "../../../../tiptap-table.js";
+export { TableKit } from "../../../../tiptap-table.ts";
