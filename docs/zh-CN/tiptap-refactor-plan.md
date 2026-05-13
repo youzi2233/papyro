@@ -319,7 +319,7 @@ js/src/
 
 ### 阶段 8：测试和验证
 
-- [ ] 更新 `tiptap-runtime-smoke.js` 适配新架构
+- [x] 更新 `tiptap-runtime-smoke.js` 适配新架构
 - [ ] 更新所有现有测试文件适配新模块路径
 - [ ] 为每个官方组件接入添加 Markdown 序列化往返测试
 - [ ] 验证 `scripts/check-editor-markdown-gate.js` 通过

@@ -319,7 +319,7 @@ These features are unique to Papyro, not in the official template, and need to b
 
 ### Phase 8: Testing and Verification
 
-- [ ] Update `tiptap-runtime-smoke.js` for new architecture
+- [x] Update `tiptap-runtime-smoke.js` for new architecture
 - [ ] Update all existing test files for new module paths
 - [ ] Add Markdown serialization round-trip tests for each official component
 - [ ] Verify `scripts/check-editor-markdown-gate.js` passes

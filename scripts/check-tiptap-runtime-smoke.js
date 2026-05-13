@@ -8,7 +8,7 @@ const { checkTiptapRuntimeSmoke } = await importBundledModule(
 
 const DEFAULT_FIXTURE = "js/test/fixtures/tiptap-release-smoke.md";
 
-function main() {
+async function main() {
   const args = process.argv.slice(2);
 
   if (args.includes("--help") || args.includes("-h")) {
@@ -25,7 +25,7 @@ function main() {
   }
 
   const fixturePath = args[0] ?? DEFAULT_FIXTURE;
-  const failures = checkTiptapRuntimeSmoke(readFileSync(fixturePath, "utf8"));
+  const failures = await checkTiptapRuntimeSmoke(readFileSync(fixturePath, "utf8"));
 
   if (failures.length > 0) {
     console.error("Tiptap runtime smoke check failed:");
@@ -49,4 +49,4 @@ release fixture, checks rendered document nodes, and verifies Markdown
 round-trip output remains stable.`);
 }
 
-main();
+await main();

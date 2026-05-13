@@ -6,6 +6,7 @@ import { StarterKit } from "@tiptap/starter-kit";
 
 import { createPapyroCalloutExtensions } from "./tiptap-callout.js";
 import { createPapyroCodeBlockExtensions } from "./tiptap-code-block.js";
+import { UiState } from "./components/tiptap-extension/ui-state-extension.ts";
 import { createPapyroImageExtensions } from "./tiptap-image.js";
 import { createPapyroMathExtensions } from "./tiptap-math.js";
 import { createPapyroMermaidExtensions } from "./tiptap-mermaid.js";
@@ -96,6 +97,7 @@ export function createPapyroTiptapExtensions({
     UniqueID.configure({
       types: PAPYRO_UNIQUE_ID_NODE_TYPES,
     }),
+    UiState,
     ...createPapyroCodeBlockExtensions({
       nodeViewRenderer: codeBlockNodeViewRenderer,
     }),

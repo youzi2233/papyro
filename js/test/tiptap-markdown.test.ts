@@ -535,6 +535,13 @@ test("Tiptap release smoke fixture preserves editor-critical block semantics", (
   assert.match(serialized, /^```mermaid\nflowchart LR/m);
 });
 
+test("Papyro Tiptap extensions include official UI state storage", () => {
+  const extensions = createPapyroTiptapExtensions();
+  const uiState = extensions.find((extension) => extension.name === "uiState");
+
+  assert.ok(uiState, "uiState extension should be installed for official chrome hooks");
+});
+
 test("Tiptap Markdown serialization keeps semantic Markdown output", () => {
   const manager = createPapyroMarkdownManager();
   const output = serializeTiptapMarkdown(parseTiptapMarkdown(markdownFixture, manager), manager);
