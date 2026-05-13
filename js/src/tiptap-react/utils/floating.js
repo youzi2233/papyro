@@ -2,7 +2,7 @@ import {
   defaultWindow,
   positionFloatingElement,
   viewportSize,
-} from "../../tiptap-ui-primitives.js";
+} from "../../tiptap-ui-primitives.ts";
 
 export function usableFloatingRect(rect) {
   if (!rect) return false;

@@ -1,18 +1,125 @@
 export const DEFAULT_FLOATING_MARGIN = 10;
 
-export function clamp(value, min, max) {
+type DocumentLike = {
+  body?: ElementLike;
+  defaultView?: WindowLike | null;
+  documentElement?: {
+    clientWidth?: number;
+    clientHeight?: number;
+  };
+  createElement?: (tagName: string) => ElementLike;
+  addEventListener?: (
+    type: string,
+    listener: (event: EventLike) => void,
+    options?: boolean | AddEventListenerOptions,
+  ) => void;
+  removeEventListener?: (
+    type: string,
+    listener: (event: EventLike) => void,
+    options?: boolean | EventListenerOptions,
+  ) => void;
+};
+
+type WindowLike = {
+  innerWidth?: number;
+  innerHeight?: number;
+  addEventListener?: (type: string, listener: (event: EventLike) => void) => void;
+  removeEventListener?: (type: string, listener: (event: EventLike) => void) => void;
+};
+
+type ClassListLike = {
+  toggle?: (name: string, force?: boolean) => void;
+};
+
+type ElementLike = {
+  id?: string;
+  className?: string;
+  hidden?: boolean;
+  tabIndex?: number;
+  offsetWidth?: number;
+  offsetHeight?: number;
+  ownerDocument?: DocumentLike;
+  dom?: {
+    ownerDocument?: DocumentLike;
+  };
+  dataset?: Record<string, string | undefined>;
+  attributes?: Map<string, string>;
+  classList?: ClassListLike;
+  children?: Iterable<ElementLike> | ArrayLike<ElementLike>;
+  style?: {
+    left?: string;
+    top?: string;
+  };
+  appendChild?: (child: ElementLike) => void;
+  addEventListener?: (type: string, listener: (event: EventLike) => void) => void;
+  setAttribute?: (name: string, value: string) => void;
+  getAttribute?: (name: string) => string | null;
+  removeAttribute?: (name: string) => void;
+  querySelector?: (selector: string) => ElementLike | null;
+  scrollIntoView?: (options: { block: string; inline: string }) => void;
+  [key: string]: unknown;
+};
+
+type EventLike = {
+  target?: unknown;
+  type?: string;
+  isComposing?: boolean;
+  nativeEvent?: {
+    isComposing?: boolean;
+  };
+  keyCode?: number;
+  which?: number;
+  key?: string;
+  preventDefault?: () => void;
+  stopPropagation?: () => void;
+  stopImmediatePropagation?: () => void;
+};
+
+type FloatingRect = {
+  left: number;
+  right?: number;
+  top: number;
+  bottom: number;
+};
+
+type FloatingViewport = {
+  width: number;
+  height: number;
+};
+
+type FloatingSize = {
+  width?: number;
+  height?: number;
+  margin?: number;
+};
+
+type FloatingPlacement = "bottom" | "top" | "left" | "right";
+
+type CommandLike = unknown;
+
+function hasMapAttributes(element: ElementLike | null | undefined): element is ElementLike & {
+  attributes: Map<string, string>;
+} {
+  return element?.attributes instanceof Map;
+}
+
+export function clamp(value: number, min: number, max: number) {
   return Math.max(min, Math.min(max, value));
 }
 
-export function defaultDocument() {
+export function defaultDocument(): DocumentLike | null {
   return typeof document === "undefined" ? null : document;
 }
 
-export function defaultWindow(documentRef) {
+export function defaultWindow(documentRef?: DocumentLike | null): WindowLike | null {
   return documentRef?.defaultView ?? (typeof window === "undefined" ? null : window);
 }
 
-export function createElement(documentRef, tagName, className) {
+export function createElement(
+  documentRef: DocumentLike | null | undefined,
+  tagName: string,
+  className?: string,
+) {
   const element = documentRef?.createElement?.(tagName) ?? null;
   if (element && className) {
     element.className = className;
@@ -20,7 +127,11 @@ export function createElement(documentRef, tagName, className) {
   return element;
 }
 
-export function mountFloatingRoot(root, container, documentRef = defaultDocument()) {
+export function mountFloatingRoot(
+  root: ElementLike | null | undefined,
+  container: ElementLike | null | undefined,
+  documentRef = defaultDocument(),
+) {
   if (!root) return;
   (container?.ownerDocument?.body ?? documentRef?.body)?.appendChild(root);
 }
@@ -34,7 +145,7 @@ export function createFloatingDismissController({
   onDismiss = () => {},
   pointerDismissEvent = "pointerdown",
 } = {}) {
-  let removeListeners = [];
+  let removeListeners: Array<() => void> = [];
   let pointerEventHandled = false;
 
   const close = () => {
@@ -43,23 +154,23 @@ export function createFloatingDismissController({
     pointerEventHandled = false;
   };
 
-  const dismissIfOutside = (event) => {
+  const dismissIfOutside = (event: EventLike) => {
     if (contains(event?.target, event)) return;
     if (shouldDismiss(event) === false) return;
     onDismiss(event);
   };
-  const dismissPointer = (event) => {
+  const dismissPointer = (event: EventLike) => {
     pointerEventHandled = true;
     dismissIfOutside(event);
   };
-  const dismissMouse = (event) => {
+  const dismissMouse = (event: EventLike) => {
     if (pointerEventHandled) {
       pointerEventHandled = false;
       return;
     }
     dismissIfOutside(event);
   };
-  const dismissScroll = (event) => {
+  const dismissScroll = (event: EventLike) => {
     if (contains(event?.target, event)) return;
     if (shouldDismissOnScroll(event) === false) return;
     if (shouldDismiss(event) === false) return;
@@ -88,28 +199,28 @@ export function createFloatingDismissController({
   };
 }
 
-function getAttributeValue(element, name) {
+function getAttributeValue(element: ElementLike | null | undefined, name: string) {
   if (typeof element?.getAttribute === "function") {
     return element.getAttribute(name);
   }
-  if (element?.attributes instanceof Map) {
+  if (hasMapAttributes(element)) {
     return element.attributes.get(name) ?? null;
   }
   return element?.[name] ?? null;
 }
 
-function removeAttributeValue(element, name) {
+function removeAttributeValue(element: ElementLike | null | undefined, name: string) {
   if (typeof element?.removeAttribute === "function") {
     element.removeAttribute(name);
     return;
   }
-  if (element?.attributes instanceof Map) {
+  if (hasMapAttributes(element)) {
     element.attributes.delete(name);
   }
   delete element?.[name];
 }
 
-function setVisibilityDataset(element, hidden) {
+function setVisibilityDataset(element: ElementLike, hidden: boolean) {
   const value = hidden ? "false" : "true";
   if (element?.dataset) {
     element.dataset.visible = value;
@@ -118,7 +229,7 @@ function setVisibilityDataset(element, hidden) {
   element?.setAttribute?.("data-visible", value);
 }
 
-function setHiddenFocusState(element, hidden) {
+function setHiddenFocusState(element: ElementLike | null | undefined, hidden: boolean) {
   if (!element) return;
   const attributeKey = "__mnPreviousTabIndexAttribute";
   const propertyKey = "__mnPreviousTabIndexProperty";
@@ -151,8 +262,8 @@ function setHiddenFocusState(element, hidden) {
 }
 
 export function setHidden(
-  element,
-  hidden,
+  element: ElementLike | null | undefined,
+  hidden: boolean,
   { visibilityAttributes = false, inertFocus = false } = {},
 ) {
   if (!element) return;
@@ -171,11 +282,11 @@ export function setHidden(
   }
 }
 
-export function commandElementId(ownerId, index) {
+export function commandElementId(ownerId: string, index: number) {
   return `${ownerId}-item-${index}`;
 }
 
-export function isComposingKeyboardEvent(event) {
+export function isComposingKeyboardEvent(event: EventLike | null | undefined) {
   return Boolean(
     event?.isComposing ||
       event?.nativeEvent?.isComposing ||
@@ -185,7 +296,7 @@ export function isComposingKeyboardEvent(event) {
   );
 }
 
-export function viewportSize(reference, fallbackWindow) {
+export function viewportSize(reference: ElementLike, fallbackWindow?: WindowLike | null) {
   const documentElement =
     reference?.ownerDocument?.documentElement ?? reference?.dom?.ownerDocument?.documentElement;
   return {
@@ -194,7 +305,15 @@ export function viewportSize(reference, fallbackWindow) {
   };
 }
 
-export function positionFloatingElement(element, rect, { viewport, size, placement = "bottom" }) {
+export function positionFloatingElement(
+  element: ElementLike | null | undefined,
+  rect: FloatingRect | null | undefined,
+  {
+    viewport,
+    size,
+    placement = "bottom",
+  }: { viewport?: FloatingViewport; size?: FloatingSize; placement?: FloatingPlacement },
+) {
   if (!element || !rect || !viewport) return;
 
   const margin = size?.margin ?? DEFAULT_FLOATING_MARGIN;
@@ -240,18 +359,27 @@ export function positionFloatingElement(element, rect, { viewport, size, placeme
     left = clamp(left, margin, Math.max(margin, viewport.width - width - margin));
   }
 
+  if (!element.style) element.style = {};
   element.style.left = `${left}px`;
   element.style.top = `${top}px`;
 }
 
-export function updateActiveDescendant(root, ownerId, commands, selectedIndex) {
+export function updateActiveDescendant(
+  root: ElementLike | null | undefined,
+  ownerId: string,
+  commands: CommandLike[] | null | undefined,
+  selectedIndex: number,
+) {
   root?.setAttribute(
     "aria-activedescendant",
     commands?.length > 0 ? commandElementId(ownerId, selectedIndex) : "",
   );
 }
 
-function findElementById(root, id) {
+function findElementById(
+  root: ElementLike | null | undefined,
+  id: string,
+): ElementLike | null {
   if (!root || !id) return null;
   if (root.id === id) return root;
   if (typeof root.querySelector === "function") {
@@ -271,7 +399,12 @@ function findElementById(root, id) {
   return null;
 }
 
-export function scrollActiveDescendantIntoView(root, ownerId, commands, selectedIndex) {
+export function scrollActiveDescendantIntoView(
+  root: ElementLike | null | undefined,
+  ownerId: string,
+  commands: CommandLike[] | null | undefined,
+  selectedIndex: number,
+) {
   if (!root || !commands?.length) return false;
   const active = findElementById(root, commandElementId(ownerId, selectedIndex));
   if (!active) return false;
@@ -284,9 +417,12 @@ export function scrollActiveDescendantIntoView(root, ownerId, commands, selected
   return false;
 }
 
-export function menuCommandItems(root, { indexDataset = "commandIndex" } = {}) {
-  const items = [];
-  const visit = (element) => {
+export function menuCommandItems(
+  root: ElementLike | null | undefined,
+  { indexDataset = "commandIndex" } = {},
+) {
+  const items: ElementLike[] = [];
+  const visit = (element: ElementLike | null | undefined) => {
     if (!element) return;
     if (element.dataset?.[indexDataset] != null) {
       items.push(element);
@@ -298,10 +434,10 @@ export function menuCommandItems(root, { indexDataset = "commandIndex" } = {}) {
 }
 
 export function syncMenuActiveDescendant(
-  root,
-  ownerId,
-  commands,
-  selectedIndex,
+  root: ElementLike | null | undefined,
+  ownerId: string,
+  commands: CommandLike[] | null | undefined,
+  selectedIndex: number,
   {
     activeClass = "active",
     ariaSelected = false,
@@ -328,11 +464,14 @@ export function syncMenuActiveDescendant(
   return true;
 }
 
-export function bindPointerActivation(element, run) {
+export function bindPointerActivation(
+  element: ElementLike | null | undefined,
+  run: (() => boolean | void) | null | undefined,
+) {
   if (!element || typeof run !== "function") return;
 
   let pointerActivated = false;
-  const guard = (event) => {
+  const guard = (event: EventLike) => {
     event?.preventDefault?.();
     event?.stopPropagation?.();
     event?.stopImmediatePropagation?.();

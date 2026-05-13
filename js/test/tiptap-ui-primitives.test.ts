@@ -16,7 +16,7 @@ import {
   syncMenuActiveDescendant,
   updateActiveDescendant,
   viewportSize,
-} from "../src/tiptap-ui-primitives.js";
+} from "../src/tiptap-ui-primitives.ts";
 
 function createDocument() {
   const body = {

@@ -14,7 +14,7 @@ import {
   setHidden,
   syncMenuActiveDescendant,
   viewportSize,
-} from "./tiptap-ui-primitives.js";
+} from "./tiptap-ui-primitives.ts";
 
 const DEFAULT_CODE_LANGUAGE = null;
 const DEFAULT_TAB_SIZE = 2;

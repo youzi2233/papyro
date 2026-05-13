@@ -16,7 +16,7 @@ import { createTiptapPasteController } from "./tiptap-paste-controller.js";
 import { createTiptapPreferencesController } from "./tiptap-preferences-controller.js";
 import { createTiptapSourcePaneController } from "./tiptap-source-pane.js";
 import { createTiptapSlashCommandController } from "./tiptap-slash-commands.js";
-import { isComposingKeyboardEvent } from "./tiptap-ui-primitives.js";
+import { isComposingKeyboardEvent } from "./tiptap-ui-primitives.ts";
 import {
   createPapyroMarkdownManager,
   createPapyroTiptapExtensions,

@@ -40,7 +40,7 @@ const DEFAULT_PATHS = [
   "apps/mobile/assets/styles/tiptap-chrome-block.css",
   "apps/mobile/assets/styles/tiptap-chrome-papyro.css",
   "js/src/editor-runtime.ts",
-  "js/src/tiptap-ui-primitives.js",
+  "js/src/tiptap-ui-primitives.ts",
   "crates/ui/src",
 ];
 const COLOR_PATTERN = /#[0-9a-fA-F]{3,8}\b|rgba?\([^)]*\)|hsla?\([^)]*\)|color-mix\([^)]*\)/g;

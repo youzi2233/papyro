@@ -1,6 +1,6 @@
 import React from "react";
 
-import { commandElementId } from "../../tiptap-ui-primitives.js";
+import { commandElementId } from "../../tiptap-ui-primitives.ts";
 
 function dataAttributes(data = {}) {
   return Object.fromEntries(
