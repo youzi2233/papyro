@@ -1,16 +1,72 @@
 import { mergeAttributes, Node } from "@tiptap/core";
+import type {
+  CommandProps,
+  JSONContent,
+  MarkdownLexerConfiguration,
+  MarkdownParseHelpers,
+  MarkdownRendererHelpers,
+  MarkdownToken,
+} from "@tiptap/core";
+import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
 
-import { normalizeCalloutKind } from "./tiptap-markdown-snippets.ts";
+import {
+  normalizeCalloutKind,
+  type PapyroCalloutKind,
+} from "./tiptap-markdown-snippets.ts";
 
 const CALLOUT_TOKEN = "calloutBlock";
-const CALLOUT_KIND_PATTERN = /^[a-z][a-z0-9_-]{0,31}$/iu;
 
-function calloutKindFromMarker(marker) {
+type CalloutToken = MarkdownToken & {
+  type: typeof CALLOUT_TOKEN;
+  raw: string;
+  kind: PapyroCalloutKind;
+  text: string;
+  tokens: MarkdownToken[];
+};
+
+type BlockquoteLine = {
+  text: string;
+  nextOffset: number;
+};
+
+type ParsedCalloutBlock = {
+  kind: PapyroCalloutKind;
+  body: string;
+  raw: string;
+};
+
+type CalloutAttributes = {
+  kind?: unknown;
+  text?: unknown;
+  pos?: unknown;
+};
+
+type PapyroCalloutJSONNode = JSONContent & {
+  attrs?: {
+    kind?: unknown;
+    [key: string]: unknown;
+  };
+  content?: PapyroCalloutJSONNode[];
+};
+
+declare module "@tiptap/core" {
+  interface Commands<ReturnType> {
+    papyroCallout: {
+      setCalloutBlock: (attributes?: CalloutAttributes) => ReturnType;
+      setCalloutKind: (attributes?: CalloutAttributes) => ReturnType;
+    };
+  }
+}
+
+function calloutKindFromMarker(marker: unknown): PapyroCalloutKind | "" {
   const match = /^\s*\[!([a-z][a-z0-9_-]{0,31})\]\s*$/iu.exec(String(marker ?? ""));
   return match ? normalizeCalloutKind(match[1]) : "";
 }
 
-function readBlockquoteLine(source, offset) {
+function readBlockquoteLine(
+  source: string,
+  offset: number,
+): BlockquoteLine | null {
   if (offset >= source.length) return null;
 
   const lineEnd = source.indexOf("\n", offset);
@@ -26,7 +82,7 @@ function readBlockquoteLine(source, offset) {
   };
 }
 
-function readCalloutBlock(source) {
+function readCalloutBlock(source: unknown): ParsedCalloutBlock | null {
   const text = String(source ?? "");
   const firstLine = readBlockquoteLine(text, 0);
   if (!firstLine) return null;
@@ -51,7 +107,11 @@ function readCalloutBlock(source) {
   };
 }
 
-export function tokenizeCalloutBlock(source, _tokens, lexer) {
+export function tokenizeCalloutBlock(
+  source: string,
+  _tokens: MarkdownToken[],
+  lexer: MarkdownLexerConfiguration,
+): CalloutToken | undefined {
   const parsed = readCalloutBlock(source);
   if (!parsed) return undefined;
 
@@ -81,8 +141,9 @@ export const PapyroCalloutBlock = Node.create({
     return {
       kind: {
         default: "NOTE",
-        parseHTML: (element) => normalizeCalloutKind(element.getAttribute("data-callout-kind")),
-        renderHTML: (attributes) => ({
+        parseHTML: (element: HTMLElement) =>
+          normalizeCalloutKind(element.getAttribute("data-callout-kind")),
+        renderHTML: (attributes: { kind?: unknown }) => ({
           "data-callout-kind": normalizeCalloutKind(attributes.kind).toLowerCase(),
         }),
       },
@@ -93,7 +154,13 @@ export const PapyroCalloutBlock = Node.create({
     return [{ tag: 'aside[data-mn-callout="block"]' }];
   },
 
-  renderHTML({ HTMLAttributes, node }) {
+  renderHTML({
+    HTMLAttributes,
+    node,
+  }: {
+    HTMLAttributes: Record<string, unknown>;
+    node: ProseMirrorNode;
+  }) {
     const kind = normalizeCalloutKind(node.attrs.kind);
     return [
       "aside",
@@ -119,9 +186,8 @@ export const PapyroCalloutBlock = Node.create({
     tokenize: tokenizeCalloutBlock,
   },
 
-  parseMarkdown: (token, helpers) => {
+  parseMarkdown: (token: MarkdownToken, helpers: MarkdownParseHelpers) => {
     const kind = normalizeCalloutKind(token.kind);
-    if (!CALLOUT_KIND_PATTERN.test(kind)) return null;
 
     const content = token.tokens?.length
       ? helpers.parseBlockChildren?.(token.tokens) ?? helpers.parseChildren(token.tokens)
@@ -130,7 +196,10 @@ export const PapyroCalloutBlock = Node.create({
     return helpers.createNode("calloutBlock", { kind }, content);
   },
 
-  renderMarkdown: (node, helpers) => {
+  renderMarkdown: (
+    node: PapyroCalloutJSONNode,
+    helpers: MarkdownRendererHelpers,
+  ) => {
     const kind = normalizeCalloutKind(node.attrs?.kind);
     const content = Array.isArray(node.content) ? helpers.renderChildren(node.content, "\n") : "";
     const lines = content.trim() ? content.split("\n") : ["Callout text"];
@@ -141,8 +210,8 @@ export const PapyroCalloutBlock = Node.create({
   addCommands() {
     return {
       setCalloutBlock:
-        (attributes = {}) =>
-        ({ commands }) =>
+        (attributes: CalloutAttributes = {}) =>
+        ({ commands }: CommandProps) =>
           commands.insertContent({
             type: this.name,
             attrs: {
@@ -156,8 +225,8 @@ export const PapyroCalloutBlock = Node.create({
             ],
           }),
       setCalloutKind:
-        (attributes = {}) =>
-        ({ state, tr, dispatch }) => {
+        (attributes: CalloutAttributes = {}) =>
+        ({ state, tr, dispatch }: CommandProps) => {
           const kind = normalizeCalloutKind(attributes.kind);
           const explicitPos = Number(attributes.pos);
           const explicitNode = Number.isSafeInteger(explicitPos)

@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import {
   createPapyroCalloutExtensions,
   tokenizeCalloutBlock,
-} from "../src/tiptap-callout.js";
+} from "../src/tiptap-callout.ts";
 
 test("Papyro callout extensions expose the callout block node", () => {
   const extensions = createPapyroCalloutExtensions();
