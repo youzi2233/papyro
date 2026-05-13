@@ -1,4 +1,6 @@
-import { PAPYRO_CALLOUT_KIND_OPTIONS } from "./tiptap-markdown-snippets.ts";
+import type { JSONContent } from "@tiptap/core";
+import type { PapyroTurnIntoEditor } from "./tiptap-turn-into-commands";
+import { PAPYRO_CALLOUT_KIND_OPTIONS } from "./tiptap-markdown-snippets";
 import {
   PAPYRO_CODE_LANGUAGE_OPTIONS,
   codeBlockLanguageDisplayLabel,
@@ -9,36 +11,190 @@ import {
   applyMarkToBlockText,
   PAPYRO_HIGHLIGHT_OPTIONS,
   PAPYRO_TEXT_COLOR_OPTIONS,
-} from "./tiptap-text-style.ts";
+} from "./tiptap-text-style";
 import {
   blockActionSubmenuDescription,
   blockActionSubmenuLabel,
   localizeBlockAction,
   normalizeTiptapLanguage,
-} from "./tiptap-i18n.ts";
+} from "./tiptap-i18n";
 import { serializeTiptapMarkdown } from "./tiptap-markdown.js";
 import {
   blockSiblingDrop,
   canMoveTiptapBlock,
   moveTiptapBlock,
   targetEndPos,
-} from "./tiptap-block-move.ts";
-import { PAPYRO_TIPTAP_TURN_INTO_COMMANDS } from "./tiptap-turn-into-commands.ts";
+} from "./tiptap-block-move";
+import { PAPYRO_TIPTAP_TURN_INTO_COMMANDS } from "./tiptap-turn-into-commands";
 
-function normalizeCommandId(value) {
+type EditorCommand = (...args: unknown[]) => unknown;
+type EditorCommandMap = Record<string, EditorCommand | undefined>;
+
+type MarkdownManagerLike = {
+  serialize: (doc: JSONContent) => string;
+};
+
+type BlockActionNode = {
+  nodeSize?: number;
+  text?: string;
+  attrs?: Record<string, unknown>;
+  type?: string | {
+    name?: string;
+  };
+  content?: BlockActionNode[] | {
+    content?: BlockActionNode[];
+  };
+  toJSON?: () => JSONContent;
+};
+
+export type TiptapBlockActionTarget = {
+  pos?: number | null;
+  node?: BlockActionNode | null;
+  kind?: string | null;
+  block?: {
+    pmViewDesc?: {
+      node?: BlockActionNode | null;
+    } | null;
+  } | null;
+};
+
+export type TiptapBlockActionEditor = PapyroTurnIntoEditor & {
+  commands?: EditorCommandMap;
+  state?: {
+    doc?: {
+      nodeAt?: (pos: number) => BlockActionNode | null;
+      textBetween?: (
+        from: number,
+        to: number,
+        blockSeparator?: string,
+        leafText?: string,
+      ) => string;
+    } | null;
+    schema?: {
+      marks?: Record<string, unknown>;
+    };
+  };
+  storage?: {
+    markdown?: {
+      manager?: MarkdownManagerLike | null;
+    };
+  };
+  view?: {
+    dispatch?: (transaction: unknown) => unknown;
+  };
+};
+
+export type TiptapBlockActionContext = {
+  editor?: TiptapBlockActionEditor | null;
+  target?: TiptapBlockActionTarget | null;
+  entry?: {
+    preferences?: {
+      language?: unknown;
+    };
+  } | null;
+  language?: unknown;
+};
+
+type TiptapBlockActionMeta = {
+  codeLanguage?: string | null;
+  [key: string]: unknown;
+} | null;
+
+type TiptapBlockActionInput = {
+  id: string;
+  title: string;
+  description: string;
+  group: string;
+  icon: string;
+  meta?: TiptapBlockActionMeta;
+  visibleInBlockMenu?: boolean;
+  shortcut?: string;
+  priority?: number;
+  tone?: string;
+  submenu?: string | null;
+  enabled?: (context: TiptapBlockActionContext) => boolean;
+  run: (context: TiptapBlockActionContext) => boolean;
+};
+
+export type TiptapBlockAction = Readonly<{
+  id: string;
+  title: string;
+  description: string;
+  group: string;
+  icon: string;
+  meta: TiptapBlockActionMeta;
+  visibleInBlockMenu: boolean;
+  shortcut: string;
+  priority: number;
+  tone: string;
+  submenu: string | null;
+  enabled: (context: TiptapBlockActionContext) => boolean;
+  run: (context: TiptapBlockActionContext) => boolean;
+}>;
+
+type BlockActionMenuCommand = {
+  id: string;
+  title: string;
+  description: string;
+  group: string;
+  groupKey: string;
+  icon: string;
+  meta?: TiptapBlockActionMeta;
+  shortcut: string;
+  tone: string;
+  visibleInBlockMenu?: boolean;
+  submenu?: string | null;
+  priority?: number;
+  active?: boolean;
+  children?: BlockActionMenuCommand[];
+};
+
+type ListedBlockActionCommand = BlockActionMenuCommand & {
+  visibleInBlockMenu: boolean;
+  submenu: string | null;
+  priority: number;
+};
+
+export type TiptapBlockActionResult = {
+  ok: boolean;
+  commandId: string;
+  error: "unknown_block_action" | "block_action_failed" | null;
+};
+
+type BlockMoveEditorInput = Parameters<typeof blockSiblingDrop>[0];
+type BlockMoveTargetInput = Parameters<typeof blockSiblingDrop>[1];
+type TargetEndInput = Parameters<typeof targetEndPos>[0];
+type TextStyleEditorInput = Parameters<typeof applyMarkToBlockText>[0];
+type TextStyleTargetInput = Parameters<typeof applyMarkToBlockText>[1];
+type MarkdownSerializeManager = Parameters<typeof serializeTiptapMarkdown>[1];
+type SetCodeBlockLanguage = (
+  editor: TiptapBlockActionEditor | null | undefined,
+  language: unknown,
+  pos?: number | null,
+) => boolean;
+
+function isFiniteNumber(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value);
+}
+
+function normalizeCommandId(value: unknown): string {
   return String(value ?? "").trim().toLowerCase();
 }
 
-function freezeCommand(command) {
+function freezeCommand<T extends object>(command: T): Readonly<T> {
   return Object.freeze({ ...command });
 }
 
-function clipboardApi() {
+function clipboardApi(): Clipboard | null {
   if (typeof globalThis === "undefined") return null;
   return globalThis.navigator?.clipboard ?? null;
 }
 
-function editorCommand(editor, commandName, ...args) {
+function editorCommand(
+  editor: TiptapBlockActionEditor | null | undefined,
+  commandName: string,
+  ...args: unknown[]
+): boolean {
   const command = editor?.commands?.[commandName];
   if (typeof command !== "function") {
     return false;
@@ -46,43 +202,60 @@ function editorCommand(editor, commandName, ...args) {
   return command(...args) !== false;
 }
 
-function focusEditor(editor, pos = null) {
-  if (Number.isFinite(pos)) {
+function focusEditor(
+  editor: TiptapBlockActionEditor | null | undefined,
+  pos: number | null = null,
+): void {
+  if (isFiniteNumber(pos)) {
     editor?.commands?.focus?.(pos);
   } else {
     editor?.commands?.focus?.();
   }
 }
 
-function insertMarkdownAt(editor, markdown, pos) {
-  if (typeof editor?.commands?.insertContentAt === "function" && Number.isFinite(pos)) {
+function insertMarkdownAt(
+  editor: TiptapBlockActionEditor | null | undefined,
+  markdown: string,
+  pos: number | null,
+): boolean {
+  if (typeof editor?.commands?.insertContentAt === "function" && isFiniteNumber(pos)) {
     return editor.commands.insertContentAt(pos, markdown, { contentType: "markdown" }) !== false;
   }
   return editorCommand(editor, "insertContent", markdown, { contentType: "markdown" });
 }
 
-function insertMarkdown(editor, markdown) {
+function insertMarkdown(
+  editor: TiptapBlockActionEditor | null | undefined,
+  markdown: string,
+): boolean {
   return editorCommand(editor, "insertContent", markdown, { contentType: "markdown" });
 }
 
-function nodeToJson(node) {
+function nodeToJson(node: BlockActionNode | null | undefined): JSONContent | null {
   if (!node) return null;
   if (typeof node.toJSON === "function") return node.toJSON();
   return {
-    type: node.type?.name ?? node.type ?? "paragraph",
+    type: typeof node.type === "string" ? node.type : node.type?.name ?? "paragraph",
     text: node.text,
     attrs: node.attrs,
     content: Array.isArray(node.content)
-      ? node.content
-      : node.content?.content?.map?.((child) => nodeToJson(child)),
+      ? node.content.map((child) => nodeToJson(child) ?? {})
+      : node.content?.content?.map?.((child) => nodeToJson(child) ?? {}),
   };
 }
 
-function readTargetMarkdown(editor, target) {
+function blockTargetEndPos(target: TiptapBlockActionTarget | null | undefined): number | null {
+  return targetEndPos(target as TargetEndInput);
+}
+
+function readTargetMarkdown(
+  editor: TiptapBlockActionEditor | null | undefined,
+  target: TiptapBlockActionTarget | null | undefined,
+): string {
   const from = target?.pos;
-  const to = targetEndPos(target);
+  const to = blockTargetEndPos(target);
   const doc = editor?.state?.doc;
-  if (!Number.isFinite(from) || !Number.isFinite(to) || to <= from || !doc) {
+  if (!isFiniteNumber(from) || !isFiniteNumber(to) || to <= from || !doc) {
     return "";
   }
 
@@ -90,7 +263,12 @@ function readTargetMarkdown(editor, target) {
     try {
       const node = target?.node ?? (typeof doc.nodeAt === "function" ? doc.nodeAt(from) : null);
       const json = nodeToJson(node);
-      const markdown = json ? serializeTiptapMarkdown(json, editor.storage.markdown.manager) : "";
+      const markdown = json
+        ? serializeTiptapMarkdown(
+            json,
+            editor.storage.markdown.manager as MarkdownSerializeManager,
+          )
+        : "";
       if (typeof markdown === "string" && markdown.trim()) return markdown.trim();
     } catch (_error) {
       // Fall back to plain text when Markdown serialization is unavailable for a custom node.
@@ -103,24 +281,32 @@ function readTargetMarkdown(editor, target) {
   return "";
 }
 
-function readTargetText(editor, target) {
+function readTargetText(
+  editor: TiptapBlockActionEditor | null | undefined,
+  target: TiptapBlockActionTarget | null | undefined,
+): string {
   const from = target?.pos;
-  const to = targetEndPos(target);
+  const to = blockTargetEndPos(target);
   const doc = editor?.state?.doc;
-  if (!Number.isFinite(from) || !Number.isFinite(to) || typeof doc?.textBetween !== "function") {
+  if (!isFiniteNumber(from) || !isFiniteNumber(to) || typeof doc?.textBetween !== "function") {
     return "";
   }
   return doc.textBetween(from, to, "\n", "\n").trim();
 }
 
-async function writeClipboard(text) {
+async function writeClipboard(text: string): Promise<boolean> {
   const clipboard = clipboardApi();
   if (typeof clipboard?.writeText !== "function") return false;
   await clipboard.writeText(text);
   return true;
 }
 
-function runEditorCommand(editor, commandName, args = [], fallbackMarkdown = null) {
+function runEditorCommand(
+  editor: TiptapBlockActionEditor | null | undefined,
+  commandName: string,
+  args: unknown[] = [],
+  fallbackMarkdown: string | null = null,
+): boolean {
   const ok = editorCommand(editor, commandName, ...args);
   if (!ok && typeof fallbackMarkdown === "string") {
     return insertMarkdown(editor, fallbackMarkdown);
@@ -128,32 +314,54 @@ function runEditorCommand(editor, commandName, args = [], fallbackMarkdown = nul
   return ok;
 }
 
-function canRunEditorCommand(editor, commandName) {
+function canRunEditorCommand(
+  editor: TiptapBlockActionEditor | null | undefined,
+  commandName: string,
+): boolean {
   return typeof editor?.commands?.[commandName] === "function";
 }
 
-function deleteTarget(editor, target) {
+function deleteTarget(
+  editor: TiptapBlockActionEditor | null | undefined,
+  target: TiptapBlockActionTarget | null | undefined,
+): boolean {
   const from = target?.pos;
-  const to = targetEndPos(target);
-  if (Number.isFinite(from) && Number.isFinite(to) && to > from) {
+  const to = blockTargetEndPos(target);
+  if (isFiniteNumber(from) && isFiniteNumber(to) && to > from) {
     return editorCommand(editor, "deleteRange", { from, to });
   }
   return editorCommand(editor, "deleteNode", target?.kind);
 }
 
-function duplicateTarget(editor, target) {
+function duplicateTarget(
+  editor: TiptapBlockActionEditor | null | undefined,
+  target: TiptapBlockActionTarget | null | undefined,
+): boolean {
   const markdown = readTargetMarkdown(editor, target);
-  const position = targetEndPos(target);
-  if (!markdown || !Number.isFinite(position)) return false;
+  const position = blockTargetEndPos(target);
+  if (!markdown || !isFiniteNumber(position)) return false;
   return insertMarkdownAt(editor, `\n${markdown}\n`, position);
 }
 
-function moveTarget(editor, target, direction) {
-  const drop = blockSiblingDrop(editor, target, direction);
-  return drop ? moveTiptapBlock(editor, target, drop) : false;
+function moveTarget(
+  editor: TiptapBlockActionEditor | null | undefined,
+  target: TiptapBlockActionTarget | null | undefined,
+  direction: "up" | "down",
+): boolean {
+  const drop = blockSiblingDrop(
+    editor as BlockMoveEditorInput,
+    target as BlockMoveTargetInput,
+    direction,
+  );
+  return drop
+    ? moveTiptapBlock(editor as BlockMoveEditorInput, target as BlockMoveTargetInput, drop)
+    : false;
 }
 
-function clearTargetFormatting(editor, target) {
+function clearTargetFormatting(
+  editor: TiptapBlockActionEditor | null | undefined,
+  target: TiptapBlockActionTarget | null | undefined,
+): boolean {
   let ran = false;
   if (typeof editor?.commands?.unsetAllMarks === "function") {
     ran = editorCommand(editor, "unsetAllMarks") !== false || ran;
@@ -170,44 +378,63 @@ function clearTargetFormatting(editor, target) {
   return ran;
 }
 
-function targetNodeName(target) {
-  return target?.node?.type?.name ?? target?.node?.type ?? target?.kind ?? "";
+function targetNodeName(target: TiptapBlockActionTarget | null | undefined): string {
+  const type = target?.node?.type;
+  return (typeof type === "string" ? type : type?.name) ?? target?.kind ?? "";
 }
 
-function isCalloutTarget(target) {
+function isCalloutTarget(target: TiptapBlockActionTarget | null | undefined): boolean {
   return targetNodeName(target) === "calloutBlock";
 }
 
-function isCodeBlockTarget(target) {
+function isCodeBlockTarget(target: TiptapBlockActionTarget | null | undefined): boolean {
   const name = targetNodeName(target);
   return name === "codeBlock" || name === "code_block";
 }
 
-function setCalloutKind(editor, target, kind) {
+function setCalloutKind(
+  editor: TiptapBlockActionEditor | null | undefined,
+  target: TiptapBlockActionTarget | null | undefined,
+  kind: string,
+): boolean {
   return editorCommand(editor, "setCalloutKind", { kind, pos: target?.pos });
 }
 
-function canStyleTarget(editor, target) {
-  return !!editor?.state?.schema?.marks?.textStyle && Number.isFinite(target?.pos);
+function canStyleTarget(
+  editor: TiptapBlockActionEditor | null | undefined,
+  target: TiptapBlockActionTarget | null | undefined,
+): boolean {
+  return !!editor?.state?.schema?.marks?.textStyle && isFiniteNumber(target?.pos);
 }
 
-function canHighlightTarget(editor, target) {
-  return !!editor?.state?.schema?.marks?.highlight && Number.isFinite(target?.pos);
+function canHighlightTarget(
+  editor: TiptapBlockActionEditor | null | undefined,
+  target: TiptapBlockActionTarget | null | undefined,
+): boolean {
+  return !!editor?.state?.schema?.marks?.highlight && isFiniteNumber(target?.pos);
 }
 
-function setTargetTextColor(editor, target, color) {
+function setTargetTextColor(
+  editor: TiptapBlockActionEditor | null | undefined,
+  target: TiptapBlockActionTarget | null | undefined,
+  color: string | null,
+): boolean {
   return applyMarkToBlockText(
-    editor,
-    target,
+    editor as TextStyleEditorInput,
+    target as TextStyleTargetInput,
     "textStyle",
     color ? { color } : null,
   );
 }
 
-function setTargetHighlight(editor, target, color) {
+function setTargetHighlight(
+  editor: TiptapBlockActionEditor | null | undefined,
+  target: TiptapBlockActionTarget | null | undefined,
+  color: string | null,
+): boolean {
   return applyMarkToBlockText(
-    editor,
-    target,
+    editor as TextStyleEditorInput,
+    target as TextStyleTargetInput,
     "highlight",
     color ? { color } : null,
   );
@@ -227,7 +454,7 @@ function createCommand({
   submenu = null,
   enabled = () => true,
   run,
-}) {
+}: TiptapBlockActionInput): TiptapBlockAction {
   if (!id || typeof run !== "function") {
     throw new TypeError("Tiptap block actions require an id and run function");
   }
@@ -305,7 +532,12 @@ export const PAPYRO_TIPTAP_BLOCK_ACTIONS = Object.freeze([
       submenu: "code-language",
       priority: 50 + index,
       enabled: ({ target }) => isCodeBlockTarget(target),
-      run: ({ editor, target }) => setCodeBlockLanguage(editor, option.language, target?.pos),
+      run: ({ editor, target }) =>
+        (setCodeBlockLanguage as SetCodeBlockLanguage)(
+          editor,
+          option.language,
+          isFiniteNumber(target?.pos) ? target.pos : null,
+        ),
     }),
   ),
   createCommand({
@@ -424,7 +656,12 @@ export const PAPYRO_TIPTAP_BLOCK_ACTIONS = Object.freeze([
     icon: "move-up",
     shortcut: "Alt Up",
     priority: 11.2,
-    enabled: ({ editor, target }) => canMoveTiptapBlock(editor, target, "up"),
+    enabled: ({ editor, target }) =>
+      canMoveTiptapBlock(
+        editor as BlockMoveEditorInput,
+        target as BlockMoveTargetInput,
+        "up",
+      ),
     run: ({ editor, target }) => moveTarget(editor, target, "up"),
   }),
   createCommand({
@@ -435,7 +672,12 @@ export const PAPYRO_TIPTAP_BLOCK_ACTIONS = Object.freeze([
     icon: "move-down",
     shortcut: "Alt Down",
     priority: 11.4,
-    enabled: ({ editor, target }) => canMoveTiptapBlock(editor, target, "down"),
+    enabled: ({ editor, target }) =>
+      canMoveTiptapBlock(
+        editor as BlockMoveEditorInput,
+        target as BlockMoveTargetInput,
+        "down",
+      ),
     run: ({ editor, target }) => moveTarget(editor, target, "down"),
   }),
   createCommand({
@@ -452,30 +694,33 @@ export const PAPYRO_TIPTAP_BLOCK_ACTIONS = Object.freeze([
 ]);
 
 export class TiptapBlockActionController {
-  #commands;
-  #language;
+  #commands: readonly TiptapBlockAction[];
+  #language: ReturnType<typeof normalizeTiptapLanguage>;
 
-  constructor(commands = PAPYRO_TIPTAP_BLOCK_ACTIONS, { language = "english" } = {}) {
+  constructor(
+    commands: readonly TiptapBlockAction[] = PAPYRO_TIPTAP_BLOCK_ACTIONS,
+    { language = "english" }: { language?: unknown } = {},
+  ) {
     this.#commands = Object.freeze([...commands]);
     this.#language = normalizeTiptapLanguage(language);
   }
 
-  get commands() {
+  get commands(): readonly TiptapBlockAction[] {
     return this.#commands;
   }
 
-  find(commandId) {
+  find(commandId: unknown): TiptapBlockAction | null {
     const id = normalizeCommandId(commandId);
     return this.#commands.find((command) => command.id === id) ?? null;
   }
 
-  setLanguage(language) {
+  setLanguage(language: unknown): void {
     this.#language = normalizeTiptapLanguage(language);
   }
 
-  list(context = {}) {
+  list(context: TiptapBlockActionContext = {}): BlockActionMenuCommand[] {
     const language = normalizeTiptapLanguage(context.language ?? context.entry?.preferences?.language ?? this.#language);
-    const commands = this.#commands
+    const commands: ListedBlockActionCommand[] = this.#commands
       .filter((command) => command.enabled(context) !== false)
       .sort((left, right) => left.priority - right.priority)
       .map((command) => ({
@@ -499,13 +744,14 @@ export class TiptapBlockActionController {
     const targetLanguage = isCodeBlockTarget(context.target)
       ? normalizeCodeBlockLanguage(context.target?.node?.attrs?.language ?? null)
       : null;
-    const submenuCommands = (submenu) =>
+    const submenuCommands = (submenu: string): BlockActionMenuCommand[] =>
       commands
         .filter((command) => command.submenu === submenu)
         .map(({ visibleInBlockMenu, priority, ...command }) => {
           if (
             submenu === "code-language" &&
-            Object.prototype.hasOwnProperty.call(command.meta ?? {}, "codeLanguage")
+            command.meta &&
+            Object.prototype.hasOwnProperty.call(command.meta, "codeLanguage")
           ) {
             const selectedLanguage = normalizeCodeBlockLanguage(command.meta.codeLanguage ?? null);
             const active =
@@ -553,7 +799,10 @@ export class TiptapBlockActionController {
       .map(({ priority, ...command }) => command);
   }
 
-  run(commandId, context = {}) {
+  run(
+    commandId: string,
+    context: TiptapBlockActionContext = {},
+  ): TiptapBlockActionResult {
     const command = this.find(commandId);
     if (!command) {
       return {
@@ -577,6 +826,8 @@ export class TiptapBlockActionController {
   }
 }
 
-export function createTiptapBlockActionController(commands) {
+export function createTiptapBlockActionController(
+  commands?: readonly TiptapBlockAction[],
+): TiptapBlockActionController {
   return new TiptapBlockActionController(commands);
 }

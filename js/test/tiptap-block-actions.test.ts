@@ -6,7 +6,7 @@ const {
   createTiptapBlockActionController,
   PAPYRO_TIPTAP_BLOCK_ACTIONS,
 } = await importBundledModule(
-  new URL("../src/tiptap-block-actions.js", import.meta.url),
+  new URL("../src/tiptap-block-actions.ts", import.meta.url),
 );
 
 function createEditor() {
