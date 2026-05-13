@@ -3,7 +3,7 @@ import {
   createMarkdownTable,
   normalizeCalloutKind,
 } from "./tiptap-markdown-snippets.ts";
-import { normalizeCodeBlockLanguage } from "./tiptap-code-block.js";
+import { normalizeCodeBlockLanguage } from "./tiptap-code-block.ts";
 import { localizeSlashCommand, normalizeTiptapLanguage } from "./tiptap-i18n.ts";
 import type { PapyroCalloutKind } from "./tiptap-markdown-snippets.ts";
 import type { TiptapLanguage } from "./tiptap-i18n.ts";

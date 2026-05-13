@@ -13,7 +13,7 @@ import {
   createPapyroCodeBlockExtensions,
   inferCodeBlockLanguage,
   normalizeCodeBlockLanguage,
-} from "../src/tiptap-code-block.js";
+} from "../src/tiptap-code-block.ts";
 import { Schema } from "@tiptap/pm/model";
 
 function createElementFactory() {

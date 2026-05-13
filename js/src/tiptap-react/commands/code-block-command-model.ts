@@ -9,7 +9,8 @@ import {
   codeBlockLanguageUiLabel,
   codeBlockWrapLabel,
   normalizeCodeBlockLanguage,
-} from "../../tiptap-code-block.js";
+  type PapyroCodeBlockLanguage,
+} from "../../tiptap-code-block.ts";
 import { localizedText } from "../../tiptap-i18n.ts";
 
 const CODE_LANGUAGE_GROUP_KEY = "Code language";
@@ -33,32 +34,49 @@ type PapyroCodeBlockCommand = {
   meta?: Record<string, unknown>;
 };
 
-function freezeCommand(command: PapyroCodeBlockCommand) {
+export type PapyroCodeBlockCommandModel = Readonly<PapyroCodeBlockCommand> & {
+  readonly meta: Readonly<Record<string, unknown>>;
+};
+
+export type PapyroCodeBlockLanguageChrome = Readonly<{
+  command: PapyroCodeBlockCommandModel;
+  label: string;
+  title: string;
+  ariaLabel: string;
+  token: string;
+  language: PapyroCodeBlockLanguage;
+  value: string;
+  mode: "auto" | "explicit";
+  detectedLanguage: string;
+  optionId: string;
+}>;
+
+function freezeCommand(command: PapyroCodeBlockCommand): PapyroCodeBlockCommandModel {
   return Object.freeze({
     ...command,
     meta: Object.freeze({ ...(command.meta ?? {}) }),
   });
 }
 
-function normalizeCopyState(copyState: unknown) {
+function normalizeCopyState(copyState: unknown): "idle" | "copied" | "failed" {
   const normalized = String(copyState ?? "idle").trim().toLowerCase();
-  return COPY_STATES.has(normalized) ? normalized : "idle";
+  return COPY_STATES.has(normalized) ? normalized as "idle" | "copied" | "failed" : "idle";
 }
 
-function enabledCommandIndexes(commands: readonly PapyroCodeBlockCommand[] = []) {
+function enabledCommandIndexes(commands: readonly PapyroCodeBlockCommandModel[] = []): number[] {
   return (commands ?? [])
     .map((command, index) => (command?.disabled ? null : index))
-    .filter((index) => Number.isInteger(index));
+    .filter((index): index is number => Number.isInteger(index));
 }
 
-function groupLabel(language: string, groupKey: string) {
+function groupLabel(language: string, groupKey: string): string {
   if (groupKey === CODE_LANGUAGE_GROUP_KEY) {
     return localizedText(language, "Code language", "\u4ee3\u7801\u8bed\u8a00");
   }
   return localizedText(language, "Code block", "\u4ee3\u7801\u5757");
 }
 
-function languageDescription(language: string, option: { language?: string | null; label: string }) {
+function languageDescription(language: string, option: { language?: string | null; label: string }): string {
   if (!option?.language) {
     return localizedText(
       language,
@@ -73,7 +91,10 @@ function languageDescription(language: string, option: { language?: string | nul
   );
 }
 
-function customLanguageCommand(language: string, currentLanguage: unknown) {
+function customLanguageCommand(
+  language: string,
+  currentLanguage: unknown,
+): PapyroCodeBlockCommandModel | null {
   const normalized = normalizeCodeBlockLanguage(currentLanguage);
   if (!normalized || codeBlockLanguageOption(normalized)) return null;
   return freezeCommand({
@@ -99,7 +120,7 @@ function customLanguageCommand(language: string, currentLanguage: unknown) {
   });
 }
 
-export function codeBlockLanguagePickerLabel(language = "english") {
+export function codeBlockLanguagePickerLabel(language = "english"): string {
   return groupLabel(language, CODE_LANGUAGE_GROUP_KEY);
 }
 
@@ -107,7 +128,11 @@ export function createCodeBlockLanguageCommands({
   language = "english",
   currentLanguage = null,
   includeCustom = true,
-} = {}) {
+}: {
+  language?: string;
+  currentLanguage?: unknown;
+  includeCustom?: boolean;
+} = {}): readonly PapyroCodeBlockCommandModel[] {
   const selectedLanguage = normalizeCodeBlockLanguage(currentLanguage);
   const commands = PAPYRO_CODE_LANGUAGE_OPTIONS.map((option) => {
     const optionLanguage = normalizeCodeBlockLanguage(option.language);
@@ -138,37 +163,43 @@ export function createCodeBlockLanguageCommands({
   return Object.freeze(custom ? [...commands, custom] : commands);
 }
 
-export function activeCodeBlockLanguageCommandIndex(commands = []) {
+export function activeCodeBlockLanguageCommandIndex(
+  commands: readonly PapyroCodeBlockCommandModel[] = [],
+): number {
   const activeIndex = (commands ?? []).findIndex((command) => command?.active);
   if (activeIndex >= 0) return activeIndex;
   return enabledCommandIndexes(commands)[0] ?? 0;
 }
 
 export function nextCodeBlockLanguageCommandIndex(
-  commands: readonly PapyroCodeBlockCommand[] = [],
+  commands: readonly PapyroCodeBlockCommandModel[] = [],
   currentIndex = 0,
   direction = 1,
-) {
+): number {
   const indexes = enabledCommandIndexes(commands);
   if (indexes.length === 0) return activeCodeBlockLanguageCommandIndex(commands);
 
-  const current = Number.isInteger(currentIndex) ? currentIndex : indexes[0];
+  const current = Number.isInteger(currentIndex) ? currentIndex : indexes[0] ?? 0;
   const currentEnabledOffset = indexes.indexOf(current);
   if (currentEnabledOffset >= 0) {
     return indexes[(currentEnabledOffset + direction + indexes.length) % indexes.length];
   }
 
   if (direction < 0) {
-    return [...indexes].reverse().find((index) => index < current) ?? indexes.at(-1);
+    return [...indexes].reverse().find((index) => index < current) ?? indexes[indexes.length - 1] ?? 0;
   }
-  return indexes.find((index) => index > current) ?? indexes[0];
+  return indexes.find((index) => index > current) ?? indexes[0] ?? 0;
 }
 
 export function createCodeBlockLanguageChrome({
   language = "english",
   currentLanguage = null,
   detectedLanguage = null,
-} = {}) {
+}: {
+  language?: string;
+  currentLanguage?: unknown;
+  detectedLanguage?: unknown;
+} = {}): PapyroCodeBlockLanguageChrome {
   const selectedLanguage = normalizeCodeBlockLanguage(currentLanguage);
   const normalizedDetectedLanguage = selectedLanguage
     ? null
@@ -209,7 +240,11 @@ export function createCodeBlockChromeCommands({
   language = "english",
   wrapped = false,
   copyState = "idle",
-} = {}) {
+}: {
+  language?: string;
+  wrapped?: boolean;
+  copyState?: unknown;
+} = {}): readonly PapyroCodeBlockCommandModel[] {
   const normalizedCopyState = normalizeCopyState(copyState);
   const copyTitle =
     normalizedCopyState === "copied"

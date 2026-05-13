@@ -7,7 +7,10 @@ import { TrailingNode } from "@tiptap/extensions/trailing-node";
 import { StarterKit } from "@tiptap/starter-kit";
 
 import { createPapyroCalloutExtensions } from "./tiptap-callout.ts";
-import { createPapyroCodeBlockExtensions } from "./tiptap-code-block.js";
+import {
+  createPapyroCodeBlockExtensions,
+  type PapyroCodeBlockNodeViewRendererFactory,
+} from "./tiptap-code-block.ts";
 import { UiState } from "./components/tiptap-extension/ui-state-extension.ts";
 import { createPapyroImageExtensions } from "./tiptap-image.ts";
 import { createPapyroMathExtensions } from "./tiptap-math.ts";
@@ -22,7 +25,7 @@ type PapyroJsonContent = JSONContent & {
 };
 
 export type PapyroTiptapExtensionOptions = Readonly<{
-  codeBlockNodeViewRenderer?: unknown;
+  codeBlockNodeViewRenderer?: PapyroCodeBlockNodeViewRendererFactory | null;
 }>;
 
 export type PapyroMarkdownManagerOptions = Readonly<{

@@ -6,7 +6,7 @@ import {
   codeBlockLanguageDisplayLabel,
   normalizeCodeBlockLanguage,
   setCodeBlockLanguage,
-} from "./tiptap-code-block.js";
+} from "./tiptap-code-block.ts";
 import {
   applyMarkToBlockText,
   PAPYRO_HIGHLIGHT_OPTIONS,

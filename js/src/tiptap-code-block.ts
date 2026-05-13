@@ -1,5 +1,13 @@
-import { findChildren, mergeAttributes } from "@tiptap/core";
+import {
+  findChildren,
+  mergeAttributes,
+  type Editor,
+  type NodeViewRenderer,
+  type NodeViewRendererProps,
+} from "@tiptap/core";
 import { CodeBlockLowlight } from "@tiptap/extension-code-block-lowlight";
+import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
+import type { EditorState } from "@tiptap/pm/state";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import { all, createLowlight } from "lowlight";
@@ -27,7 +35,122 @@ const CODE_HIGHLIGHT_PLUGIN_KEY = "papyroCodeHighlight";
 const CODE_LANGUAGE_MENU_OWNER_ID_PREFIX = "mn-tiptap-code-language-menu";
 let codeLanguageMenuSequence = 0;
 
-export const PAPYRO_CODE_LANGUAGE_OPTIONS = Object.freeze([
+export type PapyroCodeBlockLanguage = string | null;
+
+export type PapyroCodeLanguageOption = Readonly<{
+  id: string;
+  label: string;
+  language: PapyroCodeBlockLanguage;
+}>;
+
+type PapyroCodeBlockAttrs = Record<string, unknown> & {
+  language?: unknown;
+};
+
+type PapyroCodeBlockNode = {
+  attrs?: PapyroCodeBlockAttrs;
+  textContent?: string;
+  type?: {
+    name?: string;
+  } | string;
+};
+
+type PapyroCodeBlockDoc = ProseMirrorNode & {
+  nodeAt?: (pos: number) => PapyroCodeBlockNode | null;
+};
+
+type PapyroCodeBlockState = Partial<EditorState> & {
+  doc?: PapyroCodeBlockDoc;
+  selection?: Partial<EditorState["selection"]> & {
+    from?: number;
+    $from?: {
+      depth: number;
+      node: (depth: number) => PapyroCodeBlockNode | null | undefined;
+      before: (depth: number) => number;
+    };
+  };
+  tr?: {
+    setNodeMarkup: (
+      pos: number,
+      type?: unknown,
+      attrs?: Record<string, unknown>,
+    ) => unknown;
+  };
+};
+
+type PapyroCodeBlockEditor = Partial<Editor> & {
+  state?: PapyroCodeBlockState;
+  view?: {
+    dom?: PapyroCodeBlockElement | null;
+    dispatch?: (transaction: any) => unknown;
+    nodeDOM?: (pos: number) => Node | null;
+  } | null;
+  commands?: {
+    focus?: (...args: unknown[]) => unknown;
+  };
+};
+
+type PapyroNodeViewRendererResult = ReturnType<NodeViewRenderer>;
+
+type PapyroCodeBlockElement = Record<string, any> & {
+  dataset: Record<string, string | undefined>;
+};
+
+type PapyroCodeBlockDocument = Record<string, any> & {
+  body?: PapyroCodeBlockElement | null;
+  documentElement?: {
+    clientWidth?: number;
+    clientHeight?: number;
+    lang?: string;
+  };
+  createElement?: (tagName: string) => PapyroCodeBlockElement;
+};
+
+type PapyroCodeBlockWindow = Record<string, any> & {
+  setTimeout?: (handler: () => void, timeout?: number) => number;
+  clearTimeout?: (handle?: number | null) => void;
+};
+
+export type PapyroCodeBlockOptions = {
+  defaultLanguage: string | null;
+  enableTabIndentation: boolean;
+  tabSize: number;
+  lowlight: typeof codeBlockLowlight;
+  languageClassPrefix: string;
+  HTMLAttributes: Record<string, string>;
+};
+
+export type PapyroCodeBlockNodeViewOptions = Partial<PapyroCodeBlockOptions> & Record<string, unknown>;
+
+type PapyroCodeBlockNodeViewInput = {
+  editor?: PapyroCodeBlockEditor | null;
+  node?: PapyroCodeBlockNode | null;
+  getPos?: (() => number | undefined) | null;
+  view?: {
+    dom?: PapyroCodeBlockElement | null;
+  } | null;
+  options?: PapyroCodeBlockNodeViewOptions;
+};
+
+type PapyroCodeBlockLanguageCommand = {
+  id: string;
+  run: () => boolean;
+};
+
+type LowlightNode = {
+  children?: LowlightNode[];
+  properties?: {
+    className?: string | string[];
+  };
+  value?: unknown;
+};
+
+type FlattenedLowlightNode = {
+  text: string;
+  className: string;
+};
+
+export const PAPYRO_CODE_LANGUAGE_OPTIONS: readonly PapyroCodeLanguageOption[] = Object.freeze([
   { id: "auto", label: "Auto detect", language: null },
   { id: "plaintext", label: "Plain text", language: "plaintext" },
   { id: "javascript", label: "JavaScript", language: "javascript" },
@@ -45,7 +168,7 @@ export const PAPYRO_CODE_LANGUAGE_OPTIONS = Object.freeze([
   { id: "toml", label: "TOML", language: "toml" },
 ]);
 
-export const PAPYRO_CODE_LANGUAGE_ALIASES = Object.freeze({
+export const PAPYRO_CODE_LANGUAGE_ALIASES: Readonly<Record<string, string>> = Object.freeze({
   sh: "bash",
   shell: "bash",
   zsh: "bash",
@@ -57,19 +180,19 @@ export const PAPYRO_CODE_LANGUAGE_ALIASES = Object.freeze({
   xml: "html",
 });
 
-export function normalizeCodeBlockLanguage(language) {
+export function normalizeCodeBlockLanguage(language: unknown): PapyroCodeBlockLanguage {
   const normalized = String(language ?? "").trim().toLowerCase();
   if (!normalized) return null;
   if (!/^[a-z0-9_+.-]{1,48}$/u.test(normalized)) return null;
   return PAPYRO_CODE_LANGUAGE_ALIASES[normalized] ?? normalized;
 }
 
-export function codeBlockLanguageLabel(language) {
+export function codeBlockLanguageLabel(language: unknown): string {
   const normalized = normalizeCodeBlockLanguage(language);
   return normalized ?? "auto";
 }
 
-export function inferCodeBlockLanguage(source) {
+export function inferCodeBlockLanguage(source: unknown): PapyroCodeBlockLanguage {
   const text = String(source ?? "");
   if (!text.trim()) return null;
 
@@ -84,21 +207,22 @@ export function inferCodeBlockLanguage(source) {
   }
 }
 
-export function codeBlockLanguageOption(language) {
+export function codeBlockLanguageOption(language: unknown): PapyroCodeLanguageOption | null {
   const normalized = normalizeCodeBlockLanguage(language);
   return PAPYRO_CODE_LANGUAGE_OPTIONS.find(
     (option) => normalizeCodeBlockLanguage(option.language) === normalized || option.id === normalized,
   ) ?? null;
 }
 
-export function codeBlockLanguageOptionToken(optionOrLanguage) {
-  const option =
+export function codeBlockLanguageOptionToken(optionOrLanguage: unknown): string {
+  const option = (
     typeof optionOrLanguage === "object" && optionOrLanguage
       ? optionOrLanguage
-      : codeBlockLanguageOption(optionOrLanguage);
+      : codeBlockLanguageOption(optionOrLanguage)
+  ) as Partial<PapyroCodeLanguageOption> | null;
   const normalized = normalizeCodeBlockLanguage(option?.language ?? optionOrLanguage);
   const id = String(option?.id ?? normalized ?? "auto").trim().toLowerCase();
-  const tokens = {
+  const tokens: Readonly<Record<string, string>> = {
     auto: "AU",
     plaintext: "TXT",
     javascript: "JS",
@@ -109,10 +233,10 @@ export function codeBlockLanguageOptionToken(optionOrLanguage) {
     bash: "SH",
     yaml: "YML",
   };
-  return tokens[id] ?? tokens[normalized] ?? String(normalized ?? id).slice(0, 3).toUpperCase();
+  return tokens[id] ?? (normalized ? tokens[normalized] : undefined) ?? String(normalized ?? id).slice(0, 3).toUpperCase();
 }
 
-function safeEditorView(editor) {
+function safeEditorView(editor: PapyroCodeBlockEditor | null | undefined) {
   if (!editor) return null;
   try {
     return editor.view ?? null;
@@ -121,13 +245,17 @@ function safeEditorView(editor) {
   }
 }
 
-function codeBlockHighlightLanguage(language) {
+function codeBlockHighlightLanguage(language: unknown): PapyroCodeBlockLanguage {
   const normalized = normalizeCodeBlockLanguage(language);
   if (normalized === "plaintext") return null;
   return lowlightLanguageName(normalized);
 }
 
-export function codeBlockLanguageDisplayLabel(language, value, detectedLanguage = null) {
+export function codeBlockLanguageDisplayLabel(
+  language: unknown,
+  value: unknown,
+  detectedLanguage: unknown = null,
+): string {
   const normalized = normalizeCodeBlockLanguage(value);
   const detected = normalizeCodeBlockLanguage(detectedLanguage);
   const option = codeBlockLanguageOption(normalized);
@@ -148,7 +276,10 @@ export function codeBlockLanguageDisplayLabel(language, value, detectedLanguage 
   return option?.label ?? normalized;
 }
 
-function editorLanguage(editor, view = null) {
+function editorLanguage(
+  editor: PapyroCodeBlockEditor | null | undefined,
+  view: { dom?: PapyroCodeBlockElement | null } | null = null,
+): string {
   const dom = view?.dom ?? safeEditorView(editor)?.dom ?? null;
   const root =
     dom?.closest?.(".mn-tiptap-runtime") ??
@@ -157,55 +288,55 @@ function editorLanguage(editor, view = null) {
   return root?.dataset?.language ?? dom?.ownerDocument?.documentElement?.lang ?? "english";
 }
 
-function codeLanguageMenuLabel(language) {
+function codeLanguageMenuLabel(language: unknown): string {
   return localizedText(language, "Code language", "代码语言");
 }
 
-function codeLanguageButtonAriaLabel(language) {
+function codeLanguageButtonAriaLabel(language: unknown): string {
   return localizedText(language, "Change code language", "修改代码语言");
 }
 
-export function codeBlockCopyLabel(language) {
+export function codeBlockCopyLabel(language: unknown): string {
   return localizedText(language, "Copy code", "\u590d\u5236\u4ee3\u7801");
 }
 
-export function codeBlockCopiedLabel(language) {
+export function codeBlockCopiedLabel(language: unknown): string {
   return localizedText(language, "Copied", "\u5df2\u590d\u5236");
 }
 
-export function codeBlockCopyFailedLabel(language) {
+export function codeBlockCopyFailedLabel(language: unknown): string {
   return localizedText(language, "Copy failed", "\u590d\u5236\u5931\u8d25");
 }
 
-export function codeBlockWrapLabel(language, wrapped) {
+export function codeBlockWrapLabel(language: unknown, wrapped: boolean): string {
   return wrapped
     ? localizedText(language, "Disable line wrap", "\u5173\u95ed\u81ea\u52a8\u6362\u884c")
     : localizedText(language, "Wrap lines", "\u81ea\u52a8\u6362\u884c");
 }
 
-export function codeBlockLanguageUiLabel(language, value) {
+export function codeBlockLanguageUiLabel(language: unknown, value: unknown): string {
   return codeBlockLanguageDisplayLabel(language, value);
 }
 
-function languageClassName(language, prefix = LANGUAGE_CLASS_PREFIX) {
+function languageClassName(language: unknown, prefix = LANGUAGE_CLASS_PREFIX): string {
   const normalized = normalizeCodeBlockLanguage(language);
   const highlighted = highlightedDisplayLanguage(lowlightLanguageName(normalized));
   return highlighted ? `${prefix}${highlighted}` : "";
 }
 
-function lowlightLanguageName(language) {
+function lowlightLanguageName(language: unknown): PapyroCodeBlockLanguage {
   const normalized = normalizeCodeBlockLanguage(language);
   if (normalized === "plaintext") return null;
   if (normalized === "html") return "xml";
   return normalized;
 }
 
-function highlightedDisplayLanguage(language) {
+function highlightedDisplayLanguage(language: unknown): PapyroCodeBlockLanguage {
   const normalized = normalizeCodeBlockLanguage(language);
   return normalized;
 }
 
-export function codeBlockHighlightedLanguage(language) {
+export function codeBlockHighlightedLanguage(language: unknown): PapyroCodeBlockLanguage {
   return highlightedDisplayLanguage(lowlightLanguageName(language));
 }
 
@@ -215,7 +346,13 @@ export function codeBlockDomAttributes({
   value = undefined,
   detectedLanguage = undefined,
   wrapped = undefined,
-} = {}) {
+}: {
+  language?: unknown;
+  node?: PapyroCodeBlockNode | null;
+  value?: unknown;
+  detectedLanguage?: unknown;
+  wrapped?: boolean;
+} = {}): Record<string, string> {
   const codeLanguage = normalizeCodeBlockLanguage(value ?? node?.attrs?.language);
   const detected =
     detectedLanguage === undefined
@@ -225,7 +362,7 @@ export function codeBlockDomAttributes({
       : normalizeCodeBlockLanguage(detectedLanguage);
   const highlightedLanguage = codeBlockHighlightedLanguage(codeLanguage ?? detected);
   const label = codeBlockLanguageDisplayLabel(language, codeLanguage, detected);
-  const attributes = {
+  const attributes: Record<string, string> = {
     "data-has-language-control": "true",
     "data-code-language": codeBlockLanguageLabel(codeLanguage),
     "data-code-language-label": label,
@@ -246,7 +383,7 @@ export function codeBlockDomAttributes({
   return attributes;
 }
 
-function safePosition(getPos) {
+function safePosition(getPos: unknown): number | null {
   if (typeof getPos !== "function") return null;
   try {
     const pos = getPos();
@@ -256,13 +393,16 @@ function safePosition(getPos) {
   }
 }
 
-function lowlightClassName(node) {
+function lowlightClassName(node: LowlightNode | null | undefined): string {
   const className = node?.properties?.className;
   if (Array.isArray(className)) return className.filter(Boolean).join(" ");
   return typeof className === "string" ? className : "";
 }
 
-function flattenedLowlightNodes(nodes = [], classNames = []) {
+function flattenedLowlightNodes(
+  nodes: readonly LowlightNode[] = [],
+  classNames: readonly string[] = [],
+): FlattenedLowlightNode[] {
   return (nodes ?? []).flatMap((node) => {
     const nextClassNames = [
       ...classNames,
@@ -278,7 +418,7 @@ function flattenedLowlightNodes(nodes = [], classNames = []) {
   });
 }
 
-function highlightCodeNodes(source, language = null) {
+function highlightCodeNodes(source: unknown, language: unknown = null): LowlightNode[] {
   const text = String(source ?? "");
   const normalizedLanguage = codeBlockHighlightLanguage(language);
   if (!text || normalizedLanguage === "plaintext") return [];
@@ -288,14 +428,17 @@ function highlightCodeNodes(source, language = null) {
       normalizedLanguage && codeBlockLowlight.registered?.(normalizedLanguage)
         ? codeBlockLowlight.highlight(normalizedLanguage, text)
         : codeBlockLowlight.highlightAuto(text);
-    return Array.isArray(highlighted?.children) ? highlighted.children : [];
+    return Array.isArray(highlighted?.children) ? highlighted.children as LowlightNode[] : [];
   } catch (_error) {
     return [];
   }
 }
 
-export function createCodeHighlightDecorations(doc, typeName = "codeBlock") {
-  const decorations = [];
+export function createCodeHighlightDecorations(
+  doc: ProseMirrorNode,
+  typeName = "codeBlock",
+): DecorationSet {
+  const decorations: Decoration[] = [];
   findChildren(doc, (node) => node.type?.name === typeName).forEach((block) => {
     let from = block.pos + 1;
     const language = normalizeCodeBlockLanguage(block.node.attrs?.language);
@@ -310,12 +453,12 @@ export function createCodeHighlightDecorations(doc, typeName = "codeBlock") {
   return DecorationSet.create(doc, decorations);
 }
 
-function createPapyroCodeHighlightPlugin(typeName = "codeBlock") {
-  const plugin = new Plugin({
+function createPapyroCodeHighlightPlugin(typeName = "codeBlock"): Plugin<DecorationSet> {
+  const plugin: Plugin<DecorationSet> = new Plugin<DecorationSet>({
     key: new PluginKey(CODE_HIGHLIGHT_PLUGIN_KEY),
     state: {
       init: (_config, state) => createCodeHighlightDecorations(state.doc, typeName),
-      apply(transaction, decorationSet) {
+      apply(transaction, decorationSet: DecorationSet) {
         if (transaction.docChanged) {
           return createCodeHighlightDecorations(transaction.doc, typeName);
         }
@@ -323,7 +466,7 @@ function createPapyroCodeHighlightPlugin(typeName = "codeBlock") {
       },
     },
     props: {
-      decorations(state) {
+      decorations(state): DecorationSet | undefined {
         return plugin.getState(state);
       },
     },
@@ -331,7 +474,11 @@ function createPapyroCodeHighlightPlugin(typeName = "codeBlock") {
   return plugin;
 }
 
-function languageMenuButton(documentRef, option, language) {
+function languageMenuButton(
+  documentRef: PapyroCodeBlockDocument | null | undefined,
+  option: PapyroCodeLanguageOption,
+  language: unknown,
+): PapyroCodeBlockElement | null {
   const button = documentRef?.createElement?.("button") ?? null;
   if (!button) return null;
   button.type = "button";
@@ -347,16 +494,26 @@ function languageMenuButton(documentRef, option, language) {
   return button;
 }
 
-async function writeCodeToClipboard(text) {
+async function writeCodeToClipboard(text: unknown): Promise<boolean> {
   const clipboard = globalThis?.navigator?.clipboard;
   if (typeof clipboard?.writeText !== "function") return false;
   await clipboard.writeText(String(text ?? ""));
   return true;
 }
 
-export function createPapyroCodeBlockNodeView({ editor, node, getPos, view = null, options = {} } = {}) {
-  const documentRef = view?.dom?.ownerDocument ?? safeEditorView(editor)?.dom?.ownerDocument ?? defaultDocument();
-  const windowRef = defaultWindow(documentRef);
+export function createPapyroCodeBlockNodeView({
+  editor,
+  node,
+  getPos,
+  view = null,
+  options = {},
+}: PapyroCodeBlockNodeViewInput = {}): PapyroNodeViewRendererResult | null {
+  const documentRef = (
+    view?.dom?.ownerDocument ??
+    safeEditorView(editor)?.dom?.ownerDocument ??
+    defaultDocument()
+  ) as PapyroCodeBlockDocument | null;
+  const windowRef = defaultWindow(documentRef as any) as PapyroCodeBlockWindow | null;
   const pre = documentRef?.createElement?.("pre") ?? null;
   const code = documentRef?.createElement?.("code") ?? null;
   const languageButton = documentRef?.createElement?.("button") ?? null;
@@ -377,9 +534,9 @@ export function createPapyroCodeBlockNodeView({ editor, node, getPos, view = nul
   let codePointerHandled = false;
   let copyPointerHandled = false;
   let wrapPointerHandled = false;
-  let copyFeedbackTimer = null;
+  let copyFeedbackTimer: number | null = null;
   let wrapped = false;
-  let languageCommands = [];
+  let languageCommands: PapyroCodeBlockLanguageCommand[] = [];
   let selectedLanguageIndex = 0;
   const menuOwnerId = `${CODE_LANGUAGE_MENU_OWNER_ID_PREFIX}-${++codeLanguageMenuSequence}`;
 
@@ -426,9 +583,11 @@ export function createPapyroCodeBlockNodeView({ editor, node, getPos, view = nul
   const dismiss = createFloatingDismissController({
     document: documentRef,
     window: windowRef,
-    contains: (target) => menu.contains?.(target) || languageButton.contains?.(target),
+    contains: (target: unknown) => Boolean(
+      menu.contains?.(target) || languageButton.contains?.(target),
+    ),
     onDismiss: closeMenu,
-  });
+  } as any);
 
   const syncMenu = () => {
     currentLanguage = editorLanguage(editor, view);
@@ -466,12 +625,12 @@ export function createPapyroCodeBlockNodeView({ editor, node, getPos, view = nul
           scroll: false,
         });
       });
-      item.addEventListener("pointerdown", (event) => {
+      item.addEventListener("pointerdown", (event: Event) => {
         event.preventDefault();
         event.stopPropagation?.();
         pointerHandled = run();
       });
-      item.addEventListener("click", (event) => {
+      item.addEventListener("click", (event: Event) => {
         event.preventDefault();
         event.stopPropagation?.();
         if (!pointerHandled) {
@@ -525,7 +684,7 @@ export function createPapyroCodeBlockNodeView({ editor, node, getPos, view = nul
     setHidden(menu, false);
     languageButton.setAttribute("aria-expanded", "true");
     positionFloatingElement(menu, languageButton.getBoundingClientRect?.(), {
-      viewport: viewportSize(pre, windowRef),
+      viewport: viewportSize(pre, windowRef as any),
       size: {
         width: LANGUAGE_MENU_WIDTH,
         height: LANGUAGE_MENU_HEIGHT,
@@ -581,13 +740,13 @@ export function createPapyroCodeBlockNodeView({ editor, node, getPos, view = nul
     wrapButton.title = label;
     return true;
   };
-  copyButton.addEventListener("pointerdown", (event) => {
+  copyButton.addEventListener("pointerdown", (event: Event) => {
     event.preventDefault();
     event.stopPropagation?.();
     copyPointerHandled = true;
     return runCopy();
   });
-  copyButton.addEventListener("click", (event) => {
+  copyButton.addEventListener("click", (event: Event) => {
     event.preventDefault();
     event.stopPropagation?.();
     if (!copyPointerHandled) {
@@ -596,13 +755,13 @@ export function createPapyroCodeBlockNodeView({ editor, node, getPos, view = nul
     copyPointerHandled = false;
     return true;
   });
-  wrapButton.addEventListener("pointerdown", (event) => {
+  wrapButton.addEventListener("pointerdown", (event: Event) => {
     event.preventDefault();
     event.stopPropagation?.();
     wrapPointerHandled = toggleWrap();
     return wrapPointerHandled;
   });
-  wrapButton.addEventListener("click", (event) => {
+  wrapButton.addEventListener("click", (event: Event) => {
     event.preventDefault();
     event.stopPropagation?.();
     if (!wrapPointerHandled) {
@@ -611,12 +770,12 @@ export function createPapyroCodeBlockNodeView({ editor, node, getPos, view = nul
     wrapPointerHandled = false;
     return true;
   });
-  languageButton.addEventListener("pointerdown", (event) => {
+  languageButton.addEventListener("pointerdown", (event: Event) => {
     event.preventDefault();
     event.stopPropagation?.();
     buttonPointerHandled = toggleMenu();
   });
-  languageButton.addEventListener("click", (event) => {
+  languageButton.addEventListener("click", (event: Event) => {
     event.preventDefault();
     event.stopPropagation?.();
     if (!buttonPointerHandled) {
@@ -624,7 +783,7 @@ export function createPapyroCodeBlockNodeView({ editor, node, getPos, view = nul
     }
     buttonPointerHandled = false;
   });
-  languageButton.addEventListener("keydown", (event) => {
+  languageButton.addEventListener("keydown", (event: KeyboardEvent) => {
     if (isComposingKeyboardEvent(event)) return;
     if (event.key === "ArrowDown" || event.key === "Enter" || event.key === " ") {
       event.preventDefault();
@@ -633,7 +792,7 @@ export function createPapyroCodeBlockNodeView({ editor, node, getPos, view = nul
     }
   });
 
-  menu.addEventListener("keydown", (event) => {
+  menu.addEventListener("keydown", (event: KeyboardEvent) => {
     if (isComposingKeyboardEvent(event)) return;
     if (event.key === "Escape") {
       event.preventDefault();
@@ -675,7 +834,7 @@ export function createPapyroCodeBlockNodeView({ editor, node, getPos, view = nul
     }
   });
 
-  code.addEventListener("pointerdown", (event) => {
+  code.addEventListener("pointerdown", (event: PointerEvent) => {
     const x = Number(event?.clientX);
     const y = Number(event?.clientY);
     const rect = languageButton.getBoundingClientRect?.();
@@ -697,24 +856,29 @@ export function createPapyroCodeBlockNodeView({ editor, node, getPos, view = nul
     codePointerHandled = toggleMenu();
   });
 
-  code.addEventListener("click", (event) => {
+  code.addEventListener("click", (event: Event) => {
     if (!codePointerHandled) return;
     event.preventDefault();
     event.stopPropagation?.();
     codePointerHandled = false;
   });
 
-  function sync(nextNode = currentNode) {
+  function sync(nextNode: PapyroCodeBlockNode | null | undefined = currentNode) {
+    const preRef = pre as PapyroCodeBlockElement;
+    const codeRef = code as PapyroCodeBlockElement;
+    const languageButtonRef = languageButton as PapyroCodeBlockElement;
+    const copyButtonRef = copyButton as PapyroCodeBlockElement;
+    const wrapButtonRef = wrapButton as PapyroCodeBlockElement;
     currentNode = nextNode;
     currentLanguage = editorLanguage(editor, view);
     const language = normalizeCodeBlockLanguage(currentNode?.attrs?.language);
     const detectedLanguage = language ? null : inferCodeBlockLanguage(currentNode?.textContent);
     const label = codeBlockLanguageDisplayLabel(currentLanguage, language, detectedLanguage);
-    pre.dataset.codeLanguage = codeBlockLanguageLabel(language);
-    pre.dataset.codeLanguageLabel = label;
-    pre.dataset.codeLanguageMode = language ? "explicit" : "auto";
-    pre.dataset.codeLanguageDetected = detectedLanguage ?? "";
-    pre.setAttribute(
+    preRef.dataset.codeLanguage = codeBlockLanguageLabel(language);
+    preRef.dataset.codeLanguageLabel = label;
+    preRef.dataset.codeLanguageMode = language ? "explicit" : "auto";
+    preRef.dataset.codeLanguageDetected = detectedLanguage ?? "";
+    preRef.setAttribute(
       "aria-label",
       localizedText(
         currentLanguage,
@@ -724,27 +888,27 @@ export function createPapyroCodeBlockNodeView({ editor, node, getPos, view = nul
     );
     const highlightedLanguage = lowlightLanguageName(language ?? detectedLanguage);
     const displayLanguage = highlightedDisplayLanguage(highlightedLanguage);
-    pre.dataset.codeLanguageHighlighted = displayLanguage ?? "";
-    code.className = [
+    preRef.dataset.codeLanguageHighlighted = displayLanguage ?? "";
+    codeRef.className = [
       languageClassName(language ?? detectedLanguage, languagePrefix),
       displayLanguage ? `hljs language-${displayLanguage}` : "hljs",
     ]
       .filter(Boolean)
       .join(" ");
-    languageButton.textContent = label;
-    languageButton.dataset.languageBadge = codeBlockLanguageOptionToken(language ?? detectedLanguage ?? null);
-    languageButton.dataset.languageValue = language ?? detectedLanguage ?? "auto";
-    languageButton.dataset.languageMode = language ? "explicit" : "auto";
-    languageButton.dataset.languageDetected = detectedLanguage ?? "";
-    languageButton.title = codeLanguageButtonAriaLabel(currentLanguage);
-    languageButton.setAttribute("aria-label", `${codeLanguageButtonAriaLabel(currentLanguage)}: ${label}`);
-    if (copyButton.dataset.state !== "copied" && copyButton.dataset.state !== "failed") {
-      copyButton.dataset.state = "idle";
-      copyButton.setAttribute("aria-label", codeBlockCopyLabel(currentLanguage));
-      copyButton.title = codeBlockCopyLabel(currentLanguage);
+    languageButtonRef.textContent = label;
+    languageButtonRef.dataset.languageBadge = codeBlockLanguageOptionToken(language ?? detectedLanguage ?? null);
+    languageButtonRef.dataset.languageValue = language ?? detectedLanguage ?? "auto";
+    languageButtonRef.dataset.languageMode = language ? "explicit" : "auto";
+    languageButtonRef.dataset.languageDetected = detectedLanguage ?? "";
+    languageButtonRef.title = codeLanguageButtonAriaLabel(currentLanguage);
+    languageButtonRef.setAttribute("aria-label", `${codeLanguageButtonAriaLabel(currentLanguage)}: ${label}`);
+    if (copyButtonRef.dataset.state !== "copied" && copyButtonRef.dataset.state !== "failed") {
+      copyButtonRef.dataset.state = "idle";
+      copyButtonRef.setAttribute("aria-label", codeBlockCopyLabel(currentLanguage));
+      copyButtonRef.title = codeBlockCopyLabel(currentLanguage);
     }
-    wrapButton.setAttribute("aria-label", codeBlockWrapLabel(currentLanguage, wrapped));
-    wrapButton.title = codeBlockWrapLabel(currentLanguage, wrapped);
+    wrapButtonRef.setAttribute("aria-label", codeBlockWrapLabel(currentLanguage, wrapped));
+    wrapButtonRef.title = codeBlockWrapLabel(currentLanguage, wrapped);
   }
 
   sync(node);
@@ -753,8 +917,8 @@ export function createPapyroCodeBlockNodeView({ editor, node, getPos, view = nul
   return {
     dom: pre,
     contentDOM: code,
-    update(nextNode) {
-      if (nextNode?.type?.name !== currentNode?.type?.name) return false;
+    update(nextNode: ProseMirrorNode) {
+      if (nodeTypeName(nextNode) !== nodeTypeName(currentNode)) return false;
       sync(nextNode);
       if (!menu.hidden) syncMenu();
       return true;
@@ -766,13 +930,23 @@ export function createPapyroCodeBlockNodeView({ editor, node, getPos, view = nul
       dismiss.close();
       menu.remove?.();
     },
-  };
+  } as unknown as PapyroNodeViewRendererResult;
 }
 
-function selectedCodeBlockPosition(state, typeName, explicitPos = null) {
+function nodeTypeName(node: PapyroCodeBlockNode | null | undefined): string {
+  const type = node?.type;
+  return typeof type === "string" ? type : type?.name ?? "";
+}
+
+function selectedCodeBlockPosition(
+  state: PapyroCodeBlockState | null | undefined,
+  typeName: string,
+  explicitPos: number | null = null,
+): { pos: number; node: PapyroCodeBlockNode } | null {
   if (Number.isSafeInteger(explicitPos)) {
-    const node = state?.doc?.nodeAt?.(explicitPos);
-    return node?.type?.name === typeName ? { pos: explicitPos, node } : null;
+    const pos = explicitPos as number;
+    const node = state?.doc?.nodeAt?.(pos);
+    return nodeTypeName(node) === typeName && node ? { pos, node } : null;
   }
 
   const selection = state?.selection;
@@ -781,7 +955,7 @@ function selectedCodeBlockPosition(state, typeName, explicitPos = null) {
 
   for (let depth = $from.depth; depth >= 0; depth -= 1) {
     const node = $from.node(depth);
-    if (node?.type?.name === typeName) {
+    if (nodeTypeName(node) === typeName && node) {
       return {
         pos: depth === 0 ? 0 : $from.before(depth),
         node,
@@ -789,11 +963,16 @@ function selectedCodeBlockPosition(state, typeName, explicitPos = null) {
     }
   }
 
-  const node = state?.doc?.nodeAt?.(selection.from);
-  return node?.type?.name === typeName ? { pos: selection.from, node } : null;
+  const from = Number.isSafeInteger(selection.from) ? selection.from as number : 0;
+  const node = state?.doc?.nodeAt?.(from);
+  return nodeTypeName(node) === typeName && node ? { pos: from, node } : null;
 }
 
-export function setCodeBlockLanguage(editor, language, pos = null) {
+export function setCodeBlockLanguage(
+  editor: PapyroCodeBlockEditor | null | undefined,
+  language: unknown,
+  pos: number | null = null,
+): boolean {
   const state = editor?.state;
   const match = selectedCodeBlockPosition(state, "codeBlock", pos);
   const view = safeEditorView(editor);
@@ -807,7 +986,7 @@ export function setCodeBlockLanguage(editor, language, pos = null) {
     language: nextLanguage,
   });
   view.dispatch(tr);
-  editor.commands?.focus?.();
+  editor?.commands?.focus?.();
   return true;
 }
 
@@ -824,31 +1003,41 @@ export function createPapyroCodeBlockOptions() {
   };
 }
 
-export function createPapyroCodeBlockExtension({ nodeViewRenderer = null } = {}) {
+export type PapyroCodeBlockNodeViewRendererFactory = (context: {
+  options: PapyroCodeBlockNodeViewOptions;
+  fallbackNodeView: NodeViewRenderer;
+}) => NodeViewRenderer;
+
+function createFallbackCodeBlockNodeView(
+  options: PapyroCodeBlockNodeViewOptions,
+): NodeViewRenderer {
+  return (({ editor, node, getPos, view }: NodeViewRendererProps) =>
+    createPapyroCodeBlockNodeView({
+      editor: editor as PapyroCodeBlockEditor,
+      node,
+      getPos,
+      view: { dom: view.dom as PapyroCodeBlockElement },
+      options,
+    }) as PapyroNodeViewRendererResult) as NodeViewRenderer;
+}
+
+export function createPapyroCodeBlockExtension({
+  nodeViewRenderer = null,
+}: {
+  nodeViewRenderer?: PapyroCodeBlockNodeViewRendererFactory | null;
+} = {}) {
   return CodeBlockLowlight.extend({
     addNodeView() {
+      const nodeViewOptions = this.options as unknown as PapyroCodeBlockNodeViewOptions;
+      const fallbackNodeView = createFallbackCodeBlockNodeView(nodeViewOptions);
       if (typeof nodeViewRenderer === "function") {
         return nodeViewRenderer({
-          options: this.options,
-          fallbackNodeView: ({ editor, node, getPos, view }) =>
-            createPapyroCodeBlockNodeView({
-              editor,
-              node,
-              getPos,
-              view,
-              options: this.options,
-            }),
+          options: nodeViewOptions,
+          fallbackNodeView,
         });
       }
 
-      return ({ editor, node, getPos, view }) =>
-        createPapyroCodeBlockNodeView({
-          editor,
-          node,
-          getPos,
-          view,
-          options: this.options,
-        });
+      return fallbackNodeView;
     },
 
     renderHTML({ node, HTMLAttributes }) {
@@ -895,9 +1084,9 @@ export function createPapyroCodeBlockExtension({ nodeViewRenderer = null } = {})
       return {
         ...this.parent?.(),
         setCodeBlockLanguage:
-          (language, pos = null) =>
-          ({ editor }) =>
-          setCodeBlockLanguage(editor, language, pos),
+          (language: unknown, pos: number | null = null) =>
+          ({ editor }: { editor: Editor }) =>
+          setCodeBlockLanguage(editor as PapyroCodeBlockEditor, language, pos),
       };
     },
   });
@@ -905,7 +1094,9 @@ export function createPapyroCodeBlockExtension({ nodeViewRenderer = null } = {})
 
 export const PapyroCodeBlock = createPapyroCodeBlockExtension();
 
-export function createPapyroCodeBlockExtensions(options = {}) {
+export function createPapyroCodeBlockExtensions(options: {
+  nodeViewRenderer?: PapyroCodeBlockNodeViewRendererFactory | null;
+} = {}) {
   return [
     createPapyroCodeBlockExtension(options).configure(createPapyroCodeBlockOptions()),
   ];
