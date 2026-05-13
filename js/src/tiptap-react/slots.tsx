@@ -1,5 +1,6 @@
 import React from "react";
 
+import { createPapyroOfficialDragHandleConfig } from "../tiptap-official-drag-handle.js";
 import { PapyroOfficialTableNodeLayer } from "./official-table-node-layer.jsx";
 import { DragContextMenu } from "@/components/tiptap-ui/drag-context-menu";
 import { SlashDropdownMenu } from "@/components/tiptap-ui/slash-dropdown-menu/slash-dropdown-menu.tsx";
@@ -13,10 +14,25 @@ import "@/components/tiptap-node/code-block-node/code-block-node.scss";
 import "@/components/tiptap-node/horizontal-rule-node/horizontal-rule-node.scss";
 import "@/components/tiptap-node/image-node/image-node.scss";
 
+function PapyroDragContextMenu() {
+  const dragHandleConfig = React.useMemo(
+    () => createPapyroOfficialDragHandleConfig(),
+    [],
+  );
+
+  return (
+    <DragContextMenu
+      pluginKey={dragHandleConfig.pluginKey}
+      nested={dragHandleConfig.nested}
+      className="drag-handle mn-tiptap-drag-context-menu-handle"
+    />
+  );
+}
+
 function PapyroOverlayLayer(runtime) {
   return (
     <>
-      <DragContextMenu />
+      <PapyroDragContextMenu />
       <PapyroOfficialTableNodeLayer {...runtime} />
       <SlashDropdownMenu />
       <PapyroToolbarFloating />

@@ -177,7 +177,7 @@
     cursor: grabbing;
 }
 
-.mn-tiptap-official-drag-handle-bridge {
+.mn-tiptap-drag-context-menu-handle {
     z-index: 166;
     width: auto;
     height: 24px;

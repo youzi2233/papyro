@@ -460,7 +460,7 @@
 
 .mn-tiptap-block-handle[data-dragging="true"] .mn-tiptap-block-handle-button,
 .mn-tiptap-block-handle-controls[data-dragging="true"] .mn-tiptap-block-handle-button,
-.mn-tiptap-official-drag-handle-bridge[data-dragging="true"] .mn-tiptap-block-handle-button {
+.mn-tiptap-drag-context-menu-handle[data-dragging="true"] .tiptap-button {
     cursor: grabbing;
     border-color: var(--mn-accent);
     color: var(--mn-accent);

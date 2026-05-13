@@ -9,13 +9,6 @@ import {
   papyroDragHandlePluginKey,
   papyroTableOverlayRule,
 } from "../src/tiptap-official-drag-handle.js";
-import {
-  consumeOfficialDragHandleNativeMenu,
-  createOfficialDragHandleClickTracker,
-  isOfficialDragHandlePrimaryPointer,
-  officialDragHandleControlsHidden,
-  officialDragHandleBridgeState as reactBridgeState,
-} from "../src/tiptap-react/official-drag-handle-bridge-state.js";
 
 function node(name, extra = {}) {
   return {
@@ -104,95 +97,4 @@ test("Papyro drag handle rules leave table internals to table overlay", () => {
     }),
     1000,
   );
-});
-
-test("Papyro React drag handle bridge only activates for editable Hybrid mode", () => {
-  const editor = { isEditable: true, isDestroyed: false };
-  const blockHandle = { handleOfficialNodeChange() {} };
-
-  assert.deepEqual(
-    reactBridgeState({ editor, entry: { viewMode: "hybrid", blockHandle } }),
-    { active: true, viewMode: "hybrid", reason: "active" },
-  );
-  assert.deepEqual(
-    reactBridgeState({ editor, entry: { viewMode: "source", blockHandle } }),
-    { active: false, viewMode: "source", reason: "inactive-view-mode" },
-  );
-  assert.deepEqual(
-    reactBridgeState({
-      editor: { ...editor, isEditable: false },
-      entry: { viewMode: "hybrid", blockHandle },
-    }),
-    { active: false, viewMode: "hybrid", reason: "read-only-editor" },
-  );
-  assert.deepEqual(
-    reactBridgeState({ editor, entry: { viewMode: "hybrid" } }),
-    { active: false, viewMode: "hybrid", reason: "missing-block-handle" },
-  );
-  assert.deepEqual(
-    reactBridgeState({ editor: { ...editor, isDestroyed: true }, entry: { blockHandle } }),
-    { active: false, viewMode: "hybrid", reason: "destroyed-editor" },
-  );
-});
-
-test("Papyro React drag handle keeps official controls visible while hiding only the legacy floating view", () => {
-  assert.equal(officialDragHandleControlsHidden(null), true);
-  assert.equal(officialDragHandleControlsHidden({ open: false, target: {} }), true);
-  assert.equal(officialDragHandleControlsHidden({ open: true, target: null }), true);
-  assert.equal(
-    officialDragHandleControlsHidden({
-      open: true,
-      target: { kind: "paragraph" },
-      floatingViewHidden: true,
-    }),
-    false,
-  );
-});
-
-test("Papyro React drag handle click tracker opens actions only for short primary clicks", () => {
-  const tracker = createOfficialDragHandleClickTracker({ threshold: 4 });
-
-  assert.equal(tracker.begin({ button: 0, clientX: 10, clientY: 20 }), true);
-  assert.equal(tracker.end({ button: 0, clientX: 12, clientY: 22 }), true);
-  assert.equal(tracker.click(), false);
-  assert.equal(tracker.click(), true);
-
-  assert.equal(tracker.click(), true);
-
-  assert.equal(tracker.begin({ button: 0, clientX: 10, clientY: 20 }), true);
-  assert.equal(tracker.end({ button: 0, clientX: 10, clientY: 20 }), true);
-  assert.equal(tracker.click(), false);
-  assert.equal(tracker.click(), true);
-
-  assert.equal(tracker.begin({ button: 0, clientX: 10, clientY: 20 }), true);
-  assert.equal(tracker.end({ button: 0, clientX: 18, clientY: 20 }), false);
-  assert.equal(tracker.click(), false);
-  assert.equal(tracker.click(), true);
-
-  assert.equal(tracker.begin({ button: 2, clientX: 10, clientY: 20 }), false);
-  assert.equal(tracker.end({ button: 2, clientX: 10, clientY: 20 }), false);
-  assert.equal(tracker.click(), true);
-
-  assert.equal(tracker.begin({ button: 0, clientX: 10, clientY: 20 }), true);
-  tracker.cancel();
-  assert.equal(tracker.end({ button: 0, clientX: 10, clientY: 20 }), false);
-  assert.equal(tracker.click(), false);
-});
-
-test("Papyro React drag handle consumes native context menu events", () => {
-  const calls = [];
-  const event = {
-    preventDefault: () => calls.push("preventDefault"),
-    stopPropagation: () => calls.push("stopPropagation"),
-  };
-
-  assert.equal(consumeOfficialDragHandleNativeMenu(event), true);
-  assert.deepEqual(calls, ["preventDefault", "stopPropagation"]);
-});
-
-test("Papyro React drag handle treats only primary pointer as insert activation", () => {
-  assert.equal(isOfficialDragHandlePrimaryPointer({ button: 0 }), true);
-  assert.equal(isOfficialDragHandlePrimaryPointer({ button: undefined }), true);
-  assert.equal(isOfficialDragHandlePrimaryPointer({ button: 1 }), false);
-  assert.equal(isOfficialDragHandlePrimaryPointer({ button: 2 }), false);
 });

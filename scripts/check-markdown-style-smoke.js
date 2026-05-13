@@ -168,7 +168,7 @@ const TIPTAP_COMMAND_PANEL_REQUIREMENTS = [
   ["Tiptap official table column extend", ".tiptap-table-extend-row-column-button.tiptap-table-column-end-add-remove", "cursor: col-resize"],
   ["Tiptap table selected cell object border", ".mn-tiptap-table-cell.mn-tiptap-table-cell-selected::after", "border-width:"],
   ["Tiptap table selected cell edge classes", ".mn-tiptap-table-cell.mn-tiptap-table-cell-selected-edge-right", "--mn-table-selected-edge-right"],
-  ["Tiptap official block handle stacking", ".mn-tiptap-official-drag-handle-bridge", "z-index: 166"],
+  ["Tiptap official block handle stacking", ".mn-tiptap-drag-context-menu-handle", "z-index: 166"],
   ["Tiptap code language badge", ".mn-tiptap-code-language-button::before", "data-language-badge"],
   ["Tiptap code language option token", ".mn-tiptap-code-language-menu-item::before", "data-language-token"],
   ["Tiptap code language option title", ".mn-tiptap-code-language-menu-item-title", "text-overflow: ellipsis"],

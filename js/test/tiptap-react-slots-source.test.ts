@@ -34,10 +34,6 @@ const codeBlockNodeViewExtensionSource = readFileSync(
   new URL("../src/tiptap-react/extensions/code-block-node-view.js", import.meta.url),
   "utf8",
 );
-const officialDragHandleBridgeSource = readFileSync(
-  new URL("../src/tiptap-react/official-drag-handle-bridge.jsx", import.meta.url),
-  "utf8",
-);
 const hoverIntentHookSource = readFileSync(
   new URL("../src/tiptap-react/hooks/use-hover-intent-activation.js", import.meta.url),
   "utf8",
@@ -82,6 +78,10 @@ const primitivesSource = readFileSync(
 test("React island slots register official editor overlay layers by default", () => {
   assert.match(
     slotsSource,
+    /import\s+\{\s*createPapyroOfficialDragHandleConfig\s*\}\s+from\s+"\.{2}\/tiptap-official-drag-handle\.js";/u,
+  );
+  assert.match(
+    slotsSource,
     /import\s+\{\s*DragContextMenu\s*\}\s+from\s+"@\/components\/tiptap-ui\/drag-context-menu";/u,
   );
   assert.match(
@@ -89,7 +89,7 @@ test("React island slots register official editor overlay layers by default", ()
     /import\s+\{\s*PapyroOfficialTableNodeLayer\s*\}\s+from\s+"\.\/official-table-node-layer\.jsx";/u,
   );
   assert.match(slotsSource, /function PapyroOverlayLayer/u);
-  assert.match(slotsSource, /<DragContextMenu \/>/u);
+  assert.match(slotsSource, /<PapyroDragContextMenu \/>/u);
   assert.match(slotsSource, /<PapyroOfficialTableNodeLayer \{\.\.\.runtime\} \/>/u);
   assert.match(slotsSource, /OverlayLayer:\s*PapyroOverlayLayer/u);
   assert.doesNotMatch(slotsSource, /BeforeContent:\s*null/u);
@@ -211,19 +211,16 @@ test("editor runtime delegates Rust protocol handling to a focused bridge", () =
   assert.match(editorRuntimeProtocolSource, /message\.type === "set_content"/u);
 });
 
-test("official drag handle bridge keeps Tiptap callbacks stable across renders", () => {
-  assert.match(officialDragHandleBridgeSource, /PapyroBlockHandle/u);
-  assert.match(officialDragHandleBridgeSource, /useCallback/u);
-  assert.match(officialDragHandleBridgeSource, /useEffect/u);
-  assert.match(officialDragHandleBridgeSource, /useRef/u);
-  assert.match(officialDragHandleBridgeSource, /useState/u);
-  assert.match(officialDragHandleBridgeSource, /subscribeViewState/u);
-  assert.match(officialDragHandleBridgeSource, /entryRef\.current\s*=\s*entry/u);
-  assert.match(officialDragHandleBridgeSource, /onNodeChange=\{handleNodeChange\}/u);
-  assert.match(officialDragHandleBridgeSource, /onElementDragEnd=\{handleElementDragEnd\}/u);
-  assert.match(officialDragHandleBridgeSource, /blockHandle\?\.viewState/u);
-  assert.match(officialDragHandleBridgeSource, /allowOfficialDragFromBridge/u);
-  assert.match(officialDragHandleBridgeSource, /clickAction\?\.\(event\)/u);
+test("React drag handle slot uses the official DragContextMenu module path", () => {
+  assert.match(slotsSource, /function PapyroDragContextMenu/u);
+  assert.match(slotsSource, /createPapyroOfficialDragHandleConfig\(\)/u);
+  assert.match(slotsSource, /<DragContextMenu/u);
+  assert.match(slotsSource, /pluginKey=\{dragHandleConfig\.pluginKey\}/u);
+  assert.match(slotsSource, /nested=\{dragHandleConfig\.nested\}/u);
+  assert.match(slotsSource, /className="drag-handle mn-tiptap-drag-context-menu-handle"/u);
+  assert.doesNotMatch(slotsSource, /official-drag-handle-bridge/u);
+  assert.doesNotMatch(slotsSource, /PapyroBlockHandle/u);
+  assert.doesNotMatch(indexSource, /official-drag-handle-bridge/u);
 });
 
 test("React command chrome uses shared menu primitives", () => {
