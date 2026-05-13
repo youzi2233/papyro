@@ -1,5 +1,5 @@
 import { localizedText } from "./tiptap-i18n.js";
-import { createPapyroTiptapFormatSnapshot } from "./tiptap-format-snapshot.js";
+import { createPapyroTiptapFormatSnapshot } from "./tiptap-format-snapshot.ts";
 import {
   PAPYRO_HIGHLIGHT_OPTIONS,
   PAPYRO_TEXT_COLOR_OPTIONS,

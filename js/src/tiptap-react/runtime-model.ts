@@ -2,7 +2,7 @@ import { normalizeTiptapLanguage } from "../tiptap-i18n.js";
 import {
   createPapyroTiptapFormatSnapshot,
   samePapyroTiptapFormatSnapshot,
-} from "../tiptap-format-snapshot.js";
+} from "../tiptap-format-snapshot.ts";
 
 const DEFAULT_LANGUAGE = "english";
 const DEFAULT_VIEW_MODE = "hybrid";

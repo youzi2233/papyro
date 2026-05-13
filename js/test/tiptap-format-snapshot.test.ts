@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import {
   createPapyroTiptapFormatSnapshot,
   samePapyroTiptapFormatSnapshot,
-} from "../src/tiptap-format-snapshot.js";
+} from "../src/tiptap-format-snapshot.ts";
 
 function createEditor({ active = [], textColor = null, highlightColor = null } = {}) {
   const activeMarks = new Set(active);
