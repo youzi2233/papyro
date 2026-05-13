@@ -179,7 +179,12 @@ export const SuggestionMenu = ({
       editor,
 
       allow(props) {
-        const $from = editor.state.doc.resolve(props.range.from)
+        const doc = props.state?.doc ?? editor.state.doc
+        if (props.range.from < 0 || props.range.from > doc.content.size) {
+          return false
+        }
+
+        const $from = doc.resolve(props.range.from)
 
         // Check if we're inside an image node
         for (let depth = $from.depth; depth > 0; depth--) {

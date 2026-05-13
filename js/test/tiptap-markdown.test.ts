@@ -720,8 +720,9 @@ test("Tiptap extension chain includes official runtime helpers after StarterKit"
 
   assert.equal(names[0], "starterKit");
   assert.equal(names[1], "nodeRange");
-  assert.equal(names[2], "trailingNode");
-  assert.equal(names[3], "uniqueID");
+  assert.equal(names[2], "textAlign");
+  assert.equal(names[3], "trailingNode");
+  assert.equal(names[4], "uniqueID");
   assert.ok(names.includes("codeBlock"));
   assert.ok(names.includes("tableKit"));
 
@@ -730,6 +731,9 @@ test("Tiptap extension chain includes official runtime helpers after StarterKit"
 
   const nodeRange = extensions.find((extension) => extension.name === "nodeRange");
   assert.equal(nodeRange.options?.key, "Mod");
+
+  const textAlign = extensions.find((extension) => extension.name === "textAlign");
+  assert.deepEqual(textAlign.options?.types, ["heading", "paragraph"]);
 
   const trailingNode = extensions.find((extension) => extension.name === "trailingNode");
   assert.equal(trailingNode.options?.node, "paragraph");

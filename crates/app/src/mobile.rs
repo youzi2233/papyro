@@ -27,7 +27,7 @@ pub fn MobileApp() -> Element {
     let storage = use_hook(|| {
         let storage = mobile_storage().unwrap_or_else(|error| {
             tracing::warn!("Failed to initialize mobile app-data storage: {error}");
-            papyro_storage::SqliteStorage::shared().expect("default storage is initialized")
+            papyro_storage::SqliteStorage::new().expect("default storage is initialized")
         });
         Arc::new(storage) as Arc<dyn NoteStorage>
     });

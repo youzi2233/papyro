@@ -40,6 +40,12 @@ const STEPS = [
     command: process.execPath,
     args: ["scripts/check-desktop-resource-smoke.js"],
   },
+  {
+    name: "Desktop Tiptap WebView smoke",
+    command: process.execPath,
+    args: ["scripts/check-desktop-tiptap-webview-smoke.js"],
+    optional: true,
+  },
 ];
 
 const BUNDLE_COPIES = [
@@ -101,7 +107,13 @@ smoke, mounted Tiptap runtime smoke, generated bundle sync, and runtime
 style mirror sync.`);
 }
 
-function runStep({ name, command, args, shell = false }) {
+function runStep({ name, command, args, shell = false, optional = false }) {
+  if (optional && process.env.PAPYRO_DESKTOP_WEBVIEW_SMOKE !== "1") {
+    console.log(`=== ${name} (skipped) ===`);
+    console.log(`Set PAPYRO_DESKTOP_WEBVIEW_SMOKE=1 to run this desktop-only gate.`);
+    return;
+  }
+
   console.log(`=== ${name} ===`);
   const result = spawnSync(command, args, {
     cwd: process.cwd(),

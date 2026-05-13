@@ -80,12 +80,15 @@ where
 }
 
 fn load_startup_settings() -> AppSettings {
-    DesktopPlatform
-        .get_app_data_dir()
+    shared_desktop_storage()
         .ok()
-        .and_then(|dir| papyro_storage::SqliteStorage::shared_in_app_data_dir(&dir).ok())
         .map(|storage| storage.load_settings())
         .unwrap_or_default()
+}
+
+fn shared_desktop_storage() -> anyhow::Result<papyro_storage::SqliteStorage> {
+    let app_data_dir = DesktopPlatform.get_app_data_dir()?;
+    papyro_storage::SqliteStorage::shared_in_app_data_dir(&app_data_dir)
 }
 
 fn build_startup_chrome(
@@ -136,7 +139,7 @@ pub fn DesktopApp() -> Element {
         use_hook(try_consume_context::<DesktopExternalOpenRequestReceiver>);
     let bootstrap = use_hook(|| desktop_bootstrap(&startup_open_request));
     let storage = use_hook(|| {
-        Arc::new(papyro_storage::SqliteStorage::shared().expect("default storage is initialized"))
+        Arc::new(shared_desktop_storage().expect("desktop storage is initialized"))
             as Arc<dyn NoteStorage>
     });
     let platform = use_hook(|| Arc::new(DesktopPlatform) as Arc<dyn PlatformApi>);
@@ -155,7 +158,7 @@ pub fn DesktopApp() -> Element {
 }
 
 fn desktop_bootstrap(startup_open_request: &DesktopStartupOpenRequest) -> WorkspaceBootstrap {
-    let storage = papyro_storage::SqliteStorage::shared().expect("default storage is initialized");
+    let storage = shared_desktop_storage().expect("desktop storage is initialized");
     desktop_bootstrap_from_storage(
         &storage,
         startup_open_request,

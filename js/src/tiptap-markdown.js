@@ -1,5 +1,6 @@
 import { MarkdownManager } from "@tiptap/markdown";
 import { NodeRange } from "@tiptap/extension-node-range";
+import { TextAlign } from "@tiptap/extension-text-align";
 import { UniqueID } from "@tiptap/extension-unique-id";
 import { TrailingNode } from "@tiptap/extensions/trailing-node";
 import { StarterKit } from "@tiptap/starter-kit";
@@ -89,6 +90,9 @@ export function createPapyroTiptapExtensions({
     }),
     NodeRange.configure({
       key: "Mod",
+    }),
+    TextAlign.configure({
+      types: ["heading", "paragraph"],
     }),
     TrailingNode.configure({
       node: "paragraph",

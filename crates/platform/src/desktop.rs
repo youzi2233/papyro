@@ -1,5 +1,8 @@
 use crate::{
-    app_data::ensure_app_data_dir, dialog, external::open_external_url, reveal::reveal_path,
+    app_data::{app_data_base_dir, ensure_app_data_dir},
+    dialog,
+    external::open_external_url,
+    reveal::reveal_path,
     traits::PlatformApi,
 };
 use anyhow::Result;
@@ -37,7 +40,7 @@ impl PlatformApi for DesktopPlatform {
     }
 
     fn get_app_data_dir(&self) -> Result<PathBuf> {
-        ensure_app_data_dir(dirs::data_local_dir())
+        ensure_app_data_dir(app_data_base_dir(dirs::data_local_dir()))
     }
 }
 

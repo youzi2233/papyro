@@ -1,5 +1,22 @@
 use anyhow::{Context, Result};
+use std::ffi::OsString;
 use std::path::PathBuf;
+
+const APP_DATA_DIR_ENV: &str = "PAPYRO_APP_DATA_DIR";
+
+pub(crate) fn app_data_base_dir(default_base: Option<PathBuf>) -> Option<PathBuf> {
+    app_data_base_dir_from_env(default_base, std::env::var_os(APP_DATA_DIR_ENV))
+}
+
+fn app_data_base_dir_from_env(
+    default_base: Option<PathBuf>,
+    env_value: Option<OsString>,
+) -> Option<PathBuf> {
+    env_value
+        .filter(|value| !value.as_os_str().is_empty())
+        .map(PathBuf::from)
+        .or(default_base)
+}
 
 pub(crate) fn ensure_app_data_dir(base: Option<PathBuf>) -> Result<PathBuf> {
     let dir = app_data_dir(base);
@@ -59,6 +76,28 @@ mod tests {
             .contains("failed to create app data directory"));
 
         let _ = fs::remove_file(base);
+    }
+
+    #[test]
+    fn app_data_base_dir_prefers_test_hook() {
+        assert_eq!(
+            app_data_base_dir_from_env(
+                Some(PathBuf::from("system-data")),
+                Some(OsString::from("isolated-data"))
+            ),
+            Some(PathBuf::from("isolated-data"))
+        );
+    }
+
+    #[test]
+    fn app_data_base_dir_ignores_empty_test_hook() {
+        assert_eq!(
+            app_data_base_dir_from_env(
+                Some(PathBuf::from("system-data")),
+                Some(OsString::from(""))
+            ),
+            Some(PathBuf::from("system-data"))
+        );
     }
 
     fn temp_path(label: &str) -> PathBuf {

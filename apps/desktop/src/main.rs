@@ -76,41 +76,40 @@ fn main() {
     } else {
         window
     };
+    let mut desktop_config = Config::new()
+        .with_menu(None)
+        .with_window(window)
+        .with_background_color(chrome.background_color)
+        .with_custom_head(chrome.custom_head);
+    if let Some(browser_args) = desktop_webview_browser_args() {
+        desktop_config = desktop_config.with_windows_browser_args(browser_args);
+    }
 
     dioxus::LaunchBuilder::new()
         .with_context(startup_open_request)
         .with_context(external_open_receiver)
-        .with_cfg(
-            Config::new()
-                .with_menu(None)
-                .with_window(window)
-                .with_background_color(chrome.background_color)
-                .with_custom_head(chrome.custom_head)
-                .with_custom_event_handler(move |event, _| {
-                    if let Event::Opened { urls } = event {
-                        if papyro_app::desktop::desktop_send_external_open_urls(
-                            &external_open_sender,
-                            urls.iter(),
-                        ) {
-                            tracing::info!(
-                                url_count = urls.len(),
-                                "desktop external open request queued"
-                            );
-                        }
-                    }
+        .with_cfg(desktop_config.with_custom_event_handler(move |event, _| {
+            if let Event::Opened { urls } = event {
+                if papyro_app::desktop::desktop_send_external_open_urls(
+                    &external_open_sender,
+                    urls.iter(),
+                ) {
+                    tracing::info!(
+                        url_count = urls.len(),
+                        "desktop external open request queued"
+                    );
+                }
+            }
 
-                    if !perf_enabled() {
-                        return;
-                    }
+            if !perf_enabled() {
+                return;
+            }
 
-                    let event_debug = format!("{event:?}");
-                    if event_debug.contains("UserEvent(Poll(")
-                        || event_debug.contains("UserEvent(Ipc")
-                    {
-                        tracing::info!(event = %event_debug, "perf desktop event loop");
-                    }
-                }),
-        )
+            let event_debug = format!("{event:?}");
+            if event_debug.contains("UserEvent(Poll(") || event_debug.contains("UserEvent(Ipc") {
+                tracing::info!(event = %event_debug, "perf desktop event loop");
+            }
+        }))
         .launch(DesktopRoot);
 }
 
@@ -357,6 +356,18 @@ fn perf_enabled() -> bool {
     std::env::var_os("PAPYRO_PERF").is_some()
 }
 
+fn desktop_webview_browser_args() -> Option<String> {
+    normalize_desktop_webview_browser_args(
+        std::env::var("PAPYRO_WEBVIEW2_ADDITIONAL_BROWSER_ARGS").ok(),
+    )
+}
+
+fn normalize_desktop_webview_browser_args(value: Option<String>) -> Option<String> {
+    value
+        .map(|value| value.trim().to_string())
+        .filter(|value| !value.is_empty())
+}
+
 fn js_string_literal(value: &str) -> String {
     let escaped = value
         .replace('\\', "\\\\")
@@ -422,5 +433,21 @@ mod tests {
         assert!(head.contains("__papyroNullEventGuardPatched"));
         assert!(head.contains("hasDioxusTarget(event?.target)"));
         assert!(head.contains(r#"hasAttribute("data-dioxus-id")"#));
+    }
+
+    #[test]
+    fn desktop_webview_browser_args_reads_test_hook() {
+        assert_eq!(
+            normalize_desktop_webview_browser_args(Some(
+                " --remote-debugging-port=9234 ".to_string()
+            ))
+            .as_deref(),
+            Some("--remote-debugging-port=9234")
+        );
+        assert_eq!(
+            normalize_desktop_webview_browser_args(Some(" ".to_string())),
+            None
+        );
+        assert_eq!(normalize_desktop_webview_browser_args(None), None);
     }
 }

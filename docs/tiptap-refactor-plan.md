@@ -323,7 +323,7 @@ These features are unique to Papyro, not in the official template, and need to b
 - [x] Update all existing test files for new module paths
 - [x] Add Markdown serialization round-trip tests for each official component
 - [x] Verify `scripts/check-editor-markdown-gate.js` passes
-- [ ] End-to-end verification of all interactions in desktop WebView
+- [x] End-to-end verification of all interactions in desktop WebView
 
 ---
 
