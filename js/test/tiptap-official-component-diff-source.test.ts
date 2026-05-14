@@ -1,0 +1,114 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+
+function readSource(path: string) {
+  return readFileSync(new URL(path, import.meta.url), "utf8");
+}
+
+const toolbarSource = readSource(
+  "../src/components/tiptap-templates/notion/notion-like/papyro-toolbar-floating.tsx",
+);
+const slashMenuSource = readSource(
+  "../src/components/tiptap-ui/slash-dropdown-menu/slash-dropdown-menu.tsx",
+);
+const slashMenuHookSource = readSource(
+  "../src/components/tiptap-ui/slash-dropdown-menu/use-slash-dropdown-menu.ts",
+);
+const dragContextMenuSource = readSource(
+  "../src/components/tiptap-ui/drag-context-menu/drag-context-menu.tsx",
+);
+const tableHandleMenuSource = readSource(
+  "../src/components/tiptap-node/table-node/ui/table-handle-menu/table-handle-menu.tsx",
+);
+const tableCellHandleMenuSource = readSource(
+  "../src/components/tiptap-node/table-node/ui/table-cell-handle-menu/table-cell-handle-menu.tsx",
+);
+const imageNodeFloatingSource = readSource(
+  "../src/components/tiptap-node/image-node/image-node-floating.tsx",
+);
+const imageNodeViewSource = readSource(
+  "../src/components/tiptap-node/image-node/image-node-view.tsx",
+);
+
+test("Papyro floating toolbar keeps the official Notion-like composition without AI", () => {
+  assert.match(toolbarSource, /export function PapyroToolbarFloating/u);
+  assert.match(toolbarSource, /<TurnIntoDropdown hideWhenUnavailable=\{true\} \/>/u);
+  assert.match(toolbarSource, /<MarkButton type="bold" hideWhenUnavailable=\{true\} \/>/u);
+  assert.match(toolbarSource, /<MarkButton type="italic" hideWhenUnavailable=\{true\} \/>/u);
+  assert.match(toolbarSource, /<MarkButton type="underline" hideWhenUnavailable=\{true\} \/>/u);
+  assert.match(toolbarSource, /<MarkButton type="strike" hideWhenUnavailable=\{true\} \/>/u);
+  assert.match(toolbarSource, /<MarkButton type="code" hideWhenUnavailable=\{true\} \/>/u);
+  assert.match(toolbarSource, /<ImageNodeFloating \/>/u);
+  assert.match(toolbarSource, /<LinkPopover[\s\S]*?autoOpenOnLinkActive=\{false\}[\s\S]*?\/>/u);
+  assert.match(toolbarSource, /<ColorTextPopover hideWhenUnavailable=\{true\} \/>/u);
+  assert.match(toolbarSource, /<MoreOptions hideWhenUnavailable=\{true\} \/>/u);
+  assert.doesNotMatch(toolbarSource, /ImproveDropdown|aiTextPrompt|aiGenerationShow/u);
+});
+
+test("Papyro floating toolbar documents its retained WebView and i18n adapters in source", () => {
+  assert.match(toolbarSource, /preserveEditorSelectionOnMouseDown/u);
+  assert.match(toolbarSource, /preserveEditorSelectionOnPointerDown/u);
+  assert.match(toolbarSource, /moreOptionsLabel/u);
+  assert.match(toolbarSource, /usePapyroTiptapLanguage/u);
+  assert.match(toolbarSource, /editor\.on\("transaction", handleSelectionUpdate\)/u);
+});
+
+test("slash menu keeps supported Markdown-local commands and excludes unavailable official features", () => {
+  assert.match(slashMenuHookSource, /text:\s*\{/u);
+  assert.match(slashMenuHookSource, /heading_1:\s*\{/u);
+  assert.match(slashMenuHookSource, /bullet_list:\s*\{/u);
+  assert.match(slashMenuHookSource, /ordered_list:\s*\{/u);
+  assert.match(slashMenuHookSource, /task_list:\s*\{/u);
+  assert.match(slashMenuHookSource, /quote:\s*\{/u);
+  assert.match(slashMenuHookSource, /code_block:\s*\{/u);
+  assert.match(slashMenuHookSource, /table:\s*\{/u);
+  assert.match(slashMenuHookSource, /divider:\s*\{/u);
+  assert.match(slashMenuHookSource, /image:\s*\{/u);
+  assert.match(slashMenuHookSource, /keywords:\s*\["table", "insertTable"\]/u);
+  assert.match(slashMenuSource, /scrollIntoView\(\{ block: "nearest" \}\)/u);
+  assert.doesNotMatch(
+    slashMenuHookSource,
+    /AiSparklesIcon|addMentionTrigger|addEmojiTrigger|insertTocNode|aiTextPrompt|continue_writing|ai_ask_button|mention:\s*\{|emoji:\s*\{|toc:\s*\{/u,
+  );
+});
+
+test("drag context menu keeps core local actions and excludes unsupported official integrations", () => {
+  assert.match(dragContextMenuSource, /<ColorMenu \/>/u);
+  assert.match(dragContextMenuSource, /<TableAlignMenu \/>/u);
+  assert.match(dragContextMenuSource, /<TableFitToWidth \/>/u);
+  assert.match(dragContextMenuSource, /<TransformActionGroup \/>/u);
+  assert.match(dragContextMenuSource, /<CoreActionGroup \/>/u);
+  assert.match(dragContextMenuSource, /<DeleteActionGroup \/>/u);
+  assert.match(dragContextMenuSource, /SlashCommandTriggerButton/u);
+  assert.match(dragContextMenuSource, /typeof editor\.commands\.setLockDragHandle === "function"/u);
+  assert.match(dragContextMenuSource, /const resolvedNode = selection\.\$from\.parent/u);
+  assert.doesNotMatch(
+    dragContextMenuSource,
+    /useAiAsk|AskAiShortcutBadge|useCopyAnchorLink|CopyAnchorLinkShortcutBadge|useImageDownload|useTocShowTitle|getNodeDisplayName|isTextSelectionValid/u,
+  );
+});
+
+test("table menus keep only the documented Papyro surface adapter on official menu content", () => {
+  assert.match(tableHandleMenuSource, /className="tiptap-table-menu-content"/u);
+  assert.match(tableCellHandleMenuSource, /className="tiptap-table-menu-content"/u);
+  assert.match(tableHandleMenuSource, /<ColorMenu \/>/u);
+  assert.match(tableHandleMenuSource, /<TableAlignMenu index=\{index\} orientation=\{orientation\} \/>/u);
+  assert.match(tableCellHandleMenuSource, /<ColorMenu \/>/u);
+  assert.match(tableCellHandleMenuSource, /<TableAlignMenu \/>/u);
+  assert.doesNotMatch(
+    `${tableHandleMenuSource}\n${tableCellHandleMenuSource}`,
+    /PapyroTableCommandMenuContent|createPapyroTableCommandMenuModel|createTableCellHandleCommandMenuModel|contentClassName="tiptap-table-menu-content"/u,
+  );
+});
+
+test("image node remains the official node UI boundary with local resources handled outside it", () => {
+  assert.match(imageNodeFloatingSource, /export function ImageNodeFloating/u);
+  assert.match(imageNodeFloatingSource, /ImageDownloadButton/u);
+  assert.match(imageNodeViewSource, /NodeViewWrapper/u);
+  assert.match(imageNodeViewSource, /NodeViewContent/u);
+  assert.doesNotMatch(
+    `${imageNodeFloatingSource}\n${imageNodeViewSource}`,
+    /papyro:\/\/|window\.papyro|saveLocalImage|resolveLocalImage|desktopResource/u,
+  );
+});

@@ -507,9 +507,21 @@ js/src/
 
 #### 9.5 官方组件差异审计
 
-- [ ] 建立官方模板差异清单：逐项记录 `PapyroToolbarFloating`、`SlashDropdownMenu`、`DragContextMenu`、`TableHandleMenu`、`TableCellHandleMenu`、`ImageNodeFloating` 与 `.reference/notion-like-editor` 的源码差异和原因
-- [ ] 每迁移或调整一个官方组件后，对照官方 Notion-like 模板审计剩余顶层编辑器布局、组件状态和 CSS override
-- [ ] 对所有保留的 Papyro 适配加注释或文档说明：Markdown 持久化、Rust 协议、i18n、本地资源或 WebView 焦点保护；无法说明的适配应删除
+- [x] 建立官方模板差异清单：逐项记录 `PapyroToolbarFloating`、`SlashDropdownMenu`、`DragContextMenu`、`TableHandleMenu`、`TableCellHandleMenu`、`ImageNodeFloating` 与 `.reference/notion-like-editor` 的源码差异和原因
+- [x] 每迁移或调整一个官方组件后，对照官方 Notion-like 模板审计剩余顶层编辑器布局、组件状态和 CSS override
+- [x] 对所有保留的 Papyro 适配加注释或文档说明：Markdown 持久化、Rust 协议、i18n、本地资源或 WebView 焦点保护；无法说明的适配应删除
+- [x] 2026-05-15 跟进：新增 `js/test/tiptap-official-component-diff-source.test.ts`，用源码守护测试固定“官方模板主体 + Papyro 必要适配”的边界，避免后续误加官方 AI/Cloud/协作依赖，或误删 WebView 焦点保护、i18n、本地资源和 Markdown 持久化适配
+
+官方组件差异清单：
+
+| 组件 | 与 `.reference/notion-like-editor` 的差异 | 保留原因 | 后续策略 |
+|------|------------------------------------------|----------|----------|
+| `PapyroToolbarFloating` | 由官方 `NotionToolbarFloating` 重命名；移除 `ImproveDropdown`；保留 turn-into、marks、image floating、link/color、More options；More 弹层增加本地化 label、`transaction` 监听和鼠标/指针按下时的选区保护 | Papyro 暂无真实本地/Pro AI 工作流；桌面 WebView 点击按钮时容易让 ProseMirror 选区丢失；More 文案需要跟随运行时语言 | 继续对齐官方组合；只有 AI 工作流、协作评论或本地审核能力真正落地后，才恢复对应入口 |
+| `SlashDropdownMenu` | 保留官方 suggestion menu/card 结构；删除 AI、mention、emoji、TOC 项；table 使用 `keywords`；active item 滚动使用浏览器原生 `scrollIntoView({ block: "nearest" })` | 当前编辑器以本地 Markdown 为持久化源，无用户系统、emoji picker、TOC node UI 或在线 AI 依赖；命令列表必须只暴露能序列化/能执行的能力 | 如接入用户系统、emoji 数据源或本地 AI，再按官方模板恢复对应项并补 Markdown/协议验收 |
+| `DragContextMenu` | 保留官方 drag handle、menu、transform、color、table align/fit、copy/duplicate/delete 和 slash trigger；删除 AI ask、copy anchor link、image download、TOC title；`setLockDragHandle` 做可选命令保护；节点名从当前 selection parent 派生 | Papyro 未启用 Cloud/AI/TOC node/anchor link 发布流；桌面 runtime 中命令扩展可能按模式裁剪，必须防止可选命令缺失导致菜单崩溃 | 保持块级菜单精简；新增能力必须先证明本地协议、Markdown 往返和 UI 验收完整 |
+| `TableHandleMenu` | 源码主体保持官方 paid table-node 菜单；只在 `MenuContent` 加 `tiptap-table-menu-content` 类，用宿主 CSS 限定视口、滚动和 opaque surface | 官方菜单挂在 Papyro WebView/desktop shell 内时需要额外的层级、背景和视口兜底，避免透明或被裁剪 | 不重绘官方 handle/menu item；Papyro CSS 只允许做 surface/viewport/token 桥接 |
+| `TableCellHandleMenu` | 与 `TableHandleMenu` 相同，只保留 `tiptap-table-menu-content` surface 适配；cell action、ColorMenu、TableAlignMenu 仍来自官方 table-node 路径 | 修复 cell menu 透明、布局错乱和长菜单滚动问题，同时不破坏官方 table-node 状态机 | 表格后续视觉问题优先回查官方 SCSS 和宿主覆盖，不再新增旧 Papyro fallback 菜单 |
+| `ImageNodeFloating` | `image-node` 目录与官方模板保持同构：align、caption、download、replace、delete 仍在官方浮动工具栏内；本地图片协议不写入 node UI | 图片文件保存、logo/磁盘资源识别属于 Rust/资源协议层，不应污染官方 image node 组件 | 只在本地资源 resolver 和 Markdown 图片序列化层处理 Papyro 特例，node UI 继续跟随官方 |
 
 #### 9.6 视觉回归与发布验收
 
