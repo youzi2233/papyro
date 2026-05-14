@@ -479,6 +479,8 @@ js/src/
 - [ ] 统一 Markdown typography token：标题、段落、列表、blockquote、inline code、code block、table、Mermaid、KaTeX 在 Hybrid 和 Preview 中共享同一阅读节奏
 - [ ] 审计中英文混排、长 URL、长代码行、宽表格和图片节点的 overflow 行为，禁止关键操作被裁剪到不可达
 - [ ] 保留 app shell 的 disciplined utility 风格，不把编辑器画布包装成大卡片或营销页式 section
+- [x] 2026-05-15 跟进：将正文阅读列收敛到接近官方 Notion-like 模板的 708px 内容宽度，并建立 `--mn-document-content-width` / `--mn-document-wide-width` 画布契约；Source、Hybrid、Preview、错误 fallback 共享同一正文 rail，代码块、表格、Mermaid/KaTeX 等宽内容通过自身容器滚动，不再把整个文档正文拉成宽工作台
+- [x] 2026-05-15 跟进：为三模式画布宽度、Preview 横向溢出、代码块宽度、表格滚动和 Source/fallback 宽度一致性补 Markdown style smoke 防回归
 
 #### 9.3 浮层与菜单系统收敛
 

@@ -33,6 +33,8 @@ const DEFAULT_CSS_GROUPS = [
 ];
 
 const REQUIRED_MARKDOWN_TOKENS = [
+  "--mn-document-measure",
+  "--mn-document-wide-measure",
   "--mn-markdown-font",
   "--mn-markdown-heading-font",
   "--mn-markdown-mono-font",
@@ -93,6 +95,8 @@ const REQUIRED_TIPTAP_BRIDGE_TOKENS = [
 ];
 
 const PREVIEW_REQUIREMENTS = [
+  ["preview scroll hides horizontal page drift", ".mn-preview-scroll", "overflow-x: hidden"],
+  ["preview document width parity", ".mn-preview", "--mn-document-content-width"],
   ["preview heading 1 size", ".mn-preview h1", "--mn-markdown-h1-size"],
   ["preview heading 2 size", ".mn-preview h2", "--mn-markdown-h2-size"],
   ["preview list indent", ".mn-preview ul", "--mn-markdown-list-indent"],
@@ -101,12 +105,16 @@ const PREVIEW_REQUIREMENTS = [
   ["preview inline code padding", ".mn-preview code", "--mn-markdown-inline-code-pad"],
   ["preview code block padding", ".mn-preview pre", "--mn-markdown-code-block-pad-y"],
   ["preview code block surface", ".mn-preview pre", "--mn-code-block-surface"],
+  ["preview code block width guard", ".mn-preview pre", "max-width: 100%"],
+  ["preview table scroll guard", ".mn-preview table", "display: block"],
+  ["preview table width guard", ".mn-preview table", "width: max-content"],
   ["preview table head padding", ".mn-preview th", "--mn-markdown-table-head-pad"],
   ["preview table cell padding", ".mn-preview td", "--mn-markdown-table-cell-pad"],
   ["preview Mermaid block rhythm", ".mn-mermaid-block", "--mn-markdown-code-block-pad-y"],
 ];
 
 const TIPTAP_REQUIREMENTS = [
+  ["Tiptap editor document width parity", ".mn-tiptap-editor", "--mn-document-content-width"],
   ["Tiptap editor body size", ".mn-tiptap-editor", "--mn-markdown-body-size"],
   ["Tiptap editor line height", ".mn-tiptap-editor", "--mn-markdown-line-height"],
   ["Tiptap editor minimum padding", ".mn-tiptap-editor", "max(24px, var(--mn-document-pad-x))"],
@@ -140,6 +148,7 @@ const TIPTAP_REQUIREMENTS = [
   ["Tiptap Mermaid editor mono font", ".mn-tiptap-mermaid-source", "--mn-markdown-mono-font"],
   ["Tiptap image radius", ".mn-tiptap-image", "--mn-markdown-image-radius"],
   ["Tiptap code block padding", ".mn-tiptap-code-block", "--mn-markdown-code-block-pad-y"],
+  ["Tiptap code block width guard", ".mn-tiptap-code-block", "max-width: 100%"],
   ["Tiptap code block mono font", ".mn-tiptap-code-block", "--mn-markdown-mono-font"],
   ["Tiptap code block caret", ".mn-tiptap-code-block", "caret-color: var(--mn-caret)"],
   ["Tiptap code block toolbar", ".mn-tiptap-code-toolbar", "data-action=\"copy\""],
@@ -194,7 +203,11 @@ const TIPTAP_CODE_HIGHLIGHT_REQUIREMENTS = [
 ];
 
 const PAPYRO_FEATURE_REQUIREMENTS = [
+  ["Papyro document content rail", ".mn-document-main", "--mn-document-content-width"],
+  ["Papyro document wide rail", ".mn-document-main", "--mn-document-wide-width"],
   ["Papyro source pane", ".mn-tiptap-source-pane", "--mn-document-code-font"],
+  ["Papyro source pane width parity", ".mn-tiptap-source-pane", "--mn-document-content-width"],
+  ["Papyro fallback input width parity", ".mn-editor-fallback-input", "--mn-document-content-width"],
   ["Papyro Hybrid mode shows editor", ".mn-tiptap-runtime[data-view-mode=\"hybrid\"] .mn-tiptap-editor", "display: block"],
   ["Papyro source mode hides editor", ".mn-tiptap-runtime[data-view-mode=\"source\"] .mn-tiptap-editor", "display: none"],
   ["Papyro Preview mode hides Tiptap runtime", ".mn-tiptap-runtime[data-view-mode=\"preview\"]", "display: none"],

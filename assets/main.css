@@ -218,7 +218,8 @@
     --tt-table-extend-icon-color: color-mix(in srgb, var(--mn-ink-3, #64748b) 72%, transparent);
 
     /* Document rhythm shared by Source, Hybrid, and Preview */
-    --mn-document-measure:      1080px;
+    --mn-document-measure:      708px;
+    --mn-document-wide-measure: min(1080px, calc(100vw - 48px));
     --mn-document-pad-x:        clamp(12px, 2vw, 32px);
     --mn-document-pad-top:      clamp(18px, 3vw, 36px);
     --mn-document-pad-bottom:   72px;

@@ -9,7 +9,7 @@
     min-height: 0;
     height: 100%;
     width: 100%;
-    max-width: var(--mn-document-measure);
+    max-width: var(--mn-document-content-width, var(--mn-document-measure));
     margin-inline: auto;
     padding:
         max(24px, var(--mn-document-pad-top))

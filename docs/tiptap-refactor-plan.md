@@ -479,6 +479,8 @@ The editor surface must behave like the official Notion-like template first, wit
 - [ ] Unify Markdown typography tokens so headings, paragraphs, lists, blockquotes, inline code, code blocks, tables, Mermaid, and KaTeX share the same reading rhythm in Hybrid and Preview
 - [ ] Audit CJK mixed text, long URLs, long code lines, wide tables, and image nodes for overflow behavior; key actions must never be clipped into unreachable areas
 - [ ] Keep the app shell aligned with disciplined utility; do not wrap the editor canvas in a large card or marketing-style section
+- [x] 2026-05-15 follow-up: narrow the main reading column to a 708px content width aligned with the official Notion-like template, and establish a `--mn-document-content-width` / `--mn-document-wide-width` canvas contract; Source, Hybrid, Preview, and error fallback share the same text rail, while wide content such as code blocks, tables, Mermaid, and KaTeX scrolls inside its own container instead of stretching the whole document into a wide workbench
+- [x] 2026-05-15 follow-up: add Markdown style smoke guards for three-mode canvas width, Preview horizontal overflow, code-block width, table scrolling, and Source/fallback width parity
 
 #### 9.3 Floating Layer and Menu Convergence
 

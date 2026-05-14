@@ -25,6 +25,11 @@
     min-width: 0;
 }
 
+.mn-document-main {
+    --mn-document-content-width: var(--mn-document-measure);
+    --mn-document-wide-width: var(--mn-document-wide-measure, var(--mn-document-measure));
+}
+
 .mn-outline {
     width: clamp(188px, 18vw, 236px);
     flex: 0 0 clamp(188px, 18vw, 236px);
@@ -233,7 +238,7 @@
     flex: 0 0 auto;
     min-height: 100%;
     width: 100%;
-    max-width: var(--mn-document-measure);
+    max-width: var(--mn-document-content-width, var(--mn-document-measure));
     margin-inline: auto;
     padding:
         max(24px, var(--mn-document-pad-top))
@@ -244,6 +249,7 @@
     font-size: var(--mn-document-body-size);
     line-height: var(--mn-document-line-height);
     caret-color: var(--mn-accent);
+    overflow-wrap: anywhere;
 }
 
 .mn-tiptap-editor :where(ul:not(.mn-tiptap-task-list), ol) {
@@ -407,6 +413,7 @@
 
 .mn-tiptap-editor pre,
 .mn-tiptap-code-block {
+    max-width: 100%;
     position: relative;
     margin: 0 0 var(--mn-markdown-block-gap);
     overflow-x: auto;
@@ -538,13 +545,20 @@
 }
 
 .mn-editor-error-state {
-    margin: var(--mn-document-pad-top) var(--mn-document-pad-x);
+    box-sizing: border-box;
+    width: 100%;
+    max-width: var(--mn-document-content-width, var(--mn-document-measure));
+    margin: var(--mn-document-pad-top) auto;
+    padding-inline: max(24px, var(--mn-document-pad-x));
 }
 
 .mn-editor-fallback-input {
+    box-sizing: border-box;
     flex: 1;
     min-height: 0;
     width: 100%;
+    max-width: var(--mn-document-content-width, var(--mn-document-measure));
+    margin-inline: auto;
     resize: none;
     border: 0;
     outline: none;
@@ -587,7 +601,9 @@
     flex: 1;
     min-height: 0;
     width: 100%;
+    min-width: 0;
     overflow-y: auto;
+    overflow-x: hidden;
     border-radius: 0;
     border: 0;
     padding:
@@ -598,14 +614,16 @@
 }
 
 .mn-preview {
+    box-sizing: border-box;
     width: 100%;
-    max-width: var(--mn-document-measure);
+    max-width: var(--mn-document-content-width, var(--mn-document-measure));
     margin-inline: auto;
 
     font-family: var(--mn-markdown-font);
     font-size: var(--mn-markdown-body-size);
     line-height: var(--mn-markdown-line-height);
     color: var(--mn-markdown-ink);
+    overflow-wrap: anywhere;
 }
 
 .mn-preview-paused {
@@ -692,6 +710,7 @@
 /* preview: code blocks from syntect */
 .mn-preview pre,
 .mn-preview .mn-code-block > pre {
+    max-width: 100%;
     font-family: var(--mn-markdown-mono-font);
     border-radius: var(--mn-markdown-code-radius);
     margin: 0 0 var(--mn-markdown-block-gap);
@@ -730,7 +749,10 @@
 
 /* preview: tables */
 .mn-preview table {
-    width: 100%;
+    display: block;
+    width: max-content;
+    max-width: 100%;
+    overflow-x: auto;
     border-collapse: collapse;
     margin: 0 0 var(--mn-markdown-block-gap);
     font-size: .92em;

@@ -47,7 +47,8 @@
     --mn-document-code-font: var(--mn-font-code);
     --mn-document-body-size: 16px;
     --mn-document-line-height: 1.72;
-    --mn-document-measure: 1080px;
+    --mn-document-measure: min(708px, calc(100vw - 24px));
+    --mn-document-wide-measure: calc(100vw - 24px);
     --mn-document-pad-x: clamp(16px, 4vw, 28px);
     --mn-document-pad-top: clamp(18px, 4vw, 32px);
     --mn-document-pad-bottom: 64px;
