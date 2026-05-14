@@ -2,9 +2,11 @@ import {
   defaultComputePositionConfig,
   normalizeNestedOptions,
 } from "@tiptap/extension-drag-handle";
+import type { ComputePositionConfig } from "@floating-ui/dom";
 import type {
-  ComputePositionConfig,
   DragHandleOptions,
+  DragHandlePluginProps,
+  DragHandleRule,
   NestedOptions,
 } from "@tiptap/extension-drag-handle";
 
@@ -46,16 +48,25 @@ type DragHandleRuleContext = {
   } | null;
 };
 
-type PapyroDragHandleConfigOverrides = Partial<
-  Pick<DragHandleOptions, "pluginKey" | "nested">
-> & {
+type PapyroDragHandleConfigOverrides = {
+  pluginKey?: DragHandlePluginProps["pluginKey"];
+  nested?: DragHandleOptions["nested"];
   computePositionConfig?: Partial<ComputePositionConfig>;
 };
 
-type PapyroDragHandleConfig = Pick<
-  DragHandleOptions,
-  "pluginKey" | "nested" | "computePositionConfig"
->;
+type PapyroDragHandleConfig = Pick<DragHandleOptions, "nested" | "computePositionConfig"> & {
+  pluginKey: DragHandlePluginProps["pluginKey"];
+};
+
+export const papyroComplexBlockDragHandleRule: DragHandleRule = {
+  id: "papyroComplexBlock",
+  evaluate: papyroComplexBlockRule,
+};
+
+export const papyroTableOverlayDragHandleRule: DragHandleRule = {
+  id: "papyroTableOverlay",
+  evaluate: papyroTableOverlayRule,
+};
 
 export function createPapyroDragHandleNestedOptions(): NestedOptions {
   return {
@@ -66,7 +77,7 @@ export function createPapyroDragHandleNestedOptions(): NestedOptions {
       threshold: 16,
       strength: 420,
     },
-    rules: [papyroComplexBlockRule, papyroTableOverlayRule],
+    rules: [papyroComplexBlockDragHandleRule, papyroTableOverlayDragHandleRule],
   };
 }
 

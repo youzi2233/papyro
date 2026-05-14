@@ -360,8 +360,9 @@ js/src/
 - [x] 清理 `turn-into-dropdown` 和 `editor-clipboard.ts` 的集中 TS 阻塞：为本地化后的官方 dropdown 暴露共享块选项类型边界，避开 ES2020 target 下的 `String.prototype.at`，并同时兼容 DOM `FileReader` 与测试 reader 构造器
 - [x] 将 `tiptap-ui-primitives.ts` 从当前 typecheck 阻塞列表中清出：补齐 DOM/fake-DOM listener 边界、floating dismiss 配置、hidden-state 选项、floating placement 选项和 command menu active descendant helper 的类型
 - [x] 将 `tiptap-react/utils/floating.ts` 从当前 typecheck 阻塞列表中清出：补齐 React floating options 类型，先归一化编辑器锚点 rect 再定位，并用源码测试覆盖浮层定位与侧边面板翻转判断
+- [x] 将 React mount/slot 边界从当前 typecheck 阻塞列表中清出：类型化 `tiptap-react/mount-controller.tsx` 和 `tiptap-react/slots.tsx`，保留官方 drag/table/menu slot 组合，并让源码测试 loader 支持与 editor bundle 一致的 alias、样式和目录入口解析
 - [ ] 在现有 TS 模板债务完成类型化或隔离后，新增可通过的 `npm --prefix js run typecheck` 闸门
-- [ ] 启用 typecheck 闸门前解决剩余阻塞：`editor-core.ts`、`editor-runtime.ts`、`editor-runtime-contract.ts`、`tiptap-react/runtime-model.ts`、`editor-runtime-protocol.ts`、`tiptap-react/runtime-context.tsx`、`editor-host-runtime.ts`、`tiptap-block-move.ts` 等全局 runtime/model 债务；runtime context/island 边界、`tiptap-react/mount-controller.tsx` 等当前组件/运行时支撑类型债务；以及 `tiptap-table.ts` 中 Papyro 自定义表格 action/Markdown 层的类型债务
+- [ ] 启用 typecheck 闸门前解决剩余阻塞：`editor-core.ts`、`editor-runtime.ts`、`editor-runtime-contract.ts`、`tiptap-react/runtime-model.ts`、`editor-runtime-protocol.ts`、`tiptap-react/runtime-context.tsx`、`editor-host-runtime.ts`、`tiptap-block-move.ts` 等全局 runtime/model 债务；runtime context/island 边界等当前组件/运行时支撑类型债务；以及 `tiptap-table.ts` 中 Papyro 自定义表格 action/Markdown 层的类型债务
 
 ---
 

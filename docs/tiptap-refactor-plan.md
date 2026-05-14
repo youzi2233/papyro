@@ -360,8 +360,9 @@ Migrate by module priority, one module at a time:
 - [x] Clear focused TS blockers in `turn-into-dropdown` and `editor-clipboard.ts`: export a shared typed block option boundary for the localized official dropdown, avoid `String.prototype.at` in the ES2020 target, and accept both DOM `FileReader` and test reader constructors
 - [x] Clear `tiptap-ui-primitives.ts` from the current typecheck blocker set: type DOM/fake-DOM listener boundaries, floating dismiss configuration, hidden-state options, floating placement options, and command-menu active descendant helpers
 - [x] Clear `tiptap-react/utils/floating.ts` from the current typecheck blocker set: type React floating options, normalize editor anchor rects before positioning, and cover floating positioning plus side-panel flip decisions with source tests
+- [x] Clear the React mount/slot boundary from the current typecheck blocker set: type `tiptap-react/mount-controller.tsx` and `tiptap-react/slots.tsx`, preserve official drag/table/menu slot composition, and teach the source-test loader the same alias, style, and directory resolution used by the editor bundle
 - [ ] Add a passing `npm --prefix js run typecheck` gate once current TS template debt is typed or intentionally isolated
-- [ ] Resolve the remaining typecheck blockers before enabling the gate: global runtime/model debt in `editor-core.ts`, `editor-runtime.ts`, `editor-runtime-contract.ts`, `tiptap-react/runtime-model.ts`, `editor-runtime-protocol.ts`, `tiptap-react/runtime-context.tsx`, `editor-host-runtime.ts`, and `tiptap-block-move.ts`; runtime context/island boundaries and `tiptap-react/mount-controller.tsx`; and the Papyro custom table action/Markdown layer in `tiptap-table.ts`
+- [ ] Resolve the remaining typecheck blockers before enabling the gate: global runtime/model debt in `editor-core.ts`, `editor-runtime.ts`, `editor-runtime-contract.ts`, `tiptap-react/runtime-model.ts`, `editor-runtime-protocol.ts`, `tiptap-react/runtime-context.tsx`, `editor-host-runtime.ts`, and `tiptap-block-move.ts`; runtime context/island boundaries; and the Papyro custom table action/Markdown layer in `tiptap-table.ts`
 
 ---
 

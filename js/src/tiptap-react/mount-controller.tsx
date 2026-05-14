@@ -1,18 +1,54 @@
 import React from "react";
-import { createRoot } from "react-dom/client";
+import { createRoot, type Root } from "react-dom/client";
 
 import { PapyroTiptapReactIsland } from "./island.tsx";
 
 function noop() {}
 
+type TiptapReactComponentOverrides = Record<string, unknown>;
+
+type TiptapReactRuntimeEntry = Record<string, unknown> | null;
+
+type TiptapEditorLike = {
+  mount?: (root: Element | null) => unknown;
+};
+
+type TiptapReactIslandProps = {
+  editor: TiptapEditorLike;
+  entry?: TiptapReactRuntimeEntry;
+  components?: TiptapReactComponentOverrides;
+};
+
+type CreateTiptapReactRoot = (container: Element | DocumentFragment) => Pick<Root, "render" | "unmount">;
+
+type CreateTiptapReactMountControllerOptions = {
+  createRootImpl?: CreateTiptapReactRoot;
+  document?: Document | null;
+  components?: TiptapReactComponentOverrides;
+  IslandComponent?: React.ComponentType<TiptapReactIslandProps>;
+};
+
+type CreateEditorElementOptions = {
+  root?: Element | null;
+};
+
+type TiptapReactMountOptions = {
+  root?: Element | null;
+  editor?: TiptapEditorLike | null;
+  entry?: TiptapReactRuntimeEntry;
+};
+
+const DefaultIslandComponent =
+  PapyroTiptapReactIsland as React.ComponentType<TiptapReactIslandProps>;
+
 export function createTiptapReactMountController({
   createRootImpl = createRoot,
   document: documentRef = typeof document === "undefined" ? null : document,
   components = {},
-  IslandComponent = PapyroTiptapReactIsland,
-} = {}) {
+  IslandComponent = DefaultIslandComponent,
+}: CreateTiptapReactMountControllerOptions = {}) {
   return {
-    createEditorElement({ root } = {}) {
+    createEditorElement({ root }: CreateEditorElementOptions = {}) {
       const ownerDocument = documentRef ?? root?.ownerDocument ?? null;
       const element = ownerDocument?.createElement?.("div") ?? null;
       if (element) {
@@ -21,7 +57,7 @@ export function createTiptapReactMountController({
       return element;
     },
 
-    mount({ root, editor, entry = null } = {}) {
+    mount({ root, editor, entry = null }: TiptapReactMountOptions = {}) {
       if (!root || !editor) {
         throw new Error("React Tiptap mount requires a root element and editor");
       }
@@ -62,8 +98,8 @@ export function createTiptapReactMountController({
 export function createTiptapLegacyMountController() {
   return {
     createEditorElement: () => null,
-    mount({ root, editor } = {}) {
-      editor?.mount?.(root);
+    mount({ root, editor }: TiptapReactMountOptions = {}) {
+      editor?.mount?.(root ?? null);
       return {
         refresh: noop,
         destroy: noop,

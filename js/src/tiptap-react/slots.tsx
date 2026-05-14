@@ -14,6 +14,22 @@ import "@/components/tiptap-node/code-block-node/code-block-node.scss";
 import "@/components/tiptap-node/horizontal-rule-node/horizontal-rule-node.scss";
 import "@/components/tiptap-node/image-node/image-node.scss";
 
+type PapyroReactRuntime = {
+  editor?: Parameters<typeof PapyroOfficialTableNodeLayer>[0]["editor"];
+  entry?: Parameters<typeof PapyroOfficialTableNodeLayer>[0]["entry"];
+};
+
+type PapyroIslandSlot =
+  | React.ReactNode
+  | React.ComponentType<PapyroReactRuntime>;
+
+type PapyroIslandComponentOverrides = Partial<{
+  BeforeContent: PapyroIslandSlot;
+  AfterContent: PapyroIslandSlot;
+  OverlayLayer: PapyroIslandSlot;
+  EditorContent: React.ComponentType<PapyroReactRuntime>;
+}>;
+
 function PapyroDragContextMenu() {
   const dragHandleConfig = React.useMemo(
     () => createPapyroOfficialDragHandleConfig(),
@@ -29,7 +45,7 @@ function PapyroDragContextMenu() {
   );
 }
 
-function PapyroOverlayLayer(runtime) {
+function PapyroOverlayLayer(runtime: PapyroReactRuntime) {
   return (
     <>
       <PapyroDragContextMenu />
@@ -40,7 +56,10 @@ function PapyroOverlayLayer(runtime) {
   );
 }
 
-export function renderIslandSlot(SlotComponent, runtime) {
+export function renderIslandSlot(
+  SlotComponent: PapyroIslandSlot | null | undefined,
+  runtime: PapyroReactRuntime,
+) {
   if (!SlotComponent) return null;
   if (React.isValidElement(SlotComponent)) return SlotComponent;
   if (typeof SlotComponent === "function") {
@@ -49,7 +68,9 @@ export function renderIslandSlot(SlotComponent, runtime) {
   return null;
 }
 
-export function createPapyroTiptapReactComponents(components = {}) {
+export function createPapyroTiptapReactComponents(
+  components: PapyroIslandComponentOverrides = {},
+) {
   return {
     OverlayLayer: PapyroOverlayLayer,
     ...components,
