@@ -386,6 +386,7 @@ js/src/
 - [x] 大纲/TOC 生成（通过 Rust 端消费）
 - [x] i18n 多语言支持
 - [x] 多标签页编辑器实例管理（editorRegistry）
+- [x] 加固 desktop/macOS 运行时资源：将 editor runtime、logo、favicon 和镜像后的编辑器 CSS 以内嵌 bytes 作为启动资源，再同步到 Dioxus native asset roots，包括 macOS `.app/Contents/Resources/assets`，确保 `/assets/editor.js` 与 `/assets/logo.png` 在脱离开发 checkout 后仍可解析
 
 ---
 

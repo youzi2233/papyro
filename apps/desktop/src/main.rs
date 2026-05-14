@@ -5,11 +5,24 @@ use dioxus::desktop::{Config, WindowBuilder};
 use dioxus::prelude::*;
 use std::fs;
 use std::io;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 const FAVICON_SRC: &str = "/assets/favicon.ico";
 const BRAND_LOGO_SRC: &str = "/assets/logo.png";
 const EDITOR_JS_SRC: &str = "/assets/editor.js";
+const FAVICON_ASSET: Asset = asset!("/assets/favicon.ico");
+const BRAND_LOGO_ASSET: Asset = asset!("/assets/logo.png");
+const EDITOR_JS_ASSET: Asset = asset!("/assets/editor.js");
+const MAIN_CSS_ASSET: Asset = asset!("/assets/main.css");
+const MODAL_CSS_ASSET: Asset = asset!("/assets/styles/modal.css");
+const MARKDOWN_CSS_ASSET: Asset = asset!("/assets/styles/markdown.css");
+const TIPTAP_CHROME_CSS_ASSET: Asset = asset!("/assets/styles/tiptap-chrome.css");
+const TIPTAP_CHROME_CODE_CSS_ASSET: Asset = asset!("/assets/styles/tiptap-chrome-code.css");
+const TIPTAP_CHROME_BASE_CSS_ASSET: Asset = asset!("/assets/styles/tiptap-chrome-base.css");
+const TIPTAP_CHROME_COMMAND_CSS_ASSET: Asset = asset!("/assets/styles/tiptap-chrome-command.css");
+const TIPTAP_CHROME_TABLE_CSS_ASSET: Asset = asset!("/assets/styles/tiptap-chrome-table.css");
+const TIPTAP_CHROME_BLOCK_CSS_ASSET: Asset = asset!("/assets/styles/tiptap-chrome-block.css");
+const TIPTAP_CHROME_PAPYRO_CSS_ASSET: Asset = asset!("/assets/styles/tiptap-chrome-papyro.css");
 const MAIN_CSS: &str = concat!(
     include_str!("../assets/styles/modal.css"),
     "\n",
@@ -29,9 +42,69 @@ const MAIN_CSS: &str = concat!(
     "\n",
     include_str!("../assets/main.css")
 );
-const EDITOR_JS: &str = include_str!("../assets/editor.js");
+const DESKTOP_RUNTIME_ASSETS: &[RuntimeAsset] = &[
+    RuntimeAsset {
+        relative_path: "assets/favicon.ico",
+        bytes: include_bytes!("../assets/favicon.ico"),
+    },
+    RuntimeAsset {
+        relative_path: "assets/logo.png",
+        bytes: include_bytes!("../assets/logo.png"),
+    },
+    RuntimeAsset {
+        relative_path: "assets/editor.js",
+        bytes: include_bytes!("../assets/editor.js"),
+    },
+    RuntimeAsset {
+        relative_path: "assets/main.css",
+        bytes: include_bytes!("../assets/main.css"),
+    },
+    RuntimeAsset {
+        relative_path: "assets/styles/modal.css",
+        bytes: include_bytes!("../assets/styles/modal.css"),
+    },
+    RuntimeAsset {
+        relative_path: "assets/styles/markdown.css",
+        bytes: include_bytes!("../assets/styles/markdown.css"),
+    },
+    RuntimeAsset {
+        relative_path: "assets/styles/tiptap-chrome.css",
+        bytes: include_bytes!("../assets/styles/tiptap-chrome.css"),
+    },
+    RuntimeAsset {
+        relative_path: "assets/styles/tiptap-chrome-code.css",
+        bytes: include_bytes!("../assets/styles/tiptap-chrome-code.css"),
+    },
+    RuntimeAsset {
+        relative_path: "assets/styles/tiptap-chrome-base.css",
+        bytes: include_bytes!("../assets/styles/tiptap-chrome-base.css"),
+    },
+    RuntimeAsset {
+        relative_path: "assets/styles/tiptap-chrome-command.css",
+        bytes: include_bytes!("../assets/styles/tiptap-chrome-command.css"),
+    },
+    RuntimeAsset {
+        relative_path: "assets/styles/tiptap-chrome-table.css",
+        bytes: include_bytes!("../assets/styles/tiptap-chrome-table.css"),
+    },
+    RuntimeAsset {
+        relative_path: "assets/styles/tiptap-chrome-block.css",
+        bytes: include_bytes!("../assets/styles/tiptap-chrome-block.css"),
+    },
+    RuntimeAsset {
+        relative_path: "assets/styles/tiptap-chrome-papyro.css",
+        bytes: include_bytes!("../assets/styles/tiptap-chrome-papyro.css"),
+    },
+];
+
+struct RuntimeAsset {
+    relative_path: &'static str,
+    bytes: &'static [u8],
+}
 
 fn main() {
+    mark_desktop_assets_for_bundling();
+
     let _ = tracing_subscriber::fmt()
         .with_env_filter(
             tracing_subscriber::EnvFilter::try_from_default_env()
@@ -114,33 +187,64 @@ fn main() {
 }
 
 fn sync_desktop_runtime_assets() -> io::Result<()> {
-    let exe_dir = std::env::current_exe()?
-        .parent()
-        .ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, "executable directory not found"))?
-        .to_path_buf();
-    let source_asset_dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("assets");
-    let asset_dir = exe_dir.join("assets");
-
-    fs::create_dir_all(&asset_dir)?;
-    sync_runtime_asset_bytes(&asset_dir.join("editor.js"), EDITOR_JS.as_bytes())?;
-    sync_runtime_asset_file(
-        &source_asset_dir.join("favicon.ico"),
-        &asset_dir.join("favicon.ico"),
-    )?;
-    sync_runtime_asset_file(
-        &source_asset_dir.join("logo.png"),
-        &asset_dir.join("logo.png"),
-    )?;
+    for asset_root in desktop_runtime_asset_roots()? {
+        for asset in DESKTOP_RUNTIME_ASSETS {
+            sync_runtime_asset_bytes(&asset_root.join(asset.relative_path), asset.bytes)?;
+        }
+    }
 
     Ok(())
 }
 
-fn sync_runtime_asset_file(source: &Path, target: &Path) -> io::Result<()> {
-    let bytes = fs::read(source)?;
-    sync_runtime_asset_bytes(target, &bytes)
+fn desktop_runtime_asset_roots() -> io::Result<Vec<PathBuf>> {
+    let exe_dir = std::env::current_exe()?
+        .parent()
+        .ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, "executable directory not found"))?
+        .to_path_buf();
+    Ok(desktop_runtime_asset_roots_for_exe_dir(
+        &exe_dir,
+        cfg!(target_os = "macos"),
+    ))
+}
+
+fn desktop_runtime_asset_roots_for_exe_dir(exe_dir: &Path, macos: bool) -> Vec<PathBuf> {
+    let mut roots = Vec::new();
+
+    if macos {
+        if let Some(contents_dir) = exe_dir.parent() {
+            roots.push(contents_dir.join("Resources"));
+        }
+    }
+
+    roots.push(exe_dir.to_path_buf());
+    roots.sort();
+    roots.dedup();
+    roots
+}
+
+fn mark_desktop_assets_for_bundling() {
+    let _ = [
+        FAVICON_ASSET,
+        BRAND_LOGO_ASSET,
+        EDITOR_JS_ASSET,
+        MAIN_CSS_ASSET,
+        MODAL_CSS_ASSET,
+        MARKDOWN_CSS_ASSET,
+        TIPTAP_CHROME_CSS_ASSET,
+        TIPTAP_CHROME_CODE_CSS_ASSET,
+        TIPTAP_CHROME_BASE_CSS_ASSET,
+        TIPTAP_CHROME_COMMAND_CSS_ASSET,
+        TIPTAP_CHROME_TABLE_CSS_ASSET,
+        TIPTAP_CHROME_BLOCK_CSS_ASSET,
+        TIPTAP_CHROME_PAPYRO_CSS_ASSET,
+    ];
 }
 
 fn sync_runtime_asset_bytes(target: &Path, bytes: &[u8]) -> io::Result<()> {
+    if let Some(parent) = target.parent() {
+        fs::create_dir_all(parent)?;
+    }
+
     if fs::read(target)
         .map(|current| current == bytes)
         .unwrap_or(false)
@@ -405,6 +509,28 @@ mod tests {
             assert!(!asset_url.contains('\\'));
             assert!(!asset_url.contains(':'));
         }
+    }
+
+    #[test]
+    fn desktop_runtime_asset_roots_cover_macos_resources() {
+        let exe_dir = PathBuf::from("/Applications/Papyro.app/Contents/MacOS");
+        let roots = desktop_runtime_asset_roots_for_exe_dir(&exe_dir, true);
+
+        assert_eq!(
+            roots,
+            vec![
+                PathBuf::from("/Applications/Papyro.app/Contents/MacOS"),
+                PathBuf::from("/Applications/Papyro.app/Contents/Resources"),
+            ]
+        );
+    }
+
+    #[test]
+    fn desktop_runtime_asset_roots_keep_executable_fallback() {
+        let exe_dir = PathBuf::from("/opt/papyro");
+        let roots = desktop_runtime_asset_roots_for_exe_dir(&exe_dir, false);
+
+        assert_eq!(roots, vec![PathBuf::from("/opt/papyro")]);
     }
 
     #[test]

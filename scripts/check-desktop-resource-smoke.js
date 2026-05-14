@@ -172,15 +172,36 @@ function checkDesktopSourceUrls(source, failures) {
   requireSourcePattern(
     source,
     DESKTOP_SOURCE,
-    /sync_runtime_asset_file\(\s*&source_asset_dir\.join\("logo\.png"\),\s*&asset_dir\.join\("logo\.png"\),\s*\)/s,
-    "desktop startup must mirror logo.png next to the running executable",
+    /RuntimeAsset\s*\{[\s\S]*?relative_path:\s*"assets\/logo\.png"[\s\S]*?include_bytes!\("\.\.\/assets\/logo\.png"\)/,
+    "desktop startup must embed logo.png for runtime asset mirroring",
     failures,
   );
   requireSourcePattern(
     source,
     DESKTOP_SOURCE,
-    /sync_runtime_asset_file\(\s*&source_asset_dir\.join\("favicon\.ico"\),\s*&asset_dir\.join\("favicon\.ico"\),\s*\)/s,
-    "desktop startup must mirror favicon.ico next to the running executable",
+    /RuntimeAsset\s*\{[\s\S]*?relative_path:\s*"assets\/favicon\.ico"[\s\S]*?include_bytes!\("\.\.\/assets\/favicon\.ico"\)/,
+    "desktop startup must embed favicon.ico for runtime asset mirroring",
+    failures,
+  );
+  requireSourcePattern(
+    source,
+    DESKTOP_SOURCE,
+    /RuntimeAsset\s*\{[\s\S]*?relative_path:\s*"assets\/editor\.js"[\s\S]*?include_bytes!\("\.\.\/assets\/editor\.js"\)/,
+    "desktop startup must embed editor.js for runtime asset mirroring",
+    failures,
+  );
+  requireSourcePattern(
+    source,
+    DESKTOP_SOURCE,
+    /contents_dir\.join\("Resources"\)/,
+    "desktop startup must mirror runtime assets to the macOS Contents/Resources directory",
+    failures,
+  );
+  requireSourcePattern(
+    source,
+    DESKTOP_SOURCE,
+    /roots\.push\(exe_dir\.to_path_buf\(\)\)/,
+    "desktop startup must keep executable-adjacent assets as a fallback",
     failures,
   );
   requireSourcePattern(
