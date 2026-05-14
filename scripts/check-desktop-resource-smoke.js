@@ -32,7 +32,6 @@ const MIRRORED_FILES = [
 
 const DESKTOP_URL_CONSTANTS = [
   ["FAVICON_SRC", "/assets/favicon.ico"],
-  ["BRAND_LOGO_SRC", "/assets/logo.png"],
   ["EDITOR_JS_SRC", "/assets/editor.js"],
 ];
 
@@ -210,8 +209,8 @@ function checkDesktopSourceUrls(source, failures) {
   requireSourcePattern(
     source,
     DESKTOP_SOURCE,
-    /desktop_editor_runtime_head\(\s*EDITOR_JS_SRC\s*,?\s*\)/,
-    "desktop startup must use the shared inline editor runtime head",
+    /fn\s+desktop_editor_runtime_head\([\s\S]*?cfg!\(target_os = "macos"\)[\s\S]*?desktop_editor_runtime_head\(editor_js_src\)[\s\S]*?desktop_editor_runtime_external_head\(editor_js_src\)/,
+    "desktop startup must use inline runtime on macOS and external runtime on other platforms",
     failures,
   );
 }
@@ -287,8 +286,15 @@ function checkToolWindowSourceUrls(source, failures) {
   requireSourcePattern(
     source,
     TOOL_WINDOWS_SOURCE,
-    /desktop_editor_runtime_head\(TOOL_WINDOW_EDITOR_JS_SRC\)/,
-    "document tool window editor runtime head must use the shared inline helper",
+    /document_tool_window_editor_runtime_head\(TOOL_WINDOW_EDITOR_JS_SRC\)/,
+    "document tool window editor runtime head must use the platform-aware runtime helper",
+    failures,
+  );
+  requireSourcePattern(
+    source,
+    TOOL_WINDOWS_SOURCE,
+    /fn\s+document_tool_window_editor_runtime_head\([\s\S]*?cfg!\(target_os = "macos"\)[\s\S]*?desktop_editor_runtime_head\(editor_js_src\)[\s\S]*?desktop_editor_runtime_external_head\(editor_js_src\)/,
+    "document tool window runtime helper must use inline runtime on macOS and external runtime on other platforms",
     failures,
   );
   requireSourcePattern(

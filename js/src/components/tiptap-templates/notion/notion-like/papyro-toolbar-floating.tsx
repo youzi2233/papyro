@@ -1,4 +1,9 @@
-import { useEffect, useState } from "react"
+import {
+  type MouseEvent as ReactMouseEvent,
+  type PointerEvent as ReactPointerEvent,
+  useEffect,
+  useState,
+} from "react"
 import { type Editor } from "@tiptap/react"
 
 import { useFloatingToolbarVisibility } from "@/hooks/use-floating-toolbar-visibility"
@@ -13,6 +18,7 @@ import { IndentButton } from "@/components/tiptap-ui/indent-button"
 import { LinkPopover } from "@/components/tiptap-ui/link-popover"
 import type { Mark } from "@/components/tiptap-ui/mark-button"
 import { canToggleMark, MarkButton } from "@/components/tiptap-ui/mark-button"
+import { moreOptionsLabel } from "@/tiptap-i18n"
 import type { TextAlign } from "@/components/tiptap-ui/text-align-button"
 import {
   canSetTextAlign,
@@ -36,6 +42,7 @@ import {
 import { FloatingElement } from "@/components/tiptap-ui-utils/floating-element"
 
 import { isSelectionValid } from "@/lib/tiptap-ui-utils"
+import { usePapyroTiptapLanguage } from "@/tiptap-react/runtime-context"
 
 export function PapyroToolbarFloating() {
   const { editor } = useTiptapEditor()
@@ -53,7 +60,11 @@ export function PapyroToolbarFloating() {
 
   return (
     <FloatingElement shouldShow={shouldShow}>
-      <Toolbar variant="floating">
+      <Toolbar
+        variant="floating"
+        onMouseDown={preserveEditorSelectionOnMouseDown}
+        onPointerDown={preserveEditorSelectionOnPointerDown}
+      >
         <ToolbarGroup>
           <TurnIntoDropdown hideWhenUnavailable={true} />
         </ToolbarGroup>
@@ -104,6 +115,29 @@ function canMoreOptions(editor: Editor | null): boolean {
   return canMarkAny || canTextAlignAny
 }
 
+function preserveEditorSelectionOnPointerDown(
+  event: ReactPointerEvent<HTMLDivElement>
+) {
+  preserveEditorSelectionForButtonTarget(event)
+}
+
+function preserveEditorSelectionOnMouseDown(
+  event: ReactMouseEvent<HTMLDivElement>
+) {
+  preserveEditorSelectionForButtonTarget(event)
+}
+
+function preserveEditorSelectionForButtonTarget(
+  event: ReactMouseEvent<HTMLDivElement> | ReactPointerEvent<HTMLDivElement>
+) {
+  if (event.button !== 0) return
+  const target = event.target
+  if (!(target instanceof Element)) return
+  if (target.closest("button, [role='button']")) {
+    event.preventDefault()
+  }
+}
+
 function shouldShowMoreOptions(params: {
   editor: Editor | null
   hideWhenUnavailable: boolean
@@ -132,7 +166,9 @@ export function MoreOptions({
   ...props
 }: MoreOptionsProps) {
   const { editor } = useTiptapEditor(providedEditor)
+  const language = usePapyroTiptapLanguage()
   const [show, setShow] = useState(false)
+  const label = moreOptionsLabel(language)
 
   useEffect(() => {
     if (!editor) return
@@ -172,7 +208,8 @@ export function MoreOptions({
               variant="ghost"
               role="button"
               tabIndex={-1}
-              tooltip="More options"
+              aria-label={label}
+              tooltip={label}
               {...props}
             >
               <MoreVerticalIcon className="tiptap-button-icon" />
@@ -186,7 +223,12 @@ export function MoreOptions({
             sideOffset={4}
             asChild
           >
-            <Toolbar variant="floating" tabIndex={0}>
+            <Toolbar
+              variant="floating"
+              tabIndex={0}
+              onMouseDown={preserveEditorSelectionOnMouseDown}
+              onPointerDown={preserveEditorSelectionOnPointerDown}
+            >
               <ToolbarGroup>
                 <MarkButton type="superscript" />
                 <MarkButton type="subscript" />

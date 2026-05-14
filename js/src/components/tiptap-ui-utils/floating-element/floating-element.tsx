@@ -170,6 +170,15 @@ export const FloatingElement = forwardRef<HTMLDivElement, FloatingElementProps>(
             const relatedTarget = event.target as Node
             if (!relatedTarget) return false
 
+            const floatingElement = floatingElementRef.current
+            if (
+              floatingElement &&
+              (floatingElement === relatedTarget ||
+                floatingElement.contains(relatedTarget))
+            ) {
+              return false
+            }
+
             // Don't close if clicking inside a portaled UI
             if (isElementWithinExternalPortal(relatedTarget)) return false
 

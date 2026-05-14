@@ -388,7 +388,7 @@ js/src/
 - [x] 大纲/TOC 生成（通过 Rust 端消费）
 - [x] i18n 多语言支持
 - [x] 多标签页编辑器实例管理（editorRegistry）
-- [x] 加固 desktop/macOS 运行时资源：将生成后的 editor runtime 内联注入 desktop WebView head，并保留 `/assets/editor.js` 作为外部 fallback；品牌 logo 改为内嵌 PNG data URL，同时继续把 editor runtime、logo、favicon 和 CSS bytes 镜像到 Dioxus native asset roots，包括 macOS `.app/Contents/Resources/assets`
+- [x] 加固 desktop/macOS 运行时资源：普通桌面启动继续使用轻量 `/assets/editor.js` 外链脚本，macOS 打包场景保留生成后 editor runtime 的内联 fallback；品牌 logo 改为内嵌 PNG data URL，同时继续把 editor runtime、logo、favicon 和 CSS bytes 镜像到 Dioxus native asset roots，包括 macOS `.app/Contents/Resources/assets`
 
 ---
 

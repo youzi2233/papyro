@@ -67,7 +67,7 @@ sequenceDiagram
 
     User->>Desktop: cargo run -p papyro-desktop
     Desktop->>Desktop: configure window, icon, menu, assets
-    Desktop->>Desktop: inline editor runtime, keep /assets/editor.js fallback
+    Desktop->>Desktop: load /assets/editor.js, keep macOS inline fallback
     Desktop->>App: launch DesktopApp
     App->>Storage: bootstrap workspace/settings/recovery
     Storage-->>App: WorkspaceBootstrap
@@ -226,7 +226,8 @@ The desktop shell owns:
 - native window title, size, icon, and menu configuration
 - platform window chrome policy: macOS keeps native traffic-light controls, while Windows and Linux keep the Papyro custom titlebar controls
 - runtime asset sync for packaged fallback paths
-- inline editor runtime injection with `/assets/editor.js` as fallback
+- lightweight `/assets/editor.js` runtime injection for normal startup
+- inline editor runtime fallback for macOS packaged launches
 - embedded brand logo context for shared UI surfaces
 - startup Markdown path collection
 - system opened-file event handling

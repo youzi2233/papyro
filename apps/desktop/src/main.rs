@@ -8,7 +8,6 @@ use std::io;
 use std::path::{Path, PathBuf};
 
 const FAVICON_SRC: &str = "/assets/favicon.ico";
-const BRAND_LOGO_SRC: &str = "/assets/logo.png";
 const EDITOR_JS_SRC: &str = "/assets/editor.js";
 const FAVICON_ASSET: Asset = asset!("/assets/favicon.ico");
 const BRAND_LOGO_ASSET: Asset = asset!("/assets/logo.png");
@@ -136,9 +135,7 @@ fn main() {
     // chrome.custom_head.push_str(desktop_tab_close_patch_head());
     chrome
         .custom_head
-        .push_str(&papyro_app::desktop::desktop_editor_runtime_head(
-            EDITOR_JS_SRC,
-        ));
+        .push_str(&desktop_editor_runtime_head(EDITOR_JS_SRC));
 
     let window = WindowBuilder::new()
         .with_title("Papyro")
@@ -276,6 +273,14 @@ fn load_window_icon() -> Option<Icon> {
         .into_rgba8();
     let (width, height) = image.dimensions();
     Icon::from_rgba(image.into_raw(), width, height).ok()
+}
+
+fn desktop_editor_runtime_head(editor_js_src: &str) -> String {
+    if cfg!(target_os = "macos") {
+        papyro_app::desktop::desktop_editor_runtime_head(editor_js_src)
+    } else {
+        papyro_app::desktop::desktop_editor_runtime_external_head(editor_js_src)
+    }
 }
 
 fn desktop_interpreter_patch_head() -> &'static str {
@@ -461,21 +466,26 @@ mod tests {
 
     #[test]
     fn editor_runtime_head_loads_external_script() {
-        let head = papyro_app::desktop::desktop_editor_runtime_head_for_source(
-            EDITOR_JS_SRC,
-            "window.papyroEditor = {};",
-        );
+        let head = desktop_editor_runtime_head(EDITOR_JS_SRC);
 
-        assert_eq!(head.matches("</script>").count(), 3);
-        assert!(head.contains(r#"data-papyro-editor-runtime="inline""#));
+        assert!(head.contains(r#"window.__PAPYRO_EDITOR_SCRIPT_SRC__ = "/assets/editor.js";"#));
         assert!(head.contains(r#"data-papyro-editor-runtime-src="/assets/editor.js""#));
-        assert!(head.contains("external-fallback"));
-        assert!(!head.contains(r#"<script src="/assets/editor.js""#));
+        if cfg!(target_os = "macos") {
+            assert_eq!(head.matches("</script>").count(), 3);
+            assert!(head.contains(r#"data-papyro-editor-runtime="inline""#));
+            assert!(head.contains("external-fallback"));
+            assert!(!head.contains(r#"<script src="/assets/editor.js""#));
+        } else {
+            assert_eq!(head.matches("</script>").count(), 2);
+            assert!(head.contains(r#"src="/assets/editor.js""#));
+            assert!(head.contains(r#"data-papyro-editor-runtime="external""#));
+            assert!(!head.contains(r#"data-papyro-editor-runtime="inline""#));
+        }
     }
 
     #[test]
     fn desktop_runtime_assets_use_webview_relative_urls() {
-        for asset_url in [FAVICON_SRC, BRAND_LOGO_SRC, EDITOR_JS_SRC] {
+        for asset_url in [FAVICON_SRC, EDITOR_JS_SRC] {
             assert!(asset_url.starts_with("/assets/"));
             assert!(!asset_url.contains('\\'));
             assert!(!asset_url.contains(':'));

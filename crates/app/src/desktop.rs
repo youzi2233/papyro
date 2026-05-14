@@ -78,6 +78,25 @@ pub fn desktop_editor_runtime_head(editor_js_src: &str) -> String {
     desktop_editor_runtime_head_for_source(editor_js_src, DESKTOP_EDITOR_JS_SOURCE)
 }
 
+pub fn desktop_editor_runtime_external_head(editor_js_src: &str) -> String {
+    let editor_js_attr = html_attr(editor_js_src);
+    let editor_js_src = js_string_literal(editor_js_src);
+
+    format!(
+        r#"<script>
+window.__PAPYRO_EDITOR_SCRIPT_SRC__ = {editor_js_src};
+window.__PAPYRO_EDITOR_LOAD_ERROR__ = "desktop editor runtime script has not loaded yet";
+</script>
+<script
+    src="{editor_js_attr}"
+    data-papyro-editor-runtime="external"
+    data-papyro-editor-runtime-src="{editor_js_attr}"
+    onload="if (window.papyroEditor) delete window.__PAPYRO_EDITOR_LOAD_ERROR__; else window.__PAPYRO_EDITOR_LOAD_ERROR__ = 'desktop editor runtime script loaded but did not register';"
+    onerror="window.__PAPYRO_EDITOR_LOAD_ERROR__ = 'failed to load editor runtime script: {editor_js_attr}';"
+></script>"#
+    )
+}
+
 pub fn desktop_editor_runtime_head_for_source(
     editor_js_src: &str,
     editor_js_source: &str,

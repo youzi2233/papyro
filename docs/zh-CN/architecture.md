@@ -69,7 +69,7 @@ sequenceDiagram
 
     User->>Desktop: cargo run -p papyro-desktop
     Desktop->>Desktop: 配置窗口、图标、菜单、资源
-    Desktop->>Desktop: 内联 editor runtime，并保留 /assets/editor.js fallback
+    Desktop->>Desktop: 加载 /assets/editor.js，并保留 macOS 内联 fallback
     Desktop->>App: launch DesktopApp
     App->>Storage: bootstrap workspace/settings/recovery
     Storage-->>App: WorkspaceBootstrap
@@ -243,7 +243,8 @@ flowchart TD
 - 禁用原生菜单栏。
 - 管理平台窗口 chrome 策略：macOS 使用原生红黄绿窗口控制，Windows 和 Linux 保留 Papyro 自绘标题栏控制。
 - 同步运行时资产到可访问的 `/assets`，作为打包后的 fallback。
-- 内联注入 editor runtime，并保留 `/assets/editor.js` 作为外部 fallback。
+- 普通启动使用轻量 `/assets/editor.js` runtime 注入。
+- macOS 打包启动保留内联 editor runtime fallback。
 - 提供内嵌品牌 logo context，供共享 UI 表面使用。
 - 收集启动参数里的 Markdown 路径。
 - 接收系统打开文件事件。

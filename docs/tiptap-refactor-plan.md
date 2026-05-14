@@ -388,7 +388,7 @@ These features are unique to Papyro, not in the official template, and need to b
 - [x] Outline/TOC generation (consumed by Rust side)
 - [x] i18n multilingual support
 - [x] Multi-tab editor instance management (editorRegistry)
-- [x] Harden desktop/macOS runtime assets: inline the generated editor runtime into the desktop WebView head, keep `/assets/editor.js` as an external fallback, expose the brand logo as an embedded PNG data URL, and still mirror editor runtime, logo, favicon, and CSS bytes into Dioxus-native asset roots including macOS `.app/Contents/Resources/assets`
+- [x] Harden desktop/macOS runtime assets: keep the lightweight external `/assets/editor.js` script path for normal desktop startup, use the inline generated editor runtime as the macOS packaged fallback, expose the brand logo as an embedded PNG data URL, and still mirror editor runtime, logo, favicon, and CSS bytes into Dioxus-native asset roots including macOS `.app/Contents/Resources/assets`
 
 ---
 

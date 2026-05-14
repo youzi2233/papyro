@@ -544,6 +544,10 @@ export function turnIntoLabel(language: LanguageInput): string {
   return localizedText(language, "Turn into", "\u8f6c\u6362\u4e3a");
 }
 
+export function moreOptionsLabel(language: LanguageInput): string {
+  return localizedText(language, "More options", "\u66f4\u591a\u9009\u9879");
+}
+
 export function turnIntoCurrentLabel(
   language: LanguageInput,
   currentLabel?: string,

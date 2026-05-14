@@ -283,23 +283,65 @@ async function exerciseSlashMenu(client) {
 }
 
 async function exerciseFloatingToolbar(client) {
-  await clickSelector(client, ".ProseMirror h1, .ProseMirror p");
-  await keyCombo(client, "KeyA", { ctrlKey: true });
+  await assertEvaluate(client, "text selection is created through Tiptap", () => {
+    const editorDom = document.querySelector(".ProseMirror");
+    const editor = editorDom?.editor;
+    if (!editor?.state?.doc || !editor.commands?.setTextSelection) return false;
+
+    const targetText = "This paragraph has";
+    const targetParagraph = Array
+      .from(editorDom.querySelectorAll("p"))
+      .find((paragraph) => paragraph.textContent?.includes(targetText));
+    targetParagraph?.scrollIntoView({ block: "center", inline: "nearest" });
+
+    let range = null;
+    editor.state.doc.descendants((node, pos) => {
+      if (
+        range ||
+        !node.isTextblock ||
+        node.type?.name !== "paragraph" ||
+        !node.textContent ||
+        !node.textContent.includes(targetText)
+      ) {
+        return !range;
+      }
+      const textStart = pos + 1 + node.textContent.indexOf(targetText);
+      range = {
+        from: textStart,
+        to: textStart + Math.min(node.textContent.length, 12),
+      };
+      return false;
+    });
+
+    if (!range || range.to <= range.from) return false;
+    if (editor.commands.setTextSelection(range) === false) return false;
+    editor.commands.focus();
+    return !editor.state.selection.empty &&
+      editor.state.selection.from === range.from &&
+      editor.state.selection.to === range.to;
+  });
   await assertEventually(client, "floating toolbar appears for text selection", () => {
     return Boolean(document.querySelector(".tiptap-toolbar[data-variant='floating']"));
   });
-  await assertEvaluate(client, "TextAlign center button is available", () => {
+  await assertEvaluate(client, "floating toolbar exposes core Notion-like actions", () => {
     const toolbar = document.querySelector(".tiptap-toolbar[data-variant='floating']");
-    const button = Array
-      .from(toolbar?.querySelectorAll("button:not(:disabled)") ?? [])
-      .find((candidate) => {
-        const iconPaths = Array.from(candidate.querySelectorAll("svg path"));
-        return iconPaths.some((path) => path.getAttribute("d")?.includes("H17C17.5523"));
-      });
-    if (!(button instanceof HTMLButtonElement)) return false;
-    button.click();
-    return !button.disabled;
+    if (!toolbar) return false;
+    const buttons = Array.from(toolbar.querySelectorAll("button:not(:disabled)"));
+    const names = buttons.map((button) => button.getAttribute("aria-label") ?? "");
+    return names.some((name) => /Turn into/u.test(name)) &&
+      names.some((name) => /Bold/u.test(name)) &&
+      names.some((name) => /Italic/u.test(name));
   });
+  await clickFloatingToolbarButton(client, /More options/u);
+  await assertEventually(client, "floating toolbar more options opens", () => {
+    const toolbars = Array.from(document.querySelectorAll(".tiptap-toolbar[data-variant='floating']"));
+    return toolbars.length > 1 && toolbars.some((toolbar) =>
+      Array.from(toolbar.querySelectorAll("button:not(:disabled)")).some((button) =>
+        /Align center/u.test(button.getAttribute("aria-label") ?? "")
+      )
+    );
+  });
+  await clickFloatingToolbarButton(client, /Align center/u);
   await assertEventually(client, "TextAlign center changes editor DOM", () =>
     Boolean(document.querySelector(".ProseMirror [style*='text-align: center']")),
   );
@@ -397,6 +439,46 @@ async function clickSelector(client, selector) {
   }, selector);
   if (!point) {
     throw new Error(`Unable to click missing selector: ${selector}`);
+  }
+  await clickPoint(client, point);
+}
+
+async function clickFloatingToolbarButton(client, labelPatternSource) {
+  const point = await evaluate(client, (patternSource) => {
+    const pattern = new RegExp(patternSource, "u");
+    const toolbars = Array.from(document.querySelectorAll(".tiptap-toolbar[data-variant='floating']"));
+    const button = toolbars
+      .flatMap((toolbar) => Array.from(toolbar.querySelectorAll("button:not(:disabled)")))
+      .find((candidate) => pattern.test(candidate.getAttribute("aria-label") ?? ""));
+    if (!button) return null;
+    return pointForElement(button);
+
+    function pointForElement(target) {
+      target.scrollIntoView?.({ block: "center", inline: "center" });
+      const rects = Array.from(target.getClientRects?.() ?? []);
+      const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+      const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+      const rect = rects.find((candidate) =>
+        candidate.width > 0 &&
+        candidate.height > 0 &&
+        candidate.bottom > 0 &&
+        candidate.right > 0 &&
+        candidate.top < viewportHeight &&
+        candidate.left < viewportWidth
+      ) ?? target.getBoundingClientRect();
+      if (rect.width <= 0 || rect.height <= 0) return null;
+      const left = Math.max(0, Math.min(rect.left, viewportWidth - 1));
+      const right = Math.max(1, Math.min(rect.right, viewportWidth));
+      const top = Math.max(0, Math.min(rect.top, viewportHeight - 1));
+      const bottom = Math.max(1, Math.min(rect.bottom, viewportHeight));
+      return {
+        x: left + Math.max(1, Math.min((right - left) / 2, right - left - 1)),
+        y: top + Math.max(1, Math.min((bottom - top) / 2, bottom - top - 1)),
+      };
+    }
+  }, labelPatternSource.source);
+  if (!point) {
+    throw new Error(`Unable to click floating toolbar button: ${labelPatternSource}`);
   }
   await clickPoint(client, point);
 }
@@ -523,11 +605,19 @@ async function debugDomSnapshot(client) {
     const menu = document.querySelector(".tiptap-suggestion-menu, .tiptap-slash-card");
     const editor = document.querySelector(".ProseMirror");
     const activeElement = document.activeElement;
+    const toolbars = Array.from(document.querySelectorAll(".tiptap-toolbar[data-variant='floating']"));
+    const toolbarLabels = toolbars.map((toolbar) =>
+      Array.from(toolbar.querySelectorAll("button"))
+        .map((button) => button.getAttribute("aria-label") ?? button.textContent?.trim() ?? "")
+        .filter(Boolean)
+        .join("|")
+    ).join(" / ");
     return [
       `active=${activeElement?.tagName ?? "none"}.${activeElement?.className ?? ""}`,
       `selection="${selection?.toString?.() ?? ""}"`,
       `anchor=${anchorElement?.tagName ?? "none"}.${anchorElement?.className ?? ""}`,
       `menu=${menu ? `${menu.tagName}.${menu.className}` : "none"}`,
+      `toolbars="${toolbarLabels}"`,
       `editorText="${(editor?.textContent ?? "").slice(-160)}"`,
     ].join("\n");
   });

@@ -447,8 +447,7 @@ html,body{{margin:0;padding:0;overflow:hidden;background:#f3f5f8;color:#111827;f
 
 fn document_tool_window_head() -> String {
     let theme_script = papyro_ui::theme::theme_dom_script(&Theme::System);
-    let editor_runtime_head =
-        crate::desktop::desktop_editor_runtime_head(TOOL_WINDOW_EDITOR_JS_SRC);
+    let editor_runtime_head = document_tool_window_editor_runtime_head(TOOL_WINDOW_EDITOR_JS_SRC);
 
     format!(
         r#"<script>{theme_script}</script><script>document.documentElement.dataset.platform='{platform}';</script>
@@ -466,6 +465,14 @@ html,body{{margin:0;padding:0;overflow:hidden;background:#f3f5f8;color:#111827;f
 {editor_runtime_head}"#,
         platform = DesktopChromePolicy::current().platform.as_str(),
     )
+}
+
+fn document_tool_window_editor_runtime_head(editor_js_src: &str) -> String {
+    if cfg!(target_os = "macos") {
+        crate::desktop::desktop_editor_runtime_head(editor_js_src)
+    } else {
+        crate::desktop::desktop_editor_runtime_external_head(editor_js_src)
+    }
 }
 
 fn document_window_title(path: &Path) -> String {
@@ -538,10 +545,16 @@ mod tests {
     fn document_tool_window_head_inlines_editor_runtime_with_fallback() {
         let head = document_tool_window_head();
 
-        assert!(head.contains(r#"data-papyro-editor-runtime="inline""#));
         assert!(head.contains(r#"data-papyro-editor-runtime-src="/assets/editor.js""#));
-        assert!(head.contains("external-fallback"));
-        assert!(!head.contains(r#"<script src="/assets/editor.js""#));
+        if cfg!(target_os = "macos") {
+            assert!(head.contains(r#"data-papyro-editor-runtime="inline""#));
+            assert!(head.contains("external-fallback"));
+            assert!(!head.contains(r#"<script src="/assets/editor.js""#));
+        } else {
+            assert!(head.contains(r#"src="/assets/editor.js""#));
+            assert!(head.contains(r#"data-papyro-editor-runtime="external""#));
+            assert!(!head.contains(r#"data-papyro-editor-runtime="inline""#));
+        }
     }
 
     #[test]
