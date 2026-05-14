@@ -486,6 +486,7 @@ js/src/
 - [ ] 修复所有浮层透明、层级错乱、被裁剪、锚点漂移和关闭后焦点丢失的问题
 - [ ] 建立菜单层级规则：编辑器上下文浮层高于文档内容，低于 app modal；嵌套 table color/alignment menu 不应覆盖或污染 slash/link/drag 菜单
 - [ ] 为菜单 keyboard path 补源码测试或 smoke 记录：打开、方向键移动、Enter 执行、Escape 关闭、焦点返还
+- [x] 2026-05-15 跟进：将表格菜单根浮层限定为定位/层级容器，保持 `overflow: visible` 以允许嵌套颜色/对齐 flyout 正常展开；直接子 `ComboboxList` 承担不透明背景、边框、阴影、滚动和视口宽度约束，避免透明菜单、双层面板或嵌套菜单被裁剪
 
 #### 9.4 表格体验收敛
 
@@ -496,6 +497,7 @@ js/src/
 - [ ] 验证表格交互后 Markdown 仍输出稳定 GFM table，复杂表格在不支持 GFM 表达的能力上必须有明确降级策略
 - [x] 2026-05-15 跟进：将表格单元格内容选择器限定为 `:not(.column-resize-handle)`，并在宿主 CSS 中锁定 resize handle 为绝对定位、零内容高度，避免 hover/resize chrome 参与单元格正文布局导致行高被撑开
 - [x] 2026-05-15 跟进：为 `tiptap-table-menu-content` 增加官方 card/menu token 的不透明表面兜底，并把 resize handle 出流约束与 table menu 背景写入 Markdown style smoke 防回归
+- [x] 2026-05-15 跟进：收敛 `tiptap-table-menu-content` 的职责边界，根菜单不再绘制表面，直接面板使用官方 combobox/card token 与统一按钮节奏，并把直接面板、嵌套 flyout、按钮对齐和文本裁剪写入 Markdown style smoke 防回归
 
 #### 9.5 官方组件差异审计
 

@@ -486,6 +486,7 @@ The editor surface must behave like the official Notion-like template first, wit
 - [ ] Fix all transparent layers, stacking mistakes, clipping, drifting anchors, and focus loss after close
 - [ ] Define menu stacking rules: editor contextual layers sit above document content and below app modals; nested table color/alignment menus must not override or pollute slash/link/drag menus
 - [ ] Add source tests or smoke notes for menu keyboard paths: open, arrow navigation, Enter, Escape, and focus return
+- [x] 2026-05-15 follow-up: constrain the table menu root layer to positioning/stacking only and keep `overflow: visible` so nested color/alignment flyouts can expand correctly; the direct child `ComboboxList` now owns the opaque background, border, shadow, scrolling, and viewport width guard, avoiding transparent menus, double surfaces, and clipped nested menus
 
 #### 9.4 Table Experience Convergence
 
@@ -496,6 +497,7 @@ The editor surface must behave like the official Notion-like template first, wit
 - [ ] Verify table interactions still serialize to stable GFM tables; complex table features that cannot be represented by GFM need an explicit degradation policy
 - [x] 2026-05-15 follow-up: limit table-cell content styling to `:not(.column-resize-handle)` and lock the resize handle to absolute positioning with zero content height in the host CSS, preventing hover/resize chrome from participating in table-cell text layout and inflating row height
 - [x] 2026-05-15 follow-up: add an opaque official card/menu-token fallback surface for `tiptap-table-menu-content`, and add Markdown style smoke guards for resize-handle out-of-flow behavior plus table-menu background
+- [x] 2026-05-15 follow-up: tighten the responsibility boundary for `tiptap-table-menu-content`; the root menu no longer paints the surface, the direct panel uses official combobox/card tokens and consistent button rhythm, and Markdown style smoke now guards the direct panel, nested flyout allowance, button alignment, and text clipping
 
 #### 9.5 Official Component Difference Audit
 
