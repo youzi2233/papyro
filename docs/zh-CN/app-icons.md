@@ -16,7 +16,7 @@ Papyro 把共享品牌资源放在 `assets/`，把生成出来的平台图标资
 | --- | --- | --- |
 | 通用 PNG 尺寸 | `assets/icons/png/` | 16、32、48、64、128、256、512、1024 px |
 | Windows | `assets/icons/windows/papyro.ico` | 从标准多尺寸 `.ico` 复制 |
-| macOS | `assets/icons/macos/Papyro.iconset/` | 可在 macOS 上作为 `iconutil -c icns` 的输入目录 |
+| macOS | `assets/icons/macos/Papyro.iconset/` 和 `assets/icons/macos/Papyro.icns` | iconset 源目录，以及 Dioxus bundle metadata 使用的生成后 `.icns` |
 | Linux | `assets/icons/linux/hicolor/*/apps/papyro.png` | 遵循 hicolor icon theme 目录布局 |
 
 ## 重新生成
@@ -27,4 +27,6 @@ Papyro 把共享品牌资源放在 `assets/`，把生成出来的平台图标资
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/generate-app-icons.ps1
 ```
 
-脚本保持确定性，并且只写入 `assets/icons/`。
+脚本保持确定性，并且只写入 `assets/icons/`。它会直接写出
+`assets/icons/macos/Papyro.icns`，因此 macOS bundle 不再依赖额外的
+`iconutil` 步骤。

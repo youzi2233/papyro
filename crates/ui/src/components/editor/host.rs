@@ -44,7 +44,17 @@ pub(super) fn EditorHost(
     let container_id = format!("mn-editor-{tab_id}");
     let instance_id = use_signal(|| format!("host-{}", Uuid::new_v4()));
     let instance_id_value = instance_id();
-    let runtime_state = use_signal(|| EditorRuntimeState::Loading);
+    let runtime_state = {
+        let bridges = bridges;
+        let tab_id = tab_id.clone();
+        use_signal(move || {
+            if bridges.peek().contains_key(&tab_id) {
+                EditorRuntimeState::Ready
+            } else {
+                EditorRuntimeState::Loading
+            }
+        })
+    };
     let command_cache = use_signal(EditorCommandCache::default);
     let startup_view_mode = view_mode.clone();
     let state = runtime_state();
@@ -372,7 +382,8 @@ pub(super) fn EditorHost(
         }
     });
 
-    let show_fallback = state != EditorRuntimeState::Ready;
+    let bridge_is_mounted = bridges.read().contains_key(&tab_id);
+    let show_fallback = state != EditorRuntimeState::Ready && !bridge_is_mounted;
 
     rsx! {
         div { class: "mn-editor-runtime-frame",

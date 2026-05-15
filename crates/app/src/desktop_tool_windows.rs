@@ -7,7 +7,7 @@ use dioxus::desktop::tao::event::{Event, WindowEvent};
 use dioxus::desktop::tao::window::Icon;
 use dioxus::desktop::{window, Config, DesktopContext, WindowBuilder, WindowCloseBehaviour};
 use dioxus::prelude::*;
-use papyro_core::models::{AppLanguage, Theme};
+use papyro_core::models::{AccentColor, AppLanguage, Theme};
 use papyro_core::{NoteStorage, WindowSessionId, WorkspaceBootstrap};
 use papyro_platform::PlatformApi;
 use papyro_ui::context::{AppContext, SettingsWindowLauncher};
@@ -112,6 +112,7 @@ pub(crate) fn use_settings_window_launcher(
             let settings = app_context.ui_state.read().settings.clone();
             let config = settings_tool_window_config(
                 &settings.theme,
+                &settings.accent_color,
                 settings.language,
                 centered_settings_window_position(&parent_window),
             );
@@ -341,6 +342,7 @@ fn DocumentToolWindowRoot(props: DocumentToolWindowProps) -> Element {
 
 fn settings_tool_window_config(
     theme: &Theme,
+    accent_color: &AccentColor,
     language: AppLanguage,
     position: Option<LogicalPosition<f64>>,
 ) -> Config {
@@ -367,7 +369,7 @@ fn settings_tool_window_config(
         .with_close_behaviour(WindowCloseBehaviour::WindowHides)
         .with_exits_when_last_window_closes(false)
         .with_background_color(settings_window_background(theme))
-        .with_custom_head(settings_tool_window_head(theme, language))
+        .with_custom_head(settings_tool_window_head(theme, accent_color, language))
 }
 
 fn centered_settings_window_position(parent: &DesktopContext) -> Option<LogicalPosition<f64>> {
@@ -424,8 +426,12 @@ fn settings_window_title(language: AppLanguage) -> &'static str {
     }
 }
 
-fn settings_tool_window_head(theme: &Theme, language: AppLanguage) -> String {
-    let theme_script = papyro_ui::theme::theme_dom_script(theme);
+fn settings_tool_window_head(
+    theme: &Theme,
+    accent_color: &AccentColor,
+    language: AppLanguage,
+) -> String {
+    let theme_script = papyro_ui::theme::theme_dom_script(theme, accent_color);
     let lang = settings_window_lang(language);
 
     format!(
@@ -446,7 +452,7 @@ html,body{{margin:0;padding:0;overflow:hidden;background:#f3f5f8;color:#111827;f
 }
 
 fn document_tool_window_head() -> String {
-    let theme_script = papyro_ui::theme::theme_dom_script(&Theme::System);
+    let theme_script = papyro_ui::theme::theme_dom_script(&Theme::System, &AccentColor::default());
     let editor_runtime_head = document_tool_window_editor_runtime_head(TOOL_WINDOW_EDITOR_JS_SRC);
 
     format!(
@@ -525,16 +531,22 @@ mod tests {
 
     #[test]
     fn settings_tool_window_head_seeds_non_system_theme() {
-        let head = settings_tool_window_head(&Theme::GitHubDark, AppLanguage::English);
+        let head = settings_tool_window_head(
+            &Theme::GitHubDark,
+            &AccentColor::new("#336699").unwrap(),
+            AppLanguage::English,
+        );
 
         assert!(head.contains(r#"var theme = "github_dark";"#));
+        assert!(head.contains(r##"var accent = "#336699";"##));
         assert!(head.contains(r#"root.classList.toggle("dark", dark)"#));
         assert!(head.contains(".mn-settings-window-shell"));
     }
 
     #[test]
     fn settings_tool_window_head_seeds_language_and_icon() {
-        let head = settings_tool_window_head(&Theme::Light, AppLanguage::Chinese);
+        let head =
+            settings_tool_window_head(&Theme::Light, &AccentColor::default(), AppLanguage::Chinese);
 
         assert!(head.contains("document.documentElement.lang='zh-CN'"));
         assert!(head.contains("document.documentElement.dataset.platform="));

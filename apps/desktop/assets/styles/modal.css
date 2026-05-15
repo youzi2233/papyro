@@ -1244,7 +1244,10 @@
 
 .mn-settings-modal .mn-select-menu {
     top: calc(100% + 6px);
-    right: 0;
+    left: 0;
+    right: auto;
+    box-sizing: border-box;
+    min-width: 100%;
     width: max(100%, 184px);
     padding: 6px;
     border-radius: var(--mn-radius-md);
@@ -1256,6 +1259,84 @@
     min-height: 32px;
     border-radius: var(--mn-radius-sm);
     font-size: var(--mn-type-control);
+}
+
+.mn-settings-modal .theme-accent .mn-setting-control {
+    justify-content: flex-start;
+}
+
+.mn-accent-setting {
+    display: inline-grid;
+    grid-template-columns: 38px 26px auto;
+    align-items: center;
+    gap: 10px;
+    min-width: min(260px, 100%);
+}
+
+.mn-tag-color-input.mn-accent-color-input {
+    width: 38px;
+    height: 34px;
+    padding: 0;
+    border: var(--mn-border-default);
+    border-radius: var(--mn-radius-md);
+    background: var(--mn-surface-raised);
+    cursor: pointer;
+}
+
+.mn-tag-color-input.mn-accent-color-input::-webkit-color-swatch-wrapper {
+    padding: 4px;
+}
+
+.mn-tag-color-input.mn-accent-color-input::-webkit-color-swatch {
+    border: 0;
+    border-radius: calc(var(--mn-radius-md) - 3px);
+}
+
+.mn-accent-preview {
+    width: 26px;
+    height: 26px;
+    border: 1px solid color-mix(in srgb, var(--mn-accent-preview-color) 28%, var(--mn-border));
+    border-radius: var(--mn-radius-round);
+    background:
+        linear-gradient(180deg, color-mix(in srgb, #ffffff 36%, transparent), transparent),
+        var(--mn-accent-preview-color);
+    box-shadow:
+        0 4px 12px color-mix(in srgb, var(--mn-accent-preview-color) 18%, transparent),
+        inset 0 1px 0 color-mix(in srgb, #ffffff 54%, transparent);
+}
+
+.mn-accent-reset {
+    min-height: 32px;
+    padding: 0 10px;
+    border: var(--mn-border-subtle);
+    border-radius: var(--mn-radius-md);
+    background: var(--mn-surface);
+    color: var(--mn-ink-2);
+    font-size: var(--mn-type-control);
+    font-weight: var(--mn-weight-medium);
+    cursor: pointer;
+    transition:
+        background var(--mn-transition-fast),
+        border-color var(--mn-transition-fast),
+        color var(--mn-transition-fast),
+        transform var(--mn-transition-fast);
+}
+
+.mn-accent-reset:hover:not(:disabled),
+.mn-accent-reset:focus-visible {
+    outline: 0;
+    border-color: color-mix(in srgb, var(--mn-accent) 24%, var(--mn-border));
+    background: var(--mn-accent-wash);
+    color: var(--mn-accent-strong);
+}
+
+.mn-accent-reset:active:not(:disabled) {
+    transform: translateY(1px);
+}
+
+.mn-accent-reset:disabled {
+    cursor: default;
+    opacity: 0.48;
 }
 
 select.mn-input {

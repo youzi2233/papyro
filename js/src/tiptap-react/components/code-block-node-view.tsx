@@ -20,6 +20,10 @@ import {
   inferCodeBlockLanguage,
   setCodeBlockLanguage,
 } from "../../tiptap-code-block.ts";
+import {
+  codeLanguageNoResultsLabel,
+  codeLanguageSearchPlaceholder,
+} from "../../tiptap-i18n.ts";
 import { isComposingKeyboardEvent } from "../../tiptap-ui-primitives.ts";
 import { usePointerActivation } from "../hooks/use-pointer-activation.ts";
 import {
@@ -90,6 +94,21 @@ function writeCodeToClipboard(text: unknown) {
   );
 }
 
+function commandMatchesQuery(command: CodeBlockLanguageCommand, query: string) {
+  const normalizedQuery = query.trim().toLowerCase();
+  if (!normalizedQuery) return true;
+
+  return [
+    command.title,
+    command.description,
+    command.optionId,
+    command.language,
+    command.token,
+  ]
+    .filter(Boolean)
+    .some((value) => String(value).toLowerCase().includes(normalizedQuery));
+}
+
 function CodeLanguageButton({
   chrome,
   expanded,
@@ -148,22 +167,29 @@ function CodeLanguageMenu({
     () => createCodeBlockLanguageCommands({ language, currentLanguage }),
     [currentLanguage, language],
   );
+  const [query, setQuery] = useState("");
+  const filteredCommands = useMemo(
+    () => commands.filter((command) => commandMatchesQuery(command, query)),
+    [commands, query],
+  );
   const [activeIndex, setActiveIndex] = useState(() =>
-    activeCodeBlockLanguageCommandIndex(commands),
+    activeCodeBlockLanguageCommandIndex(filteredCommands),
   );
   const menuRef = useRef<HTMLDivElement | null>(null);
-  const activeCommand = commands[activeIndex] ?? commands[0];
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const activeCommand = filteredCommands[activeIndex] ?? filteredCommands[0];
   const activeDescendant = activeCommand ? `${ownerId}-item-${activeIndex}` : undefined;
+  const menuLabel = commands[0]?.group ?? "";
 
   useEffect(
     () => {
-      setActiveIndex(activeCodeBlockLanguageCommandIndex(commands));
+      setActiveIndex(activeCodeBlockLanguageCommandIndex(filteredCommands));
     },
-    [commands],
+    [filteredCommands],
   );
   useEffect(
     () => {
-      menuRef.current?.focus?.({ preventScroll: true });
+      inputRef.current?.focus?.({ preventScroll: true });
     },
     [],
   );
@@ -178,7 +204,7 @@ function CodeLanguageMenu({
 
   const move = (direction: number) => {
     setActiveIndex((index) =>
-      nextCodeBlockLanguageCommandIndex(commands, index, direction),
+      nextCodeBlockLanguageCommandIndex(filteredCommands, index, direction),
     );
   };
   const chooseActive = () => {
@@ -207,13 +233,13 @@ function CodeLanguageMenu({
     if (event.key === "Home") {
       event.preventDefault();
       event.stopPropagation();
-      setActiveIndex(nextCodeBlockLanguageCommandIndex(commands, -1, 1));
+      setActiveIndex(nextCodeBlockLanguageCommandIndex(filteredCommands, -1, 1));
       return;
     }
     if (event.key === "End") {
       event.preventDefault();
       event.stopPropagation();
-      setActiveIndex(nextCodeBlockLanguageCommandIndex(commands, commands.length, -1));
+      setActiveIndex(nextCodeBlockLanguageCommandIndex(filteredCommands, filteredCommands.length, -1));
       return;
     }
     if (event.key === "Enter" || event.key === " ") {
@@ -235,25 +261,55 @@ function CodeLanguageMenu({
       className="mn-tiptap-code-language-menu mn-tiptap-code-language-menu-inline"
       role="menu"
       tabIndex={-1}
-      aria-label={commands[0]?.group}
+      aria-label={menuLabel}
       aria-activedescendant={activeDescendant}
       onKeyDown={handleKeyDown}
       ref={menuRef}
     >
       <div className="mn-tiptap-code-language-menu-header">
-        {commands[0]?.group}
+        {menuLabel}
       </div>
+      <label className="mn-tiptap-code-language-search">
+        <span className="mn-tiptap-code-language-search-icon" aria-hidden="true" />
+        <input
+          ref={inputRef}
+          value={query}
+          placeholder={codeLanguageSearchPlaceholder(language)}
+          aria-label={codeLanguageSearchPlaceholder(language)}
+          contentEditable={false}
+          onChange={(event) => setQuery(event.currentTarget.value)}
+          onKeyDown={(event) => {
+            if (isComposingKeyboardEvent(event.nativeEvent)) return;
+            if (event.key === "ArrowDown") {
+              event.preventDefault();
+              event.stopPropagation();
+              move(1);
+            }
+            if (event.key === "ArrowUp") {
+              event.preventDefault();
+              event.stopPropagation();
+              move(-1);
+            }
+          }}
+        />
+      </label>
       <div className="mn-tiptap-code-language-menu-list">
-        {commands.map((command, index) => (
-          <CodeLanguageMenuItem
-            key={command.id}
-            id={`${ownerId}-item-${index}`}
-            command={command}
-            active={index === activeIndex}
-            onActive={() => setActiveIndex(index)}
-            onChoose={onChoose}
-          />
-        ))}
+        {filteredCommands.length > 0 ? (
+          filteredCommands.map((command, index) => (
+            <CodeLanguageMenuItem
+              key={command.id}
+              id={`${ownerId}-item-${index}`}
+              command={command}
+              active={index === activeIndex}
+              onActive={() => setActiveIndex(index)}
+              onChoose={onChoose}
+            />
+          ))
+        ) : (
+          <div className="mn-tiptap-code-language-menu-empty" role="status">
+            {codeLanguageNoResultsLabel(language)}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -30,6 +30,8 @@ import { Separator } from "@/components/tiptap-ui-primitive/separator"
 
 // --- Icons ---
 import { Grip4Icon } from "@/components/tiptap-icons/grip-4-icon"
+import { tableCellActionsLabel } from "@/tiptap-i18n"
+import { usePapyroTiptapLanguage } from "@/tiptap-react/runtime-context"
 
 import "./table-cell-handle-menu.scss"
 
@@ -119,13 +121,17 @@ function useTableCellHandleMenu({ editor }: { editor: Editor | null }) {
 
 const TableActionItem = ({ action }: { action: TableAction }) => {
   const { icon: Icon, label, onClick, isActive = false, shortcutBadge } = action
+  const { editor } = useTiptapEditor()
 
   return (
     <MenuItem
       render={
         <Button variant="ghost" data-active-state={isActive ? "on" : "off"} />
       }
-      onClick={onClick}
+      onClick={() => {
+        onClick()
+        restoreEditorFocusAfterFloatingMenu(editor)
+      }}
     >
       <Icon className="tiptap-button-icon" />
       <span className="tiptap-button-text">{label}</span>
@@ -145,6 +151,12 @@ const TableActionMenu = ({ onClose }: { onClose: () => void }) => {
       autoFocusOnShow
       modal
       onClose={onClose}
+      onMouseDown={(event) => {
+        if (event.button === 0) event.preventDefault()
+      }}
+      onPointerDown={(event) => {
+        if (event.button === 0) event.preventDefault()
+      }}
     >
       <Combobox style={SR_ONLY} />
       <ComboboxList style={{ minWidth: "15rem" }}>
@@ -180,6 +192,7 @@ export const TableCellHandleMenu = forwardRef<
   TableCellHandleMenuProps
 >(({ editor: providedEditor, onOpenChange, className, ...props }, ref) => {
   const { editor } = useTiptapEditor(providedEditor)
+  const language = usePapyroTiptapLanguage()
   const { isMenuOpen, handleMenuToggle, closeMenu } = useTableCellHandleMenu({
     editor,
   })
@@ -201,7 +214,7 @@ export const TableCellHandleMenu = forwardRef<
             isMenuOpen && "menu-opened",
             className
           )}
-          aria-label="Table cells option"
+          aria-label={tableCellActionsLabel(language)}
           aria-haspopup="menu"
           aria-expanded={isMenuOpen}
           {...props}

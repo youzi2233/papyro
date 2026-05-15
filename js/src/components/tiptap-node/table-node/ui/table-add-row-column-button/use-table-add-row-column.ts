@@ -17,6 +17,8 @@ import type { Node } from "@tiptap/pm/model"
 
 // --- Hooks ---
 import { useTiptapEditor } from "@/hooks/use-tiptap-editor"
+import { usePapyroTiptapLanguage } from "@/tiptap-react/runtime-context"
+import { insertRowColumnLabel } from "@/tiptap-i18n"
 
 // --- Lib ---
 import { isExtensionAvailable } from "@/lib/tiptap-utils"
@@ -292,6 +294,7 @@ export function useTableAddRowColumn(config: UseTableAddRowColumnConfig) {
   } = config
 
   const { editor } = useTiptapEditor(providedEditor)
+  const language = usePapyroTiptapLanguage()
 
   const selectionType = getTableSelectionType(editor, index, orientation)
 
@@ -326,8 +329,8 @@ export function useTableAddRowColumn(config: UseTableAddRowColumnConfig) {
 
   const label =
     selectionType?.orientation === "row"
-      ? tableAddRowColumnLabels.row[side as RowSide]
-      : tableAddRowColumnLabels.column[side as ColSide]
+      ? insertRowColumnLabel(language, "row", side)
+      : insertRowColumnLabel(language, "column", side)
 
   const Icon =
     selectionType?.orientation === "row"

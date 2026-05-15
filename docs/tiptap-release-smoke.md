@@ -10,17 +10,19 @@ This checklist is intentionally stricter than the general [Release QA checklist]
 
 Fill this section before marking the smoke run complete.
 
-| Field | Value |
-| --- | --- |
-| Commit SHA |  |
-| Tester |  |
-| Date |  |
-| OS and architecture |  |
-| Build command |  |
-| Build type | Debug / Release |
-| Workspace used |  |
-| Result | Pass / Fail |
-| Blocking issues |  |
+
+| Field               | Value           |
+| ------------------- | --------------- |
+| Commit SHA          |                 |
+| Tester              |                 |
+| Date                |                 |
+| OS and architecture |                 |
+| Build command       |                 |
+| Build type          | Debug / Release |
+| Workspace used      |                 |
+| Result              | Pass / Fail     |
+| Blocking issues     |                 |
+
 
 ## Preconditions
 
@@ -49,7 +51,7 @@ Create a Markdown note named `tiptap-smoke.md` with representative content. The 
 
 Recommended fixture:
 
-````markdown
+```markdown
 # Tiptap Smoke
 
 中文输入法测试：这是第一段文字，用来验证光标、选区、撤销和粘贴。
@@ -99,13 +101,13 @@ flowchart LR
 ## Notes
 
 End of document.
-````
+```
 
 ## 1. Runtime Launch And Mode Contract
 
 - [ ] Open `tiptap-smoke.md` and confirm the editor starts without an `Editor runtime failed` banner.
 - [ ] Confirm the tab title uses the file name.
-- [ ] Switch Source -> Hybrid -> Preview -> Hybrid -> Source.
+- [ ] Switch Source -&gt; Hybrid -&gt; Preview -&gt; Hybrid -&gt; Source.
 - [ ] Confirm content is not duplicated, reordered, or lost after each mode switch.
 - [ ] Confirm scroll position remains close to the same document region when switching modes.
 - [ ] Confirm Source remains raw Markdown, Hybrid remains editable rich text, and Preview remains read-only rendered HTML.

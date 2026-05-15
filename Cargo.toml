@@ -37,6 +37,7 @@ pulldown-cmark = "0.12"
 pulldown-cmark-to-cmark = "10"
 syntect = "5"
 yaml-rust = "0.4"
+ammonia = "4"
 
 # 存储
 rusqlite = { version = "0.31", features = ["bundled"] }

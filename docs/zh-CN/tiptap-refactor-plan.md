@@ -481,6 +481,7 @@ js/src/
 - [x] 保留 app shell 的 disciplined utility 风格，不把编辑器画布包装成大卡片或营销页式 section
 - [x] 2026-05-15 跟进：将正文阅读列收敛到接近官方 Notion-like 模板的 708px 内容宽度，并建立 `--mn-document-content-width` / `--mn-document-wide-width` 画布契约；Source、Hybrid、Preview、错误 fallback 共享同一正文 rail，代码块、表格、Mermaid/KaTeX 等宽内容通过自身容器滚动，不再把整个文档正文拉成宽工作台
 - [x] 2026-05-15 跟进：为三模式画布宽度、Preview 横向溢出、代码块宽度、表格滚动和 Source/fallback 宽度一致性补 Markdown style smoke 防回归
+- [x] 2026-05-16 跟进：恢复 Preview/Hybrid 表格一致性，将 GFM 表格和安全 Tiptap table HTML 包进 `.mn-preview-table-scroll`，保持表格原生 `display: table`，并守护桌面/移动静态样式镜像，让宽表格在文档栏内滚动而不是消失或撑宽整页
 
 #### 9.3 浮层与菜单系统收敛
 
@@ -495,6 +496,7 @@ js/src/
 - [x] 2026-05-15 视觉跟进：收敛菜单视觉节奏，统一 `ComboboxList`、`Card`、floating toolbar 和 table menu 的 8px 内圆角、2.125rem 菜单项高度、0.625rem 图标/文字间距、实底边框/阴影与按钮文本裁剪；静态 CSS 与运行时 `papyro-menu-surface.scss` 同步守护，避免菜单再次透明、错位或按钮行高不一致
 - [x] 2026-05-15 视觉跟进：将 Papyro 默认视觉升级为现代专业笔记软件的 disciplined utility 方向：更克制的冷灰背景、更宽的 760px 文档行宽、更成熟的标题/引用/代码块节奏、浮层专用阴影 token、胶囊式但非浏览器化的顶部标签栏，以及 Preview/Hybrid 共用 Markdown typography token
 - [x] 2026-05-16 视觉跟进：恢复颜色菜单的真实色板信息，将 `HIGHLIGHT_COLORS` 的 `colorValue`/`border` 透传到 table/drag/color 菜单，统一文字色与背景色 swatch 的实底、边框和 active ring；同时收敛选区态，让彩色文字在选中时继续保留原色可读性，并把下划线/行内代码移入 More 弹层降低浮动工具栏密度
+- [x] 2026-05-16 跟进：补齐 drag/table/code 下拉菜单国际化，阻止嵌套 table/color 菜单 pointerdown 时丢失 WebView 焦点，将代码块语言菜单升级为可搜索并覆盖常用语言选项，同时继续要求 floating/bubble surface 使用不透明、有边界的菜单契约
 
 #### 9.4 表格体验收敛
 
@@ -511,6 +513,7 @@ js/src/
 - [x] 2026-05-15 视觉跟进：将 block drag handle、insert plus、table row/column handle、extend button 和 cell handle 统一为低干扰桌面控件：使用 lucide 线性图标，1.75rem block handle 与 1rem 表格 handle 的稳定点击目标，默认中性色轻量展示，hover/focus/open 才提升对比；表格句柄保留官方状态机但补充 Papyro 的边框、阴影、focus ring 和静态 CSS 防回归
 - [x] 2026-05-15 表格菜单跟进：将表格对齐命令改为使用官方 cell `align` 属性和 Papyro 持久化的 `verticalAlign` 属性，移除旧 `nodeTextAlign`/`nodeVerticalAlign` 桥接依赖；将单元格 handle 收敛为更低干扰的 16px chevron 控件；为 alignment flyout 补分组，并扩展真实桌面 WebView smoke 覆盖 Color 与 Alignment 二级菜单、直接 hover 状态，以及点击 `Align center` 后确实更新所选单元格
 - [x] 2026-05-16 视觉跟进：将表格单元格 handle 回归官方 grip 语义，并把 row/column 句柄、extend rail、cell menu 的 hover/open 状态统一为更克制的中性 surface + 左侧强调线；同步桌面/移动静态 CSS 镜像，并更新 smoke/source 守卫，避免表格菜单再次退回旧蓝色渐变和错位高亮
+- [x] 2026-05-16 跟进：让表格单元格菜单保持单一不透明根表面，用 CSS 绘制 grip 替代嘈杂旧 SVG 图标，并扩展 smoke 守卫 hidden legacy icon、grip glyph、直接面板透明层、根阴影和嵌套 flyout hover 状态
 
 #### 9.5 官方组件差异审计
 
@@ -539,6 +542,7 @@ js/src/
 - [x] 2026-05-15 跟进：让 `node scripts/check-tiptap-release-smoke.js` 守护中英文 release checklist 必须保留编辑器 UI surface 视觉验收章节，确保 table handles、cell menu、floating toolbar、slash menu、drag handle、link/color popover、image controls、窄窗口和暗色/高对比检查不会从发布门禁里消失
 - [x] 2026-05-15 跟进：扩展 `node scripts/check-desktop-tiptap-webview-smoke.js`，在真实 desktop WebView 中验证 slash menu、floating toolbar、link popover、color popover、drag context menu、table cell menu 和 image floating controls 的不透明 bounded surface 与可用控件
 - [x] 2026-05-15 跟进：将 `check-ui-a11y.js` 与 `check-ui-contrast.js` 接入 `check-editor-markdown-gate.js` 默认流程；编辑器 UI/UX 改动现在会随同 theme bridge、release smoke、runtime smoke、desktop resource smoke 和可选真实 WebView smoke 一起被门禁验证。Release candidate 截图/录屏仍按 `tiptap-release-smoke.md` 手工记录，不作为仓库提交物。
+- [x] 2026-05-16 跟进：移除切换标签页时的 loading 文案闪烁，让 `Loading` fallback 视觉上保持空态；桌面启动时显式 show/focus 主窗口，并补齐确定性 macOS `.icns` 生成与 Dioxus bundle 图标 metadata，避免 macOS 打包应用回退到默认图标
 
 ---
 

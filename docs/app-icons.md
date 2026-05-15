@@ -16,7 +16,7 @@ Papyro keeps shared brand assets in `assets/` and generated platform icon assets
 | --- | --- | --- |
 | Shared PNG sizes | `assets/icons/png/` | 16, 32, 48, 64, 128, 256, 512, and 1024 px |
 | Windows | `assets/icons/windows/papyro.ico` | Copied from the canonical multi-size `.ico` |
-| macOS | `assets/icons/macos/Papyro.iconset/` | Input folder for `iconutil -c icns` on macOS |
+| macOS | `assets/icons/macos/Papyro.iconset/` and `assets/icons/macos/Papyro.icns` | Iconset source plus the generated `.icns` used by Dioxus bundle metadata |
 | Linux | `assets/icons/linux/hicolor/*/apps/papyro.png` | Follows the hicolor icon theme layout |
 
 ## Regenerate
@@ -28,3 +28,5 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/generate-app-icons.p
 ```
 
 The script is intentionally deterministic and only writes under `assets/icons/`.
+It writes `assets/icons/macos/Papyro.icns` directly so macOS bundles do not
+depend on a separate `iconutil` step.

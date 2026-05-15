@@ -13,6 +13,8 @@ import {
   getTable,
   getRowOrColumnCells,
 } from "@/components/tiptap-node/table-node/lib/tiptap-table-utils"
+import { textAlignLabel, localizedText } from "@/tiptap-i18n"
+import { usePapyroTiptapLanguage } from "@/tiptap-react/runtime-context"
 
 // --- Icons ---
 import { AlignLeftIcon } from "@/components/tiptap-icons/align-left-icon"
@@ -492,6 +494,7 @@ export function useTableAlignCell(config: UseTableAlignCellConfig) {
   } = config
 
   const { editor } = useTiptapEditor(providedEditor)
+  const language = usePapyroTiptapLanguage()
 
   const isVisible = shouldShowButton({
     editor,
@@ -538,11 +541,16 @@ export function useTableAlignCell(config: UseTableAlignCellConfig) {
 
   const label = useMemo(() => {
     if (alignmentType === "text") {
-      return tableAlignCellLabels.text[alignment as TextAlignment]
-    } else {
-      return tableAlignCellLabels.vertical[alignment as VerticalAlignment]
+      return textAlignLabel(language, alignment)
     }
-  }, [alignmentType, alignment])
+    const labels: Record<VerticalAlignment, [string, string]> = {
+      top: ["Align top", "\u9876\u90e8\u5bf9\u9f50"],
+      middle: ["Align middle", "\u5782\u76f4\u5c45\u4e2d"],
+      bottom: ["Align bottom", "\u5e95\u90e8\u5bf9\u9f50"],
+    }
+    const pair = labels[alignment as VerticalAlignment]
+    return localizedText(language, pair[0], pair[1])
+  }, [alignmentType, alignment, language])
 
   const Icon = useMemo(() => {
     if (alignmentType === "text") {

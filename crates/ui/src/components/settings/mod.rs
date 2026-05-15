@@ -1,15 +1,15 @@
 use crate::components::primitives::{
-    Button, ButtonVariant, DialogSection, DropdownOption, Message, MessageTone, Modal, RawButton,
-    Select, SettingsContent, SettingsLayout, SettingsNav, SettingsNavItem, SettingsPanel,
-    SettingsRow, Slider, Switch,
+    Button, ButtonVariant, ColorInput, DialogSection, DropdownOption, Message, MessageTone, Modal,
+    RawButton, Select, SettingsContent, SettingsLayout, SettingsNav, SettingsNavItem,
+    SettingsPanel, SettingsRow, Slider, Switch,
 };
 use crate::context::use_app_context;
 use crate::i18n::{use_i18n, UiText};
 use dioxus::prelude::*;
 use papyro_core::models::{
-    AppLanguage, AppSettings, Theme, WorkspaceSettingsOverrides, FONT_PRESET_CJK_SANS,
-    FONT_PRESET_MONO_CODE, FONT_PRESET_READING_SERIF, FONT_PRESET_SYSTEM_SERIF,
-    FONT_PRESET_UI_SANS,
+    AccentColor, AppLanguage, AppSettings, Theme, WorkspaceSettingsOverrides, DEFAULT_ACCENT_COLOR,
+    FONT_PRESET_CJK_SANS, FONT_PRESET_MONO_CODE, FONT_PRESET_READING_SERIF,
+    FONT_PRESET_SYSTEM_SERIF, FONT_PRESET_UI_SANS,
 };
 use std::time::Duration;
 
@@ -25,6 +25,7 @@ enum SettingsPanelKind {
 struct SettingsDraft {
     language: AppLanguage,
     theme: Theme,
+    accent_color: AccentColor,
     font_family: String,
     font_size: u8,
     line_height: f32,
@@ -83,6 +84,7 @@ pub fn SettingsSurface(
     let mut active_panel = use_signal(|| SettingsPanelKind::General);
     let mut language = use_signal(|| effective_settings.language);
     let mut theme = use_signal(|| effective_settings.theme.clone());
+    let mut accent_color = use_signal(|| effective_settings.accent_color.clone());
     let mut font_family = use_signal(|| effective_settings.font_family.clone());
     let mut font_size = use_signal(|| effective_settings.font_size);
     let mut line_height = use_signal(|| effective_settings.line_height);
@@ -110,6 +112,7 @@ pub fn SettingsSurface(
         let draft = SettingsDraft {
             language: language(),
             theme: theme(),
+            accent_color: accent_color(),
             font_family: font_family(),
             font_size: font_size(),
             line_height: line_height(),
@@ -204,6 +207,47 @@ pub fn SettingsSurface(
                                                 if let Some(next_theme) = theme_from_value(&value) {
                                                     theme.set(next_theme);
                                                 }
+                                            }
+                                        }
+                                    }
+                                    SettingsRow {
+                                        label: i18n.text("Theme color", "主题色").to_string(),
+                                        description: Some(i18n.text(
+                                            "Used for selection, focus rings, links, and editor controls.",
+                                            "用于选区、焦点环、链接和编辑器控件。",
+                                        ).to_string()),
+                                        class_name: "theme-accent".to_string(),
+                                        div { class: "mn-accent-setting",
+                                            ColorInput {
+                                                label: i18n.text("Theme color", "主题色").to_string(),
+                                                title: accent_color().as_str().to_string(),
+                                                value: accent_color().as_str().to_string(),
+                                                class_name: "mn-accent-color-input".to_string(),
+                                                on_input: move |value: String| {
+                                                    if let Some(next) = AccentColor::new(&value) {
+                                                        accent_color.set(next);
+                                                    }
+                                                },
+                                            }
+                                            span {
+                                                class: "mn-accent-preview",
+                                                style: format!("--mn-accent-preview-color: {};", accent_color().as_str()),
+                                                "aria-hidden": "true",
+                                            }
+                                            RawButton {
+                                                class_name: "mn-accent-reset".to_string(),
+                                                label: Some(i18n.text("Reset theme color", "重置主题色").to_string()),
+                                                title: None::<String>,
+                                                disabled: accent_color().as_str() == DEFAULT_ACCENT_COLOR,
+                                                pressed: None::<bool>,
+                                                checked: None::<bool>,
+                                                role: None::<String>,
+                                                stop_events: false,
+                                                on_click: move |_| {
+                                                    accent_color.set(AccentColor::default());
+                                                },
+                                                on_context_menu: None::<EventHandler<MouseEvent>>,
+                                                {i18n.text("Reset", "重置")}
                                             }
                                         }
                                     }
@@ -708,6 +752,7 @@ fn form_settings(base: &AppSettings, draft: &SettingsDraft) -> AppSettings {
     AppSettings {
         theme: draft.theme.clone(),
         language: draft.language,
+        accent_color: draft.accent_color.clone(),
         font_family: draft.font_family.clone(),
         font_size: draft.font_size,
         line_height: draft.line_height,
@@ -726,6 +771,7 @@ fn clear_global_managed_workspace_overrides(
 ) -> WorkspaceSettingsOverrides {
     let mut next = overrides.clone();
     next.theme = None;
+    next.accent_color = None;
     next.font_family = None;
     next.font_size = None;
     next.line_height = None;
@@ -810,6 +856,7 @@ mod tests {
     fn clearing_global_managed_workspace_overrides_preserves_unrelated_fields() {
         let overrides = WorkspaceSettingsOverrides {
             theme: Some(Theme::Dark),
+            accent_color: Some(AccentColor::new("#123456").unwrap()),
             font_family: Some("Fira Code".to_string()),
             font_size: Some(18),
             line_height: Some(1.8),
@@ -823,6 +870,7 @@ mod tests {
 
         let cleared = clear_global_managed_workspace_overrides(&overrides);
         assert_eq!(cleared.theme, None);
+        assert_eq!(cleared.accent_color, None);
         assert_eq!(cleared.font_family, None);
         assert_eq!(cleared.font_size, None);
         assert_eq!(cleared.line_height, None);

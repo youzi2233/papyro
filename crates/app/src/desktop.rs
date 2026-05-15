@@ -183,7 +183,7 @@ fn build_startup_chrome(
         Theme::Dark | Theme::GitHubDark | Theme::HighContrast => dark_bg,
     };
 
-    let theme_script = papyro_ui::theme::theme_dom_script(&settings.theme);
+    let theme_script = papyro_ui::theme::theme_dom_script(&settings.theme, &settings.accent_color);
 
     let custom_head = format!(
         r#"<script>{theme_script}</script><script>document.documentElement.dataset.platform='{platform}';</script>

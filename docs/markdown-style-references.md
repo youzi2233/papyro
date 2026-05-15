@@ -8,22 +8,26 @@ Papyro should look familiar to Markdown users without becoming a copy of another
 
 ## Current Stack
 
-| Area | Current implementation |
-| --- | --- |
-| Markdown parsing | `pulldown-cmark` in `crates/editor/src/renderer/html.rs` |
-| Preview code highlighting | `syntect` in `crates/editor/src/renderer/html.rs` |
-| Editor runtime | Tiptap/ProseMirror in `js/src/editor-runtime.ts` and focused `js/src/tiptap-*.js` modules |
-| Mermaid | `mermaid` plus the Papyro Tiptap Mermaid extension in `js/src/tiptap-mermaid.js` |
-| Theme contract | [theme-system.md](theme-system.md) |
+
+| Area                      | Current implementation                                                                    |
+| ------------------------- | ----------------------------------------------------------------------------------------- |
+| Markdown parsing          | `pulldown-cmark` in `crates/editor/src/renderer/html.rs`                                  |
+| Preview code highlighting | `syntect` in `crates/editor/src/renderer/html.rs`                                         |
+| Editor runtime            | Tiptap/ProseMirror in `js/src/editor-runtime.ts` and focused `js/src/tiptap-*.js` modules |
+| Mermaid                   | `mermaid` plus the Papyro Tiptap Mermaid extension in `js/src/tiptap-mermaid.js`          |
+| Theme contract            | [theme-system.md](theme-system.md)                                                        |
+
 
 ## Reference Candidates
 
-| Project | Why it matters | Fit for Papyro | License / adoption |
-| --- | --- | --- | --- |
-| [`sindresorhus/github-markdown-css`](https://github.com/sindresorhus/github-markdown-css) | It targets the minimal CSS needed to reproduce GitHub Markdown and includes light, dark, dimmed, high-contrast, and colorblind variants. | Use as the baseline reference for Markdown spacing, tables, headings, list rhythm, blockquotes, and high-contrast coverage. Do not copy the full stylesheet blindly. | MIT, about 8.8k GitHub stars as of review. |
-| [`shikijs/shiki`](https://github.com/shikijs/shiki) | TextMate grammar based highlighting with bundled themes and broad framework integrations. | Good long-term reference if Papyro wants VS Code-like code themes or a JS-side highlighter. Current Rust preview still uses `syntect`, so this is not an immediate migration. | MIT, about 13.3k GitHub stars as of review. |
-| [`highlight.js`](https://github.com/highlightjs/highlight.js) | Large, established highlighting ecosystem with language auto-detection and many themes. | Useful as a theme reference and compatibility benchmark. Less attractive as a direct replacement because Papyro already controls language labels and currently highlights in Rust. | BSD-3-Clause, about 24.9k GitHub stars as of review. |
-| [`catppuccin/catppuccin`](https://github.com/catppuccin/catppuccin) | Mature palette system with a style guide and many community ports. | Good optional theme inspiration, especially for a polished dark theme. Avoid making it the default because Papyro should keep a quiet, professional base. | MIT, about 19.1k GitHub stars as of review. |
+
+| Project                                                                                   | Why it matters                                                                                                                           | Fit for Papyro                                                                                                                                                                     | License / adoption                                   |
+| ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| [`sindresorhus/github-markdown-css`](https://github.com/sindresorhus/github-markdown-css) | It targets the minimal CSS needed to reproduce GitHub Markdown and includes light, dark, dimmed, high-contrast, and colorblind variants. | Use as the baseline reference for Markdown spacing, tables, headings, list rhythm, blockquotes, and high-contrast coverage. Do not copy the full stylesheet blindly.               | MIT, about 8.8k GitHub stars as of review.           |
+| [`shikijs/shiki`](https://github.com/shikijs/shiki)                                       | TextMate grammar based highlighting with bundled themes and broad framework integrations.                                                | Good long-term reference if Papyro wants VS Code-like code themes or a JS-side highlighter. Current Rust preview still uses `syntect`, so this is not an immediate migration.      | MIT, about 13.3k GitHub stars as of review.          |
+| [`highlight.js`](https://github.com/highlightjs/highlight.js)                             | Large, established highlighting ecosystem with language auto-detection and many themes.                                                  | Useful as a theme reference and compatibility benchmark. Less attractive as a direct replacement because Papyro already controls language labels and currently highlights in Rust. | BSD-3-Clause, about 24.9k GitHub stars as of review. |
+| [`catppuccin/catppuccin`](https://github.com/catppuccin/catppuccin)                       | Mature palette system with a style guide and many community ports.                                                                       | Good optional theme inspiration, especially for a polished dark theme. Avoid making it the default because Papyro should keep a quiet, professional base.                          | MIT, about 19.1k GitHub stars as of review.          |
+
 
 ## Adoption Decision
 

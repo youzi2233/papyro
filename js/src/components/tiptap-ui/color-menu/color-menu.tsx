@@ -16,6 +16,13 @@ import { Separator } from "@/components/tiptap-ui-primitive/separator"
 
 // Tiptap UI
 import {
+  colorMenuLabel,
+  colorOptionLabel,
+  highlightColorsLabel,
+  recentColorsLabel,
+  textColorLabel,
+} from "@/tiptap-i18n"
+import {
   TEXT_COLORS,
   useColorText,
 } from "@/components/tiptap-ui/color-text-button"
@@ -35,9 +42,11 @@ import { PaintBucketIcon } from "@/components/tiptap-icons/paint-bucket-icon"
 import { ChevronRightIcon } from "@/components/tiptap-icons/chevron-right-icon"
 import { TextColorSmallIcon } from "@/components/tiptap-icons/text-color-small-icon"
 import { useTiptapEditor } from "@/hooks/use-tiptap-editor"
+import { usePapyroTiptapLanguage } from "@/tiptap-react/runtime-context"
 
 interface ColorMenuItemProps {
   color: ColorItem
+  language: string
 }
 
 function colorMenuSwatchStyle(color: ColorItem): React.CSSProperties {
@@ -94,10 +103,14 @@ export function canUseColorMenu(editor: Editor | null): boolean {
   )
 }
 
-const TextColorMenuItem: React.FC<ColorMenuItemProps> = ({ color }) => {
+const TextColorMenuItem: React.FC<ColorMenuItemProps> = ({
+  color,
+  language,
+}) => {
   const { addRecentColor } = useRecentColors()
+  const localizedLabel = colorOptionLabel(language, "text", color.label)
   const { isActive, handleColorText, label } = useColorText({
-    label: color.label,
+    label: localizedLabel,
     textColor: color.value,
     onApplied: ({ color, label }) =>
       addRecentColor({ type: "text", label, value: color }),
@@ -127,10 +140,14 @@ const TextColorMenuItem: React.FC<ColorMenuItemProps> = ({ color }) => {
   )
 }
 
-const HighlightColorMenuItem: React.FC<ColorMenuItemProps> = ({ color }) => {
+const HighlightColorMenuItem: React.FC<ColorMenuItemProps> = ({
+  color,
+  language,
+}) => {
   const { addRecentColor } = useRecentColors()
+  const localizedLabel = colorOptionLabel(language, "highlight", color.label)
   const { isActive, handleColorHighlight, label } = useColorHighlight({
-    label: color.label,
+    label: localizedLabel,
     highlightColor: color.value,
     mode: "node",
     onApplied: ({ color, label }) =>
@@ -160,14 +177,15 @@ const HighlightColorMenuItem: React.FC<ColorMenuItemProps> = ({ color }) => {
 
 const RecentColorMenuItem: React.FC<{
   colorObj: RecentColor
-}> = ({ colorObj }) => {
+  language: string
+}> = ({ colorObj, language }) => {
   const colorSet = colorObj.type === "text" ? TEXT_COLORS : HIGHLIGHT_COLORS
   const color = getColorByValue(colorObj.value, colorSet)
 
   const ColorComponent =
     colorObj.type === "text" ? TextColorMenuItem : HighlightColorMenuItem
 
-  return <ColorComponent color={color} />
+  return <ColorComponent color={color} language={language} />
 }
 
 export interface ColorMenuProps {
@@ -195,11 +213,13 @@ export interface ColorMenuProps {
 export const ColorMenu: React.FC<ColorMenuProps> = ({
   editor: providedEditor,
   trigger,
-  label = "Color",
+  label,
   placement = "right",
 }) => {
   const { editor } = useTiptapEditor(providedEditor)
+  const language = usePapyroTiptapLanguage()
   const { recentColors, isInitialized } = useRecentColors()
+  const menuLabel = label ?? colorMenuLabel(language)
 
   const hasColorActions = canUseColorMenu(editor)
 
@@ -214,7 +234,7 @@ export const ColorMenu: React.FC<ColorMenuProps> = ({
           render={
             <Button variant="ghost">
               <PaintBucketIcon className="tiptap-button-icon" />
-              <span className="tiptap-button-text">{label}</span>
+              <span className="tiptap-button-text">{menuLabel}</span>
               <MenuButtonArrow render={<ChevronRightIcon />} />
             </Button>
           }
@@ -225,14 +245,26 @@ export const ColorMenu: React.FC<ColorMenuProps> = ({
 
   return (
     <Menu placement={placement} trigger={trigger || defaultTrigger}>
-      <MenuContent portal>
+      <MenuContent
+        portal
+        onMouseDown={(event) => {
+          if (event.button === 0) event.preventDefault()
+        }}
+        onPointerDown={(event) => {
+          if (event.button === 0) event.preventDefault()
+        }}
+      >
         <ComboboxList>
           {/* Recent Colors */}
           {isInitialized && recentColors.length > 0 && (
             <MenuGroup>
-              <MenuGroupLabel>Recent colors</MenuGroupLabel>
+              <MenuGroupLabel>{recentColorsLabel(language)}</MenuGroupLabel>
               {recentColors.map((colorObj) => (
-                <RecentColorMenuItem key={colorObj.value} colorObj={colorObj} />
+                <RecentColorMenuItem
+                  key={`${colorObj.type}-${colorObj.value}`}
+                  colorObj={colorObj}
+                  language={language}
+                />
               ))}
               <Separator orientation="horizontal" />
             </MenuGroup>
@@ -240,9 +272,13 @@ export const ColorMenu: React.FC<ColorMenuProps> = ({
 
           {/* Text Colors */}
           <MenuGroup>
-            <MenuGroupLabel>Text color</MenuGroupLabel>
+            <MenuGroupLabel>{textColorLabel(language)}</MenuGroupLabel>
             {TEXT_COLORS.map((textColor) => (
-              <TextColorMenuItem key={textColor.value} color={textColor} />
+              <TextColorMenuItem
+                key={textColor.value}
+                color={textColor}
+                language={language}
+              />
             ))}
           </MenuGroup>
 
@@ -250,11 +286,12 @@ export const ColorMenu: React.FC<ColorMenuProps> = ({
 
           {/* Background Colors */}
           <MenuGroup>
-            <MenuGroupLabel>Background color</MenuGroupLabel>
+            <MenuGroupLabel>{highlightColorsLabel(language)}</MenuGroupLabel>
             {HIGHLIGHT_COLORS.map((highlightColor) => (
               <HighlightColorMenuItem
                 key={highlightColor.value}
                 color={highlightColor}
+                language={language}
               />
             ))}
           </MenuGroup>

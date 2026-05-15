@@ -189,6 +189,7 @@ pub fn use_app_runtime_with_shared_services(
     let status_text = use_memo(move || state.status_message.read().clone());
     let language = use_memo(move || state.ui_state.read().settings.language);
     let theme = use_memo(move || state.ui_state.read().theme().clone());
+    let accent_color = use_memo(move || state.ui_state.read().settings.accent_color.clone());
     let sidebar_collapsed = use_memo(move || state.ui_state.read().sidebar_collapsed());
     let sidebar_width = use_memo(move || state.ui_state.read().settings.sidebar_width);
     let outline_visible = use_memo(move || state.ui_state.read().outline_visible());
@@ -227,6 +228,7 @@ pub fn use_app_runtime_with_shared_services(
         status_text,
         language,
         theme,
+        accent_color,
         sidebar_collapsed,
         sidebar_width,
         outline_visible,

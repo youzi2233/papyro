@@ -4,6 +4,8 @@ import { mergeCells, splitCell } from "@tiptap/pm/tables"
 
 // --- Hooks ---
 import { useTiptapEditor } from "@/hooks/use-tiptap-editor"
+import { usePapyroTiptapLanguage } from "@/tiptap-react/runtime-context"
+import { tableMergeSplitCellLabel } from "@/tiptap-i18n"
 
 // --- Lib ---
 import { isExtensionAvailable } from "@/lib/tiptap-utils"
@@ -254,6 +256,7 @@ export function useTableMergeSplitCell(config: UseTableMergeSplitCellConfig) {
   } = config
 
   const { editor } = useTiptapEditor(providedEditor)
+  const language = usePapyroTiptapLanguage()
 
   const isVisible = shouldShowButton({
     editor,
@@ -280,7 +283,7 @@ export function useTableMergeSplitCell(config: UseTableMergeSplitCellConfig) {
     isVisible,
     canExecute: canPerformAction,
     handleExecute,
-    label: tableMergeSplitCellLabels[action],
+    label: tableMergeSplitCellLabel(language, action),
     Icon: tableMergeSplitCellIcons[action],
   }
 }

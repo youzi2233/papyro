@@ -142,6 +142,8 @@ fn main() {
         .with_inner_size(LogicalSize::new(1440.0, 920.0))
         .with_min_inner_size(LogicalSize::new(880.0, 600.0))
         .with_decorations(desktop_window_decorations())
+        .with_visible(true)
+        .with_focused(true)
         .with_always_on_top(false);
     let window = if let Some(icon) = load_window_icon() {
         window.with_window_icon(Some(icon))
@@ -257,6 +259,11 @@ fn sync_runtime_asset_bytes(target: &Path, bytes: &[u8]) -> io::Result<()> {
 #[component]
 fn DesktopRoot() -> Element {
     use_context_provider(papyro_app::desktop::desktop_brand_logo_src);
+    use_effect(|| {
+        let current_window = dioxus::desktop::window();
+        current_window.set_visible(true);
+        current_window.set_focus();
+    });
 
     rsx! {
         papyro_app::desktop::DesktopApp {}

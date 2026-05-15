@@ -20,15 +20,17 @@ flowchart TD
 
 ## Token Layers
 
-| Layer | Examples | Who should use it |
-| --- | --- | --- |
-| Palette | `--mn-bg`, `--mn-surface`, `--mn-ink`, `--mn-accent` | Theme authors and low-level CSS only |
-| Chrome | `--mn-chrome-bg`, `--mn-chrome-surface`, `--mn-chrome-ink-muted` | Sidebar, header, modal, command palette, status bar |
-| Editor canvas | `--mn-editor-canvas-bg`, `--mn-editor-canvas-ink`, `--mn-editor-active-line-bg` | Tiptap host and source editing UI |
-| Markdown | `--mn-markdown-ink`, `--mn-markdown-muted-ink`, `--mn-markdown-link` | Preview and Hybrid rendered Markdown |
-| Code | `--mn-code-surface`, `--mn-code-block-surface`, `--mn-code-ink`, `--mn-code-border` | Inline code, fenced code, Mermaid source panes |
-| Selection and focus | `--mn-selection-bg`, `--mn-selection-ink`, `--mn-focus-ring` | Selection backgrounds, focused controls, editor cursor states |
-| Status | `--mn-status-danger`, `--mn-status-warning`, `--mn-status-success` | Save states, destructive actions, warnings, success indicators |
+
+| Layer               | Examples                                                                            | Who should use it                                              |
+| ------------------- | ----------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| Palette             | `--mn-bg`, `--mn-surface`, `--mn-ink`, `--mn-accent`                                | Theme authors and low-level CSS only                           |
+| Chrome              | `--mn-chrome-bg`, `--mn-chrome-surface`, `--mn-chrome-ink-muted`                    | Sidebar, header, modal, command palette, status bar            |
+| Editor canvas       | `--mn-editor-canvas-bg`, `--mn-editor-canvas-ink`, `--mn-editor-active-line-bg`     | Tiptap host and source editing UI                              |
+| Markdown            | `--mn-markdown-ink`, `--mn-markdown-muted-ink`, `--mn-markdown-link`                | Preview and Hybrid rendered Markdown                           |
+| Code                | `--mn-code-surface`, `--mn-code-block-surface`, `--mn-code-ink`, `--mn-code-border` | Inline code, fenced code, Mermaid source panes                 |
+| Selection and focus | `--mn-selection-bg`, `--mn-selection-ink`, `--mn-focus-ring`                        | Selection backgrounds, focused controls, editor cursor states  |
+| Status              | `--mn-status-danger`, `--mn-status-warning`, `--mn-status-success`                  | Save states, destructive actions, warnings, success indicators |
+
 
 ## Source Files
 

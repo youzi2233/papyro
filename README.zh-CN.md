@@ -19,18 +19,7 @@ Papyro 是一个基于 Rust 和 Dioxus 0.7 的桌面优先 Markdown 应用。它
 
 ## 当前状态
 
-
-| 模块          | 状态                         |
-| ----------- | -------------------------- |
-| 桌面端         | 可用于开发调试                    |
-| 移动端         | 已接入共享运行时，还不是生产级            |
-| Markdown 编辑 | Source、Preview、Hybrid 三种模式 |
-| Mermaid     | Preview 和 Hybrid 已有渲染与编辑路径 |
-| 搜索和快速打开     | 已有基础 workspace 搜索和最近文件     |
-| 恢复          | 已有自动保存与恢复草稿流程              |
-| 打包发布        | 尚未完成                       |
-| License     | MIT                        |
-
+<table><tbody><tr><th data-cell-background="var(--tt-color-highlight-orange)" style="background-color: var(--tt-color-highlight-orange)"><span style="color: var(--tt-color-text-orange)">模块</span></th><th data-cell-background="var(--tt-color-highlight-orange)" style="background-color: var(--tt-color-highlight-orange)"><span style="color: var(--tt-color-text-orange)">状态</span></th></tr><tr><td>桌面端</td><td>可用于开发调试</td></tr><tr><td>移动端</td><td>已接入共享运行时，还不是生产级</td></tr><tr><td>Markdown 编辑</td><td>Source、Preview、Hybrid 三种模式</td></tr><tr><td>Mermaid</td><td>Preview 和 Hybrid 已有渲染与编辑路径</td></tr><tr><td>搜索和快速打开</td><td>已有基础 workspace 搜索和最近文件</td></tr><tr><td>恢复</td><td>已有自动保存与恢复草稿流程</td></tr><tr><td>打包发布</td><td>尚未完成</td></tr><tr><td>License</td><td>MIT</td></tr></tbody></table>
 
 ## 快速开始
 

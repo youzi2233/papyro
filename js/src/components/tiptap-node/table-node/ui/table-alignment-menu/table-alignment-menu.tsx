@@ -1,4 +1,5 @@
 import type { Orientation } from "@/components/tiptap-node/table-node/lib/tiptap-table-utils"
+import { restoreEditorFocusAfterFloatingMenu } from "@/lib/tiptap-menu-focus"
 
 // --- UI ---
 import { useTableAlignCell } from "@/components/tiptap-node/table-node/ui/table-align-cell-button"
@@ -20,6 +21,13 @@ import {
 import { Button } from "@/components/tiptap-ui-primitive/button"
 import { ComboboxList } from "@/components/tiptap-ui-primitive/combobox"
 import { Separator } from "@/components/tiptap-ui-primitive/separator"
+import { useTiptapEditor } from "@/hooks/use-tiptap-editor"
+import { usePapyroTiptapLanguage } from "@/tiptap-react/runtime-context"
+import {
+  tableAlignmentLabel,
+  tableTextAlignmentLabel,
+  tableVerticalAlignmentLabel,
+} from "@/tiptap-i18n"
 
 export interface ActionItemProps {
   icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>
@@ -37,6 +45,8 @@ export const TableAlignMenu = ({
   index?: number
   orientation?: Orientation
 }) => {
+  const { editor } = useTiptapEditor()
+  const language = usePapyroTiptapLanguage()
   const textAlign = {
     left: useTableAlignCell({
       alignmentType: "text",
@@ -93,7 +103,9 @@ export const TableAlignMenu = ({
               render={
                 <Button variant="ghost">
                   <AlignmentIcon className="tiptap-button-icon" />
-                  <span className="tiptap-button-text">Alignment</span>
+                  <span className="tiptap-button-text">
+                    {tableAlignmentLabel(language)}
+                  </span>
                   <MenuButtonArrow render={<ChevronRightIcon />} />
                 </Button>
               }
@@ -102,10 +114,19 @@ export const TableAlignMenu = ({
         />
       }
     >
-      <MenuContent>
+      <MenuContent
+        className="tiptap-table-menu-content tiptap-table-submenu-content"
+        portal
+        onMouseDown={(event) => {
+          if (event.button === 0) event.preventDefault()
+        }}
+        onPointerDown={(event) => {
+          if (event.button === 0) event.preventDefault()
+        }}
+      >
         <ComboboxList>
           <MenuGroup>
-            <MenuGroupLabel>Text alignment</MenuGroupLabel>
+            <MenuGroupLabel>{tableTextAlignmentLabel(language)}</MenuGroupLabel>
             {Object.values(textAlign).map((align, i) => (
               <ActionItem
                 key={`text-${i}`}
@@ -113,11 +134,14 @@ export const TableAlignMenu = ({
                 label={align.label}
                 disabled={!align.canAlignCell()}
                 isActive={align.isActive}
-                onClick={align.handleAlign}
+                onClick={() => {
+                  align.handleAlign()
+                  restoreEditorFocusAfterFloatingMenu(editor)
+                }}
               />
             ))}
             <Separator orientation="horizontal" />
-            <MenuGroupLabel>Cell vertical alignment</MenuGroupLabel>
+            <MenuGroupLabel>{tableVerticalAlignmentLabel(language)}</MenuGroupLabel>
             {Object.values(verticalAlign).map((align, i) => (
               <ActionItem
                 key={`vertical-${i}`}
@@ -125,7 +149,10 @@ export const TableAlignMenu = ({
                 label={align.label}
                 disabled={!align.canAlignCell()}
                 isActive={align.isActive}
-                onClick={align.handleAlign}
+                onClick={() => {
+                  align.handleAlign()
+                  restoreEditorFocusAfterFloatingMenu(editor)
+                }}
               />
             ))}
           </MenuGroup>

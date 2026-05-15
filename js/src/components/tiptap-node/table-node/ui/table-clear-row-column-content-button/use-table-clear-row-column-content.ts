@@ -10,6 +10,11 @@ import {
 
 // --- Hooks ---
 import { useTiptapEditor } from "@/hooks/use-tiptap-editor"
+import { usePapyroTiptapLanguage } from "@/tiptap-react/runtime-context"
+import {
+  clearContentsLabel,
+  clearRowColumnContentsLabel,
+} from "@/tiptap-i18n"
 
 // --- Lib ---
 import { isExtensionAvailable } from "@/lib/tiptap-utils"
@@ -416,6 +421,7 @@ export function useTableClearRowColumnContent(
   } = config
 
   const { editor } = useTiptapEditor(providedEditor)
+  const language = usePapyroTiptapLanguage()
 
   const selectionType = getTableSelectionType(
     editor,
@@ -453,10 +459,10 @@ export function useTableClearRowColumnContent(
 
   const label = useMemo(() => {
     if (selectionType) {
-      return tableClearRowColumnContentLabels[selectionType.orientation]
+      return clearRowColumnContentsLabel(language, selectionType.orientation)
     }
-    return "Clear contents"
-  }, [selectionType])
+    return clearContentsLabel(language)
+  }, [language, selectionType])
 
   const Icon = SquareXIcon
 

@@ -125,6 +125,8 @@ pub struct AppSettings {
     pub theme: Theme,
     #[serde(default)]
     pub language: AppLanguage,
+    #[serde(default)]
+    pub accent_color: AccentColor,
     pub font_family: String,
     pub font_size: u8,
     pub line_height: f32,
@@ -145,6 +147,8 @@ pub struct AppSettings {
 pub struct WorkspaceSettingsOverrides {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub theme: Option<Theme>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub accent_color: Option<AccentColor>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub font_family: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -176,6 +180,7 @@ impl Default for AppSettings {
         Self {
             theme: Theme::System,
             language: AppLanguage::English,
+            accent_color: AccentColor::default(),
             font_family: DEFAULT_FONT_FAMILY.to_string(),
             font_size: 16,
             line_height: 1.6,
@@ -198,6 +203,10 @@ impl AppSettings {
                 .clone()
                 .unwrap_or_else(|| self.theme.clone()),
             language: self.language,
+            accent_color: overrides
+                .accent_color
+                .clone()
+                .unwrap_or_else(|| self.accent_color.clone()),
             font_family: overrides
                 .font_family
                 .clone()
@@ -226,6 +235,8 @@ impl WorkspaceSettingsOverrides {
     pub fn from_settings_delta(global: &AppSettings, scoped: &AppSettings) -> Self {
         Self {
             theme: (scoped.theme != global.theme).then(|| scoped.theme.clone()),
+            accent_color: (scoped.accent_color != global.accent_color)
+                .then(|| scoped.accent_color.clone()),
             font_family: (scoped.font_family != global.font_family)
                 .then(|| scoped.font_family.clone()),
             font_size: (scoped.font_size != global.font_size).then_some(scoped.font_size),
@@ -260,6 +271,44 @@ impl WorkspaceTreeState {
 
 fn default_auto_link_paste() -> bool {
     true
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct AccentColor(String);
+
+impl Default for AccentColor {
+    fn default() -> Self {
+        Self(DEFAULT_ACCENT_COLOR.to_string())
+    }
+}
+
+pub const DEFAULT_ACCENT_COLOR: &str = "#2557d6";
+
+impl AccentColor {
+    pub fn new(value: impl AsRef<str>) -> Option<Self> {
+        let normalized = normalize_hex_color(value.as_ref())?;
+        Some(Self(normalized))
+    }
+
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+impl From<AccentColor> for String {
+    fn from(value: AccentColor) -> Self {
+        value.0
+    }
+}
+
+fn normalize_hex_color(value: &str) -> Option<String> {
+    let trimmed = value.trim();
+    let hex = trimmed.strip_prefix('#')?;
+    if hex.len() != 6 || !hex.chars().all(|character| character.is_ascii_hexdigit()) {
+        return None;
+    }
+
+    Some(format!("#{}", hex.to_ascii_lowercase()))
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]

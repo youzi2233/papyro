@@ -62,6 +62,13 @@ import { restoreEditorFocusAfterFloatingMenu } from "@/lib/tiptap-menu-focus"
 import { GripVerticalIcon } from "@/components/tiptap-icons/grip-vertical-icon"
 import { ChevronRightIcon } from "@/components/tiptap-icons/chevron-right-icon"
 import { Repeat2Icon } from "@/components/tiptap-icons/repeat-2-icon"
+import { usePapyroTiptapLanguage } from "@/tiptap-react/runtime-context"
+import {
+  clearAllContentsLabel,
+  dragHandleMoveLabel,
+  dragHandleOptionsLabel,
+  turnIntoLabel,
+} from "@/tiptap-i18n"
 
 import "./drag-context-menu.scss"
 
@@ -151,13 +158,22 @@ const SubMenuTrigger: React.FC<{
       />
     }
   >
-    <MenuContent portal>
+    <MenuContent
+      portal
+      onMouseDown={(event) => {
+        if (event.button === 0) event.preventDefault()
+      }}
+      onPointerDown={(event) => {
+        if (event.button === 0) event.preventDefault()
+      }}
+    >
       <ComboboxList>{children}</ComboboxList>
     </MenuContent>
   </Menu>
 )
 
 const TransformActionGroup: React.FC = () => {
+  const language = usePapyroTiptapLanguage()
   const actions = useNodeTransformActions()
   const { canReset, handleResetFormatting, label, Icon } =
     useResetAllFormatting({
@@ -170,9 +186,9 @@ const TransformActionGroup: React.FC = () => {
   return (
     <>
       {actions && (
-        <SubMenuTrigger icon={Repeat2Icon} label="Turn Into">
+        <SubMenuTrigger icon={Repeat2Icon} label={turnIntoLabel(language)}>
           <MenuGroup>
-            <MenuGroupLabel>Turn into</MenuGroupLabel>
+            <MenuGroupLabel>{turnIntoLabel(language)}</MenuGroupLabel>
             {actions.map((action) => (
               <BaseMenuItem key={action.label} {...action} />
             ))}
@@ -193,6 +209,7 @@ const TransformActionGroup: React.FC = () => {
 }
 
 const TableFitToWidth: React.FC = () => {
+  const language = usePapyroTiptapLanguage()
   const { canFitToWidth, handleFitToWidth, label, Icon } = useTableFitToWidth({
     hideWhenUnavailable: true,
   })
@@ -212,7 +229,7 @@ const TableFitToWidth: React.FC = () => {
       {clearAllContents.canClearRowColumnContent && (
         <BaseMenuItem
           icon={clearAllContents.Icon}
-          label={"Clear all contents"}
+          label={clearAllContentsLabel(language)}
           disabled={!clearAllContents.canClearRowColumnContent}
           onClick={clearAllContents.handleClear}
         />
@@ -286,6 +303,7 @@ export const DragContextMenu: React.FC<DragContextMenuProps> = ({
   const { editor } = useTiptapEditor(providedEditor)
   const { aiGenerationActive, isDragging } = useUiEditorState(editor)
   const isMobile = useIsBreakpoint("max", mobileBreakpoint)
+  const language = usePapyroTiptapLanguage()
   const [open, setOpen] = useState(false)
   const [node, setNode] = useState<TiptapNode | null>(null)
   const [nodePos, setNodePos] = useState<number>(-1)
@@ -407,8 +425,8 @@ export const DragContextMenu: React.FC<DragContextMenuProps> = ({
                     tabIndex={-1}
                     tooltip={
                       <>
-                        <div>Click for options</div>
-                        <div>Hold for drag</div>
+                        <div>{dragHandleOptionsLabel(language)}</div>
+                        <div>{dragHandleMoveLabel(language)}</div>
                       </>
                     }
                     data-weight="small"

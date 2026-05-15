@@ -1051,6 +1051,7 @@ test("Tiptap Markdown preserves styled table cells through the HTML table fallba
     const reparsedTables = collectTables(parseTiptapMarkdown(serialized));
 
     assert.match(serialized, /^<table><tbody><tr><th /);
+    assert.match(serialized, /data-cell-align="center"/);
     assert.match(serialized, /data-cell-background="rgba\(245, 158, 11, 0\.16\)"/);
     assert.match(serialized, /colspan="2"/);
     assert.deepEqual(reparsedTables, [

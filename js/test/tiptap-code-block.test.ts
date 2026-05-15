@@ -125,7 +125,7 @@ test("Papyro code block options keep Tiptap's official node configurable", () =>
 test("Papyro code block language normalization accepts safe language ids", () => {
   assert.equal(normalizeCodeBlockLanguage("Rust"), "rust");
   assert.equal(normalizeCodeBlockLanguage("ts-node"), "ts-node");
-  assert.equal(normalizeCodeBlockLanguage("c++"), "c++");
+  assert.equal(normalizeCodeBlockLanguage("c++"), "cpp");
   assert.equal(normalizeCodeBlockLanguage(""), null);
   assert.equal(normalizeCodeBlockLanguage("bad lang"), null);
   assert.equal(normalizeCodeBlockLanguage("x".repeat(80)), null);
@@ -379,16 +379,34 @@ test("Papyro code block node view exposes an editable language menu", () => {
   languageButton.onpointerdown({ preventDefault() {}, stopPropagation() {} });
   assert.equal(menu.hidden, false);
   assert.equal(menu.children[0].textContent, "代码语言");
+  assert.equal(menu.children[1].className, "mn-tiptap-code-language-search");
+  assert.equal(menu.children[1].children[1].placeholder, "搜索语言...");
   assert.equal(
-    menu.children[1].children.find((child) => child.dataset.languageId === "auto").textContent,
+    menu.children[2].children.find((child) => child.dataset.languageId === "auto").children[0].textContent,
     "自动检测",
   );
   assert.equal(
-    menu.children[1].children.find((child) => child.dataset.languageId === "plaintext").dataset.languageToken,
+    menu.children[2].children.find((child) => child.dataset.languageId === "plaintext").dataset.languageToken,
     "TXT",
   );
 
-  const plaintext = menu.children[1].children.find((child) => child.dataset.languageId === "plaintext");
+  const searchInput = menu.children[1].children[1];
+  searchInput.value = "java";
+  searchInput.oninput({});
+  assert.ok(
+    menu.children[2].children.every((child) =>
+      String(child.title).toLowerCase().includes("java"),
+    ),
+  );
+
+  searchInput.value = "zzzz-no-language";
+  searchInput.oninput({});
+  assert.equal(menu.children[2].children[0].className, "mn-tiptap-code-language-menu-empty");
+  assert.equal(menu.children[2].children[0].textContent, "未找到语言");
+
+  searchInput.value = "";
+  searchInput.oninput({});
+  const plaintext = menu.children[2].children.find((child) => child.dataset.languageId === "plaintext");
   plaintext.onpointerdown({ preventDefault() {}, stopPropagation() {} });
 
   assert.deepEqual(calls, [
@@ -592,7 +610,7 @@ test("Papyro code block language menu supports keyboard navigation", () => {
   languageButton.onkeydown(keyboardEvent("ArrowDown"));
 
   assert.equal(menu.hidden, false);
-  assert.deepEqual(menu.focusOptions, { preventScroll: true });
+  assert.deepEqual(menu.children[1].children[1].focusOptions, { preventScroll: true });
   assert.equal(menu.attributes.get("aria-activedescendant"), `${menu.id}-item-4`);
 
   menu.onkeydown(keyboardEvent("ArrowDown"));

@@ -11,17 +11,13 @@ pub(super) enum EditorRuntimeState {
 #[component]
 pub(super) fn FallbackEditor(tab_id: String, state: EditorRuntimeState) -> Element {
     let _ = tab_id;
-    let (status, error_message) = match state {
-        EditorRuntimeState::Loading => (Some("Starting editor runtime...".to_string()), None),
-        EditorRuntimeState::Ready => (None, None),
-        EditorRuntimeState::Error(message) => (None, Some(message)),
+    let error_message = match state {
+        EditorRuntimeState::Error(message) => Some(message),
+        EditorRuntimeState::Loading | EditorRuntimeState::Ready => None,
     };
 
     rsx! {
         div { class: "mn-editor-fallback",
-            if let Some(status) = status {
-                div { class: "mn-editor-fallback-status", "{status}" }
-            }
             if let Some(message) = error_message {
                 ErrorState {
                     title: "Editor runtime failed".to_string(),

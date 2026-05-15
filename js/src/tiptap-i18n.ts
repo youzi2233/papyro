@@ -548,6 +548,56 @@ export function moreOptionsLabel(language: LanguageInput): string {
   return localizedText(language, "More options", "\u66f4\u591a\u9009\u9879");
 }
 
+export function dragHandleOptionsLabel(language: LanguageInput): string {
+  return localizedText(language, "Click for options", "\u70b9\u51fb\u6253\u5f00\u9009\u9879");
+}
+
+export function dragHandleMoveLabel(language: LanguageInput): string {
+  return localizedText(language, "Hold to drag", "\u6309\u4f4f\u62d6\u52a8");
+}
+
+export function clearContentsLabel(language: LanguageInput): string {
+  return localizedText(language, "Clear contents", "\u6e05\u7a7a\u5185\u5bb9");
+}
+
+export function clearAllContentsLabel(language: LanguageInput): string {
+  return localizedText(language, "Clear all contents", "\u6e05\u7a7a\u6240\u6709\u5185\u5bb9");
+}
+
+export function clearRowColumnContentsLabel(
+  language: LanguageInput,
+  orientation: unknown,
+): string {
+  return String(orientation) === "row"
+    ? localizedText(language, "Clear row contents", "\u6e05\u7a7a\u884c\u5185\u5bb9")
+    : localizedText(language, "Clear column contents", "\u6e05\u7a7a\u5217\u5185\u5bb9");
+}
+
+export function insertRowColumnLabel(
+  language: LanguageInput,
+  orientation: unknown,
+  side: unknown,
+): string {
+  const key = `${String(orientation)}:${String(side)}`;
+  const labels: Record<string, LocalizedPair> = {
+    "row:above": ["Insert row above", "\u5728\u4e0a\u65b9\u63d2\u5165\u884c"],
+    "row:below": ["Insert row below", "\u5728\u4e0b\u65b9\u63d2\u5165\u884c"],
+    "column:left": ["Insert column left", "\u5728\u5de6\u4fa7\u63d2\u5165\u5217"],
+    "column:right": ["Insert column right", "\u5728\u53f3\u4fa7\u63d2\u5165\u5217"],
+  };
+  const label = labels[key] ?? labels["column:right"];
+  return localizedText(language, label[0], label[1]);
+}
+
+export function tableMergeSplitCellLabel(
+  language: LanguageInput,
+  action: unknown,
+): string {
+  return String(action) === "merge"
+    ? localizedText(language, "Merge cells", "\u5408\u5e76\u5355\u5143\u683c")
+    : localizedText(language, "Split cell", "\u62c6\u5206\u5355\u5143\u683c");
+}
+
 export function turnIntoCurrentLabel(
   language: LanguageInput,
   currentLabel?: string,
@@ -581,6 +631,10 @@ export function linkRemoveTitle(language: LanguageInput): string {
 
 export function textColorLabel(language: LanguageInput): string {
   return localizedText(language, "Text color", "\u6587\u5b57\u989c\u8272");
+}
+
+export function colorMenuLabel(language: LanguageInput): string {
+  return localizedText(language, "Color", "\u989c\u8272");
 }
 
 export function highlightLabel(language: LanguageInput): string {
@@ -849,6 +903,26 @@ export function tableToolsLabel(language: LanguageInput): string {
 
 export function tableCellActionsLabel(language: LanguageInput): string {
   return localizedText(language, "Cell actions", "单元格操作");
+}
+
+export function tableAlignmentLabel(language: LanguageInput): string {
+  return localizedText(language, "Alignment", "\u5bf9\u9f50");
+}
+
+export function tableTextAlignmentLabel(language: LanguageInput): string {
+  return localizedText(language, "Text alignment", "\u6587\u5b57\u5bf9\u9f50");
+}
+
+export function tableVerticalAlignmentLabel(language: LanguageInput): string {
+  return localizedText(language, "Cell vertical alignment", "\u5355\u5143\u683c\u5782\u76f4\u5bf9\u9f50");
+}
+
+export function codeLanguageSearchPlaceholder(language: LanguageInput): string {
+  return localizedText(language, "Search languages...", "\u641c\u7d22\u8bed\u8a00...");
+}
+
+export function codeLanguageNoResultsLabel(language: LanguageInput): string {
+  return localizedText(language, "No languages found", "\u672a\u627e\u5230\u8bed\u8a00");
 }
 
 export function tableSelectionActionsLabel(language: LanguageInput): string {

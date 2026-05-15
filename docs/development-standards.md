@@ -15,16 +15,18 @@ These rules keep Papyro easy to change, review, and recover. They apply to human
 
 ## Architecture Boundaries
 
-| Area | Owns | Must not own |
-| --- | --- | --- |
-| `apps/*` | platform shell, launch config, assets | shared business flow |
-| `crates/app` | runtime, dispatcher, handlers, effects, workspace flows | low-level persistence details |
-| `crates/core` | models, state structs, traits, pure rules | Dioxus, filesystem, SQLite |
-| `crates/ui` | Dioxus components, layouts, view models, i18n | direct file writes |
-| `crates/storage` | SQLite, files, workspace scan, watcher | UI behavior |
-| `crates/platform` | dialogs, app data, reveal, external links | app state mutation |
-| `crates/editor` | Markdown summary, render, protocol | storage writes |
-| `js/` | Tiptap runtime behavior, editor facade, Markdown interaction helpers | Rust state truth |
+
+| Area              | Owns                                                                 | Must not own                  |
+| ----------------- | -------------------------------------------------------------------- | ----------------------------- |
+| `apps/*`          | platform shell, launch config, assets                                | shared business flow          |
+| `crates/app`      | runtime, dispatcher, handlers, effects, workspace flows              | low-level persistence details |
+| `crates/core`     | models, state structs, traits, pure rules                            | Dioxus, filesystem, SQLite    |
+| `crates/ui`       | Dioxus components, layouts, view models, i18n                        | direct file writes            |
+| `crates/storage`  | SQLite, files, workspace scan, watcher                               | UI behavior                   |
+| `crates/platform` | dialogs, app data, reveal, external links                            | app state mutation            |
+| `crates/editor`   | Markdown summary, render, protocol                                   | storage writes                |
+| `js/`             | Tiptap runtime behavior, editor facade, Markdown interaction helpers | Rust state truth              |
+
 
 When dependency direction changes, run:
 
@@ -175,18 +177,20 @@ The script also verifies generated editor bundles stay synchronized.
 
 Common types:
 
-| Type | Use |
-| --- | --- |
-| `feat` | user-visible capability |
-| `fix` | bug fix or incorrect state correction |
-| `docs` | documentation or explanatory comments |
-| `refactor` | structural change without behavior change |
-| `test` | test additions or fixes |
-| `perf` | performance improvement |
-| `build` | build, dependency, packaging, generated flow |
-| `ci` | CI or automation |
-| `style` | CSS or formatting-only change |
-| `chore` | maintenance |
+
+| Type       | Use                                          |
+| ---------- | -------------------------------------------- |
+| `feat`     | user-visible capability                      |
+| `fix`      | bug fix or incorrect state correction        |
+| `docs`     | documentation or explanatory comments        |
+| `refactor` | structural change without behavior change    |
+| `test`     | test additions or fixes                      |
+| `perf`     | performance improvement                      |
+| `build`    | build, dependency, packaging, generated flow |
+| `ci`       | CI or automation                             |
+| `style`    | CSS or formatting-only change                |
+| `chore`    | maintenance                                  |
+
 
 Good titles:
 

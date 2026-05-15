@@ -32,6 +32,84 @@ function Save-PngIcon {
     $bitmap.Dispose()
 }
 
+function Write-BigEndianUInt32 {
+    param(
+        [System.IO.Stream]$Stream,
+        [UInt32]$Value
+    )
+
+    $bytes = [System.BitConverter]::GetBytes($Value)
+    if ([System.BitConverter]::IsLittleEndian) {
+        [Array]::Reverse($bytes)
+    }
+    $Stream.Write($bytes, 0, $bytes.Length)
+}
+
+function Write-AsciiBytes {
+    param(
+        [System.IO.Stream]$Stream,
+        [string]$Value
+    )
+
+    $bytes = [System.Text.Encoding]::ASCII.GetBytes($Value)
+    if ($bytes.Length -ne 4) {
+        throw "ICNS entry type must be exactly 4 ASCII bytes: ${Value}"
+    }
+    $Stream.Write($bytes, 0, $bytes.Length)
+}
+
+function Save-IcnsIcon {
+    param(
+        [string]$IconSetPath,
+        [string]$TargetPath
+    )
+
+    $entries = @(
+        @{ Type = "icp4"; Name = "icon_16x16.png" },
+        @{ Type = "ic11"; Name = "icon_16x16@2x.png" },
+        @{ Type = "icp5"; Name = "icon_32x32.png" },
+        @{ Type = "ic12"; Name = "icon_32x32@2x.png" },
+        @{ Type = "ic07"; Name = "icon_128x128.png" },
+        @{ Type = "ic13"; Name = "icon_128x128@2x.png" },
+        @{ Type = "ic08"; Name = "icon_256x256.png" },
+        @{ Type = "ic14"; Name = "icon_256x256@2x.png" },
+        @{ Type = "ic09"; Name = "icon_512x512.png" },
+        @{ Type = "ic10"; Name = "icon_512x512@2x.png" }
+    )
+
+    $items = @()
+    foreach ($entry in $entries) {
+        $path = Join-Path $IconSetPath $entry.Name
+        if (-not (Test-Path $path)) {
+            throw "Missing macOS iconset source: ${path}"
+        }
+        $items += @{
+            Type = $entry.Type
+            Bytes = [System.IO.File]::ReadAllBytes((Resolve-Path $path).Path)
+        }
+    }
+
+    [UInt32]$totalLength = 8
+    foreach ($item in $items) {
+        $totalLength += [UInt32](8 + $item.Bytes.Length)
+    }
+
+    $targetDir = Split-Path -Parent $TargetPath
+    New-Item -ItemType Directory -Force -Path $targetDir | Out-Null
+    $stream = [System.IO.File]::Create($TargetPath)
+    try {
+        Write-AsciiBytes $stream "icns"
+        Write-BigEndianUInt32 $stream $totalLength
+        foreach ($item in $items) {
+            Write-AsciiBytes $stream $item.Type
+            Write-BigEndianUInt32 $stream ([UInt32](8 + $item.Bytes.Length))
+            $stream.Write($item.Bytes, 0, $item.Bytes.Length)
+        }
+    } finally {
+        $stream.Dispose()
+    }
+}
+
 $resolvedLogo = Resolve-Path $LogoPath
 $resolvedWindowsIcon = Resolve-Path $WindowsIconPath
 $source = [System.Drawing.Image]::FromFile($resolvedLogo)
@@ -65,6 +143,7 @@ try {
     foreach ($entry in $macosMap) {
         Save-PngIcon $source $entry.Size (Join-Path $OutputRoot "macos/Papyro.iconset/$($entry.Name)")
     }
+    Save-IcnsIcon (Join-Path $OutputRoot "macos/Papyro.iconset") (Join-Path $OutputRoot "macos/Papyro.icns")
 
     Write-Host "Generated app icons in $OutputRoot"
 } finally {

@@ -8,21 +8,23 @@ The audit is intentionally practical: every row names the owner, the current cod
 
 ## Audit Summary
 
-| Surface | Current Code | Main Risk | Next Move |
-| --- | --- | --- | --- |
-| Desktop shell | `crates/ui/src/layouts/desktop_layout.rs` | Layout is functional but not yet expressed as reusable app-shell primitives. | Extract `AppShell`, `WorkspaceRail`, `MainColumn`, and modal/tool-window layer contracts. |
-| Sidebar | `components/sidebar/mod.rs`, `components/sidebar/file_tree.rs` | Workspace, tree, blank-area, and context-menu states are still behavior-heavy, even though row/search/rename rendering now uses primitives. | Continue extracting scoped menu patterns and focus/current states. |
-| Editor header | `components/editor/pane.rs` | Toolbar zones now use primitives, but overflow behavior still needs stronger smoke coverage. | Stabilize fixed/flexible zone rules and document narrow-window smoke cases. |
-| Tab bar | `components/editor/tabbar.rs`, `pane.rs` JS bridge | Document tab rendering now uses `DocumentTab`, but overflow still depends on one-off bridge script and CSS classes. | Move overflow rules into a documented `DocumentTabs` pattern and add smoke coverage. |
-| Outline | `components/editor/outline.rs` | Outline rows now use `OutlineItemButton`, but active-heading and narrow-window behavior remain sensitive. | Add overlay fallback and acceptance checks for active-heading sync. |
-| Status bar | `components/status_bar.rs` | Useful but minimal; wrapping and status priority are not fully defined. | Convert to `StatusStrip` with priority and compact rules. |
-| Settings | `components/settings/mod.rs` | Improved, but still mixes product content with dialog/form layout concerns. | Build `SettingsWindow`, `SettingsNav`, `SettingsRow`, and stable panel sizing. |
-| Search | `components/search.rs` | Result rows mostly resemble command rows but are not a shared pattern. | Adopt shared `ResultRow`, highlight, loading, and error primitives. |
-| Quick open | `components/quick_open.rs` | Shares command row classes without a semantic reusable row. | Move to `ResultRow` with document metadata slots. |
-| Command palette | `components/command_palette.rs` | Strong action model, but row styling and grouping should be reusable. | Split command data from `CommandRow` rendering pattern. |
-| Trash | `components/trash.rs` | Uses command-modal styling for a destructive management surface; empty state and rows now use shared primitives. | Add `DialogSection` and destructive footer rules. |
-| Recovery | `components/recovery.rs` | Draft rows, empty state, and comparison panels now use shared primitives; conflict/error status hierarchy still needs a data-safety pattern. | Add conflict/error status primitives and destructive footer rules. |
-| Empty/loading/error states | scattered | `InlineAlert` now covers preview notices and command/search/trash/recovery empty states, but larger blocking failures still need structure. | Add `Skeleton`, `ErrorState`, and compact/onboarding `EmptyState` variants. |
+
+| Surface                    | Current Code                                                   | Main Risk                                                                                                                                    | Next Move                                                                                 |
+| -------------------------- | -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Desktop shell              | `crates/ui/src/layouts/desktop_layout.rs`                      | Layout is functional but not yet expressed as reusable app-shell primitives.                                                                 | Extract `AppShell`, `WorkspaceRail`, `MainColumn`, and modal/tool-window layer contracts. |
+| Sidebar                    | `components/sidebar/mod.rs`, `components/sidebar/file_tree.rs` | Workspace, tree, blank-area, and context-menu states are still behavior-heavy, even though row/search/rename rendering now uses primitives.  | Continue extracting scoped menu patterns and focus/current states.                        |
+| Editor header              | `components/editor/pane.rs`                                    | Toolbar zones now use primitives, but overflow behavior still needs stronger smoke coverage.                                                 | Stabilize fixed/flexible zone rules and document narrow-window smoke cases.               |
+| Tab bar                    | `components/editor/tabbar.rs`, `pane.rs` JS bridge             | Document tab rendering now uses `DocumentTab`, but overflow still depends on one-off bridge script and CSS classes.                          | Move overflow rules into a documented `DocumentTabs` pattern and add smoke coverage.      |
+| Outline                    | `components/editor/outline.rs`                                 | Outline rows now use `OutlineItemButton`, but active-heading and narrow-window behavior remain sensitive.                                    | Add overlay fallback and acceptance checks for active-heading sync.                       |
+| Status bar                 | `components/status_bar.rs`                                     | Useful but minimal; wrapping and status priority are not fully defined.                                                                      | Convert to `StatusStrip` with priority and compact rules.                                 |
+| Settings                   | `components/settings/mod.rs`                                   | Improved, but still mixes product content with dialog/form layout concerns.                                                                  | Build `SettingsWindow`, `SettingsNav`, `SettingsRow`, and stable panel sizing.            |
+| Search                     | `components/search.rs`                                         | Result rows mostly resemble command rows but are not a shared pattern.                                                                       | Adopt shared `ResultRow`, highlight, loading, and error primitives.                       |
+| Quick open                 | `components/quick_open.rs`                                     | Shares command row classes without a semantic reusable row.                                                                                  | Move to `ResultRow` with document metadata slots.                                         |
+| Command palette            | `components/command_palette.rs`                                | Strong action model, but row styling and grouping should be reusable.                                                                        | Split command data from `CommandRow` rendering pattern.                                   |
+| Trash                      | `components/trash.rs`                                          | Uses command-modal styling for a destructive management surface; empty state and rows now use shared primitives.                             | Add `DialogSection` and destructive footer rules.                                         |
+| Recovery                   | `components/recovery.rs`                                       | Draft rows, empty state, and comparison panels now use shared primitives; conflict/error status hierarchy still needs a data-safety pattern. | Add conflict/error status primitives and destructive footer rules.                        |
+| Empty/loading/error states | scattered                                                      | `InlineAlert` now covers preview notices and command/search/trash/recovery empty states, but larger blocking failures still need structure.  | Add `Skeleton`, `ErrorState`, and compact/onboarding `EmptyState` variants.               |
+
 
 ## Surface Findings
 
@@ -214,14 +216,16 @@ Redesign decision:
 
 ## Shared State Audit
 
-| State | Current Situation | Required Primitive |
-| --- | --- | --- |
-| Empty | `EmptyState` exists and modal empty text is increasingly covered by `InlineAlert`. | `EmptyState` variants: compact, onboarding, error, data-safety. |
-| Loading | Search has text loading; workspace scan has non-unified affordances. | `Skeleton` and inline loading row. |
-| Error | Preview/search now use `InlineAlert`; storage and blocking failures still need stronger treatment. | `ErrorState`. |
-| Focus | Some buttons and custom controls depend on CSS but lack documented focus contracts. | Primitive-level focus-visible state. |
-| Disabled | Exists in places, but disabled reasons are inconsistent. | Disabled state plus helper copy when blocking user progress. |
-| Destructive | Danger button exists, but destructive dialogs need stronger structure. | Destructive footer and confirmation pattern. |
+
+| State       | Current Situation                                                                                  | Required Primitive                                              |
+| ----------- | -------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| Empty       | `EmptyState` exists and modal empty text is increasingly covered by `InlineAlert`.                 | `EmptyState` variants: compact, onboarding, error, data-safety. |
+| Loading     | Search has text loading; workspace scan has non-unified affordances.                               | `Skeleton` and inline loading row.                              |
+| Error       | Preview/search now use `InlineAlert`; storage and blocking failures still need stronger treatment. | `ErrorState`.                                                   |
+| Focus       | Some buttons and custom controls depend on CSS but lack documented focus contracts.                | Primitive-level focus-visible state.                            |
+| Disabled    | Exists in places, but disabled reasons are inconsistent.                                           | Disabled state plus helper copy when blocking user progress.    |
+| Destructive | Danger button exists, but destructive dialogs need stronger structure.                             | Destructive footer and confirmation pattern.                    |
+
 
 ## Redesign Order
 

@@ -165,6 +165,8 @@ function renderHtmlTableCell(
 
   if (align) style.push(`text-align: ${align}`);
   if (verticalAlign) style.push(`vertical-align: ${verticalAlign}`);
+  if (align) htmlAttrs["data-cell-align"] = align;
+  if (verticalAlign) htmlAttrs["data-cell-vertical-align"] = verticalAlign;
   if (backgroundColor) {
     style.push(`background-color: ${backgroundColor}`);
     htmlAttrs["data-cell-background"] = backgroundColor;
@@ -203,6 +205,14 @@ function parseCellBackgroundColor(element: HTMLElement): string | null {
   );
 }
 
+function parseCellAlign(element: HTMLElement): string | null {
+  return normalizeCellAlign(
+    element.getAttribute("data-cell-align") ||
+      element.style.textAlign ||
+      null,
+  );
+}
+
 function patchStyleDeclaration(
   style: unknown,
   property: string,
@@ -233,11 +243,13 @@ function createPapyroCellAttributes() {
   return {
     align: {
       default: null,
+      parseHTML: parseCellAlign,
       renderHTML: (attributes: { align?: string | null }) => {
         const align = normalizeCellAlign(attributes.align);
         if (!align) return {};
 
         return {
+          "data-cell-align": align,
           style: `text-align: ${align}`,
         };
       },

@@ -27,8 +27,8 @@ import {
 const DEFAULT_CODE_LANGUAGE = null;
 const DEFAULT_TAB_SIZE = 2;
 const LANGUAGE_CLASS_PREFIX = "language-";
-const LANGUAGE_MENU_WIDTH = 176;
-const LANGUAGE_MENU_HEIGHT = 286;
+const LANGUAGE_MENU_WIDTH = 268;
+const LANGUAGE_MENU_HEIGHT = 366;
 const COPY_FEEDBACK_MS = 1400;
 const codeBlockLowlight = createLowlight(all);
 const CODE_HIGHLIGHT_PLUGIN_KEY = "papyroCodeHighlight";
@@ -166,6 +166,23 @@ export const PAPYRO_CODE_LANGUAGE_OPTIONS: readonly PapyroCodeLanguageOption[] =
   { id: "sql", label: "SQL", language: "sql" },
   { id: "yaml", label: "YAML", language: "yaml" },
   { id: "toml", label: "TOML", language: "toml" },
+  { id: "jsx", label: "JSX", language: "jsx" },
+  { id: "tsx", label: "TSX", language: "tsx" },
+  { id: "java", label: "Java", language: "java" },
+  { id: "c", label: "C", language: "c" },
+  { id: "cpp", label: "C++", language: "cpp" },
+  { id: "csharp", label: "C#", language: "csharp" },
+  { id: "powershell", label: "PowerShell", language: "powershell" },
+  { id: "scss", label: "SCSS", language: "scss" },
+  { id: "dockerfile", label: "Dockerfile", language: "dockerfile" },
+  { id: "diff", label: "Diff", language: "diff" },
+  { id: "ruby", label: "Ruby", language: "ruby" },
+  { id: "php", label: "PHP", language: "php" },
+  { id: "swift", label: "Swift", language: "swift" },
+  { id: "kotlin", label: "Kotlin", language: "kotlin" },
+  { id: "dart", label: "Dart", language: "dart" },
+  { id: "graphql", label: "GraphQL", language: "graphql" },
+  { id: "ini", label: "INI", language: "ini" },
 ]);
 
 export const PAPYRO_CODE_LANGUAGE_ALIASES: Readonly<Record<string, string>> = Object.freeze({
@@ -178,6 +195,15 @@ export const PAPYRO_CODE_LANGUAGE_ALIASES: Readonly<Record<string, string>> = Ob
   md: "markdown",
   yml: "yaml",
   xml: "html",
+  ps1: "powershell",
+  shellscript: "bash",
+  docker: "dockerfile",
+  dockerfile: "dockerfile",
+  cplusplus: "cpp",
+  "c++": "cpp",
+  cs: "csharp",
+  "c#": "csharp",
+  gql: "graphql",
 });
 
 export function normalizeCodeBlockLanguage(language: unknown): PapyroCodeBlockLanguage {
@@ -227,11 +253,17 @@ export function codeBlockLanguageOptionToken(optionOrLanguage: unknown): string 
     plaintext: "TXT",
     javascript: "JS",
     typescript: "TS",
+    jsx: "JSX",
+    tsx: "TSX",
     markdown: "MD",
     python: "PY",
     rust: "RS",
     bash: "SH",
+    powershell: "PS",
     yaml: "YML",
+    dockerfile: "DO",
+    csharp: "C#",
+    cpp: "C++",
   };
   return tokens[id] ?? (normalized ? tokens[normalized] : undefined) ?? String(normalized ?? id).slice(0, 3).toUpperCase();
 }
@@ -328,6 +360,8 @@ function lowlightLanguageName(language: unknown): PapyroCodeBlockLanguage {
   const normalized = normalizeCodeBlockLanguage(language);
   if (normalized === "plaintext") return null;
   if (normalized === "html") return "xml";
+  if (normalized === "tsx") return "typescript";
+  if (normalized === "jsx") return "javascript";
   return normalized;
 }
 
@@ -480,18 +514,100 @@ function languageMenuButton(
   language: unknown,
 ): PapyroCodeBlockElement | null {
   const button = documentRef?.createElement?.("button") ?? null;
+  const title = documentRef?.createElement?.("span") ?? null;
+  const description = documentRef?.createElement?.("span") ?? null;
   if (!button) return null;
+  const label =
+    option.id === "auto"
+      ? localizedText(language, "Auto detect", "\u81ea\u52a8\u68c0\u6d4b")
+      : codeBlockLanguageUiLabel(language, option.language);
   button.type = "button";
   button.className = "mn-tiptap-code-language-menu-item";
   button.dataset.languageId = option.id;
   button.dataset.languageValue = option.language ?? "";
   button.dataset.languageToken = codeBlockLanguageOptionToken(option);
   button.role = "menuitemradio";
-  button.textContent =
-    option.id === "auto"
-      ? localizedText(language, "Auto detect", "自动检测")
-      : codeBlockLanguageUiLabel(language, option.language);
+  button.title = label;
+  button.setAttribute("aria-label", label);
+  if (!title || !description) {
+    button.textContent = label;
+    return button;
+  }
+  title.className = "mn-tiptap-code-language-menu-item-title";
+  title.textContent = label;
+  description.className = "mn-tiptap-code-language-menu-item-description";
+  description.textContent = codeLanguageOptionDescription(language, option);
+  button.append(title, description);
   return button;
+}
+
+function codeLanguageOptionDescription(
+  language: unknown,
+  option: PapyroCodeLanguageOption,
+): string {
+  const descriptions: Readonly<Record<string, readonly [string, string]>> = {
+    auto: ["Detect from code content", "\u6839\u636e\u4ee3\u7801\u5185\u5bb9\u81ea\u52a8\u8bc6\u522b"],
+    plaintext: ["No syntax highlighting", "\u4e0d\u4f7f\u7528\u8bed\u6cd5\u9ad8\u4eae"],
+    javascript: ["Browser and Node.js code", "\u6d4f\u89c8\u5668\u4e0e Node.js \u4ee3\u7801"],
+    typescript: ["Typed JavaScript", "\u5e26\u7c7b\u578b\u7684 JavaScript"],
+    jsx: ["React JavaScript components", "React JavaScript \u7ec4\u4ef6"],
+    tsx: ["React TypeScript components", "React TypeScript \u7ec4\u4ef6"],
+    rust: ["Rust systems code", "Rust \u7cfb\u7edf\u4ee3\u7801"],
+    python: ["Python scripts and notebooks", "Python \u811a\u672c\u4e0e\u7b14\u8bb0\u672c"],
+    go: ["Go services and tools", "Go \u670d\u52a1\u4e0e\u5de5\u5177"],
+    java: ["Java application code", "Java \u5e94\u7528\u4ee3\u7801"],
+    c: ["C source files", "C \u6e90\u6587\u4ef6"],
+    cpp: ["C++ source files", "C++ \u6e90\u6587\u4ef6"],
+    csharp: ["C# and .NET code", "C# \u4e0e .NET \u4ee3\u7801"],
+    json: ["JSON data", "JSON \u6570\u636e"],
+    bash: ["Shell scripts", "Shell \u811a\u672c"],
+    powershell: ["PowerShell scripts", "PowerShell \u811a\u672c"],
+    markdown: ["Markdown source", "Markdown \u6e90\u7801"],
+    html: ["HTML and XML markup", "HTML \u4e0e XML \u6807\u8bb0"],
+    css: ["CSS stylesheets", "CSS \u6837\u5f0f\u8868"],
+    scss: ["Sass stylesheets", "Sass \u6837\u5f0f\u8868"],
+    sql: ["Database queries", "\u6570\u636e\u5e93\u67e5\u8be2"],
+    yaml: ["YAML configuration", "YAML \u914d\u7f6e"],
+    toml: ["TOML configuration", "TOML \u914d\u7f6e"],
+    dockerfile: ["Container build files", "\u5bb9\u5668\u6784\u5efa\u6587\u4ef6"],
+    diff: ["Patch and diff output", "\u8865\u4e01\u4e0e diff \u8f93\u51fa"],
+    ruby: ["Ruby code", "Ruby \u4ee3\u7801"],
+    php: ["PHP code", "PHP \u4ee3\u7801"],
+    swift: ["Swift code", "Swift \u4ee3\u7801"],
+    kotlin: ["Kotlin code", "Kotlin \u4ee3\u7801"],
+    dart: ["Dart and Flutter code", "Dart \u4e0e Flutter \u4ee3\u7801"],
+    graphql: ["GraphQL schemas and queries", "GraphQL schema \u4e0e\u67e5\u8be2"],
+    ini: ["INI configuration", "INI \u914d\u7f6e"],
+  };
+  const pair = descriptions[option.id];
+  return pair ? localizedText(language, pair[0], pair[1]) : String(option.language ?? option.id);
+}
+
+function codeLanguageSearchPlaceholder(language: unknown): string {
+  return localizedText(language, "Search languages...", "\u641c\u7d22\u8bed\u8a00...");
+}
+
+function codeLanguageNoResultsLabel(language: unknown): string {
+  return localizedText(language, "No languages found", "\u672a\u627e\u5230\u8bed\u8a00");
+}
+
+function languageOptionMatchesQuery(
+  option: PapyroCodeLanguageOption,
+  language: unknown,
+  query: unknown,
+): boolean {
+  const normalizedQuery = String(query ?? "").trim().toLowerCase();
+  if (!normalizedQuery) return true;
+
+  return [
+    option.id,
+    option.label,
+    option.language,
+    codeBlockLanguageUiLabel(language, option.language),
+    codeBlockLanguageOptionToken(option),
+  ]
+    .filter(Boolean)
+    .some((value) => String(value).toLowerCase().includes(normalizedQuery));
 }
 
 async function writeCodeToClipboard(text: unknown): Promise<boolean> {
@@ -522,8 +638,24 @@ export function createPapyroCodeBlockNodeView({
   const wrapButton = documentRef?.createElement?.("button") ?? null;
   const menu = documentRef?.createElement?.("div") ?? null;
   const menuHeader = documentRef?.createElement?.("div") ?? null;
+  const menuSearch = documentRef?.createElement?.("label") ?? null;
+  const menuSearchIcon = documentRef?.createElement?.("span") ?? null;
+  const menuSearchInput = documentRef?.createElement?.("input") ?? null;
   const menuList = documentRef?.createElement?.("div") ?? null;
-  if (!pre || !code || !languageButton || !toolbar || !copyButton || !wrapButton || !menu || !menuHeader || !menuList) {
+  if (
+    !pre ||
+    !code ||
+    !languageButton ||
+    !toolbar ||
+    !copyButton ||
+    !wrapButton ||
+    !menu ||
+    !menuHeader ||
+    !menuSearch ||
+    !menuSearchIcon ||
+    !menuSearchInput ||
+    !menuList
+  ) {
     return null;
   }
 
@@ -570,8 +702,14 @@ export function createPapyroCodeBlockNodeView({
   menu.id = menuOwnerId;
   menu.tabIndex = -1;
   menuHeader.className = "mn-tiptap-code-language-menu-header";
+  menuSearch.className = "mn-tiptap-code-language-search";
+  menuSearchIcon.className = "mn-tiptap-code-language-search-icon";
+  menuSearchIcon.setAttribute("aria-hidden", "true");
+  menuSearchInput.type = "search";
+  menuSearchInput.contentEditable = "false";
+  menuSearch.append(menuSearchIcon, menuSearchInput);
   menuList.className = "mn-tiptap-code-language-menu-list";
-  menu.append(menuHeader, menuList);
+  menu.append(menuHeader, menuSearch, menuList);
   documentRef?.body?.appendChild?.(menu);
   setHidden(menu, true);
 
@@ -592,11 +730,16 @@ export function createPapyroCodeBlockNodeView({
   const syncMenu = () => {
     currentLanguage = editorLanguage(editor, view);
     const selected = normalizeCodeBlockLanguage(currentNode?.attrs?.language);
+    const query = String(menuSearchInput.value ?? "");
     languageCommands = [];
     menu.setAttribute("aria-label", codeLanguageMenuLabel(currentLanguage));
     menuHeader.textContent = codeLanguageMenuLabel(currentLanguage);
+    menuSearchInput.placeholder = codeLanguageSearchPlaceholder(currentLanguage);
+    menuSearchInput.setAttribute("aria-label", codeLanguageSearchPlaceholder(currentLanguage));
     menuList.replaceChildren();
-    PAPYRO_CODE_LANGUAGE_OPTIONS.forEach((option) => {
+    PAPYRO_CODE_LANGUAGE_OPTIONS
+      .filter((option) => languageOptionMatchesQuery(option, currentLanguage, query))
+      .forEach((option) => {
       const item = languageMenuButton(documentRef, option, currentLanguage);
       if (!item) return;
       let pointerHandled = false;
@@ -641,7 +784,19 @@ export function createPapyroCodeBlockNodeView({
       menuList.appendChild(item);
     });
     const customLanguage = normalizeCodeBlockLanguage(currentNode?.attrs?.language);
-    if (customLanguage && !codeBlockLanguageOption(customLanguage)) {
+    if (
+      customLanguage &&
+      !codeBlockLanguageOption(customLanguage) &&
+      languageOptionMatchesQuery(
+        {
+          id: customLanguage,
+          label: customLanguage,
+          language: customLanguage,
+        },
+        currentLanguage,
+        query,
+      )
+    ) {
       const item = languageMenuButton(
         documentRef,
         {
@@ -665,6 +820,15 @@ export function createPapyroCodeBlockNodeView({
           "从 Markdown 检测到的自定义语言",
         );
         menuList.appendChild(item);
+      }
+    }
+    if (languageCommands.length === 0) {
+      const empty = documentRef?.createElement?.("div");
+      if (empty) {
+        empty.className = "mn-tiptap-code-language-menu-empty";
+        empty.role = "status";
+        empty.textContent = codeLanguageNoResultsLabel(currentLanguage);
+        menuList.appendChild(empty);
       }
     }
     selectedLanguageIndex = Math.max(
@@ -693,7 +857,7 @@ export function createPapyroCodeBlockNodeView({
       placement: "bottom",
     });
     dismiss.open();
-    menu.focus?.({ preventScroll: true });
+    menuSearchInput.focus?.({ preventScroll: true });
     return true;
   };
 
@@ -790,6 +954,26 @@ export function createPapyroCodeBlockNodeView({
       event.stopPropagation?.();
       if (menu.hidden) openMenu();
     }
+  });
+
+  menuSearchInput.addEventListener("input", () => {
+    selectedLanguageIndex = 0;
+    syncMenu();
+  });
+
+  menuSearchInput.addEventListener("keydown", (event: KeyboardEvent) => {
+    if (isComposingKeyboardEvent(event)) return;
+    if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
+    event.preventDefault();
+    event.stopPropagation?.();
+    if (!languageCommands.length) return;
+    const direction = event.key === "ArrowDown" ? 1 : -1;
+    selectedLanguageIndex =
+      (selectedLanguageIndex + direction + languageCommands.length) % languageCommands.length;
+    syncMenuActiveDescendant(menu, menuOwnerId, languageCommands, selectedLanguageIndex, {
+      activeClass: "keyboard-active",
+      manageTabIndex: true,
+    });
   });
 
   menu.addEventListener("keydown", (event: KeyboardEvent) => {

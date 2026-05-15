@@ -6,6 +6,18 @@ default_platform = "desktop"
 # editor.js is synced at startup by the binary itself
 assets_dir = "apps/desktop/assets"
 
+[bundle]
+identifier = "com.papyro.desktop"
+publisher = "Papyro"
+icon = [
+    "assets/icons/windows/papyro.ico",
+    "assets/icons/macos/Papyro.icns",
+    "assets/icons/png/papyro-32.png",
+    "assets/icons/png/papyro-128.png",
+    "assets/icons/png/papyro-256.png",
+    "assets/icons/png/papyro-512.png"
+]
+
 [web.app]
 title = "papyro"
 

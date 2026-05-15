@@ -6,7 +6,7 @@ use crate::view_model::{
 };
 use dioxus::prelude::*;
 use papyro_core::{
-    models::{AppLanguage, DocumentStats, Theme},
+    models::{AccentColor, AppLanguage, DocumentStats, Theme},
     models::{RecoveryDraft, RecoveryDraftComparison},
     EditorTabs, FileState, TabContentsMap, UiState, WorkspaceSearchState,
 };
@@ -108,6 +108,7 @@ pub struct AppContext {
     pub status_text: Memo<Option<String>>,
     pub language: Memo<AppLanguage>,
     pub theme: Memo<Theme>,
+    pub accent_color: Memo<AccentColor>,
     pub sidebar_collapsed: Memo<bool>,
     pub sidebar_width: Memo<u32>,
     pub outline_visible: Memo<bool>,

@@ -19,16 +19,18 @@ Small copy-only or bug-only changes can link to this document and explain why th
 
 Capture or inspect these views before and after a visual task:
 
-| View | Width / State | What To Verify |
-| --- | --- | --- |
-| Desktop workspace | 1440 x 920, light theme | Sidebar, editor chrome, tabs, outline, status bar, and primary writing surface feel balanced. |
-| Narrow desktop | 900 x 640, light theme | Sidebar, tab overflow, right toolbar actions, outline button, and status bar stay reachable. |
-| Dark theme | 1440 x 920, dark theme | Text, icons, borders, active states, and destructive actions remain readable. |
-| High contrast | 1440 x 920, high contrast theme | Focus, selected rows, active tabs, and status colors remain distinguishable. |
-| Settings window | default size, two sections | Section switch does not resize the window; controls reflect current language and theme. |
-| Command/search modal | with results, empty, loading/error when possible | Row density, active state, keyboard focus, and empty/error copy are consistent. |
-| File tree | long names, nested folders, blank-area context menu | Icons, truncation, selected state, inline rename, and menu scoping stay clear. |
-| Editor document | Source, Hybrid, Preview | Typography, Markdown blocks, code, tables, Mermaid, selection, and cursor behavior do not drift unexpectedly. |
+
+| View                 | Width / State                                       | What To Verify                                                                                                |
+| -------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Desktop workspace    | 1440 x 920, light theme                             | Sidebar, editor chrome, tabs, outline, status bar, and primary writing surface feel balanced.                 |
+| Narrow desktop       | 900 x 640, light theme                              | Sidebar, tab overflow, right toolbar actions, outline button, and status bar stay reachable.                  |
+| Dark theme           | 1440 x 920, dark theme                              | Text, icons, borders, active states, and destructive actions remain readable.                                 |
+| High contrast        | 1440 x 920, high contrast theme                     | Focus, selected rows, active tabs, and status colors remain distinguishable.                                  |
+| Settings window      | default size, two sections                          | Section switch does not resize the window; controls reflect current language and theme.                       |
+| Command/search modal | with results, empty, loading/error when possible    | Row density, active state, keyboard focus, and empty/error copy are consistent.                               |
+| File tree            | long names, nested folders, blank-area context menu | Icons, truncation, selected state, inline rename, and menu scoping stay clear.                                |
+| Editor document      | Source, Hybrid, Preview                             | Typography, Markdown blocks, code, tables, Mermaid, selection, and cursor behavior do not drift unexpectedly. |
+
 
 ## Interaction Checks
 

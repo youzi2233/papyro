@@ -14,14 +14,16 @@ This document is the complete execution plan for refactoring Papyro's editor fro
 
 ## Tech Stack Assessment
 
-| Dimension | Current State | Target State |
-|-----------|--------------|--------------|
-| Language | TypeScript-only source under `js/src/`: no tracked `.js` or `.jsx` files as of the 2026-05-13 code block migration | TypeScript (.ts/.tsx) |
-| Build | esbuild (native TS support, no changes needed) | esbuild + tsconfig |
-| UI Framework | React 18.3 (already satisfied) | React 18.3 (unchanged) |
-| Tiptap | 3.23.1 (already aligned) | 3.23.1+ (keep same version) |
-| Component Source | Many custom DOM controllers + partial React | Official UI Components source + minimal adapters |
-| Styling | Custom SCSS scattered everywhere | Official component styles + unified design tokens |
+
+| Dimension        | Current State                                                                                                      | Target State                                      |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------- |
+| Language         | TypeScript-only source under `js/src/`: no tracked `.js` or `.jsx` files as of the 2026-05-13 code block migration | TypeScript (.ts/.tsx)                             |
+| Build            | esbuild (native TS support, no changes needed)                                                                     | esbuild + tsconfig                                |
+| UI Framework     | React 18.3 (already satisfied)                                                                                     | React 18.3 (unchanged)                            |
+| Tiptap           | 3.23.1 (already aligned)                                                                                           | 3.23.1+ (keep same version)                       |
+| Component Source | Many custom DOM controllers + partial React                                                                        | Official UI Components source + minimal adapters  |
+| Styling          | Custom SCSS scattered everywhere                                                                                   | Official component styles + unified design tokens |
+
 
 Conclusion: React is already satisfied, TypeScript can be incrementally migrated (esbuild native support), no blockers.
 
@@ -52,14 +54,16 @@ The Papyro editor surface should feel like a quiet, precise desktop writing surf
 
 ### Surface Ownership
 
-| Surface | Visual/Interaction Owner | Allowed Papyro Adaptation | Disallowed |
-|---------|--------------------------|---------------------------|------------|
-| Document canvas | Official Notion-like layout + Papyro Markdown typography tokens | Content width, CJK typography, Source/Hybrid/Preview consistency, Mermaid/KaTeX/error states | Global CSS that breaks official block spacing, selection, placeholder, or node-view hit areas |
-| Floating toolbar | Official `Toolbar`, `FloatingElement`, button/popover primitives | Localization, remove unimplemented AI/Cloud items, preserve selection, prevent WebView focus loss | Recreating the old top formatting toolbar or showing persistent controls that crowd the writing surface |
-| Slash menu | Official `slash-dropdown-menu` + `suggestion-menu` | Papyro block commands, recent items, Markdown fallback | Global menu CSS overriding official active/focus/disabled states |
-| Drag context menu | Official `drag-context-menu` | Papyro block move, copy, delete, reset formatting, color/highlight commands | Restoring old block handle/controller visuals or old DOM injection |
-| Link/Color/Image popovers | Official popover/menu/input primitives | Local images, link Markdown serialization, localized labels, focus return | Transparent, borderless, clipped layers, or clicks that lose the editor selection |
-| Table chrome | Official `table-node`, `TableHandle`, `TableSelectionOverlay`, `TableCellHandleMenu`, `TableExtendRowColumnButtons` | Table host wrapper, viewport safety, theme tokens, GFM Markdown serialization | Redrawing official handles/menus, injecting layout-changing placeholders into cells, or resize handles that create extra blank lines |
+
+| Surface                   | Visual/Interaction Owner                                                                                            | Allowed Papyro Adaptation                                                                         | Disallowed                                                                                                                           |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Document canvas           | Official Notion-like layout + Papyro Markdown typography tokens                                                     | Content width, CJK typography, Source/Hybrid/Preview consistency, Mermaid/KaTeX/error states      | Global CSS that breaks official block spacing, selection, placeholder, or node-view hit areas                                        |
+| Floating toolbar          | Official `Toolbar`, `FloatingElement`, button/popover primitives                                                    | Localization, remove unimplemented AI/Cloud items, preserve selection, prevent WebView focus loss | Recreating the old top formatting toolbar or showing persistent controls that crowd the writing surface                              |
+| Slash menu                | Official `slash-dropdown-menu` + `suggestion-menu`                                                                  | Papyro block commands, recent items, Markdown fallback                                            | Global menu CSS overriding official active/focus/disabled states                                                                     |
+| Drag context menu         | Official `drag-context-menu`                                                                                        | Papyro block move, copy, delete, reset formatting, color/highlight commands                       | Restoring old block handle/controller visuals or old DOM injection                                                                   |
+| Link/Color/Image popovers | Official popover/menu/input primitives                                                                              | Local images, link Markdown serialization, localized labels, focus return                         | Transparent, borderless, clipped layers, or clicks that lose the editor selection                                                    |
+| Table chrome              | Official `table-node`, `TableHandle`, `TableSelectionOverlay`, `TableCellHandleMenu`, `TableExtendRowColumnButtons` | Table host wrapper, viewport safety, theme tokens, GFM Markdown serialization                     | Redrawing official handles/menus, injecting layout-changing placeholders into cells, or resize handles that create extra blank lines |
+
 
 ### Interaction Acceptance
 
@@ -164,6 +168,7 @@ Official recommended path: use the Tiptap CLI to install the complete Notion-lik
 > Use the CLI to generate a complete Vite reference project under `.reference/` as the authoritative source baseline.
 
 #### 0.1 Generate Official Template Reference Project
+
 - [x] Login to Tiptap Pro account: `npx @tiptap/cli@latest login`
 - [x] Initialize complete template under `.reference/`:
   ```bash
@@ -174,12 +179,14 @@ Official recommended path: use the Tiptap CLI to install the complete Notion-lik
 - [x] Review generated file structure, confirm all components, extensions, hooks, and styles are present
 
 #### 0.2 TypeScript Base Configuration
+
 - [x] Add `typescript`, `@types/react`, `@types/react-dom` to `js/package.json` devDependencies
 - [x] Create `js/tsconfig.json` with `allowJs: true`, `allowImportingTsExtensions: true`, path alias `@` → `src/`
 - [x] Update `js/build.js` entry to `.ts` extension, add `.ts`/`.tsx` loader mappings
 - [x] Verify esbuild can bundle mixed JS/TS files correctly
 
 #### 0.3 Restructure Directories per Official Template
+
 - [x] Create corresponding directories under `js/src/` matching the generated template structure
 - [x] Copy official template component source (TSX) directly into the project
 - [x] Trim unneeded components (AI, collaboration, Emoji, Mention related)
@@ -193,12 +200,15 @@ Official recommended path: use the Tiptap CLI to install the complete Notion-lik
 Copy official component source from the CLI-generated template into the project, integrate and verify one by one. Each component gets its own commit.
 
 #### 1.1 Style Infrastructure
+
 - [x] Copy official style configuration from template (CSS variables, design tokens)
 - [x] Establish Papyro's global style foundation per template's `styles/` directory
 - [x] Ensure dark/light theme CSS variables are in place
 
 #### 1.2 UI Primitives Layer
+
 Copy the following primitive components from the template (they are dependencies of all higher-level components):
+
 - [x] `button` + `button-group`
 - [x] `dropdown-menu`
 - [x] `popover`
@@ -208,12 +218,14 @@ Copy the following primitive components from the template (they are dependencies
 - [x] `tooltip`
 
 #### 1.3 Hooks and Utility Libraries
+
 - [x] `use-mobile`
 - [x] `use-window-size`
 - [x] `use-ui-editor-state`
 - [x] `tiptap-utils` / `tiptap-ui-utils` (trim AI/collaboration utility functions and keep only local UI helpers)
 
 #### 1.4 Slash Command Menu (Highest Priority)
+
 - [x] Copy official `slash-dropdown-menu` component
 - [x] Copy dependent `suggestion-menu` utility component
 - [x] Configure Papyro-supported block types (heading, list, code, blockquote, hr, image, table, math, mermaid)
@@ -221,6 +233,7 @@ Copy the following primitive components from the template (they are dependencies
 - [x] Verify `/` trigger, search filtering, keyboard navigation work correctly
 
 #### 1.5 Drag Handle + Block Action Menu
+
 - [x] Copy official `drag-context-menu` component
 - [x] Copy dependent `floating-element` utility component
 - [x] Configure context menu items: transform block type, color/highlight, copy/delete, reset formatting
@@ -228,6 +241,7 @@ Copy the following primitive components from the template (they are dependencies
 - [x] Verify drag reordering serializes correctly to Markdown
 
 #### 1.6 Floating Format Toolbar (Bubble Menu)
+
 - [x] Use official `<Tiptap.BubbleMenu>` as container
 - [x] Copy and integrate the following official toolbar components:
   - `mark-button` (bold, italic, underline, strike, code)
@@ -241,11 +255,13 @@ Copy the following primitive components from the template (they are dependencies
 - [x] Use official `toolbar` primitive for layout
 
 #### 1.7 Link Editing
+
 - [x] Copy official `link-popover` component
 - [x] Copy official `link-extension` extension
 - [x] Ensure links serialize correctly in Markdown
 
 #### 1.8 Node Components
+
 - [x] Copy official `paragraph-node`
 - [x] Copy official `heading-node`
 - [x] Copy official `code-block-node` (keep lowlight integration)
@@ -255,6 +271,7 @@ Copy the following primitive components from the template (they are dependencies
 - [x] Copy official `image-node` (adapt for local image paste protocol)
 
 #### 1.9 Extension Layer
+
 - [x] Copy official `selection-extension`
 - [x] Copy official `trailing-node-extension`
 - [x] Copy official `mathematics-extension` (connect to existing KaTeX)
@@ -267,6 +284,7 @@ Copy the following primitive components from the template (they are dependencies
 After Phase 1's official components are confirmed working, progressively remove corresponding old implementations:
 
 #### 2.1 Remove Old DOM Controllers
+
 The current `tiptap-runtime.js` creates many controllers via dependency injection, now replaced by official React components:
 
 - [x] Remove `block-handle-controller` (replaced by: official `drag-context-menu`)
@@ -277,6 +295,7 @@ The current `tiptap-runtime.js` creates many controllers via dependency injectio
 - [x] Remove `table-toolbar-controller` (replaced by: official `table-node` built-in menus)
 
 #### 2.2 Remove Custom React Views (Replaced by Official Components)
+
 - [x] Remove `tiptap-react/slash-menu-view.jsx`
 - [x] Remove `tiptap-react/block-action-menu-view.jsx`
 - [x] Remove `tiptap-react/block-handle-view.jsx`
@@ -289,10 +308,12 @@ The current `tiptap-runtime.js` creates many controllers via dependency injectio
 - [x] Remove `tiptap-react/commands/block-action-menu-model.js` (functionality merged into drag-context-menu)
 
 #### 2.3 Remove Custom Style Files
+
 - [x] Audit all `.scss` files, remove styles that duplicate official components
 - [x] Keep only Papyro-specific styles (Mermaid, KaTeX, etc.)
 
 #### 2.4 Remove Outdated Documentation
+
 - [x] Remove `docs/tiptap-enterprise-editor-todo.md` (replaced by this document)
 - [x] Remove `docs/zh-CN/tiptap-enterprise-editor-todo.md`
 - [x] Review other docs files, remove content that no longer applies
@@ -302,17 +323,20 @@ The current `tiptap-runtime.js` creates many controllers via dependency injectio
 ### Phase 3: Core Runtime Refactoring
 
 #### 3.1 Simplify editor-runtime
+
 - [x] Rewrite `tiptap-runtime.js` as `editor-runtime.ts`
 - [x] Remove all controller factory injection, let React components manage their own state
 - [x] Keep core responsibilities: Editor instance creation, Rust protocol bridge, Markdown sync
 - [x] Runtime only does: create Editor → mount React tree → forward Rust commands/events
 
 #### 3.2 Simplify editor-entry
+
 - [x] Rewrite `editor-tiptap-entry.js` as `editor-entry.ts`
 - [x] Remove all view factory registrations (DI injection of React views no longer needed)
 - [x] Entry only does: create runtime → install on `window.papyroEditor`
 
 #### 3.3 React Island Refactoring
+
 - [x] Keep `island.jsx` → migrate to `island.tsx`
 - [x] Keep slot architecture (BeforeContent / EditorContent / AfterContent / OverlayLayer)
 - [x] Keep `runtime-context` → migrate to TS, simplify interface
@@ -352,6 +376,7 @@ The table-node is partially integrated, needs completion:
 Migrate by module priority, one module at a time:
 
 #### 5.1 Core Modules (Priority)
+
 - [x] `tiptap-runtime.js` → `editor-runtime.ts`
 - [x] `editor-runtime.js` → `editor-runtime-contract.ts`
 - [x] `editor-tiptap-entry.js` → `editor-entry.ts`
@@ -361,16 +386,19 @@ Migrate by module priority, one module at a time:
 - [x] `tiptap-react/mount-controller.jsx` → `.tsx`
 
 #### 5.2 Component Modules
+
 - [x] All components under `tiptap-ui/` (official source is already TSX)
 - [x] All primitives under `tiptap-ui-primitive/`
 - [x] All node components under `tiptap-node/`
 - [x] All hooks under `hooks/`
 
 #### 5.3 Utilities and Tests
+
 - [x] Utility functions under `lib/`
 - [x] Test file migration (keep `node --test` runner)
 
 #### 5.4 Current TypeScript Debt Audit (2026-05-13)
+
 - [x] Audit the remaining tracked JS/JSX inventory: 44 `.js` files and 4 `.jsx` files under `js/src/`
 - [x] Delete stale JS/JSX files already replaced by TS/TSX or no longer referenced: `components/input-group.js`, `components/tiptap-extension/node-alignment-extension.js`, `components/tiptap-extension/node-background-extension.js`, and `tiptap-react-island.jsx`
 - [x] Convert `editor-registry.js`, `editor-runtime-bootstrap.js`, and `editor-runtime-selector.js` to typed `.ts` modules
@@ -481,6 +509,7 @@ The editor surface must behave like the official Notion-like template first, wit
 - [x] Keep the app shell aligned with disciplined utility; do not wrap the editor canvas in a large card or marketing-style section
 - [x] 2026-05-15 follow-up: narrow the main reading column to a 708px content width aligned with the official Notion-like template, and establish a `--mn-document-content-width` / `--mn-document-wide-width` canvas contract; Source, Hybrid, Preview, and error fallback share the same text rail, while wide content such as code blocks, tables, Mermaid, and KaTeX scrolls inside its own container instead of stretching the whole document into a wide workbench
 - [x] 2026-05-15 follow-up: add Markdown style smoke guards for three-mode canvas width, Preview horizontal overflow, code-block width, table scrolling, and Source/fallback width parity
+- [x] 2026-05-16 follow-up: restore Preview/Hybrid table parity by wrapping GFM and safe Tiptap table HTML in `.mn-preview-table-scroll`, keeping tables on native `display: table`, and guarding desktop/mobile static style mirrors so wide tables scroll inside the document rail instead of disappearing or stretching the page
 
 #### 9.3 Floating Layer and Menu Convergence
 
@@ -495,6 +524,7 @@ The editor surface must behave like the official Notion-like template first, wit
 - [x] 2026-05-15 visual follow-up: tighten the menu visual rhythm across `ComboboxList`, `Card`, floating toolbar, and table menus with 8px-or-less radius, 2.125rem menu rows, 0.625rem icon/text gaps, opaque bordered/shadowed surfaces, and clipped button labels; static CSS and runtime `papyro-menu-surface.scss` now guard against transparent panels, drifting layouts, and inconsistent row heights
 - [x] 2026-05-15 visual follow-up: upgrade Papyro's default look toward a modern professional note-app disciplined utility direction: calmer cool-gray chrome, wider 760px document measure, more mature heading/quote/code rhythm, a dedicated floating-surface shadow token, capsule-like top tabs that no longer feel like legacy browser chrome, and shared Markdown typography tokens for Preview and Hybrid
 - [x] 2026-05-16 visual follow-up: restore true color-swatch metadata in color menus by passing `colorValue`/`border` from `HIGHLIGHT_COLORS` into table/drag/color menus, unify text/background swatches with opaque fills, borders, and active rings, keep colored text readable while selected, and move underline/inline-code into More to lower floating-toolbar density
+- [x] 2026-05-16 follow-up: localize drag/table/code dropdown labels, protect nested table/color menus from WebView focus loss on pointer down, make the code-block language menu searchable with common language options, and keep the floating/bubble surfaces on an opaque bounded menu contract
 
 #### 9.4 Table Experience Convergence
 
@@ -511,6 +541,7 @@ The editor surface must behave like the official Notion-like template first, wit
 - [x] 2026-05-15 visual follow-up: unify the block drag handle, insert plus, table row/column handle, extend button, and cell handle as low-noise desktop affordances: lucide line icons, a stable 1.75rem block handle and 1rem table handle target, quiet neutral defaults, stronger hover/focus/open contrast, and Papyro border/shadow/focus-ring guards without replacing the official table-node state machine
 - [x] 2026-05-15 table menu follow-up: make table alignment commands use the official cell `align` attribute plus Papyro's persisted `verticalAlign` attribute instead of the removed `nodeTextAlign`/`nodeVerticalAlign` bridge, refine the cell handle into a quieter 16px low-contrast chevron control, group the alignment flyout, and extend real desktop WebView smoke to verify Color and Alignment nested menus, direct hover states, and `Align center` actually updating the selected cell
 - [x] 2026-05-16 visual follow-up: restore the official grip semantics for the table cell handle, keep the row/column handle chrome quiet and neutral, and switch table menu hover/open styling to a subdued surface with a left accent rail; refresh the desktop/mobile static CSS mirrors and update smoke/source guards so the table chrome cannot regress back to the old blue-gradient hover pattern
+- [x] 2026-05-16 follow-up: keep table cell menus on a single opaque root surface, use a CSS-drawn grip instead of the noisy legacy SVG icon, and extend smoke guards for the hidden legacy icon, grip glyph, direct-panel transparency, root shadow, and nested flyout hover states
 
 #### 9.5 Official Component Difference Audit
 
@@ -521,14 +552,16 @@ The editor surface must behave like the official Notion-like template first, wit
 
 Official component difference list:
 
-| Component | Difference from `.reference/notion-like-editor` | Retained Reason | Follow-up Strategy |
-|-----------|--------------------------------------------------|-----------------|--------------------|
-| `PapyroToolbarFloating` | Renamed from official `NotionToolbarFloating`; removes `ImproveDropdown`; keeps turn-into, marks, image floating controls, link/color, and More options; the More popover adds localized labels, `transaction` listening, and mouse/pointer selection preservation | Papyro has no real local or Pro-backed AI flow yet; desktop WebView button clicks can drop the ProseMirror selection; More labels must follow runtime language | Keep matching the official composition; only restore AI, collaboration comments, or review entries after the real workflow exists |
-| `SlashDropdownMenu` | Keeps the official suggestion menu/card structure; removes AI, mention, emoji, and TOC items; table uses `keywords`; active item scrolling uses native `scrollIntoView({ block: "nearest" })` | The editor persists local Markdown and has no user system, emoji picker, TOC node UI, or online AI dependency; the command list should only expose executable, serializable actions | Restore removed entries only after the backing system exists and Markdown/protocol acceptance is covered |
-| `DragContextMenu` | Keeps the official drag handle, menu primitives, transform, color, table align/fit, copy/duplicate/delete, and slash trigger; removes AI ask, copy anchor link, image download, and TOC title; guards optional `setLockDragHandle`; derives node name from the current selection parent | Papyro does not enable Cloud/AI/TOC node/anchor link publishing flows; desktop runtime commands may be trimmed by mode, so optional commands must not crash the menu | Keep the block menu lean; every added action must prove local protocol, Markdown round-trip, and UI acceptance coverage |
-| `TableHandleMenu` | Keeps the official paid table-node menu source; only adds `tiptap-table-menu-content` to `MenuContent` so host CSS can constrain viewport, scrolling, and opaque surface behavior | Official menus run inside Papyro's WebView/desktop shell and need extra stacking, background, and viewport fallback to avoid transparency or clipping | Do not redraw official handles or menu items; Papyro CSS may only bridge surface, viewport, and theme tokens |
-| `TableCellHandleMenu` | Same as `TableHandleMenu`: only the `tiptap-table-menu-content` surface adapter is retained; cell actions, `ColorMenu`, and `TableAlignMenu` stay on official table-node paths | Fixes transparent/broken cell menus and long-menu scrolling without replacing the official table-node state machine | For table visual regressions, inspect official SCSS and host overrides first; do not add old Papyro fallback menus |
-| `ImageNodeFloating` | The `image-node` folder stays isomorphic with the official template: align, caption, download, replace, and delete remain in the official floating controls; local image protocols do not live in node UI | Image persistence, logo/disk resource lookup, and local file resolution belong to Rust/resource protocol layers, not the official image node UI | Keep Papyro exceptions in the local resource resolver and Markdown image serialization layers; let node UI track official source |
+
+| Component               | Difference from `.reference/notion-like-editor`                                                                                                                                                                                                                                         | Retained Reason                                                                                                                                                                     | Follow-up Strategy                                                                                                                |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `PapyroToolbarFloating` | Renamed from official `NotionToolbarFloating`; removes `ImproveDropdown`; keeps turn-into, marks, image floating controls, link/color, and More options; the More popover adds localized labels, `transaction` listening, and mouse/pointer selection preservation                      | Papyro has no real local or Pro-backed AI flow yet; desktop WebView button clicks can drop the ProseMirror selection; More labels must follow runtime language                      | Keep matching the official composition; only restore AI, collaboration comments, or review entries after the real workflow exists |
+| `SlashDropdownMenu`     | Keeps the official suggestion menu/card structure; removes AI, mention, emoji, and TOC items; table uses `keywords`; active item scrolling uses native `scrollIntoView({ block: "nearest" })`                                                                                           | The editor persists local Markdown and has no user system, emoji picker, TOC node UI, or online AI dependency; the command list should only expose executable, serializable actions | Restore removed entries only after the backing system exists and Markdown/protocol acceptance is covered                          |
+| `DragContextMenu`       | Keeps the official drag handle, menu primitives, transform, color, table align/fit, copy/duplicate/delete, and slash trigger; removes AI ask, copy anchor link, image download, and TOC title; guards optional `setLockDragHandle`; derives node name from the current selection parent | Papyro does not enable Cloud/AI/TOC node/anchor link publishing flows; desktop runtime commands may be trimmed by mode, so optional commands must not crash the menu                | Keep the block menu lean; every added action must prove local protocol, Markdown round-trip, and UI acceptance coverage           |
+| `TableHandleMenu`       | Keeps the official paid table-node menu source; only adds `tiptap-table-menu-content` to `MenuContent` so host CSS can constrain viewport, scrolling, and opaque surface behavior                                                                                                       | Official menus run inside Papyro's WebView/desktop shell and need extra stacking, background, and viewport fallback to avoid transparency or clipping                               | Do not redraw official handles or menu items; Papyro CSS may only bridge surface, viewport, and theme tokens                      |
+| `TableCellHandleMenu`   | Same as `TableHandleMenu`: only the `tiptap-table-menu-content` surface adapter is retained; cell actions, `ColorMenu`, and `TableAlignMenu` stay on official table-node paths                                                                                                          | Fixes transparent/broken cell menus and long-menu scrolling without replacing the official table-node state machine                                                                 | For table visual regressions, inspect official SCSS and host overrides first; do not add old Papyro fallback menus                |
+| `ImageNodeFloating`     | The `image-node` folder stays isomorphic with the official template: align, caption, download, replace, and delete remain in the official floating controls; local image protocols do not live in node UI                                                                               | Image persistence, logo/disk resource lookup, and local file resolution belong to Rust/resource protocol layers, not the official image node UI                                     | Keep Papyro exceptions in the local resource resolver and Markdown image serialization layers; let node UI track official source  |
+
 
 #### 9.6 Visual Regression and Release Acceptance
 
@@ -539,6 +572,7 @@ Official component difference list:
 - [x] 2026-05-15 follow-up: make `node scripts/check-tiptap-release-smoke.js` guard that the release checklist retains the editor UI surface acceptance section in English and Chinese, so table handles, cell menu, floating toolbar, slash menu, drag handle, link/color popovers, image controls, narrow-window, and dark/high-contrast checks stay part of the release gate
 - [x] 2026-05-15 follow-up: extend `node scripts/check-desktop-tiptap-webview-smoke.js` to verify opaque bounded surfaces and usable controls for slash menu, floating toolbar, link popover, color popover, drag context menu, table cell menu, and image floating controls inside the real desktop WebView
 - [x] 2026-05-15 follow-up: wire `check-ui-a11y.js` and `check-ui-contrast.js` into the default `check-editor-markdown-gate.js` flow; editor UI/UX changes are now validated together with theme bridge, release smoke, runtime smoke, desktop resource smoke, and optional real WebView smoke. Release-candidate screenshots or screen captures remain manual records in `tiptap-release-smoke.md`, not committed artifacts.
+- [x] 2026-05-16 follow-up: remove the tab-switch loading flash by keeping `Loading` fallback visually empty, add runtime window show/focus calls for desktop launch, and add deterministic macOS `.icns` generation plus Dioxus bundle icon metadata so packaged macOS apps no longer fall back to default branding
 
 ---
 
@@ -546,74 +580,84 @@ Official component difference list:
 
 ### UI Components (Feature-level)
 
-| Component | Purpose | License | Priority |
-|-----------|---------|---------|----------|
-| `slash-dropdown-menu` | `/` command palette | Start | P0 |
-| `drag-context-menu` | Drag handle + block action menu | Start | P0 |
-| `link-popover` | Link create/edit popover | MIT | P0 |
-| `mark-button` | Inline format buttons | MIT | P0 |
-| `heading-dropdown-menu` | Heading level dropdown | MIT | P1 |
-| `list-dropdown-menu` | List type dropdown | MIT | P1 |
-| `color-highlight-popover` | Highlight color picker | MIT | P1 |
-| `text-align-button` | Text alignment | MIT | P1 |
-| `turn-into-dropdown` | Block type conversion | Start | P1 |
-| `undo-redo-button` | Undo/Redo | MIT | P1 |
-| `blockquote-button` | Blockquote button | MIT | P2 |
-| `code-block-button` | Code block button | MIT | P2 |
-| `image-upload-button` | Image upload button | MIT | P2 |
-| `color-text-popover` | Text color picker | MIT | P2 |
-| `copy-to-clipboard-button` | Copy to clipboard | MIT | P3 |
-| `delete-node-button` | Delete node | MIT | P3 |
-| `duplicate-button` | Duplicate node | MIT | P3 |
-| `move-node-button` | Move node | MIT | P3 |
-| `reset-all-formatting-button` | Reset formatting | MIT | P3 |
+
+| Component                     | Purpose                         | License | Priority |
+| ----------------------------- | ------------------------------- | ------- | -------- |
+| `slash-dropdown-menu`         | `/` command palette             | Start   | P0       |
+| `drag-context-menu`           | Drag handle + block action menu | Start   | P0       |
+| `link-popover`                | Link create/edit popover        | MIT     | P0       |
+| `mark-button`                 | Inline format buttons           | MIT     | P0       |
+| `heading-dropdown-menu`       | Heading level dropdown          | MIT     | P1       |
+| `list-dropdown-menu`          | List type dropdown              | MIT     | P1       |
+| `color-highlight-popover`     | Highlight color picker          | MIT     | P1       |
+| `text-align-button`           | Text alignment                  | MIT     | P1       |
+| `turn-into-dropdown`          | Block type conversion           | Start   | P1       |
+| `undo-redo-button`            | Undo/Redo                       | MIT     | P1       |
+| `blockquote-button`           | Blockquote button               | MIT     | P2       |
+| `code-block-button`           | Code block button               | MIT     | P2       |
+| `image-upload-button`         | Image upload button             | MIT     | P2       |
+| `color-text-popover`          | Text color picker               | MIT     | P2       |
+| `copy-to-clipboard-button`    | Copy to clipboard               | MIT     | P3       |
+| `delete-node-button`          | Delete node                     | MIT     | P3       |
+| `duplicate-button`            | Duplicate node                  | MIT     | P3       |
+| `move-node-button`            | Move node                       | MIT     | P3       |
+| `reset-all-formatting-button` | Reset formatting                | MIT     | P3       |
+
 
 ### Node Components (Rendered Inside Editor)
 
-| Component | Purpose | License | Priority |
-|-----------|---------|---------|----------|
-| `paragraph-node` | Paragraph styling | MIT | P0 |
-| `heading-node` | Heading styling | MIT | P0 |
-| `code-block-node` | Code block (with language selector) | MIT | P0 |
-| `list-node` | List styling | MIT | P1 |
-| `blockquote-node` | Blockquote styling | MIT | P1 |
-| `horizontal-rule-node` | Horizontal rule styling | MIT | P1 |
-| `image-node` | Image display | MIT | P1 |
-| `table-node` | Table (already integrated) | Start | P1 |
+
+| Component              | Purpose                             | License | Priority |
+| ---------------------- | ----------------------------------- | ------- | -------- |
+| `paragraph-node`       | Paragraph styling                   | MIT     | P0       |
+| `heading-node`         | Heading styling                     | MIT     | P0       |
+| `code-block-node`      | Code block (with language selector) | MIT     | P0       |
+| `list-node`            | List styling                        | MIT     | P1       |
+| `blockquote-node`      | Blockquote styling                  | MIT     | P1       |
+| `horizontal-rule-node` | Horizontal rule styling             | MIT     | P1       |
+| `image-node`           | Image display                       | MIT     | P1       |
+| `table-node`           | Table (already integrated)          | Start   | P1       |
+
 
 ### UI Primitives (Low-level Building Blocks)
 
-| Component | Purpose | License |
-|-----------|---------|---------|
-| `button` | Generic button | MIT |
-| `dropdown-menu` | Dropdown menu | MIT |
-| `popover` | Popover layer | MIT |
-| `toolbar` | Toolbar container | MIT |
-| `separator` | Separator | MIT |
-| `spacer` | Spacer | MIT |
-| `tooltip` | Tooltip | MIT |
+
+| Component       | Purpose           | License |
+| --------------- | ----------------- | ------- |
+| `button`        | Generic button    | MIT     |
+| `dropdown-menu` | Dropdown menu     | MIT     |
+| `popover`       | Popover layer     | MIT     |
+| `toolbar`       | Toolbar container | MIT     |
+| `separator`     | Separator         | MIT     |
+| `spacer`        | Spacer            | MIT     |
+| `tooltip`       | Tooltip           | MIT     |
+
 
 ### Utility Components
 
-| Component | Purpose | License |
-|-----------|---------|---------|
-| `floating-element` | Floating positioning | MIT |
-| `suggestion-menu` | Suggestion menu base | MIT |
+
+| Component          | Purpose              | License |
+| ------------------ | -------------------- | ------- |
+| `floating-element` | Floating positioning | MIT     |
+| `suggestion-menu`  | Suggestion menu base | MIT     |
+
 
 ---
 
 ## Excluded Components (Explicitly Not Integrating)
 
-| Component | Reason |
-|-----------|--------|
-| `ai-menu` / `ai-ask-button` | Requires online AI service, not applicable for local editor |
-| `improve-dropdown` | AI feature, same as above |
-| `emoji-dropdown-menu` | Not needed for local Markdown editor |
-| `mention-dropdown-menu` | Requires user system, not applicable for local editor |
-| `toc-node` | Papyro consumes outline/TOC from the Rust side, so the editor should not keep the unmounted official TOC node UI |
-| `textarea-autosize` | Only depended on removed AI/Improve flows |
-| `collaboration` / `collab-context` | Requires Tiptap Cloud, not applicable for local editor |
-| `image-node-pro` | To be evaluated later, basic `image-node` may suffice |
+
+| Component                          | Reason                                                                                                           |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `ai-menu` / `ai-ask-button`        | Requires online AI service, not applicable for local editor                                                      |
+| `improve-dropdown`                 | AI feature, same as above                                                                                        |
+| `emoji-dropdown-menu`              | Not needed for local Markdown editor                                                                             |
+| `mention-dropdown-menu`            | Requires user system, not applicable for local editor                                                            |
+| `toc-node`                         | Papyro consumes outline/TOC from the Rust side, so the editor should not keep the unmounted official TOC node UI |
+| `textarea-autosize`                | Only depended on removed AI/Improve flows                                                                        |
+| `collaboration` / `collab-context` | Requires Tiptap Cloud, not applicable for local editor                                                           |
+| `image-node-pro`                   | To be evaluated later, basic `image-node` may suffice                                                            |
+
 
 ---
 
@@ -629,16 +673,18 @@ Official component difference list:
 
 ## Estimated Effort
 
-| Phase | Estimate | Notes |
-|-------|----------|-------|
-| Phase 0 | 1-2 days | CLI template generation + TS config + directory restructure |
-| Phase 1 | 5-7 days | Copy official components from template and adapt (largest effort) |
+
+| Phase   | Estimate | Notes                                                                    |
+| ------- | -------- | ------------------------------------------------------------------------ |
+| Phase 0 | 1-2 days | CLI template generation + TS config + directory restructure              |
+| Phase 1 | 5-7 days | Copy official components from template and adapt (largest effort)        |
 | Phase 2 | 2-3 days | Remove old custom code (verify each removal doesn't break functionality) |
-| Phase 3 | 2-3 days | Runtime refactoring |
-| Phase 4 | 1-2 days | Table completion |
-| Phase 5 | 3-4 days | TS migration of remaining files |
-| Phase 6 | 1-2 days | Style unification |
-| Phase 7 | 2-3 days | Papyro-specific feature adaptation |
-| Phase 8 | 1-2 days | Testing and verification |
+| Phase 3 | 2-3 days | Runtime refactoring                                                      |
+| Phase 4 | 1-2 days | Table completion                                                         |
+| Phase 5 | 3-4 days | TS migration of remaining files                                          |
+| Phase 6 | 1-2 days | Style unification                                                        |
+| Phase 7 | 2-3 days | Papyro-specific feature adaptation                                       |
+| Phase 8 | 1-2 days | Testing and verification                                                 |
+
 
 Total approximately **18-28 working days**.

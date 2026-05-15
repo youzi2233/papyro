@@ -204,7 +204,7 @@ test("Papyro table Markdown renderer falls back to HTML when table attributes wo
 
   assert.equal(
     markdown,
-    '<table><tbody><tr><th data-cell-background="rgba(245, 158, 11, 0.16)" colspan="2" style="text-align: center; background-color: rgba(245, 158, 11, 0.16)">Title</th></tr></tbody></table>',
+    '<table><tbody><tr><th data-cell-align="center" data-cell-background="rgba(245, 158, 11, 0.16)" colspan="2" style="text-align: center; background-color: rgba(245, 158, 11, 0.16)">Title</th></tr></tbody></table>',
   );
 });
 

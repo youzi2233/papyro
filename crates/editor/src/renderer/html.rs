@@ -1,4 +1,6 @@
+use ammonia::Builder;
 use pulldown_cmark::{html, CodeBlockKind, CowStr, Event, Options, Parser, Tag, TagEnd};
+use std::collections::{HashMap, HashSet};
 use syntect::highlighting::ThemeSet;
 use syntect::html::highlighted_html_for_string;
 use syntect::parsing::SyntaxSet;
@@ -7,6 +9,19 @@ thread_local! {
     static SYNTAX_SET: SyntaxSet = SyntaxSet::load_defaults_newlines();
     static THEME_SET: ThemeSet = ThemeSet::load_defaults();
 }
+
+const TABLE_HTML_TAGS: &[&str] = &["table", "tbody", "thead", "tfoot", "tr", "th", "td"];
+const TABLE_HTML_GLOBAL_ATTRS: &[&str] = &["style"];
+const PREVIEW_TABLE_SCROLL_OPEN: &str = r#"<div class="mn-preview-table-scroll">"#;
+const PREVIEW_TABLE_SCROLL_CLOSE: &str = "</div>";
+const TABLE_HTML_CELL_ATTRS: &[&str] = &[
+    "colspan",
+    "rowspan",
+    "colwidth",
+    "data-cell-align",
+    "data-cell-background",
+    "data-cell-vertical-align",
+];
 
 type ImageUrlResolver<'a> = &'a dyn Fn(&str) -> Option<String>;
 
@@ -26,10 +41,10 @@ impl CodeHighlightTheme {
 
     fn candidates(self) -> &'static [&'static str] {
         match self {
-            Self::Light => &["base16-ocean.light", "InspiredGitHub", "Solarized (light)"],
+            Self::Light => &["InspiredGitHub", "base16-ocean.light", "Solarized (light)"],
             Self::Dark => &[
-                "base16-ocean.dark",
                 "base16-eighties.dark",
+                "base16-ocean.dark",
                 "Solarized (dark)",
             ],
         }
@@ -103,7 +118,19 @@ fn sanitize_events<'a>(
 
     for event in events {
         match event {
-            Event::Html(_) | Event::InlineHtml(_) => {}
+            Event::Html(source) | Event::InlineHtml(source) => {
+                if let Some(table_html) = sanitize_table_html(&source) {
+                    sanitized.push(Event::Html(wrap_preview_table_html(&table_html).into()));
+                }
+            }
+            Event::Start(Tag::Table(alignments)) => {
+                sanitized.push(Event::Html(PREVIEW_TABLE_SCROLL_OPEN.into()));
+                sanitized.push(Event::Start(Tag::Table(alignments)));
+            }
+            Event::End(TagEnd::Table) => {
+                sanitized.push(Event::End(TagEnd::Table));
+                sanitized.push(Event::Html(PREVIEW_TABLE_SCROLL_CLOSE.into()));
+            }
             Event::InlineMath(text) => {
                 sanitized.push(Event::Html(render_math_inline_placeholder(&text).into()));
             }
@@ -229,6 +256,47 @@ fn render_code_block(
     )
 }
 
+fn sanitize_table_html(source: &str) -> Option<String> {
+    if !looks_like_table_html(source) {
+        return None;
+    }
+
+    let mut tags = HashSet::new();
+    tags.extend(TABLE_HTML_TAGS.iter().copied());
+
+    let mut generic_attributes = HashSet::new();
+    generic_attributes.extend(TABLE_HTML_GLOBAL_ATTRS.iter().copied());
+
+    let mut tag_attributes: HashMap<&str, HashSet<&str>> = HashMap::new();
+    let mut cell_attributes = HashSet::new();
+    cell_attributes.extend(TABLE_HTML_CELL_ATTRS.iter().copied());
+    tag_attributes.insert("td", cell_attributes.clone());
+    tag_attributes.insert("th", cell_attributes);
+
+    let sanitized = Builder::new()
+        .tags(tags)
+        .generic_attributes(generic_attributes)
+        .tag_attributes(tag_attributes)
+        .allowed_classes(HashMap::<&str, HashSet<&str>>::new())
+        .clean(source)
+        .to_string();
+
+    if looks_like_table_html(&sanitized) {
+        Some(sanitized)
+    } else {
+        None
+    }
+}
+
+fn wrap_preview_table_html(table_html: &str) -> String {
+    format!("{PREVIEW_TABLE_SCROLL_OPEN}{table_html}{PREVIEW_TABLE_SCROLL_CLOSE}")
+}
+
+fn looks_like_table_html(source: &str) -> bool {
+    let normalized = source.trim_start().to_ascii_lowercase();
+    normalized.starts_with("<table") || normalized.starts_with("<tbody")
+}
+
 fn code_language_token(lang: &str) -> Option<&str> {
     lang.split_whitespace()
         .next()
@@ -324,6 +392,43 @@ mod tests {
         assert!(!html.contains("<script"));
         assert!(!html.contains("onclick"));
         assert!(!html.contains("<span"));
+    }
+
+    #[test]
+    fn render_markdown_html_preserves_safe_tiptap_table_html() {
+        let html = render_markdown_html(
+            r#"<table><tbody><tr><th data-cell-align="center" data-cell-background="rgba(245, 158, 11, 0.16)" colspan="2" onclick="boom()" style="text-align: center; background-color: rgba(245, 158, 11, 0.16)">Title</th></tr></tbody></table>"#,
+        );
+
+        assert!(html.contains(r#"<div class="mn-preview-table-scroll"><table>"#));
+        assert!(html.contains("<table>"));
+        assert!(html.contains(r#"data-cell-align="center""#));
+        assert!(html.contains(r#"data-cell-background="rgba(245, 158, 11, 0.16)""#));
+        assert!(html.contains(r#"colspan="2""#));
+        assert!(html.contains("text-align"));
+        assert!(!html.contains("onclick"));
+    }
+
+    #[test]
+    fn render_markdown_html_rejects_non_table_raw_html() {
+        let html = render_markdown_html(
+            r#"<figure><table><tbody><tr><td>Hidden</td></tr></tbody></table></figure>"#,
+        );
+
+        assert!(!html.contains("<figure"));
+        assert!(!html.contains("<table"));
+        assert!(!html.contains("Hidden"));
+    }
+
+    #[test]
+    fn render_markdown_html_wraps_gfm_tables_for_preview_scrolling() {
+        let html = render_markdown_html("| Name | Status |\n| --- | :---: |\n| Papyro | Ready |");
+
+        assert!(html.contains(r#"<div class="mn-preview-table-scroll"><table>"#));
+        assert!(html.contains("<thead>"));
+        assert!(html.contains("<tbody>"));
+        let table_close = html.find("</table>").expect("preview table closes");
+        assert!(html[table_close..].contains("</div>"));
     }
 
     #[test]

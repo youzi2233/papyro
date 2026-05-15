@@ -2,6 +2,41 @@
 
 /* Papyro Tiptap runtime chrome: command panels, handles, table controls, and code-block controls. */
 
+.mn-tiptap-code-block,
+.mn-preview pre,
+.mn-preview .mn-code-block {
+    --mn-code-token-comment: #6a737d;
+    --mn-code-token-keyword: #cf222e;
+    --mn-code-token-string: #0a3069;
+    --mn-code-token-number: #0550ae;
+    --mn-code-token-title: #8250df;
+    --mn-code-token-attribute: #116329;
+    --mn-code-token-type: #953800;
+    --mn-code-token-operator: #24292f;
+}
+
+.dark .mn-tiptap-code-block,
+.dark .mn-preview pre,
+.dark .mn-preview .mn-code-block,
+:root[data-theme="dark"] .mn-tiptap-code-block,
+:root[data-theme="dark"] .mn-preview pre,
+:root[data-theme="dark"] .mn-preview .mn-code-block,
+:root[data-theme="github_dark"] .mn-tiptap-code-block,
+:root[data-theme="github_dark"] .mn-preview pre,
+:root[data-theme="github_dark"] .mn-preview .mn-code-block,
+:root[data-theme="high_contrast"] .mn-tiptap-code-block,
+:root[data-theme="high_contrast"] .mn-preview pre,
+:root[data-theme="high_contrast"] .mn-preview .mn-code-block {
+    --mn-code-token-comment: #8b949e;
+    --mn-code-token-keyword: #ff7b72;
+    --mn-code-token-string: #a5d6ff;
+    --mn-code-token-number: #79c0ff;
+    --mn-code-token-title: #d2a8ff;
+    --mn-code-token-attribute: #7ee787;
+    --mn-code-token-type: #ffa657;
+    --mn-code-token-operator: #c9d1d9;
+}
+
 .mn-tiptap-code-block[data-has-language-control="true"] {
     padding-top: calc(var(--mn-markdown-code-block-pad-y) + 34px);
 }
@@ -240,15 +275,20 @@
     position: fixed;
     z-index: 166;
     display: grid;
-    grid-template-rows: auto minmax(0, 1fr);
-    width: 238px;
-    max-height: min(326px, calc(100vh - 20px));
+    grid-template-rows: auto auto minmax(0, 1fr);
+    width: 268px;
+    max-height: min(366px, calc(100vh - 20px));
     padding: 8px;
     border: var(--mn-border-default);
-    border-radius: 10px;
-    background: var(--mn-surface-raised);
+    border-radius: 12px;
+    background:
+        linear-gradient(180deg, color-mix(in srgb, #ffffff 7%, transparent), transparent 46px),
+        var(--mn-surface-raised);
     color: var(--mn-ink);
-    box-shadow: 0 18px 38px color-mix(in srgb, #000 13%, transparent), var(--mn-shadow-lg);
+    box-shadow:
+        0 18px 38px color-mix(in srgb, #000 13%, transparent),
+        inset 0 1px 0 color-mix(in srgb, #ffffff 32%, transparent),
+        var(--mn-shadow-lg);
     overflow: hidden;
     font-family: var(--mn-font-ui);
     user-select: none;
@@ -271,7 +311,7 @@
 }
 
 .mn-tiptap-code-language-menu-header {
-    padding: 5px 8px 6px;
+    padding: 5px 8px 7px;
     color: var(--mn-ink-3);
     font-size: 10px;
     font-weight: var(--mn-weight-semibold);
@@ -280,11 +320,89 @@
     text-transform: uppercase;
 }
 
+.mn-tiptap-code-language-search {
+    position: relative;
+    display: grid;
+    grid-template-columns: 16px minmax(0, 1fr);
+    align-items: center;
+    gap: 7px;
+    min-height: 32px;
+    margin: 0 0 7px;
+    padding: 0 9px;
+    border: 1px solid color-mix(in srgb, var(--mn-border) 76%, transparent);
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--mn-surface-sunken) 74%, transparent);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, #000 4%, transparent);
+}
+
+.mn-tiptap-code-language-search:focus-within {
+    border-color: color-mix(in srgb, var(--mn-accent) 38%, var(--mn-border));
+    background: color-mix(in srgb, var(--mn-surface-raised) 92%, var(--mn-accent) 5%);
+    box-shadow: var(--mn-focus-ring-sm);
+}
+
+.mn-tiptap-code-language-search-icon {
+    position: relative;
+    width: 13px;
+    height: 13px;
+    color: color-mix(in srgb, var(--mn-ink-3) 82%, transparent);
+}
+
+.mn-tiptap-code-language-search-icon::before,
+.mn-tiptap-code-language-search-icon::after {
+    content: "";
+    position: absolute;
+    box-sizing: border-box;
+}
+
+.mn-tiptap-code-language-search-icon::before {
+    inset: 1px 3px 3px 1px;
+    border: 1.5px solid currentColor;
+    border-radius: 999px;
+}
+
+.mn-tiptap-code-language-search-icon::after {
+    right: 1px;
+    bottom: 1px;
+    width: 5px;
+    border-top: 1.5px solid currentColor;
+    transform: rotate(45deg);
+    transform-origin: center;
+}
+
+.mn-tiptap-code-language-search input {
+    min-width: 0;
+    width: 100%;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--mn-ink);
+    font: inherit;
+    font-size: 11px;
+    font-weight: var(--mn-weight-medium);
+}
+
+.mn-tiptap-code-language-search input::placeholder {
+    color: color-mix(in srgb, var(--mn-ink-3) 78%, transparent);
+}
+
 .mn-tiptap-code-language-menu-list {
     display: grid;
     gap: 4px;
+    min-height: 0;
     overflow-y: auto;
     scrollbar-gutter: stable;
+}
+
+.mn-tiptap-code-language-menu-empty {
+    display: grid;
+    place-items: center;
+    min-height: 60px;
+    border: 1px dashed color-mix(in srgb, var(--mn-border) 84%, transparent);
+    border-radius: 8px;
+    color: var(--mn-ink-3);
+    font-size: 11px;
+    font-weight: var(--mn-weight-medium);
 }
 
 .mn-tiptap-code-language-menu-item {
