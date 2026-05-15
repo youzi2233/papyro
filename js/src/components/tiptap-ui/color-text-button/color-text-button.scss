@@ -1,4 +1,7 @@
 .tiptap-button-color-text {
+  --color-swatch-color: var(--color-text-button-color, currentColor);
+  --color-swatch-border: var(--color-text-button-color);
+
   display: flex;
   align-items: center;
   justify-content: center;
@@ -7,6 +10,17 @@
   height: 1.25rem;
   margin: 0 -0.175rem;
   border-radius: var(--tt-radius-xl);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, #ffffff 46%, transparent),
+      transparent 72%
+    ),
+    color-mix(
+      in srgb,
+      var(--color-swatch-color) 14%,
+      var(--tt-card-bg-color, var(--mn-surface-raised, #ffffff))
+    );
   transition: transform 0.2s ease;
 
   &::after {
@@ -18,15 +32,23 @@
     top: 0;
     border-radius: inherit;
     box-sizing: border-box;
-    border: 1px solid var(--color-text-button-color);
-    filter: brightness(150%);
-    mix-blend-mode: multiply;
-    opacity: 0.5;
+    border: 1px solid var(--color-swatch-border);
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, #ffffff 72%, transparent),
+      0 1px 2px color-mix(in srgb, var(--mn-ink, #111827) 8%, transparent);
+    opacity: 0.72;
 
     .dark & {
-      filter: brightness(140%);
-      mix-blend-mode: lighten;
+      box-shadow:
+        inset 0 1px 0 color-mix(in srgb, #ffffff 12%, transparent),
+        0 1px 2px color-mix(in srgb, #000000 22%, transparent);
     }
+  }
+
+  .tiptap-button-icon {
+    position: relative;
+    z-index: 1;
+    color: var(--color-swatch-color);
   }
 }
 

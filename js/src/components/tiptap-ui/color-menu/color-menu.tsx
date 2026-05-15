@@ -25,6 +25,7 @@ import {
 } from "@/components/tiptap-ui/color-highlight-button"
 import type { RecentColor } from "@/components/tiptap-ui/color-text-popover"
 import {
+  type ColorItem,
   getColorByValue,
   useRecentColors,
 } from "@/components/tiptap-ui/color-text-popover"
@@ -36,7 +37,14 @@ import { TextColorSmallIcon } from "@/components/tiptap-icons/text-color-small-i
 import { useTiptapEditor } from "@/hooks/use-tiptap-editor"
 
 interface ColorMenuItemProps {
-  color: { value: string; label: string }
+  color: ColorItem
+}
+
+function colorMenuSwatchStyle(color: ColorItem): React.CSSProperties {
+  return {
+    "--color-swatch-color": color.colorValue ?? color.value,
+    "--color-swatch-border": color.border ?? "var(--mn-border, #d1d5db)",
+  } as React.CSSProperties
 }
 
 type ColorMenuCanCommands = {
@@ -102,7 +110,13 @@ const TextColorMenuItem: React.FC<ColorMenuItemProps> = ({ color }) => {
       }
       onClick={handleColorText}
     >
-      <span className="tiptap-button-color-text" style={{ color: color.value }}>
+      <span
+        className="tiptap-button-color-text"
+        style={{
+          ...colorMenuSwatchStyle(color),
+          color: color.value,
+        }}
+      >
         <TextColorSmallIcon
           className="tiptap-button-icon"
           style={{ color: color.value, flexGrow: 1 }}
@@ -132,7 +146,12 @@ const HighlightColorMenuItem: React.FC<ColorMenuItemProps> = ({ color }) => {
     >
       <span
         className="tiptap-button-highlight"
-        style={{ "--highlight-color": color.value } as React.CSSProperties}
+        style={
+          {
+            ...colorMenuSwatchStyle(color),
+            "--highlight-color": color.value,
+          } as React.CSSProperties
+        }
       />
       <span className="tiptap-button-text">{label}</span>
     </MenuItem>

@@ -14,7 +14,7 @@
     --mn-tiptap-menu-hover-bg: color-mix(in srgb, var(--mn-accent, #2563eb) 10%, var(--mn-surface, #f8fafc));
     --mn-tiptap-menu-hover-ink: var(--mn-ink, #111827);
     --mn-tiptap-menu-label-ink: color-mix(in srgb, var(--mn-ink-3, #64748b) 86%, transparent);
-    --mn-tiptap-menu-swatch-size: 1rem;
+    --mn-tiptap-menu-swatch-size: 1.125rem;
     --mn-tiptap-handle-size: 1.5rem;
     --mn-tiptap-handle-height: 2rem;
 }
@@ -81,10 +81,26 @@
     box-shadow: var(--tt-shadow-elevated-md, var(--mn-shadow-menu));
     overflow-x: auto;
     scrollbar-width: none;
+    gap: 0.125rem;
+    padding: 0.25rem;
 }
 
 .tiptap-toolbar[data-variant="floating"]::-webkit-scrollbar {
     display: none;
+}
+
+.tiptap-toolbar[data-variant="floating"] .tiptap-toolbar-group {
+    gap: 0.0625rem;
+}
+
+.tiptap-toolbar[data-variant="floating"] .tiptap-button {
+    min-width: 1.875rem;
+    height: 1.875rem;
+    padding: 0.375rem;
+}
+
+.tiptap-toolbar[data-variant="floating"] .tiptap-button-text {
+    max-width: 7.5rem;
 }
 
 .tiptap-combobox-list .tiptap-button,
@@ -181,9 +197,34 @@
     height: var(--mn-tiptap-menu-swatch-size, 1rem);
     margin: 0;
     border-radius: 999px;
+    background:
+        linear-gradient(
+            180deg,
+            color-mix(in srgb, #ffffff 38%, transparent),
+            transparent 72%
+        ),
+        var(--color-swatch-color, var(--highlight-color, transparent));
     box-shadow:
-        inset 0 0 0 1px color-mix(in srgb, var(--mn-border, #d1d5db) 72%, transparent),
+        inset 0 0 0 1px var(--color-swatch-border, color-mix(in srgb, var(--mn-border, #d1d5db) 72%, transparent)),
+        inset 0 1px 0 color-mix(in srgb, #ffffff 60%, transparent),
         0 1px 2px color-mix(in srgb, var(--mn-ink, #111827) 10%, transparent);
+}
+
+.tiptap-combobox-list .tiptap-button-color-text .tiptap-button-icon,
+.tiptap-card .tiptap-button-color-text .tiptap-button-icon {
+    width: 0.75rem;
+    height: 0.75rem;
+    color: var(--color-swatch-color, currentColor);
+}
+
+.tiptap-combobox-list .tiptap-button[data-active-state="on"] .tiptap-button-color-text,
+.tiptap-combobox-list .tiptap-button[data-active-state="on"] .tiptap-button-highlight,
+.tiptap-card .tiptap-button[data-active-state="on"] .tiptap-button-color-text,
+.tiptap-card .tiptap-button[data-active-state="on"] .tiptap-button-highlight {
+    box-shadow:
+        0 0 0 2px var(--tt-combobox-bg-color, var(--mn-surface-raised, #ffffff)),
+        0 0 0 4px color-mix(in srgb, var(--mn-accent, #2563eb) 24%, transparent),
+        inset 0 0 0 1px var(--color-swatch-border, color-mix(in srgb, var(--mn-border, #d1d5db) 72%, transparent));
 }
 
 .tiptap-menu-group-label,

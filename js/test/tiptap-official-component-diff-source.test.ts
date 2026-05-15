@@ -9,6 +9,13 @@ function readSource(path: string) {
 const toolbarSource = readSource(
   "../src/components/tiptap-templates/notion/notion-like/papyro-toolbar-floating.tsx",
 );
+const floatingToolbarSource = toolbarSource.slice(
+  toolbarSource.indexOf("export function PapyroToolbarFloating"),
+  toolbarSource.indexOf("function canMoreOptions"),
+);
+const moreOptionsSource = toolbarSource.slice(
+  toolbarSource.indexOf("export function MoreOptions"),
+);
 const slashMenuSource = readSource(
   "../src/components/tiptap-ui/slash-dropdown-menu/slash-dropdown-menu.tsx",
 );
@@ -36,16 +43,18 @@ const imageNodeViewSource = readSource(
 
 test("Papyro floating toolbar keeps the official Notion-like composition without AI", () => {
   assert.match(toolbarSource, /export function PapyroToolbarFloating/u);
-  assert.match(toolbarSource, /<TurnIntoDropdown hideWhenUnavailable=\{true\} \/>/u);
-  assert.match(toolbarSource, /<MarkButton type="bold" hideWhenUnavailable=\{true\} \/>/u);
-  assert.match(toolbarSource, /<MarkButton type="italic" hideWhenUnavailable=\{true\} \/>/u);
-  assert.match(toolbarSource, /<MarkButton type="underline" hideWhenUnavailable=\{true\} \/>/u);
-  assert.match(toolbarSource, /<MarkButton type="strike" hideWhenUnavailable=\{true\} \/>/u);
-  assert.match(toolbarSource, /<MarkButton type="code" hideWhenUnavailable=\{true\} \/>/u);
-  assert.match(toolbarSource, /<ImageNodeFloating \/>/u);
-  assert.match(toolbarSource, /<LinkPopover[\s\S]*?autoOpenOnLinkActive=\{false\}[\s\S]*?\/>/u);
-  assert.match(toolbarSource, /<ColorTextPopover hideWhenUnavailable=\{true\} \/>/u);
-  assert.match(toolbarSource, /<MoreOptions hideWhenUnavailable=\{true\} \/>/u);
+  assert.match(floatingToolbarSource, /<TurnIntoDropdown hideWhenUnavailable=\{true\} \/>/u);
+  assert.match(floatingToolbarSource, /<MarkButton type="bold" hideWhenUnavailable=\{true\} \/>/u);
+  assert.match(floatingToolbarSource, /<MarkButton type="italic" hideWhenUnavailable=\{true\} \/>/u);
+  assert.match(floatingToolbarSource, /<MarkButton type="strike" hideWhenUnavailable=\{true\} \/>/u);
+  assert.match(floatingToolbarSource, /<ImageNodeFloating \/>/u);
+  assert.match(floatingToolbarSource, /<LinkPopover[\s\S]*?autoOpenOnLinkActive=\{false\}[\s\S]*?\/>/u);
+  assert.match(floatingToolbarSource, /<ColorTextPopover hideWhenUnavailable=\{true\} \/>/u);
+  assert.match(floatingToolbarSource, /<MoreOptions hideWhenUnavailable=\{true\} \/>/u);
+  assert.doesNotMatch(floatingToolbarSource, /<MarkButton type="underline"/u);
+  assert.doesNotMatch(floatingToolbarSource, /<MarkButton type="code"/u);
+  assert.match(moreOptionsSource, /<MarkButton type="underline" \/>/u);
+  assert.match(moreOptionsSource, /<MarkButton type="code" \/>/u);
   assert.doesNotMatch(toolbarSource, /ImproveDropdown|aiTextPrompt|aiGenerationShow/u);
 });
 

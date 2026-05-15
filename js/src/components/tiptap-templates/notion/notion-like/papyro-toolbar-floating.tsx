@@ -74,9 +74,7 @@ export function PapyroToolbarFloating() {
         <ToolbarGroup>
           <MarkButton type="bold" hideWhenUnavailable={true} />
           <MarkButton type="italic" hideWhenUnavailable={true} />
-          <MarkButton type="underline" hideWhenUnavailable={true} />
           <MarkButton type="strike" hideWhenUnavailable={true} />
-          <MarkButton type="code" hideWhenUnavailable={true} />
         </ToolbarGroup>
 
         <ToolbarSeparator />
@@ -108,8 +106,8 @@ function canMoreOptions(editor: Editor | null): boolean {
     canSetTextAlign(editor, align as TextAlign)
   )
 
-  const canMarkAny = ["superscript", "subscript"].some((type) =>
-    canToggleMark(editor, type as Mark)
+  const canMarkAny = ["underline", "code", "superscript", "subscript"].some(
+    (type) => canToggleMark(editor, type as Mark)
   )
 
   return canMarkAny || canTextAlignAny
@@ -229,6 +227,13 @@ export function MoreOptions({
               onMouseDown={preserveEditorSelectionOnMouseDown}
               onPointerDown={preserveEditorSelectionOnPointerDown}
             >
+              <ToolbarGroup>
+                <MarkButton type="underline" />
+                <MarkButton type="code" />
+              </ToolbarGroup>
+
+              <ToolbarSeparator />
+
               <ToolbarGroup>
                 <MarkButton type="superscript" />
                 <MarkButton type="subscript" />

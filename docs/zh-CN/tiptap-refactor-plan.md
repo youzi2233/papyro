@@ -494,6 +494,7 @@ js/src/
 - [x] 2026-05-15 跟进：新增 WebView 安全的 `restoreEditorFocusAfterFloatingMenu`，在 link/color popover、drag context menu、table row/column menu 和 table cell menu 关闭后多次尝试把焦点还给 ProseMirror；desktop Tiptap WebView smoke 覆盖 slash Arrow/Enter/Escape、link/color Escape、drag Escape 和 table cell menu Escape 的关闭与焦点返还路径
 - [x] 2026-05-15 视觉跟进：收敛菜单视觉节奏，统一 `ComboboxList`、`Card`、floating toolbar 和 table menu 的 8px 内圆角、2.125rem 菜单项高度、0.625rem 图标/文字间距、实底边框/阴影与按钮文本裁剪；静态 CSS 与运行时 `papyro-menu-surface.scss` 同步守护，避免菜单再次透明、错位或按钮行高不一致
 - [x] 2026-05-15 视觉跟进：将 Papyro 默认视觉升级为现代专业笔记软件的 disciplined utility 方向：更克制的冷灰背景、更宽的 760px 文档行宽、更成熟的标题/引用/代码块节奏、浮层专用阴影 token、胶囊式但非浏览器化的顶部标签栏，以及 Preview/Hybrid 共用 Markdown typography token
+- [x] 2026-05-16 视觉跟进：恢复颜色菜单的真实色板信息，将 `HIGHLIGHT_COLORS` 的 `colorValue`/`border` 透传到 table/drag/color 菜单，统一文字色与背景色 swatch 的实底、边框和 active ring；同时收敛选区态，让彩色文字在选中时继续保留原色可读性，并把下划线/行内代码移入 More 弹层降低浮动工具栏密度
 
 #### 9.4 表格体验收敛
 

@@ -45,6 +45,8 @@
   &:not(.readonly):not(.ProseMirror-hideselection) {
     ::selection {
       background-color: var(--tt-selection-color);
+      color: inherit;
+      -webkit-text-fill-color: currentColor;
     }
 
     .selection::selection {
@@ -55,12 +57,19 @@
   .selection {
     display: inline;
     background-color: var(--tt-selection-color);
+    color: inherit;
+    -webkit-text-fill-color: currentColor;
   }
 
   // Selected node styles
   .ProseMirror-selectednode:not(img):not(pre):not(.react-renderer) {
     border-radius: var(--tt-radius-md);
-    background-color: var(--tt-selection-color);
+    background-color: color-mix(
+      in srgb,
+      var(--tt-selection-color) 64%,
+      transparent
+    );
+    color: inherit;
   }
 
   .ProseMirror-hideselection {

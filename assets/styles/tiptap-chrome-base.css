@@ -33,6 +33,16 @@
     background: transparent;
 }
 
+.mn-tiptap-editor:not(.readonly):not(.ProseMirror-hideselection) *::selection {
+    color: inherit;
+    -webkit-text-fill-color: currentColor;
+}
+
+.mn-tiptap-editor .selection {
+    color: inherit;
+    -webkit-text-fill-color: currentColor;
+}
+
 .mn-tiptap-editor.ProseMirror-noderangeselection * {
     caret-color: transparent;
 }

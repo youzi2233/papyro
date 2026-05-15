@@ -22,6 +22,8 @@ export type ColorType = "text" | "highlight"
 export interface ColorItem {
   value: string
   label: string
+  border?: string
+  colorValue?: string
 }
 
 export interface RecentColor {

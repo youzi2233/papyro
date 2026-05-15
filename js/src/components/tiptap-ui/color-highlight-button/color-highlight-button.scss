@@ -1,10 +1,19 @@
 .tiptap-button-highlight {
+  --color-swatch-color: var(--highlight-color);
+  --color-swatch-border: var(--highlight-color);
+
   position: relative;
   width: 1.25rem;
   height: 1.25rem;
   margin: 0 -0.175rem;
   border-radius: var(--tt-radius-xl);
-  background-color: var(--highlight-color);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, #ffffff 40%, transparent),
+      transparent 72%
+    ),
+    var(--color-swatch-color);
   transition: transform 0.2s ease;
 
   &::after {
@@ -16,13 +25,15 @@
     top: 0;
     border-radius: inherit;
     box-sizing: border-box;
-    border: 1px solid var(--highlight-color);
-    filter: brightness(95%);
-    mix-blend-mode: multiply;
+    border: 1px solid var(--color-swatch-border);
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, #ffffff 62%, transparent),
+      0 1px 2px color-mix(in srgb, var(--mn-ink, #111827) 8%, transparent);
 
     .dark & {
-      filter: brightness(140%);
-      mix-blend-mode: lighten;
+      box-shadow:
+        inset 0 1px 0 color-mix(in srgb, #ffffff 12%, transparent),
+        0 1px 2px color-mix(in srgb, #000000 22%, transparent);
     }
   }
 }
