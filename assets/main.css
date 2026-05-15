@@ -50,7 +50,7 @@
     --mn-shadow-sm:       0 1px 2px rgba(16, 22, 32, .05), 0 10px 26px rgba(16, 22, 32, .06);
     --mn-shadow-md:       0 2px 10px rgba(16, 22, 32, .08), 0 20px 46px rgba(16, 22, 32, .10);
     --mn-shadow-lg:       0 4px 18px rgba(16, 22, 32, .12), 0 34px 72px rgba(16, 22, 32, .16);
-    --mn-shadow-menu:     0 10px 30px rgba(16, 22, 32, .13), 0 0 0 1px rgba(16, 22, 32, .06);
+    --mn-shadow-menu:     0 16px 48px rgba(16, 22, 32, .14), 0 8px 18px rgba(16, 22, 32, .08), 0 0 0 1px rgba(16, 22, 32, .06);
     --mn-shadow-modal:    0 22px 70px rgba(15, 23, 42, 0.18);
     --mn-shadow-hairline: 0 0 0 1px var(--mn-divider);
     --mn-control-highlight: rgba(255, 255, 255, .42);
@@ -187,7 +187,7 @@
     --tt-selection-color:        var(--mn-selection-bg, rgba(37, 99, 235, 0.18));
     --tt-card-bg-color:          var(--mn-surface-raised, #ffffff);
     --tt-card-border-color:      var(--mn-divider, rgba(15, 23, 42, 0.08));
-    --tt-shadow-elevated-md:     var(--mn-shadow-md, 0 18px 42px rgba(15, 23, 42, .09));
+    --tt-shadow-elevated-md:     var(--mn-shadow-menu, var(--mn-shadow-md, 0 18px 42px rgba(15, 23, 42, .09)));
     --tt-toolbar-bg-color:       var(--mn-surface-raised, #ffffff);
     --tt-toolbar-border-color:   var(--mn-divider, rgba(15, 23, 42, 0.08));
     --tt-popover-bg-color:       var(--mn-surface-raised, #ffffff);
@@ -236,11 +236,11 @@
     --tt-table-extend-icon-color: color-mix(in srgb, var(--mn-ink-3, #64748b) 68%, transparent);
 
     /* Document rhythm shared by Source, Hybrid, and Preview */
-    --mn-document-measure:      760px;
+    --mn-document-measure:      708px;
     --mn-document-wide-measure: min(1120px, calc(100vw - 48px));
-    --mn-document-pad-x:        clamp(18px, 2.4vw, 40px);
-    --mn-document-pad-top:      clamp(28px, 3.2vw, 48px);
-    --mn-document-pad-bottom:   88px;
+    --mn-document-pad-x:        clamp(24px, 3vw, 48px);
+    --mn-document-pad-top:      clamp(36px, 4vw, 56px);
+    --mn-document-pad-bottom:   max(120px, 30vh);
     --mn-document-gutter-gap:   8px;
 
     /* Typography */
@@ -254,8 +254,8 @@
     --mn-document-font:   var(--mn-editor-font, var(--mn-font-body));
     --mn-document-heading-font: var(--mn-font-heading);
     --mn-document-code-font: var(--mn-font-code);
-    --mn-document-body-size: var(--mn-editor-font-size, 16.5px);
-    --mn-document-line-height: var(--mn-editor-line-height, 1.72);
+    --mn-document-body-size: var(--mn-editor-font-size, 16px);
+    --mn-document-line-height: var(--mn-editor-line-height, 1.58);
     --mn-document-heading-line: 1.16;
     --mn-type-dot:        8px;
     --mn-type-tiny:       9px;

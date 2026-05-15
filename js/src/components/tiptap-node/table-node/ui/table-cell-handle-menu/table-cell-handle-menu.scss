@@ -1,34 +1,29 @@
 .expandable-menu-button {
-  --button-size: 22px;
-  --button-offset: 0.375rem;
-  --dot-size-small: 6px;
-  --dot-size-large: 22px;
-  --dot-offset-small: 8px;
+  --button-size: 16px;
+  --button-offset: 0.25rem;
+  --dot-size-small: 8px;
+  --dot-size-large: 16px;
+  --dot-offset-small: 4px;
   --dot-offset-large: 0;
-  --border-radius-full: var(--tt-radius-md, 0.5rem);
-  --transition-duration: 0.12s;
-  --transition-timing: ease-out;
-  --icon-scale-small: 0.78;
+  --border-radius-full: 9999px;
+  --transition-duration: 0.05s;
+  --transition-timing: ease;
+  --icon-scale-small: 0.9;
   --icon-scale-large: 1;
   --cell-handle-idle-bg: color-mix(
     in srgb,
-    var(--mn-ink-3, #64748b) 48%,
+    var(--mn-accent, var(--tt-brand-color-600, #2563eb)) 88%,
     transparent
   );
   --cell-handle-open-bg: color-mix(
     in srgb,
-    var(--mn-surface-raised, #ffffff) 88%,
-    transparent
+    var(--mn-accent, var(--tt-brand-color-600, #2563eb)) 92%,
+    var(--mn-surface-raised, #ffffff)
   );
-  --cell-handle-open-icon: var(--mn-ink-2, #4b5563);
-  --cell-handle-open-border: color-mix(
-    in srgb,
-    var(--mn-accent, #2563eb) 28%,
-    var(--mn-border, #e5e7eb)
-  );
+  --cell-handle-open-icon: var(--mn-accent-ink, #ffffff);
 
   position: absolute;
-  top: 0.375rem;
+  top: 0.25rem;
   right: var(--button-offset);
   transform: none;
 
@@ -107,17 +102,7 @@
         width: var(--dot-size-large);
         height: var(--dot-size-large);
         right: var(--dot-offset-large);
-        border: 1px solid var(--cell-handle-open-border);
-        background:
-          linear-gradient(
-            180deg,
-            color-mix(in srgb, #fff 48%, transparent),
-            transparent 62%
-          ),
-          var(--cell-handle-open-bg);
-        box-shadow:
-          0 1px 2px color-mix(in srgb, var(--mn-ink, #111827) 7%, transparent),
-          0 8px 18px color-mix(in srgb, var(--mn-ink, #111827) 10%, transparent);
+        background: var(--cell-handle-open-bg);
       }
 
       svg {
@@ -129,7 +114,9 @@
 
   &:focus-visible {
     outline: 0;
-    box-shadow: var(--mn-focus-ring-sm, 0 0 0 2px rgba(37, 99, 235, 0.13));
+    box-shadow:
+      0 0 0 2px var(--mn-editor-bg, #ffffff),
+      var(--mn-focus-ring-sm, 0 0 0 2px rgba(37, 99, 235, 0.13));
     outline-offset: 2px;
   }
 

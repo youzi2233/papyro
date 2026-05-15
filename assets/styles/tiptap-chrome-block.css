@@ -4,30 +4,32 @@
 
 .mn-tiptap-react-root,
 .mn-tiptap-editor {
-    --mn-tiptap-handle-size: 1.75rem;
+    --mn-tiptap-handle-size: 1.5rem;
+    --mn-tiptap-handle-height: 2rem;
 }
 
 .mn-tiptap-drag-context-menu-handle {
-    height: var(--mn-tiptap-handle-size, 1.625rem);
+    height: var(--mn-tiptap-handle-height, 2rem);
 }
 
 .mn-tiptap-drag-context-menu-handle .tiptap-button {
-    width: var(--mn-tiptap-handle-size, 1.625rem);
-    min-width: var(--mn-tiptap-handle-size, 1.625rem);
-    height: var(--mn-tiptap-handle-size, 1.625rem);
-    border-radius: var(--tt-radius-md, 0.5rem);
-    border: 1px solid color-mix(in srgb, var(--mn-border) 58%, transparent);
-    background: color-mix(in srgb, var(--mn-surface-raised) 72%, transparent);
-    color: color-mix(in srgb, var(--mn-ink-3) 76%, transparent);
-    box-shadow: 0 1px 2px color-mix(in srgb, var(--mn-ink) 5%, transparent);
+    width: var(--mn-tiptap-handle-size, 1.5rem);
+    min-width: var(--mn-tiptap-handle-size, 1.5rem);
+    height: var(--mn-tiptap-handle-height, 2rem);
+    padding: 0.5rem 0;
+    border-radius: var(--tt-radius-lg, 0.75rem);
+    border: 0;
+    background: transparent;
+    color: color-mix(in srgb, var(--mn-ink-3) 72%, transparent);
+    box-shadow: none;
 }
 
 .mn-tiptap-drag-context-menu-handle .tiptap-button:hover,
 .mn-tiptap-drag-context-menu-handle .tiptap-button[data-state="open"] {
     color: var(--mn-ink-2);
-    border-color: color-mix(in srgb, var(--mn-accent) 28%, var(--mn-border));
-    background-color: var(--mn-surface-raised);
-    box-shadow: var(--mn-shadow-xs);
+    border-color: transparent;
+    background-color: color-mix(in srgb, var(--mn-ink) 6%, transparent);
+    box-shadow: none;
 }
 
 .mn-tiptap-drag-context-menu-handle .tiptap-button-icon {

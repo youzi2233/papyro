@@ -632,23 +632,24 @@ async function exerciseTableLayer(client) {
     throw new Error("Unable to resolve a table cell hover point for handle smoke");
   }
   await movePoint(client, handleHoverPoint);
-  await assertEventually(client, "table handles use a small visual control inside a stable hitbox", () => {
+  await assertEventually(client, "table handles use official quiet rails", () => {
     const handle = document.querySelector(".tiptap-table-handle-menu.row, .tiptap-table-handle-menu.column");
     if (!handle) return false;
 
     const style = getComputedStyle(handle);
     const control = getComputedStyle(handle, "::before");
     const rect = handle.getBoundingClientRect();
-    const controlWidth = Number.parseFloat(control.width);
-    const controlHeight = Number.parseFloat(control.height);
+    const isRow = handle.classList.contains("row");
+    const crossAxis = isRow ? rect.width : rect.height;
+    const mainAxis = isRow ? rect.height : rect.width;
 
-    return style.backgroundColor === "rgba(0, 0, 0, 0)" &&
-      control.content !== "none" &&
-      controlWidth >= 20 &&
-      controlWidth <= 26 &&
-      controlHeight >= 20 &&
-      controlHeight <= 26 &&
-      (rect.height > controlHeight + 4 || rect.width > controlWidth + 4);
+    return style.backgroundColor !== "rgba(0, 0, 0, 0)" &&
+      style.backgroundColor !== "transparent" &&
+      Number.parseFloat(style.borderRadius) >= 8 &&
+      control.content === "none" &&
+      crossAxis >= 10 &&
+      crossAxis <= 14 &&
+      mainAxis > crossAxis + 4;
   });
   const resizeBaseline = await evaluate(client, () => {
     const cell = document.querySelector(".ProseMirror table td, .ProseMirror table th");
@@ -757,7 +758,7 @@ async function exerciseTableLayer(client) {
     return true;
   }, resizeBaseline);
   await clickSelector(client, ".expandable-menu-button");
-  await assertEventually(client, "official table cell menu opens with an opaque bounded surface", () => {
+  await assertEventually(client, "official table cell menu uses transparent root and opaque panel", () => {
     const root = document.querySelector(".tiptap-menu-content.tiptap-table-menu-content");
     const panel = root?.querySelector(":scope > .tiptap-combobox-list");
     if (!root || !panel) return false;
@@ -771,12 +772,13 @@ async function exerciseTableLayer(client) {
 
     return rootStyle.overflow === "visible" &&
       Number.parseInt(rootStyle.zIndex, 10) >= 50 &&
-      rootStyle.backgroundColor !== "rgba(0, 0, 0, 0)" &&
-      rootStyle.backgroundColor !== "transparent" &&
-      rootStyle.boxShadow !== "none" &&
+      rootStyle.backgroundColor === "rgba(0, 0, 0, 0)" &&
+      rootStyle.boxShadow === "none" &&
       rootRect.width >= 180 &&
       rootRect.width <= Math.min(304, window.innerWidth - 24) + 1 &&
-      panelStyle.backgroundColor === "rgba(0, 0, 0, 0)" &&
+      panelStyle.backgroundColor !== "rgba(0, 0, 0, 0)" &&
+      panelStyle.backgroundColor !== "transparent" &&
+      panelStyle.boxShadow !== "none" &&
       panelStyle.overflowX === "hidden" &&
       panelStyle.overflowY === "auto" &&
       rect.width >= 180 &&

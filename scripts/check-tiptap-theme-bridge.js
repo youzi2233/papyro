@@ -87,7 +87,7 @@ const BRIDGE_REQUIREMENTS = [
   ["--tt-selection-color", "var(--mn-selection-bg"],
   ["--tt-card-bg-color", "var(--mn-surface-raised"],
   ["--tt-card-border-color", "var(--mn-divider"],
-  ["--tt-shadow-elevated-md", "var(--mn-shadow-md"],
+  ["--tt-shadow-elevated-md", "var(--mn-shadow"],
   ["--tt-brand-color-50", "var(--mn-accent"],
   ["--tt-brand-color-500", "var(--mn-accent"],
   ["--tt-brand-color-600", "var(--mn-accent-strong"],
@@ -100,7 +100,7 @@ const BRIDGE_REQUIREMENTS = [
   ["--tt-table-column-resize-handle-bg", "var(--mn-accent"],
   ["--tt-table-cell-padding", "var(--mn-markdown-table-cell-pad"],
   ["--tt-table-margin-block", "var(--mn-markdown-block-gap"],
-  ["--tt-table-handle-bg-color", "var(--mn-surface-raised"],
+  ["--tt-table-handle-bg-color", "var(--mn"],
   ["--tt-table-extend-icon-color", "var(--mn-ink-3"],
 ];
 

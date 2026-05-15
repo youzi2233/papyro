@@ -128,29 +128,22 @@
 :root {
     --tt-table-handle-bg-color: color-mix(
         in srgb,
-        var(--mn-surface-raised, #ffffff) 90%,
-        var(--mn-ink, #111827)
+        var(--mn-ink, #111827) 7%,
+        transparent
     );
-    --tt-table-handle-border-color: color-mix(
+    --tt-table-handle-hover-bg-color: color-mix(
         in srgb,
-        var(--mn-border, #e5e7eb) 72%,
+        var(--mn-ink, #111827) 11%,
         transparent
     );
     --tt-table-handle-icon-color: color-mix(
         in srgb,
-        var(--mn-ink-3, #64748b) 78%,
+        var(--mn-ink-3, #64748b) 72%,
         transparent
     );
-    --tt-table-handle-control-bg: color-mix(
-        in srgb,
-        var(--mn-surface-raised, #ffffff) 88%,
-        transparent
-    );
-    --tt-table-handle-control-shadow:
-        0 1px 2px color-mix(in srgb, var(--mn-ink, #111827) 7%, transparent),
-        0 8px 18px color-mix(in srgb, var(--mn-ink, #111827) 8%, transparent);
-    --tt-table-handle-control-shadow-open:
-        0 7px 18px color-mix(in srgb, var(--mn-accent, #2563eb) 22%, transparent);
+    --tt-table-handle-open-bg-color: var(--mn-accent, var(--tt-brand-color-500));
+    --tt-table-handle-open-icon-color: var(--mn-accent-ink, #ffffff);
+    --tt-table-extend-icon-color: color-mix(in srgb, var(--mn-ink-3, #64748b) 72%, transparent);
 }
 
 .dark .mn-tiptap-react-root,
@@ -158,24 +151,16 @@
 .dark {
     --tt-table-handle-bg-color: color-mix(
         in srgb,
-        var(--mn-surface-raised, #111827) 84%,
-        var(--mn-ink, #e5e7eb)
-    );
-    --tt-table-handle-border-color: color-mix(
-        in srgb,
-        var(--mn-border, #334155) 64%,
+        var(--mn-ink, #e5e7eb) 8%,
         transparent
     );
-    --tt-table-handle-icon-color: color-mix(
+    --tt-table-handle-hover-bg-color: color-mix(
         in srgb,
-        var(--mn-ink-3, #94a3b8) 82%,
+        var(--mn-ink, #e5e7eb) 12%,
         transparent
     );
-    --tt-table-handle-control-bg: color-mix(
-        in srgb,
-        var(--mn-surface-raised, #111827) 88%,
-        transparent
-    );
+    --tt-table-handle-icon-color: color-mix(in srgb, var(--mn-ink-3, #94a3b8) 82%, transparent);
+    --tt-table-extend-icon-color: color-mix(in srgb, var(--mn-ink-3, #94a3b8) 82%, transparent);
 }
 
 :root .tiptap-table-handle-menu,
@@ -190,75 +175,40 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    min-width: 0;
+    min-height: 0;
     padding: 0;
     border: 0;
-    background: transparent;
+    border-radius: 999px;
+    background-color: var(--tt-table-handle-bg-color);
     color: var(--tt-table-handle-icon-color);
+    box-shadow: none;
     cursor: grab;
-    opacity: 0.92;
+    opacity: 1;
+    overflow: visible;
     transition:
-        opacity var(--tt-transition-duration-short, 0.1s) ease,
+        background-color var(--tt-transition-duration-short, 0.1s) ease,
         color var(--tt-transition-duration-short, 0.1s) ease,
-        transform var(--tt-transition-duration-short, 0.1s) ease;
+        opacity var(--tt-transition-duration-short, 0.1s) ease;
 }
 
 .tiptap-table-handle-menu::before {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    box-sizing: border-box;
-    width: 1.45rem;
-    height: 1.45rem;
-    border: 1px solid var(--tt-table-handle-border-color);
-    border-radius: var(--tt-radius-md, 0.5rem);
-    background:
-        linear-gradient(
-            180deg,
-            color-mix(in srgb, #fff 42%, transparent),
-            transparent 58%
-        ),
-        var(--tt-table-handle-control-bg);
-    box-shadow: var(--tt-table-handle-control-shadow);
-    content: "";
-    transform: translate(-50%, -50%) scale(0.94);
-    transition:
-        background-color var(--tt-transition-duration-short, 0.1s) ease,
-        border-color var(--tt-transition-duration-short, 0.1s) ease,
-        box-shadow var(--tt-transition-duration-short, 0.1s) ease,
-        transform var(--tt-transition-duration-short, 0.1s) ease;
+    content: none;
 }
 
 .tiptap-table-handle-menu .tiptap-button-icon {
     position: relative;
     z-index: 1;
-    width: 0.875rem;
-    height: 0.875rem;
+    width: 1rem;
+    height: 1rem;
     flex-shrink: 0;
     color: currentColor;
 }
 
 .tiptap-table-handle-menu:hover,
 .tiptap-table-handle-menu:focus-visible {
+    background-color: var(--tt-table-handle-hover-bg-color);
     color: var(--mn-ink-2, currentColor);
-    opacity: 1;
-}
-
-.tiptap-table-handle-menu:hover::before,
-.tiptap-table-handle-menu:focus-visible::before {
-    border-color: color-mix(
-        in srgb,
-        var(--mn-accent, var(--tt-brand-color-500)) 32%,
-        var(--mn-border, #e5e7eb)
-    );
-    background:
-        linear-gradient(
-            180deg,
-            color-mix(in srgb, #fff 55%, transparent),
-            transparent 62%
-        ),
-        var(--mn-surface-raised, var(--tt-table-handle-bg-color));
-    box-shadow: var(--mn-shadow-sm, var(--tt-table-handle-control-shadow));
-    transform: translate(-50%, -50%) scale(1);
 }
 
 .tiptap-table-handle-menu:focus-visible {
@@ -270,45 +220,22 @@
 
 .tiptap-table-handle-menu.menu-opened,
 .tiptap-table-handle-menu.is-dragging {
-    color: var(--mn-accent-ink, #ffffff);
-}
-
-.tiptap-table-handle-menu.menu-opened::before {
-    border-color: color-mix(
-        in srgb,
-        var(--mn-accent, var(--tt-brand-color-500)) 72%,
-        var(--mn-surface-raised, #ffffff)
-    );
-    background:
-        linear-gradient(
-            180deg,
-            color-mix(in srgb, #fff 18%, transparent),
-            transparent 62%
-        ),
-        var(--mn-accent, var(--tt-brand-color-500));
-    box-shadow: var(--tt-table-handle-control-shadow-open);
-    transform: translate(-50%, -50%) scale(1);
+    background-color: var(--tt-table-handle-open-bg-color);
+    color: var(--tt-table-handle-open-icon-color);
 }
 
 .tiptap-table-handle-menu.is-dragging {
     cursor: grabbing;
 }
 
-.tiptap-table-handle-menu.is-dragging::before {
-    border-color: var(--mn-accent, var(--tt-brand-color-500));
-    background: var(--mn-accent, var(--tt-brand-color-500));
-    box-shadow: var(--tt-table-handle-control-shadow-open);
-    transform: translate(-50%, -50%) scale(0.98);
-}
-
 .tiptap-table-handle-menu.row {
-    width: 1.5rem;
+    width: 0.75rem;
     height: var(--table-handle-ref-height);
 }
 
 .tiptap-table-handle-menu.column {
     width: var(--table-handle-ref-width);
-    height: 1.5rem;
+    height: 0.75rem;
 }
 
 .tiptap-table-handle-menu.column .tiptap-button-icon {
@@ -316,35 +243,30 @@
 }
 
 .expandable-menu-button {
-    --button-size: 22px;
-    --button-offset: 0.375rem;
-    --dot-size-small: 6px;
-    --dot-size-large: 22px;
-    --dot-offset-small: 8px;
+    --button-size: 16px;
+    --button-offset: 0.25rem;
+    --dot-size-small: 8px;
+    --dot-size-large: 16px;
+    --dot-offset-small: 4px;
     --dot-offset-large: 0;
-    --border-radius-full: var(--tt-radius-md, 0.5rem);
-    --transition-duration: 0.12s;
-    --transition-timing: ease-out;
-    --icon-scale-small: 0.78;
+    --border-radius-full: 9999px;
+    --transition-duration: 0.05s;
+    --transition-timing: ease;
+    --icon-scale-small: 0.9;
     --icon-scale-large: 1;
     --cell-handle-idle-bg: color-mix(
         in srgb,
-        var(--mn-ink-3, #64748b) 48%,
+        var(--mn-accent, var(--tt-brand-color-600, #2563eb)) 88%,
         transparent
     );
     --cell-handle-open-bg: color-mix(
         in srgb,
-        var(--mn-surface-raised, #ffffff) 88%,
-        transparent
+        var(--mn-accent, var(--tt-brand-color-600, #2563eb)) 92%,
+        var(--mn-surface-raised, #ffffff)
     );
-    --cell-handle-open-icon: var(--mn-ink-2, #4b5563);
-    --cell-handle-open-border: color-mix(
-        in srgb,
-        var(--mn-accent, #2563eb) 28%,
-        var(--mn-border, #e5e7eb)
-    );
+    --cell-handle-open-icon: var(--mn-accent-ink, #ffffff);
     position: absolute;
-    top: 0.375rem;
+    top: 0.25rem;
     right: var(--button-offset);
     display: flex;
     align-items: center;
@@ -398,17 +320,7 @@
     right: var(--dot-offset-large);
     width: var(--dot-size-large);
     height: var(--dot-size-large);
-    border: 1px solid var(--cell-handle-open-border);
-    background:
-        linear-gradient(
-            180deg,
-            color-mix(in srgb, #fff 48%, transparent),
-            transparent 62%
-        ),
-        var(--cell-handle-open-bg);
-    box-shadow:
-        0 1px 2px color-mix(in srgb, var(--mn-ink, #111827) 7%, transparent),
-        0 8px 18px color-mix(in srgb, var(--mn-ink, #111827) 10%, transparent);
+    background: var(--cell-handle-open-bg);
 }
 
 .expandable-menu-button:hover svg,
@@ -420,7 +332,9 @@
 
 .expandable-menu-button:focus-visible {
     outline: 0;
-    box-shadow: var(--mn-focus-ring-sm, 0 0 0 2px rgba(37, 99, 235, 0.13));
+    box-shadow:
+        0 0 0 2px var(--mn-editor-bg, #ffffff),
+        var(--mn-focus-ring-sm, 0 0 0 2px rgba(37, 99, 235, 0.13));
     outline-offset: 2px;
 }
 
@@ -431,36 +345,18 @@
     justify-content: center;
     padding: 0;
     border: 0;
-    background: transparent;
-    background-color: transparent;
+    background-color: var(--tt-table-handle-bg-color);
+    border-radius: 999px;
     color: var(--tt-table-extend-icon-color);
     box-shadow: none;
     transition:
+        background-color var(--tt-transition-duration-short, 0.1s) ease,
         color var(--tt-transition-duration-short, 0.1s) ease,
         opacity var(--tt-transition-duration-short, 0.1s) ease;
 }
 
 .tiptap-table-extend-row-column-button::before {
-    position: absolute;
-    box-sizing: border-box;
-    border: 1px solid var(--tt-table-handle-border-color);
-    border-radius: var(--tt-radius-md, 0.5rem);
-    background:
-        linear-gradient(
-            180deg,
-            color-mix(in srgb, #fff 42%, transparent),
-            transparent 58%
-        ),
-        var(--tt-table-handle-control-bg);
-    box-shadow: var(--tt-table-handle-control-shadow);
-    content: "";
-    opacity: 0.92;
-    transition:
-        background-color var(--tt-transition-duration-short, 0.1s) ease,
-        border-color var(--tt-transition-duration-short, 0.1s) ease,
-        box-shadow var(--tt-transition-duration-short, 0.1s) ease,
-        opacity var(--tt-transition-duration-short, 0.1s) ease,
-        transform var(--tt-transition-duration-short, 0.1s) ease;
+    content: none;
 }
 
 .tiptap-table-extend-row-column-button .tiptap-button-icon {
@@ -475,26 +371,8 @@
 .tiptap-table-extend-row-column-button:hover,
 .tiptap-table-extend-row-column-button:focus-visible,
 .tiptap-table-extend-row-column-button.editing {
+    background-color: var(--tt-table-handle-hover-bg-color);
     color: var(--mn-ink-2, var(--tt-table-extend-icon-color));
-}
-
-.tiptap-table-extend-row-column-button:hover::before,
-.tiptap-table-extend-row-column-button:focus-visible::before,
-.tiptap-table-extend-row-column-button.editing::before {
-    border-color: color-mix(
-        in srgb,
-        var(--mn-accent, var(--tt-brand-color-500)) 32%,
-        var(--mn-border, #e5e7eb)
-    );
-    background:
-        linear-gradient(
-            180deg,
-            color-mix(in srgb, #fff 55%, transparent),
-            transparent 62%
-        ),
-        var(--mn-surface-raised, var(--tt-table-handle-bg-color));
-    box-shadow: var(--mn-shadow-sm, var(--tt-table-handle-control-shadow));
-    opacity: 1;
 }
 
 .tiptap-table-extend-row-column-button:focus-visible {
@@ -504,34 +382,13 @@
 
 .tiptap-table-extend-row-column-button.tiptap-table-row-end-add-remove {
     width: 100%;
-    height: 1rem;
+    height: 0.75rem;
     cursor: row-resize;
 }
 
-.tiptap-table-extend-row-column-button.tiptap-table-row-end-add-remove::before {
-    width: 2rem;
-    height: 0.875rem;
-    transform: scale(0.96);
-}
-
 .tiptap-table-extend-row-column-button.tiptap-table-column-end-add-remove {
-    width: 1rem;
+    width: 0.75rem;
     cursor: col-resize;
-}
-
-.tiptap-table-extend-row-column-button.tiptap-table-column-end-add-remove::before {
-    width: 0.875rem;
-    height: 2rem;
-    transform: scale(0.96);
-}
-
-.tiptap-table-extend-row-column-button.tiptap-table-row-end-add-remove:hover::before,
-.tiptap-table-extend-row-column-button.tiptap-table-row-end-add-remove:focus-visible::before,
-.tiptap-table-extend-row-column-button.tiptap-table-row-end-add-remove.editing::before,
-.tiptap-table-extend-row-column-button.tiptap-table-column-end-add-remove:hover::before,
-.tiptap-table-extend-row-column-button.tiptap-table-column-end-add-remove:focus-visible::before,
-.tiptap-table-extend-row-column-button.tiptap-table-column-end-add-remove.editing::before {
-    transform: scale(1);
 }
 
 .tiptap-menu-content.tiptap-table-menu-content {
@@ -539,22 +396,16 @@
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    min-width: min(17rem, calc(100vw - 32px));
+    min-width: min(15rem, calc(100vw - 32px));
     height: auto;
     max-width: min(19rem, calc(100vw - 32px));
     max-height: min(30rem, var(--popover-available-height, 72vh));
-    padding: 0.3125rem;
-    border: 1px solid var(--tiptap-card-border-color, var(--mn-divider));
-    border-radius: var(--mn-tiptap-menu-radius, var(--tt-radius-lg, 0.5rem));
-    background:
-        linear-gradient(
-            180deg,
-            color-mix(in srgb, #fff 38%, transparent),
-            transparent 4rem
-        ),
-        var(--tiptap-card-bg-color, var(--mn-surface-raised, #ffffff));
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
     color: var(--tt-popover-text-color, var(--mn-ink-2, #4b5563));
-    box-shadow: var(--mn-shadow-menu, var(--tt-shadow-elevated-md));
+    box-shadow: none;
     outline: 0;
     isolation: isolate;
     pointer-events: auto;
@@ -563,15 +414,17 @@
 
 .tiptap-table-menu-content > .tiptap-combobox-list {
     width: 100%;
-    min-width: min(16rem, calc(100vw - 32px));
-    max-width: 100%;
-    max-height: calc(min(30rem, var(--popover-available-height, 72vh)) - 0.625rem);
-    margin-block: 0;
-    padding: 0.125rem;
-    border: 0;
-    border-radius: calc(var(--mn-tiptap-menu-radius, 0.5rem) - 0.125rem);
-    background: transparent;
-    box-shadow: none;
+    min-width: min(15rem, calc(100vw - 32px));
+    max-width: min(16rem, calc(100vw - 32px));
+    max-height: min(30rem, var(--popover-available-height, 72vh));
+    margin-block: 0.375rem;
+    padding: 0.375rem;
+    border: 1px solid var(--tt-combobox-border-color, var(--tiptap-card-border-color, var(--mn-divider)));
+    border-radius: var(--mn-tiptap-menu-radius, var(--tt-radius-lg, 0.5rem));
+    background-color: var(--tt-combobox-bg-color, var(--tiptap-card-bg-color, var(--mn-surface-raised, #ffffff)));
+    color: var(--tt-combobox-text-color, var(--mn-ink-2, #4b5563));
+    box-shadow: var(--tt-shadow-elevated-md, var(--mn-shadow-menu, 0 18px 42px rgba(15, 23, 42, 0.09)));
+    outline: 0;
     overflow-x: hidden;
     overflow-y: auto;
     scrollbar-gutter: stable;

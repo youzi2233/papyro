@@ -309,7 +309,7 @@
   --tt-selection-color: var(--mn-selection-bg, rgba(37, 99, 235, 0.18));
   --tt-card-bg-color: var(--mn-surface-raised, #ffffff);
   --tt-card-border-color: var(--mn-divider, rgba(15, 23, 42, 0.08));
-  --tt-shadow-elevated-md: var(--mn-shadow-md, 0 18px 42px rgba(15, 23, 42, 0.09));
+  --tt-shadow-elevated-md: var(--mn-shadow-menu, var(--mn-shadow-md, 0 18px 42px rgba(15, 23, 42, 0.09)));
   --tt-toolbar-bg-color: var(--mn-surface-raised, #ffffff);
   --tt-toolbar-border-color: var(--mn-divider, rgba(15, 23, 42, 0.08));
   --tt-popover-bg-color: var(--mn-surface-raised, #ffffff);
