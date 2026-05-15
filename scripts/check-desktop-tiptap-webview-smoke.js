@@ -758,6 +758,24 @@ async function exerciseTableLayer(client) {
     return true;
   }, resizeBaseline);
   await clickSelector(client, ".expandable-menu-button");
+  await assertEventually(client, "table cell handle uses refined menu trigger chrome", () => {
+    const handle = document.querySelector(".expandable-menu-button.menu-opened");
+    if (!handle) return false;
+
+    const rect = handle.getBoundingClientRect();
+    const before = getComputedStyle(handle, "::before");
+    const icon = handle.querySelector("svg");
+    const iconStyle = icon ? getComputedStyle(icon) : null;
+
+    return rect.width >= 18 &&
+      rect.height >= 18 &&
+      before.width === "18px" &&
+      before.height === "18px" &&
+      before.backgroundColor !== "rgba(0, 0, 0, 0)" &&
+      before.borderStyle === "solid" &&
+      before.boxShadow !== "none" &&
+      iconStyle?.opacity === "1";
+  });
   await assertEventually(client, "official table cell menu uses transparent root and opaque panel", () => {
     const root = document.querySelector(".tiptap-menu-content.tiptap-table-menu-content");
     const panel = root?.querySelector(":scope > .tiptap-combobox-list");
@@ -825,6 +843,127 @@ async function exerciseTableLayer(client) {
           buttonRect.height <= 40;
       });
   });
+  const colorPoint = await evaluate(client, () => {
+    const labels = Array.from(document.querySelectorAll(".tiptap-table-menu-content .tiptap-button-text"));
+    const label = labels.find((candidate) => candidate.textContent?.trim() === "Color");
+    const button = label?.closest(".tiptap-button");
+    if (!button) return null;
+    const rect = button.getBoundingClientRect();
+    return {
+      x: rect.left + Math.max(8, Math.min(rect.width / 2, rect.width - 8)),
+      y: rect.top + Math.max(8, Math.min(rect.height / 2, rect.height - 8)),
+    };
+  });
+  if (!colorPoint) {
+    throw new Error("Unable to resolve table color menu hover point");
+  }
+  await movePoint(client, colorPoint);
+  await assertEventually(client, "table color submenu opens with refined group labels", () => {
+    const colorLabel = Array
+      .from(document.querySelectorAll(".tiptap-table-menu-content .tiptap-button-text"))
+      .find((candidate) => candidate.textContent?.trim() === "Color");
+    const colorButton = colorLabel?.closest(".tiptap-button");
+    const colorButtonStyle = colorButton ? getComputedStyle(colorButton) : null;
+    const roots = Array.from(document.querySelectorAll(".tiptap-menu-content"));
+    const submenu = roots.find((root) =>
+      root !== document.querySelector(".tiptap-menu-content.tiptap-table-menu-content") &&
+      root.textContent?.includes("Background color")
+    );
+    const panel = submenu?.querySelector(".tiptap-combobox-list");
+    const labels = Array.from(submenu?.querySelectorAll(".tiptap-menu-group-label") ?? []);
+    const backgroundLabel = labels.find((label) => label.textContent?.trim() === "Background color");
+    const textColorLabel = labels.find((label) => label.textContent?.trim() === "Text color");
+    if (!colorButton || !colorButtonStyle || !submenu || !panel || !backgroundLabel || !textColorLabel) {
+      return false;
+    }
+
+    const labelStyle = getComputedStyle(backgroundLabel);
+    const dividerStyle = getComputedStyle(backgroundLabel, "::after");
+    const panelStyle = getComputedStyle(panel);
+
+    return panelStyle.backgroundColor !== "rgba(0, 0, 0, 0)" &&
+      colorButtonStyle.backgroundColor !== "rgba(0, 0, 0, 0)" &&
+      colorButtonStyle.backgroundColor !== "transparent" &&
+      labelStyle.display === "flex" &&
+      Number.parseFloat(labelStyle.fontSize) <= 12 &&
+      dividerStyle.content !== "none" &&
+      dividerStyle.height === "1px";
+  });
+  await assertEventually(client, "table color submenu exposes direct hover selectors", () => {
+    const submenu = Array.from(document.querySelectorAll(".tiptap-menu-content"))
+      .find((root) =>
+        !root.classList.contains("tiptap-table-menu-content") &&
+        root.textContent?.includes("Background color")
+      );
+    const target = Array
+      .from(submenu?.querySelectorAll(".tiptap-button-text") ?? [])
+      .find((candidate) => candidate.textContent?.trim() === "Gray background")
+      ?.closest(".tiptap-button");
+    if (!target) return false;
+    const rect = target.getBoundingClientRect();
+    return target.matches(".tiptap-menu-item.tiptap-button") &&
+      rect.height <= 40 &&
+      getComputedStyle(target).flexWrap === "nowrap";
+  });
+  const alignmentPoint = await evaluate(client, () => {
+    const labels = Array.from(document.querySelectorAll(".tiptap-table-menu-content .tiptap-button-text"));
+    const label = labels.find((candidate) => candidate.textContent?.trim() === "Alignment");
+    const button = label?.closest(".tiptap-button");
+    if (!button) return null;
+    const rect = button.getBoundingClientRect();
+    return {
+      x: rect.left + Math.max(8, Math.min(rect.width / 2, rect.width - 8)),
+      y: rect.top + Math.max(8, Math.min(rect.height / 2, rect.height - 8)),
+    };
+  });
+  if (!alignmentPoint) {
+    throw new Error("Unable to resolve table alignment menu hover point");
+  }
+  await movePoint(client, alignmentPoint);
+  await assertEventually(client, "table alignment submenu opens with grouped options", () => {
+    const roots = Array.from(document.querySelectorAll(".tiptap-menu-content"));
+    const submenu = roots.find((root) =>
+      !root.classList.contains("tiptap-table-menu-content") &&
+      root.textContent?.includes("Align center")
+    );
+    const labels = Array.from(submenu?.querySelectorAll(".tiptap-menu-group-label") ?? []);
+    return Boolean(
+      submenu &&
+      labels.some((label) => label.textContent?.trim() === "Text alignment") &&
+      labels.some((label) => label.textContent?.trim() === "Cell vertical alignment")
+    );
+  });
+  const alignCenterPoint = await evaluate(client, () => {
+    const submenu = Array.from(document.querySelectorAll(".tiptap-menu-content"))
+      .find((root) =>
+        !root.classList.contains("tiptap-table-menu-content") &&
+        root.textContent?.includes("Align center")
+      );
+    const target = Array
+      .from(submenu?.querySelectorAll(".tiptap-button-text") ?? [])
+      .find((candidate) => candidate.textContent?.trim() === "Align center")
+      ?.closest(".tiptap-button");
+    if (!target) return null;
+    const rect = target.getBoundingClientRect();
+    return {
+      x: rect.left + Math.max(8, Math.min(rect.width / 2, rect.width - 8)),
+      y: rect.top + Math.max(8, Math.min(rect.height / 2, rect.height - 8)),
+    };
+  });
+  if (!alignCenterPoint) {
+    throw new Error("Unable to resolve table align center menu point");
+  }
+  await clickPoint(client, alignCenterPoint);
+  await assertEventually(client, "table alignment menu applies center alignment to the cell", () => {
+    const cell = document.querySelector(".ProseMirror table td, .ProseMirror table th");
+    return Boolean(
+      cell &&
+      (
+        cell.style.textAlign === "center" ||
+        getComputedStyle(cell).textAlign === "center"
+      )
+    );
+  });
   await pressKey(client, "Escape");
   await assertEventually(client, "table cell menu Escape closes the menu and restores editor focus", () => {
     const editorDom = document.querySelector(".ProseMirror");
@@ -832,6 +971,59 @@ async function exerciseTableLayer(client) {
       editorDom &&
       document.activeElement === editorDom &&
       !document.querySelector(".tiptap-menu-content.tiptap-table-menu-content")
+    );
+  });
+}
+
+async function openFirstTableCellMenu(client) {
+  await assertEvaluate(client, "first table cell can be focused for cell menu", () => {
+    const editor = document.querySelector(".ProseMirror")?.editor;
+    const cell = document.querySelector(".ProseMirror table td, .ProseMirror table th");
+    if (!editor || !cell) return false;
+
+    const rect = cell.getBoundingClientRect();
+    let pos = null;
+    const resolvedPos = editor.view.posAtCoords({
+      left: rect.left + Math.min(Math.max(rect.width / 2, 1), rect.width - 1),
+      top: rect.top + Math.min(Math.max(rect.height / 2, 1), rect.height - 1),
+    })?.pos;
+    if (pos == null && resolvedPos != null) {
+      const $pos = editor.state.doc.resolve(resolvedPos);
+      for (let depth = $pos.depth; depth > 0; depth -= 1) {
+        const node = $pos.node(depth);
+        if (node.type.spec.tableRole === "cell" || node.type.spec.tableRole === "header_cell") {
+          pos = $pos.before(depth);
+          break;
+        }
+      }
+    }
+    if (pos == null) return false;
+
+    if (typeof editor.commands.setCellSelection === "function") {
+      editor.commands.setCellSelection({ anchorCell: pos, headCell: pos });
+    } else {
+      editor.commands.focus(pos);
+    }
+    cell.dispatchEvent(new MouseEvent("mousemove", {
+      bubbles: true,
+      cancelable: true,
+      clientX: rect.right - 8,
+      clientY: rect.top + Math.min(Math.max(rect.height / 2, 1), rect.height - 1),
+      view: window,
+    }));
+    return true;
+  });
+
+  await assertEventually(client, "table cell handle is available after refocusing the cell", () => {
+    const handle = document.querySelector(".expandable-menu-button");
+    if (!handle) return false;
+    const rect = handle.getBoundingClientRect();
+    return rect.width >= 16 && rect.height >= 16;
+  });
+  await clickSelector(client, ".expandable-menu-button");
+  await assertEventually(client, "table cell menu reopens from the focused cell", () => {
+    return Boolean(
+      document.querySelector(".tiptap-menu-content.tiptap-table-menu-content .tiptap-button-text")
     );
   });
 }
@@ -1192,6 +1384,10 @@ async function debugDomSnapshot(client) {
           `bg=${style.backgroundColor}`,
           `panel=${panel ? `${Math.round(panelRect.width)}x${Math.round(panelRect.height)} bg=${panelStyle.backgroundColor}` : "none"}`,
           `labels=${Array.from(content.querySelectorAll(".tiptap-button-text")).map((label) => label.textContent?.trim() ?? "").join("|")}`,
+          `items=${Array.from(content.querySelectorAll(".tiptap-menu-item, .tiptap-button")).slice(0, 8).map((item) => {
+            const itemStyle = getComputedStyle(item);
+            return `${item.tagName}.${item.className} hover=${item.matches(":hover")} highlighted=${item.getAttribute("data-highlighted")} bg=${itemStyle.backgroundColor} img=${itemStyle.backgroundImage !== "none"} shadow=${itemStyle.boxShadow !== "none"}`;
+          }).join("|")}`,
           `text="${(content.textContent ?? "").slice(0, 160)}"`,
         ].join(" ");
       })

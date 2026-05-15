@@ -51,7 +51,7 @@ export interface UseTableClearRowColumnContentConfig {
    */
   hideWhenUnavailable?: boolean
   /**
-   * Whether to reset cell attributes (backgroundColor, nodeVerticalAlign, nodeTextAlign) when clearing.
+   * Whether to reset cell attributes (backgroundColor, verticalAlign, align) when clearing.
    * @default false
    */
   resetAttrs?: boolean
@@ -72,9 +72,9 @@ export const tableClearRowColumnContentLabels: Record<Orientation, string> = {
  * Default cell attributes to reset when clearing content
  */
 const DEFAULT_CELL_ATTRS = {
+  align: null,
   backgroundColor: null,
-  nodeVerticalAlign: null,
-  nodeTextAlign: null,
+  verticalAlign: null,
 }
 
 /**

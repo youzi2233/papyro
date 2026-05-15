@@ -16,6 +16,17 @@
   );
   --tt-table-handle-open-bg-color: var(--mn-accent, var(--tt-brand-color-500));
   --tt-table-handle-open-icon-color: var(--mn-accent-ink, #ffffff);
+  --tt-table-cell-handle-bg-color: color-mix(
+    in srgb,
+    var(--mn-surface-raised, #ffffff) 88%,
+    var(--mn-ink, #111827) 12%
+  );
+  --tt-table-cell-handle-border-color: color-mix(
+    in srgb,
+    var(--mn-border, #d1d5db) 76%,
+    transparent
+  );
+  --tt-table-cell-handle-shadow: 0 1px 2px color-mix(in srgb, var(--mn-ink, #111827) 12%, transparent);
 }
 
 .dark {
@@ -32,6 +43,16 @@
   --tt-table-handle-icon-color: color-mix(
     in srgb,
     var(--mn-ink-3, #94a3b8) 82%,
+    transparent
+  );
+  --tt-table-cell-handle-bg-color: color-mix(
+    in srgb,
+    var(--mn-surface-raised, #1f2937) 82%,
+    var(--mn-ink, #e5e7eb) 18%
+  );
+  --tt-table-cell-handle-border-color: color-mix(
+    in srgb,
+    var(--mn-border, #334155) 82%,
     transparent
   );
 }
@@ -180,20 +201,27 @@
   border-radius: var(--tt-radius-sm, 6px);
   color: var(--mn-ink-2, var(--tt-popover-text-color));
   text-align: left;
+  transition:
+    background 120ms ease,
+    box-shadow 120ms ease,
+    color 120ms ease;
 }
 
 .tiptap-table-menu-content .tiptap-button:hover:not([disabled]),
+.tiptap-table-menu-content .tiptap-menu-item.tiptap-button:hover:not([disabled]),
 .tiptap-table-menu-content .tiptap-button[data-highlighted="true"]:not([disabled]),
+.tiptap-table-menu-content .tiptap-menu-item.tiptap-button[data-highlighted="true"]:not([disabled]),
 .tiptap-table-menu-content .tiptap-button[data-active-state="on"]:not([disabled]),
 .tiptap-table-menu-content .tiptap-button[data-state="open"]:not([disabled]) {
   background:
     linear-gradient(
       90deg,
       color-mix(in srgb, var(--mn-accent, #2563eb) 12%, transparent),
-      transparent 70%
+        transparent 70%
     ),
-    var(--mn-chrome-hover, color-mix(in srgb, var(--mn-ink, #111827) 5%, transparent));
+    var(--mn-tiptap-menu-hover-bg, var(--mn-chrome-hover, color-mix(in srgb, var(--mn-ink, #111827) 5%, transparent)));
   color: var(--mn-ink, #111827);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mn-accent, #2563eb) 10%, transparent);
 }
 
 .tiptap-table-menu-content .tiptap-button:focus-visible {
@@ -206,6 +234,18 @@
   width: 0.9375rem;
   height: 0.9375rem;
   color: color-mix(in srgb, var(--mn-ink-3, #64748b) 82%, transparent);
+}
+
+.tiptap-table-menu-content .tiptap-button:hover:not([disabled]) .tiptap-button-icon,
+.tiptap-table-menu-content .tiptap-menu-item.tiptap-button:hover:not([disabled]) .tiptap-button-icon,
+.tiptap-table-menu-content .tiptap-button[data-highlighted="true"]:not([disabled]) .tiptap-button-icon,
+.tiptap-table-menu-content .tiptap-button[data-active-state="on"]:not([disabled]) .tiptap-button-icon,
+.tiptap-table-menu-content .tiptap-button[data-state="open"]:not([disabled]) .tiptap-button-icon,
+.tiptap-table-menu-content .tiptap-button:hover:not([disabled]) .tiptap-menu-button-arrow,
+.tiptap-table-menu-content .tiptap-menu-item.tiptap-button:hover:not([disabled]) .tiptap-menu-button-arrow,
+.tiptap-table-menu-content .tiptap-button[data-highlighted="true"]:not([disabled]) .tiptap-menu-button-arrow,
+.tiptap-table-menu-content .tiptap-button[data-state="open"]:not([disabled]) .tiptap-menu-button-arrow {
+  color: currentColor;
 }
 
 .tiptap-table-menu-content .tiptap-menu-button-arrow {
@@ -231,4 +271,34 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   line-height: 1.35;
+}
+
+.tiptap-table-menu-content .tiptap-menu-group-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.625rem 0.5rem 0.25rem;
+  color: var(--mn-tiptap-menu-label-ink, var(--mn-ink-3, #64748b));
+  font-size: 0.6875rem;
+  font-weight: 650;
+  letter-spacing: 0;
+  line-height: 1.15;
+}
+
+.tiptap-table-menu-content .tiptap-menu-group-label::after {
+  content: "";
+  flex: 1 1 auto;
+  height: 1px;
+  background: color-mix(in srgb, var(--mn-divider, rgba(15, 23, 42, 0.08)) 82%, transparent);
+}
+
+.tiptap-table-menu-content .tiptap-button-color-text,
+.tiptap-table-menu-content .tiptap-button-highlight {
+  width: var(--mn-tiptap-menu-swatch-size, 1rem);
+  height: var(--mn-tiptap-menu-swatch-size, 1rem);
+  margin: 0;
+  border-radius: 999px;
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--mn-border, #d1d5db) 72%, transparent),
+    0 1px 2px color-mix(in srgb, var(--mn-ink, #111827) 10%, transparent);
 }

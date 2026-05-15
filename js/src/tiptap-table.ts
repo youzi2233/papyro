@@ -24,8 +24,9 @@ import { TableHandleExtension } from "./components/tiptap-node/table-node/extens
 
 export { TableKit };
 
-type TableCellResetAttribute = "align" | "backgroundColor";
+type TableCellResetAttribute = "align" | "backgroundColor" | "verticalAlign";
 type TableCellAlign = "left" | "center" | "right";
+type TableCellVerticalAlign = "top" | "middle" | "bottom";
 type AttributeValue = string | number | boolean | readonly number[] | null | undefined;
 type HtmlAttributes = Record<string, AttributeValue>;
 type ClipboardTextWriter = (text: string) => Promise<unknown> | unknown;
@@ -35,6 +36,7 @@ interface PapyroTableJSONNode extends JSONContent {
   attrs?: {
     align?: string | null;
     backgroundColor?: string | null;
+    verticalAlign?: string | null;
     colspan?: number | null;
     rowspan?: number | null;
     colwidth?: readonly number[] | null;
@@ -68,6 +70,7 @@ export interface PapyroTableExtensionOptions {
 export const PAPYRO_TABLE_CELL_RESET_ATTRS = Object.freeze([
   "align",
   "backgroundColor",
+  "verticalAlign",
 ] as const satisfies readonly TableCellResetAttribute[]);
 
 function escapeHtmlAttribute(value: unknown): string {
@@ -81,6 +84,13 @@ function escapeHtmlAttribute(value: unknown): string {
 function normalizeCellAlign(value: unknown): TableCellAlign | null {
   const align = String(value ?? "").trim().toLowerCase();
   return align === "left" || align === "center" || align === "right"
+    ? align
+    : null;
+}
+
+function normalizeCellVerticalAlign(value: unknown): TableCellVerticalAlign | null {
+  const align = String(value ?? "").trim().toLowerCase();
+  return align === "top" || align === "middle" || align === "bottom"
     ? align
     : null;
 }
@@ -120,6 +130,7 @@ function tableNeedsHtmlMarkdown(node: PapyroTableJSONNode): boolean {
       if (!isDefaultSpan(attrs.colspan) || !isDefaultSpan(attrs.rowspan)) return true;
       if (hasColumnWidth(cell)) return true;
       if (attrs.backgroundColor) return true;
+      if (normalizeCellVerticalAlign(attrs.verticalAlign)) return true;
 
       const align = normalizeCellAlign(attrs.align);
       if (columnAlignments[columnIndex] === undefined) {
@@ -148,10 +159,12 @@ function renderHtmlTableCell(
   const tag = cellNode?.type === "tableHeader" ? "th" : "td";
   const style: string[] = [];
   const align = normalizeCellAlign(attrs.align);
+  const verticalAlign = normalizeCellVerticalAlign(attrs.verticalAlign);
   const backgroundColor = attrs.backgroundColor ?? null;
   const htmlAttrs: HtmlAttributes = {};
 
   if (align) style.push(`text-align: ${align}`);
+  if (verticalAlign) style.push(`vertical-align: ${verticalAlign}`);
   if (backgroundColor) {
     style.push(`background-color: ${backgroundColor}`);
     htmlAttrs["data-cell-background"] = backgroundColor;
@@ -190,22 +203,85 @@ function parseCellBackgroundColor(element: HTMLElement): string | null {
   );
 }
 
-function renderCellBackgroundColor(attributes: {
-  backgroundColor?: string | null;
-}): Record<string, string> {
-  if (!attributes.backgroundColor) return {};
-  return {
-    "data-cell-background": attributes.backgroundColor,
-    style: `background-color: ${attributes.backgroundColor}`,
-  };
+function patchStyleDeclaration(
+  style: unknown,
+  property: string,
+  value: string | null,
+): string | undefined {
+  const declarations = String(style ?? "")
+    .split(";")
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .filter((part) => !part.toLowerCase().startsWith(`${property.toLowerCase()}:`));
+
+  if (value) {
+    declarations.push(`${property}: ${value}`);
+  }
+
+  return declarations.length > 0 ? declarations.join("; ") : undefined;
+}
+
+function parseCellVerticalAlign(element: HTMLElement): string | null {
+  return normalizeCellVerticalAlign(
+    element.getAttribute("data-cell-vertical-align") ||
+      element.style.verticalAlign ||
+      null,
+  );
 }
 
 function createPapyroCellAttributes() {
   return {
+    align: {
+      default: null,
+      renderHTML: (attributes: { align?: string | null }) => {
+        const align = normalizeCellAlign(attributes.align);
+        if (!align) return {};
+
+        return {
+          style: `text-align: ${align}`,
+        };
+      },
+    },
     backgroundColor: {
       default: null,
       parseHTML: parseCellBackgroundColor,
-      renderHTML: renderCellBackgroundColor,
+      renderHTML: (
+        attributes: {
+          backgroundColor?: string | null;
+          style?: string | null;
+        },
+      ) => {
+        if (!attributes.backgroundColor) return {};
+        return {
+          "data-cell-background": attributes.backgroundColor,
+          style: patchStyleDeclaration(
+            attributes.style,
+            "background-color",
+            attributes.backgroundColor,
+          ),
+        };
+      },
+    },
+    verticalAlign: {
+      default: null,
+      parseHTML: parseCellVerticalAlign,
+      renderHTML: (
+        attributes: {
+          style?: string | null;
+          verticalAlign?: string | null;
+        },
+      ) => {
+        const verticalAlign = normalizeCellVerticalAlign(attributes.verticalAlign);
+        if (!verticalAlign) return {};
+        return {
+          "data-cell-vertical-align": verticalAlign,
+          style: patchStyleDeclaration(
+            attributes.style,
+            "vertical-align",
+            verticalAlign,
+          ),
+        };
+      },
     },
   };
 }

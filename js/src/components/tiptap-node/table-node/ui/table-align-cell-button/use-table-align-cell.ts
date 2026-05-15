@@ -93,6 +93,23 @@ export const tableAlignCellIcons = {
   } as Record<VerticalAlignment, React.ComponentType<{ className?: string }>>,
 }
 
+function tableCellAlignmentAttribute(
+  alignmentType: AlignmentType
+): "align" | "verticalAlign" {
+  return alignmentType === "text" ? "align" : "verticalAlign"
+}
+
+function tableCellAlignmentValue(
+  alignmentType: AlignmentType,
+  alignment: TextAlignment | VerticalAlignment
+): TextAlignment | VerticalAlignment | null {
+  if (alignmentType === "text") {
+    return alignment === "left" ? null : alignment
+  }
+
+  return alignment === "top" ? null : alignment
+}
+
 /**
  * Checks if table cell alignment can be performed
  * in the current editor state.
@@ -175,9 +192,9 @@ function getCurrentAlignment(
     const attrs = cellNode.attrs || {}
 
     if (alignmentType === "text") {
-      return (attrs.nodeTextAlign as TextAlignment) || "left"
+      return (attrs.align as TextAlignment) || "left"
     } else {
-      return (attrs.nodeVerticalAlign as VerticalAlignment) || "top"
+      return (attrs.verticalAlign as VerticalAlignment) || "top"
     }
   } catch {
     return null
@@ -206,9 +223,9 @@ function getCurrentRowColumnAlignment(
     const attrs = firstCell.node.attrs || {}
 
     if (alignmentType === "text") {
-      return (attrs.nodeTextAlign as TextAlignment) || "left"
+      return (attrs.align as TextAlignment) || "left"
     } else {
-      return (attrs.nodeVerticalAlign as VerticalAlignment) || "top"
+      return (attrs.verticalAlign as VerticalAlignment) || "top"
     }
   } catch {
     return null
@@ -226,11 +243,10 @@ function setTableCellAlignment(
   if (!canAlignCell(editor) || !editor) return false
 
   try {
-    if (alignmentType === "text") {
-      return editor.commands.setCellAttribute("nodeTextAlign", alignment)
-    } else {
-      return editor.commands.setCellAttribute("nodeVerticalAlign", alignment)
-    }
+    return editor.commands.setCellAttribute(
+      tableCellAlignmentAttribute(alignmentType),
+      tableCellAlignmentValue(alignmentType, alignment)
+    )
   } catch (error) {
     console.error("Error setting table cell alignment:", error)
     return false
@@ -286,8 +302,8 @@ function setRowColumnAlignment({
       (a, b) => b.pos - a.pos
     )
 
-    const attributeName =
-      alignmentType === "text" ? "nodeTextAlign" : "nodeVerticalAlign"
+    const attributeName = tableCellAlignmentAttribute(alignmentType)
+    const attributeValue = tableCellAlignmentValue(alignmentType, alignment)
 
     cellsToProcess.forEach((cellInfo) => {
       if (cellInfo.node && cellInfo.pos !== undefined) {
@@ -296,7 +312,7 @@ function setRowColumnAlignment({
         const newCellNode = cellType.create(
           {
             ...cellInfo.node.attrs,
-            [attributeName]: alignment,
+            [attributeName]: attributeValue,
           },
           cellInfo.node.content,
           cellInfo.node.marks

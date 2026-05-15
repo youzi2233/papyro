@@ -508,6 +508,7 @@ js/src/
 - [x] 2026-05-15 跟进：移除宿主 CSS 对所有表格单元格正文的 `min-height` 强制值，只保留官方 resize handle 的出流、零文本度量和 layout/paint 隔离；同时让 table menu 直接面板具备 `overflow-y: auto` 与稳定 scrollbar gutter，避免菜单长内容挤压或透明穿透
 - [x] 2026-05-15 跟进：扩展 desktop Tiptap WebView smoke 为真实表格交互验收：点击单元格、移动到列边缘触发 ProseMirror `columnResizing` 句柄、断言 hover 前后单元格高度/正文子节点/文本稳定，并打开 `TableCellHandleMenu` 断言不透明 bounded surface、按钮对齐、文本裁剪和滚动行为
 - [x] 2026-05-15 视觉跟进：将 block drag handle、insert plus、table row/column handle、extend button 和 cell handle 统一为低干扰桌面控件：使用 lucide 线性图标，1.75rem block handle 与 1rem 表格 handle 的稳定点击目标，默认中性色轻量展示，hover/focus/open 才提升对比；表格句柄保留官方状态机但补充 Papyro 的边框、阴影、focus ring 和静态 CSS 防回归
+- [x] 2026-05-15 表格菜单跟进：将表格对齐命令改为使用官方 cell `align` 属性和 Papyro 持久化的 `verticalAlign` 属性，移除旧 `nodeTextAlign`/`nodeVerticalAlign` 桥接依赖；将单元格 handle 收敛为更低干扰的 16px chevron 控件；为 alignment flyout 补分组，并扩展真实桌面 WebView smoke 覆盖 Color 与 Alignment 二级菜单、直接 hover 状态，以及点击 `Align center` 后确实更新所选单元格
 
 #### 9.5 官方组件差异审计
 

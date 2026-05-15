@@ -1,29 +1,38 @@
 .expandable-menu-button {
-  --button-size: 16px;
-  --button-offset: 0.25rem;
-  --dot-size-small: 8px;
-  --dot-size-large: 16px;
-  --dot-offset-small: 4px;
+  --button-size: 18px;
+  --button-offset: 0.3125rem;
+  --dot-size-small: 16px;
+  --dot-size-large: 18px;
+  --dot-offset-small: 1px;
   --dot-offset-large: 0;
   --border-radius-full: 9999px;
-  --transition-duration: 0.05s;
-  --transition-timing: ease;
-  --icon-scale-small: 0.9;
+  --transition-duration: 0.12s;
+  --transition-timing: cubic-bezier(0.16, 1, 0.3, 1);
+  --icon-scale-small: 0.82;
   --icon-scale-large: 1;
   --cell-handle-idle-bg: color-mix(
     in srgb,
-    var(--mn-accent, var(--tt-brand-color-600, #2563eb)) 88%,
-    transparent
+    var(--mn-surface-raised, #ffffff) 88%,
+    var(--mn-ink, #111827) 12%
   );
   --cell-handle-open-bg: color-mix(
     in srgb,
-    var(--mn-accent, var(--tt-brand-color-600, #2563eb)) 92%,
-    var(--mn-surface-raised, #ffffff)
+    var(--mn-accent, var(--tt-brand-color-600, #2563eb)) 88%,
+    var(--mn-surface-raised, #ffffff) 12%
+  );
+  --cell-handle-idle-icon: color-mix(
+    in srgb,
+    var(--mn-ink-3, #64748b) 72%,
+    transparent
   );
   --cell-handle-open-icon: var(--mn-accent-ink, #ffffff);
+  --cell-handle-border: var(
+    --tt-table-cell-handle-border-color,
+    color-mix(in srgb, var(--mn-border, #d1d5db) 76%, transparent)
+  );
 
   position: absolute;
-  top: 0.25rem;
+  top: 0.3125rem;
   right: var(--button-offset);
   transform: none;
 
@@ -49,8 +58,12 @@
     width: var(--dot-size-small);
     height: var(--dot-size-small);
 
-    background: var(--cell-handle-idle-bg);
+    background: var(--tt-table-cell-handle-bg-color, var(--cell-handle-idle-bg));
+    border: 1px solid var(--cell-handle-border);
     border-radius: var(--border-radius-full);
+    box-shadow:
+      var(--tt-table-cell-handle-shadow, 0 1px 2px color-mix(in srgb, var(--mn-ink, #111827) 12%, transparent)),
+      inset 0 1px 0 color-mix(in srgb, #ffffff 84%, transparent);
     transform: translateY(-50%);
 
     transition:
@@ -68,9 +81,9 @@
 
     width: var(--button-size);
     height: var(--button-size);
-    color: var(--cell-handle-open-icon);
+    color: var(--cell-handle-idle-icon);
 
-    opacity: 0;
+    opacity: 0.46;
     transform: scale(var(--icon-scale-small));
 
     transition:
@@ -103,9 +116,14 @@
         height: var(--dot-size-large);
         right: var(--dot-offset-large);
         background: var(--cell-handle-open-bg);
+        border-color: color-mix(in srgb, var(--mn-accent, #2563eb) 36%, transparent);
+        box-shadow:
+          0 5px 14px color-mix(in srgb, var(--mn-accent, #2563eb) 22%, transparent),
+          inset 0 1px 0 color-mix(in srgb, #ffffff 18%, transparent);
       }
 
       svg {
+        color: var(--cell-handle-open-icon);
         opacity: 1;
         transform: scale(var(--icon-scale-large));
       }

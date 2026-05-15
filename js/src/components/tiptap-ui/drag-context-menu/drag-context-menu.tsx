@@ -55,6 +55,7 @@ import { TableAlignMenu } from "@/components/tiptap-node/table-node/ui/table-ali
 import { useTableFitToWidth } from "@/components/tiptap-node/table-node/ui/table-fit-to-width-button/use-table-fit-to-width"
 import { useTableClearRowColumnContent } from "@/components/tiptap-node/table-node/ui/table-clear-row-column-content-button"
 
+import { getNodeDisplayName } from "@/lib/tiptap-ui-utils"
 import { SR_ONLY } from "@/lib/tiptap-utils"
 import { restoreEditorFocusAfterFloatingMenu } from "@/lib/tiptap-menu-focus"
 
@@ -358,9 +359,7 @@ export const DragContextMenu: React.FC<DragContextMenuProps> = ({
 
   if (!editor) return null
 
-  const { selection } = editor.state
-  const resolvedNode = selection.$from.parent
-  const nodeName = resolvedNode?.type.name ?? "Block"
+  const nodeName = getNodeDisplayName(editor)
 
   return (
     <div

@@ -18,6 +18,9 @@ const slashMenuHookSource = readSource(
 const dragContextMenuSource = readSource(
   "../src/components/tiptap-ui/drag-context-menu/drag-context-menu.tsx",
 );
+const uiUtilsSource = readSource(
+  "../src/lib/tiptap-ui-utils.ts",
+);
 const tableHandleMenuSource = readSource(
   "../src/components/tiptap-node/table-node/ui/table-handle-menu/table-handle-menu.tsx",
 );
@@ -82,10 +85,14 @@ test("drag context menu keeps core local actions and excludes unsupported offici
   assert.match(dragContextMenuSource, /<DeleteActionGroup \/>/u);
   assert.match(dragContextMenuSource, /SlashCommandTriggerButton/u);
   assert.match(dragContextMenuSource, /typeof editor\.commands\.setLockDragHandle === "function"/u);
-  assert.match(dragContextMenuSource, /const resolvedNode = selection\.\$from\.parent/u);
+  assert.match(dragContextMenuSource, /const nodeName = getNodeDisplayName\(editor\)/u);
+  assert.match(dragContextMenuSource, /<MenuGroupLabel>\{nodeName\}<\/MenuGroupLabel>/u);
+  assert.match(uiUtilsSource, /bulletList:\s*"Bullet list"/u);
+  assert.match(uiUtilsSource, /orderedList:\s*"Numbered list"/u);
+  assert.match(uiUtilsSource, /taskList:\s*"Task list"/u);
   assert.doesNotMatch(
     dragContextMenuSource,
-    /useAiAsk|AskAiShortcutBadge|useCopyAnchorLink|CopyAnchorLinkShortcutBadge|useImageDownload|useTocShowTitle|getNodeDisplayName|isTextSelectionValid/u,
+    /useAiAsk|AskAiShortcutBadge|useCopyAnchorLink|CopyAnchorLinkShortcutBadge|useImageDownload|useTocShowTitle|isTextSelectionValid/u,
   );
 });
 

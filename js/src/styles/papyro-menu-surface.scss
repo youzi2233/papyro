@@ -24,6 +24,10 @@
   --mn-tiptap-menu-radius: var(--mn-radius-md, 8px);
   --mn-tiptap-menu-item-height: 2.125rem;
   --mn-tiptap-menu-item-gap: 0.625rem;
+  --mn-tiptap-menu-hover-bg: color-mix(in srgb, var(--mn-accent, #2563eb) 10%, var(--mn-surface, #f8fafc));
+  --mn-tiptap-menu-hover-ink: var(--mn-ink, #111827);
+  --mn-tiptap-menu-label-ink: color-mix(in srgb, var(--mn-ink-3, #64748b) 86%, transparent);
+  --mn-tiptap-menu-swatch-size: 1rem;
   --mn-tiptap-handle-size: 1.5rem;
   --mn-tiptap-handle-height: 2rem;
 }
@@ -108,6 +112,49 @@
   justify-content: flex-start;
   border-radius: var(--tt-radius-sm, 6px);
   text-align: left;
+  transition:
+    background 120ms ease,
+    background-color 120ms ease,
+    box-shadow 120ms ease,
+    color 120ms ease;
+}
+
+.tiptap-combobox-list .tiptap-menu-item:hover .tiptap-button:not([disabled]),
+.tiptap-combobox-list .tiptap-menu-item[data-highlighted="true"] .tiptap-button:not([disabled]),
+.tiptap-combobox-list .tiptap-menu-item[data-active-item="true"] .tiptap-button:not([disabled]),
+.tiptap-combobox-list .tiptap-menu-item.tiptap-button:hover:not([disabled]),
+.tiptap-combobox-list .tiptap-menu-item.tiptap-button[data-highlighted="true"]:not([disabled]),
+.tiptap-combobox-list .tiptap-menu-item.tiptap-button[data-active-item="true"]:not([disabled]),
+.tiptap-combobox-list .tiptap-button:hover:not([disabled]),
+.tiptap-combobox-list .tiptap-button[data-highlighted="true"]:not([disabled]),
+.tiptap-combobox-list .tiptap-button[data-active-item="true"]:not([disabled]),
+.tiptap-combobox-list .tiptap-button[data-active-state="on"]:not([disabled]),
+.tiptap-combobox-list .tiptap-button[data-state="open"]:not([disabled]),
+.tiptap-card .tiptap-button:hover:not([disabled]),
+.tiptap-card .tiptap-button[data-highlighted="true"]:not([disabled]),
+.tiptap-card .tiptap-button[data-active-item="true"]:not([disabled]),
+.tiptap-card .tiptap-button[data-active-state="on"]:not([disabled]),
+.tiptap-card .tiptap-button[data-state="open"]:not([disabled]) {
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--mn-accent, #2563eb) 12%, transparent),
+      transparent 78%
+    ),
+    var(--mn-tiptap-menu-hover-bg, color-mix(in srgb, var(--mn-ink, #111827) 5%, transparent));
+  color: var(--mn-tiptap-menu-hover-ink, var(--mn-ink, #111827));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mn-accent, #2563eb) 10%, transparent);
+}
+
+.tiptap-combobox-list .tiptap-menu-item:hover .tiptap-button-icon,
+.tiptap-combobox-list .tiptap-menu-item[data-highlighted="true"] .tiptap-button-icon,
+.tiptap-combobox-list .tiptap-menu-item:hover .tiptap-menu-button-arrow,
+.tiptap-combobox-list .tiptap-menu-item[data-highlighted="true"] .tiptap-menu-button-arrow,
+.tiptap-combobox-list .tiptap-menu-item.tiptap-button:hover .tiptap-button-icon,
+.tiptap-combobox-list .tiptap-menu-item.tiptap-button[data-highlighted="true"] .tiptap-button-icon,
+.tiptap-combobox-list .tiptap-menu-item.tiptap-button:hover .tiptap-menu-button-arrow,
+.tiptap-combobox-list .tiptap-menu-item.tiptap-button[data-highlighted="true"] .tiptap-menu-button-arrow {
+  color: currentColor;
 }
 
 .tiptap-combobox-list .tiptap-button-icon,
@@ -137,6 +184,49 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.tiptap-combobox-list .tiptap-button-color-text,
+.tiptap-combobox-list .tiptap-button-highlight,
+.tiptap-card .tiptap-button-color-text,
+.tiptap-card .tiptap-button-highlight {
+  width: var(--mn-tiptap-menu-swatch-size, 1rem);
+  height: var(--mn-tiptap-menu-swatch-size, 1rem);
+  margin: 0;
+  border-radius: 999px;
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--mn-border, #d1d5db) 72%, transparent),
+    0 1px 2px color-mix(in srgb, var(--mn-ink, #111827) 10%, transparent);
+}
+
+.tiptap-menu-group-label,
+.tiptap-combobox-group-label,
+.tiptap-combobox-list .tiptap-menu-group-label,
+.tiptap-card .tiptap-menu-group-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.625rem 0.5rem 0.25rem;
+  color: var(--mn-tiptap-menu-label-ink, var(--mn-ink-3, #64748b));
+  font-size: 0.6875rem;
+  font-weight: 650;
+  letter-spacing: 0;
+  line-height: 1.15;
+}
+
+.tiptap-menu-group-label::after,
+.tiptap-combobox-group-label::after,
+.tiptap-combobox-list .tiptap-menu-group-label::after,
+.tiptap-card .tiptap-menu-group-label::after {
+  content: "";
+  flex: 1 1 auto;
+  height: 1px;
+  background: color-mix(in srgb, var(--mn-divider, rgba(15, 23, 42, 0.08)) 82%, transparent);
+}
+
+.tiptap-combobox-list > .tiptap-menu-group:first-child > .tiptap-menu-group-label:first-child,
+.tiptap-card > .tiptap-menu-group:first-child > .tiptap-menu-group-label:first-child {
+  margin-top: 0.25rem;
 }
 
 .tiptap-combobox-list:focus-visible,

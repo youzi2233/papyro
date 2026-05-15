@@ -229,7 +229,11 @@ test("Papyro table cell background extension adds cell attributes", () => {
 });
 
 test("Papyro table content actions expose resettable style attributes", () => {
-  assert.deepEqual(PAPYRO_TABLE_CELL_RESET_ATTRS, ["align", "backgroundColor"]);
+  assert.deepEqual(PAPYRO_TABLE_CELL_RESET_ATTRS, [
+    "align",
+    "backgroundColor",
+    "verticalAlign",
+  ]);
 });
 
 test("Papyro table content actions clear selected cell contents through ProseMirror tables", () => {
@@ -439,6 +443,50 @@ test("Papyro table content actions style selected rows and columns", () => {
   }
 });
 
+test("Papyro table alignment commands use official cell attributes", () => {
+  const windowRef = new Window({ url: "http://localhost/" });
+  const previousGlobals = installDomGlobals(windowRef);
+  const root = windowRef.document.createElement("div");
+  windowRef.document.body.appendChild(root);
+  let editor = null;
+
+  try {
+    editor = new Editor({
+      element: root,
+      extensions: [StarterKit, ...createPapyroTableExtensions()],
+      content:
+        "<table><tbody><tr><td>A1</td><td>A2</td></tr><tr><td>B1</td><td>B2</td></tr></tbody></table>",
+      injectCSS: false,
+    });
+    const [rowStart, rowEnd, secondRowStart] = tableCellPositions(editor.state.doc);
+
+    editor.commands.setCellSelection({ anchorCell: rowStart, headCell: rowEnd });
+    assert.equal(editor.commands.setCellAttribute("align", "center"), true);
+    assert.equal(editor.commands.setCellAttribute("verticalAlign", "middle"), true);
+
+    let [firstRowFirstCell, firstRowSecondCell, secondRowFirstCell] =
+      tableJsonCells(editor);
+    assert.equal(firstRowFirstCell.attrs.align, "center");
+    assert.equal(firstRowSecondCell.attrs.align, "center");
+    assert.equal(firstRowFirstCell.attrs.verticalAlign, "middle");
+    assert.equal(firstRowSecondCell.attrs.verticalAlign, "middle");
+    assert.equal(secondRowFirstCell.attrs.align, null);
+    assert.equal(secondRowFirstCell.attrs.verticalAlign, null);
+
+    editor.commands.setCellSelection({ anchorCell: secondRowStart, headCell: secondRowStart });
+    assert.equal(editor.commands.setCellAttribute("align", "right"), true);
+    assert.equal(editor.commands.setCellAttribute("verticalAlign", "bottom"), true);
+
+    [, , secondRowFirstCell] = tableJsonCells(editor);
+    assert.equal(secondRowFirstCell.attrs.align, "right");
+    assert.equal(secondRowFirstCell.attrs.verticalAlign, "bottom");
+  } finally {
+    editor?.destroy?.();
+    restoreDomGlobals(previousGlobals);
+    windowRef.close?.();
+  }
+});
+
 test("Papyro table content actions can reset selected cell attributes while clearing contents", () => {
   const windowRef = new Window({ url: "http://localhost/" });
   const previousGlobals = installDomGlobals(windowRef);
@@ -451,7 +499,7 @@ test("Papyro table content actions can reset selected cell attributes while clea
       element: root,
       extensions: [StarterKit, ...createPapyroTableExtensions()],
       content:
-        "<table><tbody><tr><td style=\"text-align: right; background-color: rgba(245, 158, 11, 0.16)\">Alpha</td><td>Beta</td></tr></tbody></table>",
+        "<table><tbody><tr><td style=\"text-align: right; vertical-align: bottom; background-color: rgba(245, 158, 11, 0.16)\">Alpha</td><td>Beta</td></tr></tbody></table>",
       injectCSS: false,
     });
     const [anchorCell] = tableCellPositions(editor.state.doc);
@@ -466,6 +514,7 @@ test("Papyro table content actions can reset selected cell attributes while clea
     assert.equal(firstCell.content[0].content, undefined);
     assert.equal(firstCell.attrs.align, null);
     assert.equal(firstCell.attrs.backgroundColor, null);
+    assert.equal(firstCell.attrs.verticalAlign, null);
     assert.equal(secondCell.content[0].content[0].text, "Beta");
   } finally {
     editor?.destroy?.();
@@ -490,7 +539,7 @@ test("Papyro table content actions reset selected styles without clearing text",
         ...createPapyroTableExtensions(),
       ],
       content:
-        "<table><tbody><tr><td style=\"text-align: center; background-color: rgba(59, 130, 246, 0.14)\">Alpha</td></tr></tbody></table>",
+        "<table><tbody><tr><td style=\"text-align: center; vertical-align: middle; background-color: rgba(59, 130, 246, 0.14)\">Alpha</td></tr></tbody></table>",
       injectCSS: false,
     });
     const [anchorCell] = tableCellPositions(editor.state.doc);
@@ -504,6 +553,7 @@ test("Papyro table content actions reset selected styles without clearing text",
     assert.equal(firstCell.content[0].content[0].marks, undefined);
     assert.equal(firstCell.attrs.align, null);
     assert.equal(firstCell.attrs.backgroundColor, null);
+    assert.equal(firstCell.attrs.verticalAlign, null);
   } finally {
     editor?.destroy?.();
     restoreDomGlobals(previousGlobals);

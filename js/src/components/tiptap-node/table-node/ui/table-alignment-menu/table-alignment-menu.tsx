@@ -14,6 +14,7 @@ import {
   MenuButtonArrow,
   MenuContent,
   MenuGroup,
+  MenuGroupLabel,
   MenuItem,
 } from "@/components/tiptap-ui-primitive/menu"
 import { Button } from "@/components/tiptap-ui-primitive/button"
@@ -104,23 +105,25 @@ export const TableAlignMenu = ({
       <MenuContent>
         <ComboboxList>
           <MenuGroup>
+            <MenuGroupLabel>Text alignment</MenuGroupLabel>
             {Object.values(textAlign).map((align, i) => (
               <ActionItem
                 key={`text-${i}`}
                 icon={align.Icon}
                 label={align.label}
-                disabled={!align.canAlignCell}
+                disabled={!align.canAlignCell()}
                 isActive={align.isActive}
                 onClick={align.handleAlign}
               />
             ))}
             <Separator orientation="horizontal" />
+            <MenuGroupLabel>Cell vertical alignment</MenuGroupLabel>
             {Object.values(verticalAlign).map((align, i) => (
               <ActionItem
                 key={`vertical-${i}`}
                 icon={align.Icon}
                 label={align.label}
-                disabled={!align.canAlignCell}
+                disabled={!align.canAlignCell()}
                 isActive={align.isActive}
                 onClick={align.handleAlign}
               />
