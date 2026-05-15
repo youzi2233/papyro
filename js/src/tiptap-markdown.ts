@@ -12,6 +12,7 @@ import {
   type PapyroCodeBlockNodeViewRendererFactory,
 } from "./tiptap-code-block.ts";
 import { UiState } from "./components/tiptap-extension/ui-state-extension.ts";
+import { NodeBackground } from "./components/tiptap-extension/node-background-extension.ts";
 import { createPapyroImageExtensions } from "./tiptap-image.ts";
 import { createPapyroMathExtensions } from "./tiptap-math.ts";
 import { createPapyroMermaidExtensions } from "./tiptap-mermaid.ts";
@@ -134,6 +135,18 @@ export function createPapyroTiptapExtensions({
       types: [...PAPYRO_UNIQUE_ID_NODE_TYPES],
     }),
     UiState,
+    NodeBackground.configure({
+      types: [
+        "paragraph",
+        "heading",
+        "blockquote",
+        "taskList",
+        "bulletList",
+        "orderedList",
+        "tableCell",
+        "tableHeader",
+      ],
+    }),
     ...createPapyroCodeBlockExtensions({
       nodeViewRenderer: codeBlockNodeViewRenderer,
     }),

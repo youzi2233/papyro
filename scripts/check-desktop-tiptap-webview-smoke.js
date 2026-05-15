@@ -905,6 +905,29 @@ async function exerciseTableLayer(client) {
       rect.height <= 40 &&
       getComputedStyle(target).flexWrap === "nowrap";
   });
+  await assertEvaluate(client, "adding a table column keeps editor chrome stable", () => {
+    const editor = document.querySelector(".ProseMirror")?.editor;
+    const firstRow = document.querySelector(".ProseMirror table tr");
+    if (!editor || !firstRow) return false;
+
+    const beforeColumns = firstRow.children.length;
+    if (beforeColumns < 1 || typeof editor.commands.addColumnAfter !== "function") {
+      return false;
+    }
+
+    const success = editor.commands.addColumnAfter();
+    const afterColumns = firstRow.children.length;
+    const runtimeError = window.__PAPYRO_EDITOR_LOAD_ERROR__;
+    const chromeError = Array.from(document.querySelectorAll(".mn-editor-error, [data-runtime-error], [role='alert']"))
+      .some((node) => /Editor chrome failed|runtime failed|runtime_error|toggleNodeBackgroundColor/ui.test(node.textContent ?? ""));
+
+    return success === true &&
+      afterColumns === beforeColumns + 1 &&
+      !runtimeError &&
+      !chromeError &&
+      typeof editor.commands.toggleNodeBackgroundColor === "function" &&
+      typeof editor.can().toggleNodeBackgroundColor === "function";
+  });
   const alignmentPoint = await evaluate(client, () => {
     const labels = Array.from(document.querySelectorAll(".tiptap-table-menu-content .tiptap-button-text"));
     const label = labels.find((candidate) => candidate.textContent?.trim() === "Alignment");

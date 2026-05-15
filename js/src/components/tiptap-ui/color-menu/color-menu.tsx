@@ -39,6 +39,53 @@ interface ColorMenuItemProps {
   color: { value: string; label: string }
 }
 
+type ColorMenuCanCommands = {
+  setMark?: (name: string, attrs?: Record<string, unknown>) => boolean
+  toggleNodeBackgroundColor?: (backgroundColor: string) => boolean
+}
+
+function canSetMark(
+  commands: ColorMenuCanCommands | null,
+  name: "textStyle" | "highlight"
+): boolean {
+  try {
+    return typeof commands?.setMark === "function" && commands.setMark(name)
+  } catch {
+    return false
+  }
+}
+
+function canToggleNodeBackgroundColor(
+  commands: ColorMenuCanCommands | null,
+  backgroundColor: string
+): boolean {
+  try {
+    return (
+      typeof commands?.toggleNodeBackgroundColor === "function" &&
+      commands.toggleNodeBackgroundColor(backgroundColor)
+    )
+  } catch {
+    return false
+  }
+}
+
+export function canUseColorMenu(editor: Editor | null): boolean {
+  if (!editor) return false
+
+  let commands: ColorMenuCanCommands | null = null
+  try {
+    commands = editor.can() as ColorMenuCanCommands
+  } catch {
+    return false
+  }
+
+  return (
+    canSetMark(commands, "textStyle") ||
+    canSetMark(commands, "highlight") ||
+    canToggleNodeBackgroundColor(commands, "yellow")
+  )
+}
+
 const TextColorMenuItem: React.FC<ColorMenuItemProps> = ({ color }) => {
   const { addRecentColor } = useRecentColors()
   const { isActive, handleColorText, label } = useColorText({
@@ -135,11 +182,7 @@ export const ColorMenu: React.FC<ColorMenuProps> = ({
   const { editor } = useTiptapEditor(providedEditor)
   const { recentColors, isInitialized } = useRecentColors()
 
-  const hasColorActions: boolean =
-    !!editor?.can().setMark("textStyle") ||
-    !!editor?.can().setMark("highlight") ||
-    !!editor?.can().toggleNodeBackgroundColor("yellow") ||
-    false
+  const hasColorActions = canUseColorMenu(editor)
 
   if (!editor || !hasColorActions) {
     return null

@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { Editor } from "@tiptap/core";
 import { importBundledModule } from "./helpers/load-esbuild-module.js";
 
 const {
@@ -12,6 +13,7 @@ const {
 const {
   roundTripTiptapMarkdown,
   serializeTiptapMarkdown,
+  createPapyroTiptapExtensions,
 } = await importBundledModule(
   new URL("../src/tiptap-markdown.ts", import.meta.url),
 );
@@ -39,6 +41,62 @@ test("Papyro text style extensions expose reusable color and highlight marks", (
     createPapyroTextStyleExtensions().map((extension) => extension.name),
     ["textStyle", "color", "highlight"],
   );
+});
+
+test("Papyro default Tiptap extensions expose official node background commands", () => {
+  const extensions = createPapyroTiptapExtensions();
+  const editor = new Editor({
+    extensions,
+    content: {
+      type: "doc",
+      content: [
+        {
+          type: "table",
+          content: [
+            {
+              type: "tableRow",
+              content: [
+                {
+                  type: "tableCell",
+                  attrs: { colspan: 1, rowspan: 1, colwidth: null },
+                  content: [{ type: "paragraph", content: [{ type: "text", text: "Alpha" }] }],
+                },
+                {
+                  type: "tableCell",
+                  attrs: { colspan: 1, rowspan: 1, colwidth: null },
+                  content: [{ type: "paragraph", content: [{ type: "text", text: "Beta" }] }],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    injectCSS: false,
+  });
+
+  try {
+    const cellPositions = [];
+    editor.state.doc.descendants((node, pos) => {
+      if (node.type.name === "tableCell" || node.type.name === "tableHeader") {
+        cellPositions.push(pos);
+      }
+    });
+
+    assert.equal(typeof editor.commands.toggleNodeBackgroundColor, "function");
+    assert.equal(typeof editor.can().toggleNodeBackgroundColor, "function");
+    assert.equal(editor.commands.setCellSelection({
+      anchorCell: cellPositions[0],
+      headCell: cellPositions[0],
+    }), true);
+    assert.equal(editor.commands.toggleNodeBackgroundColor("rgba(245, 158, 11, 0.16)"), true);
+
+    const [firstCell, secondCell] = editor.getJSON().content[0].content[0].content;
+    assert.equal(firstCell.attrs.backgroundColor, "rgba(245, 158, 11, 0.16)");
+    assert.equal(secondCell.attrs.backgroundColor, null);
+  } finally {
+    editor.destroy();
+  }
 });
 
 test("Tiptap Markdown highlight syntax remains portable", () => {
