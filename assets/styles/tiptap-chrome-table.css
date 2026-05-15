@@ -128,21 +128,25 @@
 :root {
     --tt-table-handle-bg-color: color-mix(
         in srgb,
-        var(--mn-ink, #111827) 7%,
+        var(--mn-ink, #111827) 5%,
         transparent
     );
     --tt-table-handle-hover-bg-color: color-mix(
         in srgb,
-        var(--mn-ink, #111827) 11%,
-        transparent
+        var(--mn-surface-raised, #ffffff) 86%,
+        var(--mn-ink, #111827) 14%
     );
     --tt-table-handle-icon-color: color-mix(
         in srgb,
-        var(--mn-ink-3, #64748b) 72%,
+        var(--mn-ink-3, #64748b) 78%,
         transparent
     );
-    --tt-table-handle-open-bg-color: var(--mn-accent, var(--tt-brand-color-500));
-    --tt-table-handle-open-icon-color: var(--mn-accent-ink, #ffffff);
+    --tt-table-handle-open-bg-color: color-mix(
+        in srgb,
+        var(--mn-surface-raised, #ffffff) 82%,
+        var(--mn-accent, var(--tt-brand-color-500)) 18%
+    );
+    --tt-table-handle-open-icon-color: var(--mn-accent, var(--tt-brand-color-500));
     --tt-table-cell-handle-bg-color: color-mix(
         in srgb,
         var(--mn-surface-raised, #ffffff) 88%,
@@ -155,6 +159,21 @@
     );
     --tt-table-cell-handle-shadow: 0 1px 2px color-mix(in srgb, var(--mn-ink, #111827) 12%, transparent);
     --tt-table-extend-icon-color: color-mix(in srgb, var(--mn-ink-3, #64748b) 72%, transparent);
+    --tt-table-menu-hover-bg: color-mix(
+        in srgb,
+        var(--mn-ink, #111827) 5%,
+        var(--mn-surface-raised, #ffffff)
+    );
+    --tt-table-menu-active-bg: color-mix(
+        in srgb,
+        var(--mn-accent, #2563eb) 11%,
+        var(--mn-surface-raised, #ffffff)
+    );
+    --tt-table-menu-active-ring: color-mix(
+        in srgb,
+        var(--mn-accent, #2563eb) 18%,
+        transparent
+    );
 }
 
 .dark .mn-tiptap-react-root,
@@ -162,13 +181,13 @@
 .dark {
     --tt-table-handle-bg-color: color-mix(
         in srgb,
-        var(--mn-ink, #e5e7eb) 8%,
+        var(--mn-ink, #e5e7eb) 6%,
         transparent
     );
     --tt-table-handle-hover-bg-color: color-mix(
         in srgb,
-        var(--mn-ink, #e5e7eb) 12%,
-        transparent
+        var(--mn-surface-raised, #1f2937) 78%,
+        var(--mn-ink, #e5e7eb) 22%
     );
     --tt-table-handle-icon-color: color-mix(in srgb, var(--mn-ink-3, #94a3b8) 82%, transparent);
     --tt-table-cell-handle-bg-color: color-mix(
@@ -182,6 +201,16 @@
         transparent
     );
     --tt-table-extend-icon-color: color-mix(in srgb, var(--mn-ink-3, #94a3b8) 82%, transparent);
+    --tt-table-menu-hover-bg: color-mix(
+        in srgb,
+        var(--mn-surface-raised, #1f2937) 78%,
+        var(--mn-ink, #e5e7eb) 10%
+    );
+    --tt-table-menu-active-bg: color-mix(
+        in srgb,
+        var(--mn-accent, #60a5fa) 18%,
+        var(--mn-surface-raised, #1f2937)
+    );
 }
 
 :root .tiptap-table-handle-menu,
@@ -205,12 +234,13 @@
     color: var(--tt-table-handle-icon-color);
     box-shadow: none;
     cursor: grab;
-    opacity: 1;
+    opacity: 0.88;
     overflow: visible;
     transition:
         background-color var(--tt-transition-duration-short, 0.1s) ease,
         color var(--tt-transition-duration-short, 0.1s) ease,
-        opacity var(--tt-transition-duration-short, 0.1s) ease;
+        opacity var(--tt-transition-duration-short, 0.1s) ease,
+        box-shadow var(--tt-transition-duration-short, 0.1s) ease;
 }
 
 .tiptap-table-handle-menu::before {
@@ -230,6 +260,8 @@
 .tiptap-table-handle-menu:focus-visible {
     background-color: var(--tt-table-handle-hover-bg-color);
     color: var(--mn-ink-2, currentColor);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mn-border, #d1d5db) 60%, transparent);
+    opacity: 1;
 }
 
 .tiptap-table-handle-menu:focus-visible {
@@ -243,6 +275,10 @@
 .tiptap-table-handle-menu.is-dragging {
     background-color: var(--tt-table-handle-open-bg-color);
     color: var(--tt-table-handle-open-icon-color);
+    box-shadow:
+        inset 0 0 0 1px color-mix(in srgb, var(--mn-accent, #2563eb) 24%, transparent),
+        0 4px 12px color-mix(in srgb, var(--mn-ink, #111827) 12%, transparent);
+    opacity: 1;
 }
 
 .tiptap-table-handle-menu.is-dragging {
@@ -264,37 +300,42 @@
 }
 
 .expandable-menu-button {
-    --button-size: 18px;
+    --button-size: 1.125rem;
     --button-offset: 0.3125rem;
-    --dot-size-small: 16px;
-    --dot-size-large: 18px;
-    --dot-offset-small: 1px;
+    --dot-size-small: 0.875rem;
+    --dot-size-large: 1.125rem;
+    --dot-offset-small: 0.125rem;
     --dot-offset-large: 0;
     --border-radius-full: 9999px;
     --transition-duration: 0.12s;
     --transition-timing: cubic-bezier(0.16, 1, 0.3, 1);
-    --icon-scale-small: 0.82;
-    --icon-scale-large: 1;
+    --icon-scale-small: 0.78;
+    --icon-scale-large: 0.9;
     --cell-handle-idle-bg: color-mix(
         in srgb,
-        var(--mn-surface-raised, #ffffff) 88%,
-        var(--mn-ink, #111827) 12%
+        var(--mn-surface-raised, #ffffff) 92%,
+        var(--mn-ink, #111827) 8%
+    );
+    --cell-handle-hover-bg: color-mix(
+        in srgb,
+        var(--mn-surface-raised, #ffffff) 86%,
+        var(--mn-ink, #111827) 14%
     );
     --cell-handle-open-bg: color-mix(
         in srgb,
-        var(--mn-accent, var(--tt-brand-color-600, #2563eb)) 88%,
-        var(--mn-surface-raised, #ffffff) 12%
+        var(--mn-surface-raised, #ffffff) 82%,
+        var(--mn-accent, var(--tt-brand-color-600, #2563eb)) 18%
     );
     --cell-handle-idle-icon: color-mix(
         in srgb,
-        var(--mn-ink-3, #64748b) 72%,
+        var(--mn-ink-3, #64748b) 76%,
         transparent
     );
     --cell-handle-border: var(
         --tt-table-cell-handle-border-color,
         color-mix(in srgb, var(--mn-border, #d1d5db) 76%, transparent)
     );
-    --cell-handle-open-icon: var(--mn-accent-ink, #ffffff);
+    --cell-handle-open-icon: var(--mn-accent, var(--tt-brand-color-600, #2563eb));
     position: absolute;
     top: 0.3125rem;
     right: var(--button-offset);
@@ -320,8 +361,8 @@
     border: 1px solid var(--cell-handle-border);
     background: var(--tt-table-cell-handle-bg-color, var(--cell-handle-idle-bg));
     box-shadow:
-        var(--tt-table-cell-handle-shadow, 0 1px 2px color-mix(in srgb, var(--mn-ink, #111827) 12%, transparent)),
-        inset 0 1px 0 color-mix(in srgb, #ffffff 84%, transparent);
+        var(--tt-table-cell-handle-shadow, 0 1px 2px color-mix(in srgb, var(--mn-ink, #111827) 9%, transparent)),
+        inset 0 1px 0 color-mix(in srgb, #ffffff 80%, transparent);
     content: "";
     transform: translateY(-50%);
     transition:
@@ -354,19 +395,33 @@
     right: var(--dot-offset-large);
     width: var(--dot-size-large);
     height: var(--dot-size-large);
-    background: var(--cell-handle-open-bg);
-    border-color: color-mix(in srgb, var(--mn-accent, #2563eb) 36%, transparent);
+    background: var(--cell-handle-hover-bg);
+    border-color: color-mix(in srgb, var(--mn-border, #d1d5db) 88%, var(--mn-accent, #2563eb) 12%);
     box-shadow:
-        0 5px 14px color-mix(in srgb, var(--mn-accent, #2563eb) 22%, transparent),
-        inset 0 1px 0 color-mix(in srgb, #ffffff 18%, transparent);
+        0 6px 16px color-mix(in srgb, var(--mn-ink, #111827) 12%, transparent),
+        inset 0 1px 0 color-mix(in srgb, #ffffff 62%, transparent);
 }
 
 .expandable-menu-button:hover svg,
 .expandable-menu-button:focus-visible svg,
 .expandable-menu-button.menu-opened svg {
-    color: var(--cell-handle-open-icon);
+    color: var(--mn-ink-2, var(--cell-handle-open-icon));
     opacity: 1;
     transform: scale(var(--icon-scale-large));
+}
+
+.expandable-menu-button.menu-opened::before {
+    background: var(--cell-handle-open-bg);
+    border-color: color-mix(in srgb, var(--mn-accent, #2563eb) 32%, var(--mn-border, #d1d5db));
+    box-shadow:
+        0 0 0 1px color-mix(in srgb, var(--mn-accent, #2563eb) 18%, transparent),
+        0 8px 18px color-mix(in srgb, var(--mn-ink, #111827) 14%, transparent),
+        inset 0 1px 0 color-mix(in srgb, #ffffff 58%, transparent);
+}
+
+.expandable-menu-button.menu-opened svg {
+    color: var(--cell-handle-open-icon);
+    opacity: 1;
 }
 
 .expandable-menu-button:focus-visible {
@@ -388,10 +443,12 @@
     border-radius: 999px;
     color: var(--tt-table-extend-icon-color);
     box-shadow: none;
+    opacity: 0.84;
     transition:
         background-color var(--tt-transition-duration-short, 0.1s) ease,
         color var(--tt-transition-duration-short, 0.1s) ease,
-        opacity var(--tt-transition-duration-short, 0.1s) ease;
+        opacity var(--tt-transition-duration-short, 0.1s) ease,
+        box-shadow var(--tt-transition-duration-short, 0.1s) ease;
 }
 
 .tiptap-table-extend-row-column-button::before {
@@ -412,6 +469,8 @@
 .tiptap-table-extend-row-column-button.editing {
     background-color: var(--tt-table-handle-hover-bg-color);
     color: var(--mn-ink-2, var(--tt-table-extend-icon-color));
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mn-border, #d1d5db) 58%, transparent);
+    opacity: 1;
 }
 
 .tiptap-table-extend-row-column-button:focus-visible {
@@ -504,15 +563,17 @@
 .tiptap-table-menu-content .tiptap-menu-item.tiptap-button[data-highlighted="true"]:not([disabled]),
 .tiptap-table-menu-content .tiptap-button[data-active-state="on"]:not([disabled]),
 .tiptap-table-menu-content .tiptap-button[data-state="open"]:not([disabled]) {
-    background:
-        linear-gradient(
-            90deg,
-            color-mix(in srgb, var(--mn-accent, #2563eb) 12%, transparent),
-            transparent 70%
-        ),
-        var(--mn-tiptap-menu-hover-bg, var(--mn-chrome-hover, color-mix(in srgb, var(--mn-ink, #111827) 5%, transparent)));
+    background: var(--tt-table-menu-hover-bg, var(--mn-tiptap-menu-hover-bg, var(--mn-chrome-hover, color-mix(in srgb, var(--mn-ink, #111827) 5%, transparent))));
     color: var(--mn-ink, #111827);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mn-accent, #2563eb) 10%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mn-border, #d1d5db) 60%, transparent);
+}
+
+.tiptap-table-menu-content .tiptap-button[data-active-state="on"]:not([disabled]),
+.tiptap-table-menu-content .tiptap-button[data-state="open"]:not([disabled]) {
+    background: var(--tt-table-menu-active-bg, var(--tt-table-menu-hover-bg));
+    box-shadow:
+        inset 0 0 0 1px var(--tt-table-menu-active-ring, color-mix(in srgb, var(--mn-accent, #2563eb) 18%, transparent)),
+        inset 3px 0 0 color-mix(in srgb, var(--mn-accent, #2563eb) 72%, transparent);
 }
 
 .tiptap-table-menu-content .tiptap-button:focus-visible {

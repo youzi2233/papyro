@@ -1,13 +1,13 @@
 :root {
   --tt-table-handle-bg-color: color-mix(
     in srgb,
-    var(--mn-ink, #111827) 7%,
+    var(--mn-ink, #111827) 5%,
     transparent
   );
   --tt-table-handle-hover-bg-color: color-mix(
     in srgb,
-    var(--mn-ink, #111827) 11%,
-    transparent
+    var(--mn-surface-raised, #ffffff) 86%,
+    var(--mn-ink, #111827) 14%
   );
   --tt-table-extend-icon-color: color-mix(
     in srgb,
@@ -19,13 +19,13 @@
 .dark {
   --tt-table-handle-bg-color: color-mix(
     in srgb,
-    var(--mn-ink, #e5e7eb) 8%,
+    var(--mn-ink, #e5e7eb) 6%,
     transparent
   );
   --tt-table-handle-hover-bg-color: color-mix(
     in srgb,
-    var(--mn-ink, #e5e7eb) 12%,
-    transparent
+    var(--mn-surface-raised, #1f2937) 78%,
+    var(--mn-ink, #e5e7eb) 22%
   );
   --tt-table-extend-icon-color: color-mix(
     in srgb,
@@ -45,10 +45,12 @@
   border-radius: 999px;
   color: var(--tt-table-extend-icon-color);
   box-shadow: none;
+  opacity: 0.84;
   transition:
     background-color var(--tt-transition-duration-short, 0.1s) ease,
     color var(--tt-transition-duration-short, 0.1s) ease,
-    opacity var(--tt-transition-duration-short, 0.1s) ease;
+    opacity var(--tt-transition-duration-short, 0.1s) ease,
+    box-shadow var(--tt-transition-duration-short, 0.1s) ease;
 
   &::before {
     content: none;
@@ -68,6 +70,8 @@
   &.editing {
     background-color: var(--tt-table-handle-hover-bg-color);
     color: var(--mn-ink-2, var(--tt-table-extend-icon-color));
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mn-border, #d1d5db) 58%, transparent);
+    opacity: 1;
   }
 
   &:focus-visible {

@@ -112,6 +112,8 @@ test("table menus keep only the documented Papyro surface adapter on official me
   assert.match(tableHandleMenuSource, /<TableAlignMenu index=\{index\} orientation=\{orientation\} \/>/u);
   assert.match(tableCellHandleMenuSource, /<ColorMenu \/>/u);
   assert.match(tableCellHandleMenuSource, /<TableAlignMenu \/>/u);
+  assert.match(tableCellHandleMenuSource, /Grip4Icon/u);
+  assert.doesNotMatch(tableCellHandleMenuSource, /ChevronDownIcon/u);
   assert.doesNotMatch(
     `${tableHandleMenuSource}\n${tableCellHandleMenuSource}`,
     /PapyroTableCommandMenuContent|createPapyroTableCommandMenuModel|createTableCellHandleCommandMenuModel|contentClassName="tiptap-table-menu-content"/u,

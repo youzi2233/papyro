@@ -1,31 +1,36 @@
 .expandable-menu-button {
-  --button-size: 18px;
+  --button-size: 1.125rem;
   --button-offset: 0.3125rem;
-  --dot-size-small: 16px;
-  --dot-size-large: 18px;
-  --dot-offset-small: 1px;
+  --dot-size-small: 0.875rem;
+  --dot-size-large: 1.125rem;
+  --dot-offset-small: 0.125rem;
   --dot-offset-large: 0;
   --border-radius-full: 9999px;
   --transition-duration: 0.12s;
   --transition-timing: cubic-bezier(0.16, 1, 0.3, 1);
-  --icon-scale-small: 0.82;
-  --icon-scale-large: 1;
+  --icon-scale-small: 0.78;
+  --icon-scale-large: 0.9;
   --cell-handle-idle-bg: color-mix(
     in srgb,
-    var(--mn-surface-raised, #ffffff) 88%,
-    var(--mn-ink, #111827) 12%
+    var(--mn-surface-raised, #ffffff) 92%,
+    var(--mn-ink, #111827) 8%
+  );
+  --cell-handle-hover-bg: color-mix(
+    in srgb,
+    var(--mn-surface-raised, #ffffff) 86%,
+    var(--mn-ink, #111827) 14%
   );
   --cell-handle-open-bg: color-mix(
     in srgb,
-    var(--mn-accent, var(--tt-brand-color-600, #2563eb)) 88%,
-    var(--mn-surface-raised, #ffffff) 12%
+    var(--mn-surface-raised, #ffffff) 82%,
+    var(--mn-accent, var(--tt-brand-color-600, #2563eb)) 18%
   );
   --cell-handle-idle-icon: color-mix(
     in srgb,
-    var(--mn-ink-3, #64748b) 72%,
+    var(--mn-ink-3, #64748b) 76%,
     transparent
   );
-  --cell-handle-open-icon: var(--mn-accent-ink, #ffffff);
+  --cell-handle-open-icon: var(--mn-accent, var(--tt-brand-color-600, #2563eb));
   --cell-handle-border: var(
     --tt-table-cell-handle-border-color,
     color-mix(in srgb, var(--mn-border, #d1d5db) 76%, transparent)
@@ -62,8 +67,8 @@
     border: 1px solid var(--cell-handle-border);
     border-radius: var(--border-radius-full);
     box-shadow:
-      var(--tt-table-cell-handle-shadow, 0 1px 2px color-mix(in srgb, var(--mn-ink, #111827) 12%, transparent)),
-      inset 0 1px 0 color-mix(in srgb, #ffffff 84%, transparent);
+      var(--tt-table-cell-handle-shadow, 0 1px 2px color-mix(in srgb, var(--mn-ink, #111827) 9%, transparent)),
+      inset 0 1px 0 color-mix(in srgb, #ffffff 80%, transparent);
     transform: translateY(-50%);
 
     transition:
@@ -115,18 +120,34 @@
         width: var(--dot-size-large);
         height: var(--dot-size-large);
         right: var(--dot-offset-large);
-        background: var(--cell-handle-open-bg);
-        border-color: color-mix(in srgb, var(--mn-accent, #2563eb) 36%, transparent);
+        background: var(--cell-handle-hover-bg);
+        border-color: color-mix(in srgb, var(--mn-border, #d1d5db) 88%, var(--mn-accent, #2563eb) 12%);
         box-shadow:
-          0 5px 14px color-mix(in srgb, var(--mn-accent, #2563eb) 22%, transparent),
-          inset 0 1px 0 color-mix(in srgb, #ffffff 18%, transparent);
+          0 6px 16px color-mix(in srgb, var(--mn-ink, #111827) 12%, transparent),
+          inset 0 1px 0 color-mix(in srgb, #ffffff 62%, transparent);
       }
 
       svg {
-        color: var(--cell-handle-open-icon);
+        color: var(--mn-ink-2, var(--cell-handle-open-icon));
         opacity: 1;
         transform: scale(var(--icon-scale-large));
       }
+    }
+  }
+
+  &.menu-opened {
+    &::before {
+      background: var(--cell-handle-open-bg);
+      border-color: color-mix(in srgb, var(--mn-accent, #2563eb) 32%, var(--mn-border, #d1d5db));
+      box-shadow:
+        0 0 0 1px color-mix(in srgb, var(--mn-accent, #2563eb) 18%, transparent),
+        0 8px 18px color-mix(in srgb, var(--mn-ink, #111827) 14%, transparent),
+        inset 0 1px 0 color-mix(in srgb, #ffffff 58%, transparent);
+    }
+
+    svg {
+      color: var(--cell-handle-open-icon);
+      opacity: 1;
     }
   }
 

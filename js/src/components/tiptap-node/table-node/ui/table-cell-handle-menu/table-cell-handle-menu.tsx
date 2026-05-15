@@ -29,7 +29,7 @@ import {
 import { Separator } from "@/components/tiptap-ui-primitive/separator"
 
 // --- Icons ---
-import { ChevronDownIcon } from "@/components/tiptap-icons/chevron-down-icon"
+import { Grip4Icon } from "@/components/tiptap-icons/grip-4-icon"
 
 import "./table-cell-handle-menu.scss"
 
@@ -206,7 +206,7 @@ export const TableCellHandleMenu = forwardRef<
           aria-expanded={isMenuOpen}
           {...props}
         >
-          <ChevronDownIcon className="tiptap-button-icon" />
+          <Grip4Icon className="tiptap-button-icon" />
         </MenuButton>
       }
     >

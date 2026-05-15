@@ -47,6 +47,8 @@ test("official paid table-node cell menu remains the visible runtime source", ()
   assert.match(officialCellMenuSource, /useTableClearRowColumnContent/u);
   assert.match(officialCellMenuSource, /ColorMenu/u);
   assert.match(officialCellMenuSource, /TableAlignMenu/u);
+  assert.match(officialCellMenuSource, /Grip4Icon/u);
+  assert.doesNotMatch(officialCellMenuSource, /ChevronDownIcon/u);
   assert.match(officialCellMenuSource, /className="tiptap-table-menu-content"/u);
   assert.doesNotMatch(officialCellMenuSource, /contentClassName="tiptap-table-menu-content"/u);
   assert.doesNotMatch(officialCellMenuSource, /PapyroTableCommandMenuContent/u);
