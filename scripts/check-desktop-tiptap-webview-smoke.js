@@ -398,22 +398,65 @@ async function exerciseFloatingToolbar(client) {
   });
   await assertEvaluate(client, "floating toolbar exposes core Notion-like actions", () => {
     const toolbar = document.querySelector(".tiptap-toolbar[data-variant='floating']");
+    const layer = toolbar?.closest(".tiptap-selection-floating-layer") ?? null;
     if (!toolbar) return false;
     const buttons = Array.from(toolbar.querySelectorAll("button:not(:disabled)"));
     const names = buttons.map((button) => button.getAttribute("aria-label") ?? "");
     return isOpaqueBoundedSurface(toolbar) &&
+      layer &&
+      getComputedStyle(layer).isolation === "isolate" &&
       names.some((name) => /Turn into/u.test(name)) &&
       names.some((name) => /Bold/u.test(name)) &&
       names.some((name) => /Italic/u.test(name));
   });
+  await activateFloatingToolbarButton(client, /Turn into/u);
+  await assertEventually(client, "floating toolbar Turn Into menu is an opaque vertical dropdown", () => {
+    const menu = document.querySelector(".tiptap-dropdown-menu-content");
+    const group = menu?.querySelector(".tiptap-dropdown-menu-group") ?? null;
+    const items = Array.from(menu?.querySelectorAll(".tiptap-dropdown-menu-item") ?? []);
+    const buttons = Array.from(menu?.querySelectorAll(".tiptap-button") ?? []);
+    const menuStyle = menu ? getComputedStyle(menu) : null;
+    const groupStyle = group ? getComputedStyle(group) : null;
+
+    return isOpaqueBoundedSurface(menu) &&
+      menu?.dataset.slot === "tiptap-dropdown-menu-content" &&
+      groupStyle?.flexDirection === "column" &&
+      menuStyle?.boxSizing === "border-box" &&
+      items.length >= 3 &&
+      buttons.length >= 3 &&
+      buttons.every((button) => {
+        const rect = button.getBoundingClientRect();
+        const style = getComputedStyle(button);
+        return rect.height >= 28 &&
+          rect.width > rect.height &&
+          style.flexWrap === "nowrap" &&
+          style.justifyContent === "flex-start";
+      });
+  });
+  await pressKey(client, "Escape");
+  await assertEventually(client, "floating toolbar Turn Into menu closes cleanly", () => {
+    return !document.querySelector(".tiptap-dropdown-menu-content");
+  });
   await activateFloatingToolbarButton(client, /More options/u);
   await assertEventually(client, "floating toolbar more options opens", () => {
+    const popover = document.querySelector(".tiptap-floating-toolbar-popover");
+    const toolbar = popover?.querySelector(".tiptap-floating-toolbar-popover-toolbar");
+    if (!popover || !toolbar) return false;
+
+    const popoverStyle = getComputedStyle(popover);
     const toolbars = Array.from(document.querySelectorAll(".tiptap-toolbar[data-variant='floating']"));
-    return toolbars.length > 1 && toolbars.some((toolbar) =>
-      Array.from(toolbar.querySelectorAll("button:not(:disabled)")).some((button) =>
+    return toolbars.length > 1 && (() => {
+      const style = getComputedStyle(toolbar);
+      const hasAlignCenter = Array.from(toolbar.querySelectorAll("button:not(:disabled)")).some((button) =>
         /Align center/u.test(button.getAttribute("aria-label") ?? "")
-      )
-    );
+      );
+      return hasAlignCenter &&
+        isOpaqueBoundedSurface(popover) &&
+        popoverStyle.boxSizing === "border-box" &&
+        style.flexWrap === "nowrap" &&
+        style.backgroundColor === "rgba(0, 0, 0, 0)" &&
+        style.width !== "auto";
+    })();
   });
   await activateFloatingToolbarButton(client, /Align center/u);
   await assertEventually(client, "TextAlign center changes editor DOM", () =>

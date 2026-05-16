@@ -61,6 +61,12 @@ test("Papyro floating toolbar keeps the official Notion-like composition without
 test("Papyro floating toolbar documents its retained WebView and i18n adapters in source", () => {
   assert.match(toolbarSource, /preserveEditorSelectionOnMouseDown/u);
   assert.match(toolbarSource, /preserveEditorSelectionOnPointerDown/u);
+  assert.match(toolbarSource, /className="tiptap-selection-floating-layer"/u);
+  assert.match(toolbarSource, /className="tiptap-selection-toolbar"/u);
+  assert.match(toolbarSource, /className="tiptap-floating-toolbar-popover"/u);
+  assert.match(toolbarSource, /className="tiptap-floating-toolbar-popover-toolbar"/u);
+  assert.match(toolbarSource, /data-plain="true"/u);
+  assert.doesNotMatch(moreOptionsSource, /<PopoverContent[\s\S]*?asChild/u);
   assert.match(toolbarSource, /moreOptionsLabel/u);
   assert.match(toolbarSource, /usePapyroTiptapLanguage/u);
   assert.match(toolbarSource, /editor\.on\("transaction", handleSelectionUpdate\)/u);

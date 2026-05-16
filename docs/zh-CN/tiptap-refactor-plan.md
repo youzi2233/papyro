@@ -497,6 +497,7 @@ js/src/
 - [x] 2026-05-15 视觉跟进：将 Papyro 默认视觉升级为现代专业笔记软件的 disciplined utility 方向：更克制的冷灰背景、更宽的 760px 文档行宽、更成熟的标题/引用/代码块节奏、浮层专用阴影 token、胶囊式但非浏览器化的顶部标签栏，以及 Preview/Hybrid 共用 Markdown typography token
 - [x] 2026-05-16 视觉跟进：恢复颜色菜单的真实色板信息，将 `HIGHLIGHT_COLORS` 的 `colorValue`/`border` 透传到 table/drag/color 菜单，统一文字色与背景色 swatch 的实底、边框和 active ring；同时收敛选区态，让彩色文字在选中时继续保留原色可读性，并把下划线/行内代码移入 More 弹层降低浮动工具栏密度
 - [x] 2026-05-16 跟进：补齐 drag/table/code 下拉菜单国际化，阻止嵌套 table/color 菜单 pointerdown 时丢失 WebView 焦点，将代码块语言菜单升级为可搜索并覆盖常用语言选项，同时继续要求 floating/bubble surface 使用不透明、有边界的菜单契约
+- [x] 2026-05-16 跟进：为选中文字后的浮动工具栏和 Radix dropdown/popover 浮层建立明确归属，新增 `tiptap-selection-toolbar` 与 `tiptap-floating-toolbar-popover` 类，将静态/运行时菜单 surface bridge 扩展到 `tiptap-dropdown-menu-*`，并补 smoke/source 守卫，避免 Turn Into 和 More 二级菜单再次被挤进 toolbar flex 横排导致错位
 
 #### 9.4 表格体验收敛
 

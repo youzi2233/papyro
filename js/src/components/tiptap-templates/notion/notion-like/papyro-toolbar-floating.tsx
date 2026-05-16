@@ -59,9 +59,13 @@ export function PapyroToolbarFloating() {
   if (lockDragHandle || isMobile) return null
 
   return (
-    <FloatingElement shouldShow={shouldShow}>
+    <FloatingElement
+      shouldShow={shouldShow}
+      className="tiptap-selection-floating-layer"
+    >
       <Toolbar
         variant="floating"
+        className="tiptap-selection-toolbar"
         onMouseDown={preserveEditorSelectionOnMouseDown}
         onPointerDown={preserveEditorSelectionOnPointerDown}
       >
@@ -219,10 +223,12 @@ export function MoreOptions({
             align="end"
             alignOffset={4}
             sideOffset={4}
-            asChild
+            className="tiptap-floating-toolbar-popover"
           >
             <Toolbar
               variant="floating"
+              data-plain="true"
+              className="tiptap-floating-toolbar-popover-toolbar"
               tabIndex={0}
               onMouseDown={preserveEditorSelectionOnMouseDown}
               onPointerDown={preserveEditorSelectionOnPointerDown}
