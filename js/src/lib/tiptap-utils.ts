@@ -13,6 +13,8 @@ import {
   type NodeWithPos,
 } from "@tiptap/react"
 
+export { collapseFormattingSelection } from "../tiptap-format-selection.ts"
+
 export const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 
 export const MAC_SYMBOLS: Record<string, string> = {

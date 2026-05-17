@@ -8,6 +8,7 @@ import { useIsBreakpoint } from "@/hooks/use-is-breakpoint"
 
 // --- Lib ---
 import {
+  collapseFormattingSelection,
   isMarkInSchema,
   isNodeTypeSelected,
   isExtensionAvailable,
@@ -329,6 +330,7 @@ export function useColorHighlight(config: UseColorHighlightConfig) {
           .toggleHighlight({ color: actualColor })
           .run()
         if (success) {
+          collapseFormattingSelection(editor)
           onApplied?.({ color: actualColor, label, mode })
         }
         return success
@@ -343,6 +345,7 @@ export function useColorHighlight(config: UseColorHighlightConfig) {
         .run()
 
       if (success) {
+        collapseFormattingSelection(editor)
         onApplied?.({ color: actualColor, label, mode })
       }
       return success
@@ -352,6 +355,7 @@ export function useColorHighlight(config: UseColorHighlightConfig) {
   const handleRemoveHighlight = useCallback(() => {
     const success = removeHighlight(editor, mode)
     if (success) {
+      if (editor) collapseFormattingSelection(editor)
       onApplied?.({ color: "", label: removeHighlightLabel(language), mode })
     }
     return success

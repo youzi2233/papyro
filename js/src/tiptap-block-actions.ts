@@ -13,6 +13,10 @@ import {
   PAPYRO_TEXT_COLOR_OPTIONS,
 } from "./tiptap-text-style";
 import {
+  collapseFormattingSelection,
+  type FormattingSelectionEditor,
+} from "./tiptap-format-selection.ts";
+import {
   blockActionSubmenuDescription,
   blockActionSubmenuLabel,
   localizeBlockAction,
@@ -82,7 +86,7 @@ export type TiptapBlockActionEditor = PapyroTurnIntoEditor & {
   view?: {
     dispatch?: (transaction: unknown) => unknown;
   };
-};
+} & Partial<FormattingSelectionEditor>;
 
 export type TiptapBlockActionContext = {
   editor?: TiptapBlockActionEditor | null;
@@ -211,6 +215,25 @@ function focusEditor(
   } else {
     editor?.commands?.focus?.();
   }
+}
+
+function canCollapseFormattingSelection(
+  editor: TiptapBlockActionEditor | null | undefined,
+): editor is TiptapBlockActionEditor & FormattingSelectionEditor {
+  return (
+    !!editor?.state?.selection &&
+    typeof editor.state.doc?.resolve === "function" &&
+    Number.isFinite(editor.state.doc?.content?.size) &&
+    typeof editor?.view?.dispatch === "function"
+  );
+}
+
+function shouldCollapseAfterBlockAction(commandId: string): boolean {
+  return (
+    commandId.startsWith("text-color-") ||
+    commandId.startsWith("highlight-") ||
+    commandId === "reset-formatting"
+  );
 }
 
 function insertMarkdownAt(
@@ -814,6 +837,9 @@ export class TiptapBlockActionController {
 
     focusEditor(context.editor, context.target?.pos);
     const ok = command.run(context) !== false;
+    if (ok && shouldCollapseAfterBlockAction(command.id) && canCollapseFormattingSelection(context.editor)) {
+      collapseFormattingSelection(context.editor);
+    }
     if (ok) {
       focusEditor(context.editor);
     }

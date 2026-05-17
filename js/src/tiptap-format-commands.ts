@@ -5,6 +5,10 @@ import {
   PAPYRO_TEXT_COLOR_OPTIONS,
 } from "./tiptap-text-style.ts";
 import {
+  collapseFormattingSelection,
+  type FormattingSelectionEditor,
+} from "./tiptap-format-selection.ts";
+import {
   PAPYRO_TIPTAP_TURN_INTO_COMMANDS,
   type PapyroTurnIntoCommand,
 } from "./tiptap-turn-into-commands.ts";
@@ -27,7 +31,7 @@ type FormatEditor = {
   commands?: EditorCommandMap;
   isActive?: (name: string, attrs?: Record<string, unknown>) => boolean;
   getAttributes?: (name: string) => Record<string, unknown>;
-};
+} & Partial<FormattingSelectionEditor>;
 
 type FormatOption = {
   id: string;
@@ -137,6 +141,24 @@ function editorCommand(
 
 function focusEditor(editor: FormatEditor | null | undefined): void {
   editor?.commands?.focus?.();
+}
+
+function canCollapseFormattingSelection(
+  editor: FormatEditor | null | undefined,
+): editor is FormatEditor & FormattingSelectionEditor {
+  return (
+    !!editor?.state?.selection &&
+    typeof editor.state.doc?.resolve === "function" &&
+    Number.isFinite(editor.state.doc?.content?.size) &&
+    typeof editor?.view?.dispatch === "function"
+  );
+}
+
+function shouldCollapseAfterFormatting(command: FormatCommand): boolean {
+  return (
+    command.id.startsWith("text-color-") ||
+    command.id.startsWith("highlight-")
+  );
 }
 
 function isCommandActive(
@@ -587,6 +609,9 @@ export class TiptapFormatCommandController {
 
     const child = command.children.find((item) => item.id === context.childCommandId);
     const ok = child ? child.run(context) !== false : command.run(context) !== false;
+    if (ok && shouldCollapseAfterFormatting(command) && canCollapseFormattingSelection(context.editor)) {
+      collapseFormattingSelection(context.editor);
+    }
     if (ok && command.focusAfterRun !== false) {
       focusEditor(context.editor);
     }

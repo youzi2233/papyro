@@ -54,20 +54,78 @@
     box-sizing: border-box;
     z-index: var(--mn-tiptap-tooltip-z, 180);
     display: grid;
-    gap: 0.125rem;
-    max-width: min(16rem, calc(100vw - 24px));
-    min-height: 1.75rem;
+    align-items: center;
+    gap: 0.1875rem;
+    max-width: min(18rem, calc(100vw - 32px));
+    min-height: 2.125rem;
+    overflow: hidden;
     border: 1px solid var(--mn-tiptap-tooltip-border, color-mix(in srgb, #ffffff 16%, transparent));
-    border-radius: var(--mn-radius-md, var(--tt-radius-md, 0.5rem));
+    border-radius: var(--mn-radius-lg, var(--tt-radius-lg, 0.625rem));
     background:
-        linear-gradient(180deg, color-mix(in srgb, #ffffff 12%, transparent), transparent),
+        linear-gradient(180deg, color-mix(in srgb, #ffffff 14%, transparent), transparent 56%),
         var(--mn-tiptap-tooltip-bg, color-mix(in srgb, var(--mn-ink, #111827) 94%, var(--mn-surface-raised, #ffffff)));
+    padding: 0.5625rem 0.75rem;
+    font-family: var(--mn-ui-font, inherit);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1.32;
+    letter-spacing: 0;
     color: var(--mn-tiptap-tooltip-ink, var(--mn-ink-inverse, #ffffff));
     box-shadow:
-        var(--mn-shadow-menu, 0 14px 36px rgba(15, 23, 42, 0.16)),
-        inset 0 1px 0 color-mix(in srgb, #ffffff 18%, transparent);
+        var(--mn-shadow-menu, 0 18px 42px rgba(15, 23, 42, 0.16)),
+        0 2px 8px color-mix(in srgb, var(--mn-ink, #111827) 10%, transparent),
+        inset 0 1px 0 color-mix(in srgb, #ffffff 20%, transparent);
+    text-align: center;
     pointer-events: none;
-    backdrop-filter: saturate(140%) blur(10px);
+    backdrop-filter: saturate(150%) blur(12px);
+    animation: tiptapTooltipFade 140ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tiptap-tooltip > div {
+    min-width: 0;
+}
+
+.tiptap-tooltip > div + div {
+    color: color-mix(in srgb, currentColor 68%, transparent);
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1.28;
+}
+
+.tiptap-tooltip kbd {
+    display: inline-block;
+    text-align: center;
+    vertical-align: baseline;
+    font-family:
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        "Helvetica Neue",
+        Arial,
+        "Noto Sans",
+        sans-serif;
+    text-transform: capitalize;
+    color: color-mix(in srgb, var(--mn-tiptap-tooltip-ink, var(--mn-ink-inverse, #ffffff)) 72%, transparent);
+    margin-inline: 0.125rem;
+    padding: 0.125rem 0.3125rem;
+    border: 1px solid color-mix(in srgb, var(--mn-tiptap-tooltip-ink, var(--mn-ink-inverse, #ffffff)) 14%, transparent);
+    border-radius: 0.3125rem;
+    background: color-mix(in srgb, var(--mn-tiptap-tooltip-ink, var(--mn-ink-inverse, #ffffff)) 10%, transparent);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, #ffffff 10%, transparent);
+}
+
+@keyframes tiptapTooltipFade {
+    from {
+        opacity: 0;
+        transform: translateY(2px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }
 
 .tiptap-selection-floating-layer {

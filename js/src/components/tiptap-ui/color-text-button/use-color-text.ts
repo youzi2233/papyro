@@ -8,6 +8,7 @@ import { useIsBreakpoint } from "@/hooks/use-is-breakpoint"
 
 // --- Lib ---
 import {
+  collapseFormattingSelection,
   isMarkInSchema,
   isNodeTypeSelected,
   selectCurrentBlockContent,
@@ -253,6 +254,7 @@ export function useColorText(config: UseColorTextConfig) {
         .toggleMark("textStyle", { color: textColor })
         .run()
       if (success) {
+        collapseFormattingSelection(editor)
         onApplied?.({ color: textColor, label })
       }
       return success
