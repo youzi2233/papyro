@@ -162,6 +162,9 @@ test("React code block chrome exposes a typed command model", () => {
   assert.match(codeBlockNodeViewSource, /createCodeBlockLanguageChrome/u);
   assert.match(codeBlockNodeViewSource, /aria-activedescendant/u);
   assert.match(codeBlockNodeViewSource, /nextCodeBlockLanguageCommandIndex/u);
+  assert.match(codeBlockNodeViewSource, /createPortal\(menu, portalRoot\)/u);
+  assert.match(codeBlockNodeViewSource, /codeLanguageMenuStyle/u);
+  assert.match(codeBlockNodeViewSource, /position:\s*"fixed"/u);
   assert.match(codeBlockNodeViewSource, /buttonRef\?\.current\?\.focus/u);
   assert.match(indexSource, /createCodeBlockLanguageCommands/u);
   assert.match(indexSource, /createCodeBlockLanguageChrome/u);

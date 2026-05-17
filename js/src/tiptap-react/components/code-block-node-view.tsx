@@ -1,12 +1,16 @@
 import React, {
+  type CSSProperties,
   type ComponentProps,
   type KeyboardEvent,
   type RefObject,
   useEffect,
+  useCallback,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
+import { createPortal } from "react-dom";
 import type { Editor } from "@tiptap/core";
 import {
   NodeViewContent,
@@ -37,6 +41,10 @@ import { usePapyroTiptapLanguage } from "../runtime-context.tsx";
 
 const COPY_FEEDBACK_MS = 1400;
 const CODE_LANGUAGE_MENU_OWNER_ID = "mn-tiptap-react-code-language-menu";
+const CODE_LANGUAGE_MENU_WIDTH = 268;
+const CODE_LANGUAGE_MENU_MAX_HEIGHT = 326;
+const CODE_LANGUAGE_MENU_MIN_HEIGHT = 232;
+const CODE_LANGUAGE_MENU_MARGIN = 10;
 const CodeNodeViewContent = NodeViewContent as (
   props: { as?: "code" } & ComponentProps<"code">,
 ) => React.ReactElement;
@@ -83,6 +91,70 @@ function applyElementAttributes(
       element.setAttribute?.(name, String(value));
     }
   });
+}
+
+function clampNumber(value: number, min: number, max: number) {
+  if (max < min) return min;
+  return Math.min(Math.max(value, min), max);
+}
+
+function codeLanguageMenuStyle(
+  button: HTMLButtonElement | null | undefined,
+): CSSProperties {
+  const rect = button?.getBoundingClientRect?.();
+  const documentRef =
+    button?.ownerDocument ?? (typeof document !== "undefined" ? document : null);
+  const windowRef =
+    documentRef?.defaultView ?? (typeof window !== "undefined" ? window : null);
+  const viewportWidth =
+    documentRef?.documentElement?.clientWidth ?? windowRef?.innerWidth ?? 1024;
+  const viewportHeight =
+    documentRef?.documentElement?.clientHeight ?? windowRef?.innerHeight ?? 768;
+  const width = Math.min(
+    CODE_LANGUAGE_MENU_WIDTH,
+    Math.max(220, viewportWidth - CODE_LANGUAGE_MENU_MARGIN * 2),
+  );
+  const height = clampNumber(
+    Math.min(CODE_LANGUAGE_MENU_MAX_HEIGHT, viewportHeight - CODE_LANGUAGE_MENU_MARGIN * 2),
+    Math.min(CODE_LANGUAGE_MENU_MIN_HEIGHT, Math.max(160, viewportHeight - CODE_LANGUAGE_MENU_MARGIN * 2)),
+    Math.max(160, viewportHeight - CODE_LANGUAGE_MENU_MARGIN * 2),
+  );
+
+  if (!rect) {
+    return {
+      position: "fixed",
+      width,
+      height,
+      maxHeight: height,
+      visibility: "hidden",
+    };
+  }
+
+  const preferredTop = rect.bottom + 8;
+  const fallbackTop = rect.top - height - 8;
+  const top =
+    preferredTop + height + CODE_LANGUAGE_MENU_MARGIN <= viewportHeight
+      ? preferredTop
+      : clampNumber(
+          fallbackTop,
+          CODE_LANGUAGE_MENU_MARGIN,
+          viewportHeight - height - CODE_LANGUAGE_MENU_MARGIN,
+        );
+  const left = clampNumber(
+    rect.left,
+    CODE_LANGUAGE_MENU_MARGIN,
+    viewportWidth - width - CODE_LANGUAGE_MENU_MARGIN,
+  );
+
+  return {
+    position: "fixed",
+    left,
+    top,
+    width,
+    height,
+    maxHeight: height,
+    visibility: "visible",
+  };
 }
 
 function writeCodeToClipboard(text: unknown) {
@@ -175,12 +247,39 @@ function CodeLanguageMenu({
   const [activeIndex, setActiveIndex] = useState(() =>
     activeCodeBlockLanguageCommandIndex(filteredCommands),
   );
+  const [floatingStyle, setFloatingStyle] = useState<CSSProperties>(() =>
+    codeLanguageMenuStyle(buttonRef.current),
+  );
   const menuRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const activeCommand = filteredCommands[activeIndex] ?? filteredCommands[0];
   const activeDescendant = activeCommand ? `${ownerId}-item-${activeIndex}` : undefined;
   const menuLabel = commands[0]?.group ?? "";
+  const portalRoot =
+    buttonRef.current?.ownerDocument?.body ??
+    (typeof document !== "undefined" ? document.body : null);
+  const updateFloatingStyle = useCallback(
+    () => setFloatingStyle(codeLanguageMenuStyle(buttonRef.current)),
+    [buttonRef],
+  );
 
+  useLayoutEffect(
+    () => {
+      updateFloatingStyle();
+      const documentRef =
+        buttonRef.current?.ownerDocument ??
+        (typeof document !== "undefined" ? document : null);
+      const windowRef =
+        documentRef?.defaultView ?? (typeof window !== "undefined" ? window : null);
+      windowRef?.addEventListener?.("resize", updateFloatingStyle);
+      windowRef?.addEventListener?.("scroll", updateFloatingStyle, true);
+      return () => {
+        windowRef?.removeEventListener?.("resize", updateFloatingStyle);
+        windowRef?.removeEventListener?.("scroll", updateFloatingStyle, true);
+      };
+    },
+    [buttonRef, updateFloatingStyle],
+  );
   useEffect(
     () => {
       setActiveIndex(activeCodeBlockLanguageCommandIndex(filteredCommands));
@@ -255,7 +354,7 @@ function CodeLanguageMenu({
     }
   };
 
-  return (
+  const menu = (
     <div
       id={ownerId}
       className="mn-tiptap-code-language-menu mn-tiptap-code-language-menu-inline"
@@ -263,6 +362,7 @@ function CodeLanguageMenu({
       tabIndex={-1}
       aria-label={menuLabel}
       aria-activedescendant={activeDescendant}
+      style={floatingStyle}
       onKeyDown={handleKeyDown}
       ref={menuRef}
     >
@@ -313,6 +413,8 @@ function CodeLanguageMenu({
       </div>
     </div>
   );
+
+  return portalRoot ? createPortal(menu, portalRoot) : menu;
 }
 
 function CodeLanguageMenuItem({
