@@ -23,6 +23,7 @@ const includedExtensions = new Set([
   ".toml",
 ]);
 const excludedDirs = new Set([
+  ".reference",
   ".git",
   "node_modules",
   "target",
@@ -199,6 +200,9 @@ function runSelfTest() {
 
     mkdirSync(join(root, ".git"));
     writeFileSync(join(root, ".git", "ignored.rs"), "1\n2\n3\n4\n5\n6\n", "utf8");
+
+    mkdirSync(join(root, ".reference"));
+    writeFileSync(join(root, ".reference", "ignored.md"), "1\n2\n3\n4\n5\n6\n", "utf8");
 
     mkdirSync(join(root, "assets"));
     writeFileSync(join(root, "assets", "editor.js"), "1\n2\n3\n4\n5\n6\n", "utf8");
