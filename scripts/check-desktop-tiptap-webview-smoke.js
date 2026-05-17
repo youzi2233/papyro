@@ -397,14 +397,60 @@ async function exerciseFloatingToolbar(client) {
     return Boolean(document.querySelector(".tiptap-toolbar[data-variant='floating']"));
   });
   await assertEvaluate(client, "floating toolbar exposes core Notion-like actions", () => {
-    const toolbar = document.querySelector(".tiptap-toolbar[data-variant='floating']");
+    const toolbar = document.querySelector(".tiptap-selection-toolbar.tiptap-toolbar[data-variant='floating']");
     const layer = toolbar?.closest(".tiptap-selection-floating-layer") ?? null;
     if (!toolbar) return false;
     const buttons = Array.from(toolbar.querySelectorAll("button:not(:disabled)"));
     const names = buttons.map((button) => button.getAttribute("aria-label") ?? "");
+    const toolbarStyle = getComputedStyle(toolbar);
+    const buttonRects = buttons
+      .map((button) => button.getBoundingClientRect())
+      .filter((rect) => rect.width > 0 && rect.height > 0);
+    const firstButtonRect = buttonRects[0] ?? null;
+    const oneRowButtons = Boolean(firstButtonRect) && buttonRects.every((rect) =>
+      Math.abs(rect.top - firstButtonRect.top) <= 2 &&
+      Math.abs(rect.height - firstButtonRect.height) <= 2,
+    );
+    const standardIconRects = Array
+      .from(toolbar.querySelectorAll(".tiptap-button-icon"))
+      .map((icon) => icon.getBoundingClientRect())
+      .filter((rect) => rect.width > 0 && rect.height > 0);
+    const dropdownIconRects = Array
+      .from(toolbar.querySelectorAll(".tiptap-button-dropdown-small"))
+      .map((icon) => icon.getBoundingClientRect())
+      .filter((rect) => rect.width > 0 && rect.height > 0);
+    const swatchRects = Array
+      .from(toolbar.querySelectorAll(".tiptap-button-color-text, .tiptap-button-color-text-popover"))
+      .map((swatch) => swatch.getBoundingClientRect())
+      .filter((rect) => rect.width > 0 && rect.height > 0);
+    const standardIconsNormalized = standardIconRects.every((rect) =>
+      rect.width >= 15 &&
+      rect.width <= 17 &&
+      rect.height >= 15 &&
+      rect.height <= 17,
+    );
+    const dropdownIconsNormalized = dropdownIconRects.every((rect) =>
+      rect.width >= 9 &&
+      rect.width <= 11 &&
+      rect.height >= 9 &&
+      rect.height <= 11,
+    );
+    const swatchesNormalized = swatchRects.every((rect) =>
+      rect.width >= 15 &&
+      rect.width <= 17 &&
+      rect.height >= 15 &&
+      rect.height <= 17,
+    );
     return isOpaqueBoundedSurface(toolbar) &&
       layer &&
       getComputedStyle(layer).isolation === "isolate" &&
+      toolbarStyle.whiteSpace === "nowrap" &&
+      toolbarStyle.flexWrap === "nowrap" &&
+      ["flex", "inline-flex"].includes(toolbarStyle.display) &&
+      oneRowButtons &&
+      standardIconsNormalized &&
+      dropdownIconsNormalized &&
+      swatchesNormalized &&
       names.some((name) => /Turn into/u.test(name)) &&
       names.some((name) => /Bold/u.test(name)) &&
       names.some((name) => /Italic/u.test(name));
